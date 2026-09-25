@@ -343,6 +343,17 @@
     },
     "approval": {
       "not_found": "Diese Erledigung wurde schon geprüft oder zurückgenommen."
+    },
+    "calendar": {
+      "not_configured": "Der Google Kalender ist noch nicht eingerichtet",
+      "state_invalid": "Die Anmeldung bei Google ist abgelaufen oder ungültig. Bitte nochmal versuchen.",
+      "access_denied": "Die Anmeldung bei Google wurde abgebrochen",
+      "scope_missing": "Der Zugriff auf den Kalender wurde nicht erlaubt. Bitte nochmal verbinden und den Kalender-Zugriff ankreuzen.",
+      "reconnect": "Der Zugriff auf das Google-Konto ist abgelaufen. Bitte neu verbinden.",
+      "google_unreachable": "Google ist gerade nicht erreichbar. Bitte später nochmal versuchen.",
+      "google_failed": "Google hat die Anmeldung abgelehnt. Bitte nochmal versuchen.",
+      "client_invalid": "Google kennt die Zugangsdaten nicht. Bitte GOOGLE_CLIENT_ID und GOOGLE_CLIENT_SECRET prüfen.",
+      "connection_not_found": "Diese Verbindung gibt es nicht mehr"
     }
   },
   "rewards": {
@@ -428,5 +439,20 @@
     "size_normal": "Normal",
     "size_large": "Groß",
     "info": "Anzeige: {{width}} × {{height}} px, Skalierung {{ratio}}, Grundschrift {{font}} px"
+  },
+  "calendar": {
+    "section": "Kalender",
+    "intro": "Verbinde ein Google-Konto, damit FamQuest die Termine anzeigen kann. FamQuest liest die Kalender nur und ändert nichts daran.",
+    "not_configured": "Der Google Kalender ist noch nicht eingerichtet. Dafür braucht die Konfiguration (.env) GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET und TOKEN_ENCRYPTION_KEY. Die Anleitung steht in der README.",
+    "connect": "Google-Konto verbinden",
+    "connected": "Google-Konto verbunden",
+    "status_ok": "Verbunden",
+    "status_reconnect": "Der Zugriff ist abgelaufen. Bitte neu verbinden.",
+    "reconnect": "Neu verbinden",
+    "disconnect": "Trennen",
+    "disconnect_confirm": "{{email}} wirklich trennen? Die Termine dieses Kontos werden dann nicht mehr angezeigt.",
+    "disconnected": "{{email}} wurde getrennt",
+    "setup_details": "Einrichtung bei Google",
+    "redirect_uri": "Weiterleitungs-URI für die Google Cloud Console:"
   }
 }

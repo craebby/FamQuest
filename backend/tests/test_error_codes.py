@@ -13,6 +13,8 @@ _CODE_PATTERNS = (
     re.compile(r'ApiError\([^,]+,\s*"([a-z_]+\.[a-z_]+)"\)'),
     re.compile(r'PydanticCustomError\(\s*"([a-z_]+\.[a-z_]+)"'),
     re.compile(r'"code":\s*"([a-z_]+\.[a-z_]+)"'),
+    re.compile(r'GoogleError\("([a-z_]+\.[a-z_]+)"\)'),
+    re.compile(r'calendar_error="([a-z_]+\.[a-z_]+)"'),
 )
 
 
@@ -26,9 +28,13 @@ def backend_error_codes() -> set[str]:
 
 
 def test_finds_error_codes():
-    assert {"auth.invalid_credentials", "setup.already_done", "common.validation"} <= (
-        backend_error_codes()
-    )
+    assert {
+        "auth.invalid_credentials",
+        "setup.already_done",
+        "common.validation",
+        "calendar.reconnect",
+        "calendar.state_invalid",
+    } <= (backend_error_codes())
 
 
 @pytest.mark.skipif(not LOCALES_DIR.exists(), reason="Frontend nicht vorhanden (Container)")

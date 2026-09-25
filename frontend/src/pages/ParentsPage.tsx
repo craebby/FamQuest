@@ -1,6 +1,6 @@
-import { type FormEvent, useLayoutEffect, useState } from 'react'
+import { type FormEvent, useEffect, useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 import LockedIcon from '~icons/fluent-emoji-flat/locked'
 import UnlockedIcon from '~icons/fluent-emoji-flat/unlocked'
@@ -24,6 +24,7 @@ import { Alert, Button, CenteredCard, Section, TextField } from '../components/u
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { ApprovalsSection } from './parents/ApprovalsSection'
+import { CalendarSection } from './parents/CalendarSection'
 import { DeviceSection } from './parents/DeviceSection'
 import { FamilySection } from './parents/FamilySection'
 import { MemberEditor } from './parents/MemberEditor'
@@ -223,7 +224,18 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
     window.scrollTo(0, 0)
   }, [view])
   const [confirmDisable, setConfirmDisable] = useState(false)
-  const [notice, setNotice] = useState<string>()
+  // Rückkehr von der Google-Anmeldung: Ergebnis anzeigen und danach die Adresse aufräumen.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [notice, setNotice] = useState<string | undefined>(() =>
+    searchParams.get('calendar') === 'connected' ? t('calendar.connected') : undefined,
+  )
+  const [calendarError, setCalendarError] = useState(
+    () => searchParams.get('calendar_error') ?? undefined,
+  )
+  const returnedFromGoogle = searchParams.has('calendar') || searchParams.has('calendar_error')
+  useEffect(() => {
+    if (returnedFromGoogle) setSearchParams({}, { replace: true })
+  }, [returnedFromGoogle, setSearchParams])
 
   if (editingMember) {
     const closeWith = (message: string) => {
@@ -339,6 +351,7 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         </p>
       )}
       {disablePin.isError && <Alert>{errorMessage(t, disablePin.error)}</Alert>}
+      {calendarError && <Alert>{errorMessage(t, calendarError)}</Alert>}
 
       <ApprovalsSection members={members.data ?? []} today={today.data?.date} />
 
@@ -402,6 +415,13 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
           setPoolMember(member)
         }}
         timeZone={me.family.timezone}
+      />
+
+      <CalendarSection
+        onDisconnected={(email) => {
+          setCalendarError(undefined)
+          setNotice(t('calendar.disconnected', { email }))
+        }}
       />
 
       <FamilySection me={me} onSaved={setNotice} />

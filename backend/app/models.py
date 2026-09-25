@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     SmallInteger,
     String,
+    Text,
     UniqueConstraint,
     func,
     true,
@@ -273,3 +274,46 @@ class RewardRedemption(Base):
     reward_icon: Mapped[str] = mapped_column(String(100))
     cost: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CalendarConnection(Base):
+    """Verbindung zu einem Kalenderkonto (Phase 2: Google, nur lesend).
+
+    Die Tokens liegen verschlüsselt in der Datenbank (siehe app.crypto). Ein Konto kann nur einmal
+    verbunden sein; erneutes Verbinden ersetzt die Tokens.
+    """
+
+    __tablename__ = "calendar_connections"
+    __table_args__ = (UniqueConstraint("provider", "account_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # Erweiterbare Werte, bewusst kein Datenbank-Enum; vorerst nur "google".
+    provider: Mapped[str] = mapped_column(String(20))
+    # Stabile Konto-Id des Anbieters (bei Google `sub`) und die E-Mail zur Anzeige.
+    account_id: Mapped[str] = mapped_column(String(255))
+    account_email: Mapped[str] = mapped_column(String(254))
+    refresh_token: Mapped[str] = mapped_column(Text)
+    access_token: Mapped[str | None] = mapped_column(Text)
+    access_token_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # "ok" oder "reconnect" (Zugriff widerrufen, Token ungültig); siehe app.google.
+    status: Mapped[str] = mapped_column(String(20), server_default="ok")
+    created_by_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class OAuthState(Base):
+    """Offene OAuth-Anmeldung: gehört zu einer Session und gilt nur wenige Minuten."""
+
+    __tablename__ = "oauth_states"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    state_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey("sessions.id", ondelete="CASCADE"), index=True
+    )
+    # PKCE-Verifier und die Rückleitungs-Adresse, die beim Token-Tausch gleich sein muss.
+    code_verifier: Mapped[str] = mapped_column(String(128))
+    redirect_uri: Mapped[str] = mapped_column(String(500))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

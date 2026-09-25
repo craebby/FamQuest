@@ -251,6 +251,47 @@ Personenansicht zeigt zusätzlich alle Anteile mit der Zahl der Aufgaben. Gezäh
 erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbewerb, sondern soll
 helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
 
+## Google Kalender
+
+*In Arbeit (Phase 2).* Bisher lassen sich Google-Konten im Elternbereich unter **Kalender**
+verbinden und wieder trennen. Kalender auswählen und die Termine anzeigen folgt in den nächsten
+Schritten (siehe [Roadmap](#roadmap)). FamQuest liest die Kalender nur und ändert nichts daran.
+
+Weil FamQuest selbst gehostet ist, braucht jede Installation einen eigenen Zugang bei Google.
+Das ist einmalig und kostenlos. Voraussetzung ist, dass FamQuest per **HTTPS unter einer Domain**
+erreichbar ist (z. B. `https://familie.example.com` über einen Reverse Proxy). Google erlaubt keine
+Weiterleitung an eine IP-Adresse oder an `http://`, nur an `http://localhost` zum Entwickeln.
+
+1. In der [Google Cloud Console](https://console.cloud.google.com/) ein neues Projekt anlegen,
+   z. B. „FamQuest“.
+2. Unter **APIs & Dienste → Bibliothek** die **Google Calendar API** aktivieren.
+3. Unter **Google Auth Platform** die App einrichten: Name (z. B. FamQuest) und Support-E-Mail,
+   Zielgruppe **Extern**. Unter **Datenzugriff** den Bereich
+   `https://www.googleapis.com/auth/calendar.readonly` hinzufügen.
+4. Unter **Clients** einen neuen OAuth-Client vom Typ **Webanwendung** anlegen. Als
+   **Autorisierte Weiterleitungs-URI** eintragen:
+   `https://familie.example.com/api/calendar/google/callback` (mit eurer Domain). Die genaue
+   Adresse zeigt der Elternbereich unter **Kalender → Einrichtung bei Google**.
+5. Client-ID und Clientschlüssel in die `.env` eintragen, dazu einen Schlüssel für die
+   Verschlüsselung der Tokens:
+   ```sh
+   GOOGLE_CLIENT_ID=1234….apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=GOCSPX-…
+   TOKEN_ENCRYPTION_KEY=…   # openssl rand -base64 32
+   ```
+   Danach `docker compose up -d`.
+6. **Wichtig:** Unter **Zielgruppe** die App **veröffentlichen** („In Produktion“). Im Status
+   „Test“ laufen die Zugriffe nach 7 Tagen ab und die Konten müssten jede Woche neu verbunden
+   werden. Eine Überprüfung durch Google ist für den eigenen Gebrauch nicht nötig.
+
+Beim Verbinden zeigt Google dann den Hinweis „Google hat diese App nicht überprüft“. Das ist bei
+einer selbst gehosteten App normal: **Erweitert → Weiter zu FamQuest** wählen und den
+Kalenderzugriff ankreuzen. Mehrere Google-Konten sind möglich, z. B. eins je Elternteil.
+
+Den `TOKEN_ENCRYPTION_KEY` zusammen mit der `.env` sichern. Geht er verloren oder wird er geändert,
+zeigt der Elternbereich bei jedem Konto „Neu verbinden“; sonst geht nichts verloren. Ein Konto zu
+trennen widerruft den Zugriff auch bei Google.
+
 ## Konfiguration
 
 Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
@@ -265,6 +306,9 @@ Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Al
 | `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` (zur Fehlersuche) |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Vertrauenswürdige Reverse Proxies |
 | `PROXY_NETWORK` | `proxy` | Docker-Netzwerk eures Reverse Proxys (siehe unten) |
+| `GOOGLE_CLIENT_ID` | – | OAuth-Client für den [Google Kalender](#google-kalender) |
+| `GOOGLE_CLIENT_SECRET` | – | Clientschlüssel dazu |
+| `TOKEN_ENCRYPTION_KEY` | – | Verschlüsselt die Google-Tokens in der Datenbank |
 
 Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
 Wie ihr sie sichert, steht unter [Backup und Restore](#backup-und-restore).
@@ -493,7 +537,7 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 
 **Als Nächstes: Google Kalender (Phase 2)**
 
-- [ ] 1. Google-Konto verbinden (OAuth, Tokens verschlüsselt, automatisch erneuert)
+- [x] 1. Google-Konto verbinden (OAuth, Tokens verschlüsselt, automatisch erneuert)
 - [ ] 2. Kalender auswählen und Personen oder „Familie“ zuordnen
 - [ ] 3. Synchronisation im Hintergrund, Fehlerbehandlung
 - [ ] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe

@@ -246,6 +246,45 @@ people's colours. The person view additionally shows all shares with the number 
 counts is the number of completed tasks; point values don't matter. This is deliberately not a
 competition but a way to share the work fairly. With only one adult, the display is hidden.
 
+## Google Calendar
+
+*Work in progress (phase 2).* So far you can connect and disconnect Google accounts in the
+parents' area under **Calendar**. Choosing calendars and showing events comes next (see
+[Roadmap](#roadmap)). FamQuest only reads the calendars and never changes them.
+
+Because FamQuest is self-hosted, every installation needs its own access to Google. This is a
+one-time, free setup. FamQuest must be reachable via **HTTPS on a domain** (e.g.
+`https://family.example.com` through a reverse proxy). Google doesn't allow redirects to an IP
+address or to `http://`, except `http://localhost` for development.
+
+1. In the [Google Cloud Console](https://console.cloud.google.com/), create a new project, e.g.
+   "FamQuest".
+2. Under **APIs & Services → Library**, enable the **Google Calendar API**.
+3. Under **Google Auth Platform**, set up the app: name (e.g. FamQuest) and support email,
+   audience **External**. Under **Data access**, add the scope
+   `https://www.googleapis.com/auth/calendar.readonly`.
+4. Under **Clients**, create a new OAuth client of type **Web application**. Add this
+   **Authorized redirect URI**: `https://family.example.com/api/calendar/google/callback` (with
+   your domain). The parents' area shows the exact address under **Calendar → Google setup**.
+5. Put the client ID and client secret into `.env`, plus a key that encrypts the tokens:
+   ```sh
+   GOOGLE_CLIENT_ID=1234….apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=GOCSPX-…
+   TOKEN_ENCRYPTION_KEY=…   # openssl rand -base64 32
+   ```
+   Then run `docker compose up -d`.
+6. **Important:** under **Audience**, **publish** the app ("In production"). In "Testing" status,
+   access expires after 7 days and accounts would have to be reconnected every week. A review by
+   Google isn't needed for your own use.
+
+When connecting, Google then shows "Google hasn't verified this app". That's normal for a
+self-hosted app: choose **Advanced → Go to FamQuest** and tick calendar access. You can connect
+several Google accounts, e.g. one per parent.
+
+Back up `TOKEN_ENCRYPTION_KEY` together with `.env`. If it's lost or changed, the parents' area
+shows "Reconnect" for every account; nothing else is lost. Disconnecting an account also revokes
+access at Google.
+
 ## Configuration
 
 Configuration is done exclusively through environment variables in `.env`. All variables are
@@ -260,6 +299,9 @@ described in [`.env.example`](.env.example).
 | `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` (for troubleshooting) |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Trusted reverse proxies |
 | `PROXY_NETWORK` | `proxy` | Docker network of your reverse proxy (see below) |
+| `GOOGLE_CLIENT_ID` | – | OAuth client for [Google Calendar](#google-calendar) |
+| `GOOGLE_CLIENT_SECRET` | – | Its client secret |
+| `TOKEN_ENCRYPTION_KEY` | – | Encrypts the Google tokens in the database |
 
 Data lives in two Docker volumes: `db-data` (PostgreSQL) and `uploads` (uploaded images). How to
 back them up is described under [Backup and restore](#backup-and-restore).
@@ -486,7 +528,7 @@ use.
 
 **Next: Google Calendar (phase 2)**
 
-- [ ] 1. Connect a Google account (OAuth, encrypted tokens, refreshed automatically)
+- [x] 1. Connect a Google account (OAuth, encrypted tokens, refreshed automatically)
 - [ ] 2. Choose calendars and link them to people or "Family"
 - [ ] 3. Background sync, error handling
 - [ ] 4. Calendar view: week with events in the person's colour

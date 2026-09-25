@@ -24,6 +24,18 @@ class Settings(BaseSettings):
     log_level: str = "info"
     upload_dir: Path = Path("data/uploads")
 
+    # Google Kalender (Phase 2). Ohne diese drei Werte ist der Kalender abgeschaltet.
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    # Beliebige lange Zufallszeichenkette; verschlüsselt die OAuth-Tokens in der Datenbank.
+    token_encryption_key: str = ""
+
+    @property
+    def calendar_configured(self) -> bool:
+        return bool(
+            self.google_client_id and self.google_client_secret and self.token_encryption_key
+        )
+
     def database_url(self, database: str | None = None) -> URL:
         return URL.create(
             "postgresql+psycopg",

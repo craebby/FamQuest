@@ -343,6 +343,17 @@
     },
     "approval": {
       "not_found": "This has already been checked or undone."
+    },
+    "calendar": {
+      "not_configured": "Google Calendar is not set up yet",
+      "state_invalid": "The Google sign-in expired or is invalid. Please try again.",
+      "access_denied": "The Google sign-in was cancelled",
+      "scope_missing": "Calendar access was not allowed. Please connect again and tick calendar access.",
+      "reconnect": "Access to the Google account has expired. Please reconnect.",
+      "google_unreachable": "Google can't be reached right now. Please try again later.",
+      "google_failed": "Google rejected the sign-in. Please try again.",
+      "client_invalid": "Google doesn't recognise the credentials. Please check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.",
+      "connection_not_found": "This connection no longer exists"
     }
   },
   "rewards": {
@@ -428,5 +439,20 @@
     "size_normal": "Normal",
     "size_large": "Large",
     "info": "Display: {{width}} × {{height}} px, scaling {{ratio}}, base font {{font}} px"
+  },
+  "calendar": {
+    "section": "Calendar",
+    "intro": "Connect a Google account so FamQuest can show your events. FamQuest only reads the calendars and never changes them.",
+    "not_configured": "Google Calendar is not set up yet. The configuration (.env) needs GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and TOKEN_ENCRYPTION_KEY. See the README for instructions.",
+    "connect": "Connect Google account",
+    "connected": "Google account connected",
+    "status_ok": "Connected",
+    "status_reconnect": "Access has expired. Please reconnect.",
+    "reconnect": "Reconnect",
+    "disconnect": "Disconnect",
+    "disconnect_confirm": "Really disconnect {{email}}? Events from this account will no longer be shown.",
+    "disconnected": "{{email}} was disconnected",
+    "setup_details": "Google setup",
+    "redirect_uri": "Redirect URI for the Google Cloud Console:"
   }
 }
