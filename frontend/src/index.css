@@ -10,3 +10,19 @@
     @apply bg-orange-50 text-slate-800 antialiased;
   }
 }
+
+@theme {
+  --animate-pop: pop 350ms ease-out;
+
+  @keyframes pop {
+    0% {
+      transform: scale(0);
+    }
+    70% {
+      transform: scale(1.25);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}

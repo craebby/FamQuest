@@ -48,3 +48,14 @@ export function formatDate(language: string, isoDate: string) {
 export function todayIn(timeZone: string, now = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(now)
 }
+
+/** `YYYY-MM-DD` → Wochentag und Datum, z. B. „Samstag, 3. Oktober“. */
+export function formatLongDate(language: string, isoDate: string) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return new Intl.DateTimeFormat(language, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(year, month - 1, day)))
+}

@@ -34,9 +34,23 @@
     "password": "Password",
     "submit": "Sign in"
   },
-  "home": {
-    "placeholder_title": "Family view",
-    "placeholder_text": "Everyone's tasks will show up here soon."
+  "nav": {
+    "label": "Main navigation",
+    "today": "Today",
+    "settings": "Settings"
+  },
+  "family": {
+    "no_members": "No family members yet",
+    "no_members_hint": "You can add your family in the parents' area.",
+    "open_parents": "Go to parents' area",
+    "choose_person": "Choose a person",
+    "open_person": "Open {{name}}",
+    "tasks_of": "{{name}}'s tasks",
+    "back": "Back to family view",
+    "free_today": "Nothing to do today!",
+    "now": "Now",
+    "section_done": "{{section}}: all done",
+    "task_label": "{{title}}, {{points}}"
   },
   "parents": {
     "title": "Parent area",
@@ -227,7 +241,11 @@
       "invalid_image": "The image could not be read. Please choose another photo."
     },
     "task": {
-      "not_found": "This task no longer exists"
+      "not_found": "This task no longer exists",
+      "not_due": "This task isn't due today."
+    },
+    "completion": {
+      "day_changed": "A new day has started. The tasks have been updated."
     }
   }
 }

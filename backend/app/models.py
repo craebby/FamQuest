@@ -148,3 +148,25 @@ class TaskAssignment(Base):
     member_id: Mapped[int] = mapped_column(
         ForeignKey("family_members.id", ondelete="CASCADE"), index=True
     )
+
+
+class TaskCompletion(Base):
+    """Erledigung einer Aufgabe durch eine Person an einem Kalendertag der Familie.
+
+    Rückgängig machen löscht die Zeile; der Unique-Constraint verhindert doppelte Erledigungen
+    am selben Tag, auch bei gleichzeitigen Doppel-Tipps.
+    """
+
+    __tablename__ = "task_completions"
+    __table_args__ = (UniqueConstraint("task_id", "member_id", "date"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), index=True
+    )
+    # Kalendertag in der Zeitzone der Familie, nicht in UTC.
+    date: Mapped[dt.date] = mapped_column(Date, index=True)
+    completed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

@@ -6,6 +6,7 @@ import { vi } from 'vitest'
 import App from '../App'
 import type { Me } from '../api/auth'
 import type { Member } from '../api/members'
+import type { Today, TodayTask } from '../api/today'
 
 type Handler = Response | ((body: unknown) => Response)
 
@@ -60,4 +61,22 @@ export const notAuthenticated = Response.json({ code: 'auth.not_authenticated' }
 
 export function makeMember(overrides: Partial<Member> = {}): Member {
   return { id: 1, name: 'Lena', role: 'child', color: 'purple', avatar_url: null, ...overrides }
+}
+
+export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {
+  return {
+    id: 1,
+    title: 'Zähne putzen',
+    icon: 'fluent-emoji-flat:toothbrush',
+    points: 2,
+    time_of_day: 'morning',
+    color: null,
+    member_ids: [1],
+    done_member_ids: [],
+    ...overrides,
+  }
+}
+
+export function makeToday(overrides: Partial<Today> = {}): Today {
+  return { date: '2026-10-03', time_of_day: 'morning', tasks: [], ...overrides }
 }

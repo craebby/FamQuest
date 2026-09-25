@@ -6,9 +6,9 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Phase 1, Etappe 4 ist fertig: Einrichtung beim ersten Start, Anmeldung,
-> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild sowie Aufgaben und
-> Routinen. Die Familienansicht ist noch ein Platzhalter; sie folgt in der nächsten Etappe (siehe
+> **Status:** Phase 1, Etappe 5 ist fertig: Einrichtung beim ersten Start, Anmeldung,
+> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild, Aufgaben und Routinen
+> sowie die Familienansicht zum Abhaken. Punkte werden ab der nächsten Etappe gebucht (siehe
 > [Roadmap](#roadmap)).
 
 ## Features (Ziel Phase 1)
@@ -108,6 +108,29 @@ Katalog erweitern: Namen aus dem Set `fluent-emoji-flat` (z. B. auf
 Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Tests prüfen, dass jedes Symbol
 existiert und in jeder Sprache eindeutig benannt ist.
 
+## Familienansicht
+
+Die Startseite zeigt alle Familienmitglieder nebeneinander, jede Person mit großem Avatar und ihren
+heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe gehört, ergibt sich aus der
+Spalte.
+
+- **Ein Tipp** auf eine Aufgabenkarte erledigt sie für diese Person (Haken, Einfärbung in der
+  Personenfarbe). **Nochmal tippen** macht es rückgängig. Jede Aufgabe kann pro Person und Tag nur
+  einmal erledigt sein, auch bei Doppel-Tipps.
+- Die Aufgaben sind nach **Tageszeit** gruppiert (Sonnenaufgang, Sonne, Sonne mit Wolke, Mond; dazu
+  „Jederzeit“). Der aktuelle Abschnitt ist farbig hervorgehoben. Ist ein Abschnitt komplett
+  erledigt, klappt er zu einer Zeile mit Haken zusammen und lässt sich mit einem Tipp wieder öffnen.
+  Tageszeiten: morgens bis 11 Uhr, mittags bis 14 Uhr, nachmittags bis 18 Uhr, danach abends.
+- Ein Tipp auf den **Avatar** öffnet die Personenansicht mit denselben Aufgaben in groß. Nach einer
+  Minute ohne Eingabe kehrt das Display zur Familienansicht zurück.
+- Bei vielen Personen oder schmalem Bildschirm lassen sich die Spalten seitlich wischen. Am
+  Smartphone steht eine Person pro Seite, oben eine Avatar-Leiste zum Wechseln.
+- Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Stern) und
+  zu den Einstellungen (Zahnrad, Elternbereich mit PIN).
+
+„Heute“ rechnet der Server immer in der Zeitzone der Familie. Die Ansicht lädt sich jede Minute neu,
+damit Tageswechsel und Änderungen aus dem Elternbereich ankommen.
+
 ## Konfiguration
 
 Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
@@ -201,6 +224,17 @@ cd frontend && npm run format                      # Formatierung (Prettier)
 docker compose --profile test run --rm --build tests # Backend-Tests im Container
 ```
 
+End-to-End-Tests der Familienansicht (Playwright, Chromium):
+
+```sh
+cd frontend && npx playwright install chromium       # einmalig
+cd frontend && npm run e2e                           # braucht die laufende Datenbank
+```
+
+`npm run e2e` baut das Frontend, legt eine frische Datenbank `<POSTGRES_DB>_e2e` an und startet die
+App auf Port 8001. Getestet wird der erste Meilenstein im Browser: Setup, Kind und Aufgabe anlegen,
+Aufgabe antippen und wieder zurücknehmen, dazu die Personenansicht am Smartphone.
+
 Die Backend-Tests legen eine eigene Datenbank `<POSTGRES_DB>_test` an und setzen sie bei jedem Lauf
 neu auf.
 
@@ -226,7 +260,7 @@ Browser ──► Reverse Proxy (optional) ──► app (FastAPI, Port 8000) �
 | Ordner | Inhalt |
 | --- | --- |
 | `backend/` | FastAPI, SQLAlchemy 2, Alembic, pytest; Pakete mit uv |
-| `frontend/` | React, Vite, TypeScript, Tailwind CSS, react-i18next, TanStack Query, Vitest |
+| `frontend/` | React, Vite, TypeScript, Tailwind CSS, react-i18next, TanStack Query, Vitest, Playwright |
 | `docs/` | Spezifikation |
 
 Das `Dockerfile` baut zuerst das Frontend und kopiert es dann in das Python-Image. Es entsteht ein
@@ -248,7 +282,7 @@ Etappen in Phase 1:
 - [x] 2. First-Run-Setup, Login/Logout, Sperre der Registrierung, Eltern-PIN
 - [x] 3. Familienmitglieder mit Farbe und Profilbild
 - [x] 4. Aufgaben und Routinen im Elternbereich
-- [ ] 5. Familienansicht
+- [x] 5. Familienansicht
 - [ ] 6. Punkte und Tagesfortschritt
 - [ ] 7. Belohnungen
 - [ ] 8. Feinschliff, Wochenübersicht, Backup/Restore

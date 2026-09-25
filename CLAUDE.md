@@ -71,6 +71,8 @@ Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker;
 - Backend-Lint: `cd backend && uv run ruff check . && uv run ruff format --check .`
 - Frontend-Tests/Lint: `cd frontend && npm test && npm run lint && npm run typecheck`
   (Lint prüft auch Prettier; formatieren mit `npm run format`)
+- E2E (Playwright, braucht laufende DB): `cd frontend && npm run e2e`
+  (baut das Frontend, legt DB `<POSTGRES_DB>_e2e` neu an, App auf Port 8001)
 - Gesamtes Image: `docker compose up -d --build`, Tests im Container:
   `docker compose --profile test run --rm --build tests`
 

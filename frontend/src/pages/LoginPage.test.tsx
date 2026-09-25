@@ -66,7 +66,7 @@ describe('Login', () => {
     await user.type(screen.getByLabelText('Passwort'), 'sehr-geheim-123')
     await user.click(screen.getByRole('button', { name: 'Anmelden' }))
 
-    expect(await screen.findByRole('heading', { name: 'Family view' })).toBeVisible()
+    expect(await screen.findByRole('link', { name: 'Today' })).toBeVisible()
     expect(document.documentElement.lang).toBe('en')
   })
 })

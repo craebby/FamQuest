@@ -4,6 +4,7 @@ import type { MemberColor } from '../memberColors'
 import { api, apiGet } from './client'
 import { useParentMutation } from './mutations'
 import { TASKS_KEY } from './tasks'
+import { TODAY_KEY } from './today'
 
 // Muss zu MEMBER_ROLES im Backend passen (backend/app/schemas.py).
 export const MEMBER_ROLES = ['parent', 'child'] as const
@@ -41,5 +42,5 @@ export const removeAvatar = (id: number) => api<Member>('DELETE', `/members/${id
 export function useMembersMutation<TVariables, TResult>(
   request: (variables: TVariables) => Promise<TResult>,
 ) {
-  return useParentMutation(request, [MEMBERS_KEY, TASKS_KEY])
+  return useParentMutation(request, [MEMBERS_KEY, TASKS_KEY, TODAY_KEY])
 }

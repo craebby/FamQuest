@@ -4,12 +4,14 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router'
 
 import { useMe, useSetupStatus } from './api/auth'
 import { ApiError } from './api/client'
+import { AppShell } from './components/AppShell'
 import { Button, FullScreenMessage } from './components/ui'
 import { errorMessage } from './errors'
 import { applyFamilyLanguage } from './i18n'
-import { HomePage } from './pages/HomePage'
+import { FamilyPage } from './pages/FamilyPage'
 import { LoginPage } from './pages/LoginPage'
 import { ParentsPage } from './pages/ParentsPage'
+import { PersonPage } from './pages/PersonPage'
 import { SetupPage } from './pages/SetupPage'
 
 function Loading() {
@@ -77,7 +79,10 @@ export default function App() {
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/login" element={<LoginRoute />} />
         <Route element={<RequireAuth />}>
-          <Route index element={<HomePage />} />
+          <Route element={<AppShell />}>
+            <Route index element={<FamilyPage />} />
+            <Route path="/member/:memberId" element={<PersonPage />} />
+          </Route>
           <Route path="/parents" element={<ParentsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

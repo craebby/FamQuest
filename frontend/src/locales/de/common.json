@@ -34,9 +34,23 @@
     "password": "Passwort",
     "submit": "Anmelden"
   },
-  "home": {
-    "placeholder_title": "Familienansicht",
-    "placeholder_text": "Hier erscheinen bald die Aufgaben aller Familienmitglieder."
+  "nav": {
+    "label": "Hauptnavigation",
+    "today": "Heute",
+    "settings": "Einstellungen"
+  },
+  "family": {
+    "no_members": "Noch keine Familienmitglieder",
+    "no_members_hint": "Im Elternbereich könnt ihr eure Familie anlegen.",
+    "open_parents": "Zum Elternbereich",
+    "choose_person": "Person wählen",
+    "open_person": "{{name}} öffnen",
+    "tasks_of": "Aufgaben von {{name}}",
+    "back": "Zurück zur Familienansicht",
+    "free_today": "Heute frei!",
+    "now": "Jetzt",
+    "section_done": "{{section}}: alles erledigt",
+    "task_label": "{{title}}, {{points}}"
   },
   "parents": {
     "title": "Elternbereich",
@@ -227,7 +241,11 @@
       "invalid_image": "Das Bild konnte nicht gelesen werden. Bitte ein anderes Foto wählen."
     },
     "task": {
-      "not_found": "Diese Aufgabe gibt es nicht mehr"
+      "not_found": "Diese Aufgabe gibt es nicht mehr",
+      "not_due": "Diese Aufgabe steht heute nicht an."
+    },
+    "completion": {
+      "day_changed": "Ein neuer Tag hat begonnen. Die Aufgaben sind jetzt aktualisiert."
     }
   }
 }

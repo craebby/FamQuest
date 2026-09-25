@@ -26,7 +26,7 @@ describe('Elternbereich', () => {
     mockApi({ 'GET /api/setup/status': setupDone, 'GET /api/auth/me': Response.json(makeMe()) })
     renderApp('/')
 
-    await user.click(await screen.findByRole('link', { name: 'Elternbereich' }))
+    await user.click(await screen.findByRole('link', { name: 'Einstellungen' }))
 
     expect(screen.getByRole('heading', { name: 'Eltern-PIN eingeben' })).toBeVisible()
   })
@@ -76,7 +76,7 @@ describe('Elternbereich', () => {
 
     await act(() => vi.advanceTimersByTimeAsync(PARENT_IDLE_TIMEOUT_MS + 100))
 
-    expect(await screen.findByRole('heading', { name: 'Familienansicht' })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Familie Sonnenschein' })).toBeVisible()
     expect(calls.some((call) => call.key === 'POST /api/parent/lock')).toBe(true)
   })
 })

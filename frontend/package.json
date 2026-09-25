@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint && prettier --check src",
+    "lint": "oxlint && prettier --check src e2e playwright.config.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "format": "prettier --write src"
+    "format": "prettier --write src e2e playwright.config.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@fontsource-variable/nunito": "^5.3.0",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@iconify-json/fluent-emoji-flat": "^1.2.6",
     "@iconify-json/lucide": "^1.2.136",
+    "@playwright/test": "^1.63.0",
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
     "@tailwindcss/vite": "^4.3.3",

@@ -145,3 +145,21 @@ class TaskOut(BaseModel):
     active: bool
     recurrence: Recurrence
     member_ids: list[int]
+
+
+class TodayTaskOut(BaseModel):
+    id: int
+    title: str
+    icon: str
+    points: int
+    time_of_day: str | None
+    color: str | None
+    member_ids: list[int]
+    # Personen, die die Aufgabe heute schon erledigt haben.
+    done_member_ids: list[int]
+
+
+class TodayOut(BaseModel):
+    date: dt.date
+    time_of_day: str
+    tasks: list[TodayTaskOut]

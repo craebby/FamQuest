@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { MemberColor } from '../memberColors'
 import { api, apiGet } from './client'
 import { useParentMutation } from './mutations'
+import { TODAY_KEY } from './today'
 
 // Müssen zu TIMES_OF_DAY bzw. den Recurrence-Modellen im Backend passen (backend/app/schemas.py).
 export const TIMES_OF_DAY = ['morning', 'midday', 'afternoon', 'evening'] as const
@@ -48,5 +49,5 @@ export function taskData({ id: _id, ...data }: Task): TaskData {
 export function useTasksMutation<TVariables, TResult>(
   request: (variables: TVariables) => Promise<TResult>,
 ) {
-  return useParentMutation(request, [TASKS_KEY])
+  return useParentMutation(request, [TASKS_KEY, TODAY_KEY])
 }
