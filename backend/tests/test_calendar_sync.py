@@ -453,3 +453,71 @@ def test_week_is_for_the_display(client, admin, now):
     assert client.get("/api/calendar/week", params={"offset": 60}).status_code == 422
     client.cookies.clear()
     assert client.get("/api/calendar/week").status_code == 401
+
+
+# --- Nächste Termine für die Startseite ------------------------------------------------
+
+
+def upcoming(client, **params) -> dict:
+    response = client.get("/api/calendar/upcoming", params=params)
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def test_upcoming_shows_current_and_next_events(client, parent, connected, now):
+    # Jetzt ist Samstag, 3. Oktober, 01:30 in Berlin.
+    connected.set_events(
+        MAMA,
+        [
+            timed("vorbei", "2026-10-03T00:00:00+02:00", "2026-10-03T01:00:00+02:00", "Vorbei"),
+            timed("laeuft", "2026-10-03T01:00:00+02:00", "2026-10-03T02:00:00+02:00", "Läuft"),
+            all_day("fest", "2026-10-03", "2026-10-04", "Feiertag"),
+            all_day("urlaub", "2026-10-01", "2026-10-06", "Urlaub"),
+            timed("morgen", "2026-10-04T10:00:00+02:00", "2026-10-04T11:00:00+02:00", "Morgen"),
+            timed("weit", "2026-10-20T10:00:00+02:00", "2026-10-20T11:00:00+02:00", "Weit weg"),
+        ],
+    )
+    choose(client, parent, MAMA, None)
+
+    data = upcoming(client)
+
+    assert (data["today"], data["timezone"], data["problem"]) == (
+        "2026-10-03",
+        "Europe/Berlin",
+        False,
+    )
+    assert [(e["day"], e["title"]) for e in data["events"]] == [
+        ("2026-10-03", "Feiertag"),
+        ("2026-10-03", "Urlaub"),
+        ("2026-10-03", "Läuft"),
+        ("2026-10-04", "Morgen"),
+    ]
+    holiday = data["events"][1]
+    assert (holiday["continues_before"], holiday["continues_after"]) == (True, True)
+    assert [e["title"] for e in upcoming(client, limit=2)["events"]] == ["Feiertag", "Urlaub"]
+
+
+def test_upcoming_merges_events_and_shows_todays_holidays(client, parent, connected, now):
+    from tests.test_holidays import set_holidays
+
+    lena = add_member(client, parent)
+    shared = timed("fest", "2026-10-05T15:00:00+02:00", "2026-10-05T18:00:00+02:00", "Geburtstag")
+    connected.set_events(MAMA, [shared])
+    connected.set_events(FAMILY, [{**shared, "id": "anders"}])
+    choose(client, parent, MAMA, lena)
+    choose(client, parent, "Familie", None)
+    # 3. Oktober: Tag der Deutschen Einheit.
+    set_holidays(client, parent, region="NW", public=True)
+
+    data = upcoming(client, lang="en")
+
+    [event] = data["events"]
+    assert (event["title"], event["member_ids"], event["family"]) == ("Geburtstag", [lena], True)
+    assert data["holidays"] == [{"kind": "public", "name": "German Unity Day"}]
+
+
+def test_upcoming_is_for_the_display(client, admin, now):
+    assert upcoming(client)["events"] == []
+    assert client.get("/api/calendar/upcoming", params={"limit": 50}).status_code == 422
+    client.cookies.clear()
+    assert client.get("/api/calendar/upcoming").status_code == 401

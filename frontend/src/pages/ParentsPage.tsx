@@ -36,6 +36,7 @@ import { RewardPoolPicker } from './parents/RewardPoolPicker'
 import { RewardsSection } from './parents/RewardsSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
+import { WeatherSection } from './parents/WeatherSection'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
 export const PARENT_IDLE_TIMEOUT_MS = 2 * 60 * 1000
@@ -424,6 +425,8 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
           setNotice(t('calendar.disconnected', { email }))
         }}
       />
+
+      <WeatherSection onSaved={setNotice} />
 
       <FamilySection me={me} onSaved={setNotice} />
 

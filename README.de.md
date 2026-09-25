@@ -12,12 +12,13 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Anmeldung, Elternbereich mit PIN, Familienmitglieder mit Farbe und Foto, Aufgaben und Routinen mit
 > Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
 > Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
-> Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) läuft:
-> Konten, Kalenderauswahl, Synchronisation im Hintergrund und die Wochenansicht funktionieren
-> (siehe [Roadmap](#roadmap)).
+> Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) ist
+> fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
+> Aufgaben aller und dem Wetter (siehe [Roadmap](#roadmap)).
 
 ## Features
 
+- Startseite „Heute“: Uhr, Wetter, die nächsten Termine und die Aufgaben aller auf einen Blick
 - Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
 - Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig, flexibel „etwa alle X Tage“) und
   Tagesabschnitte
@@ -27,6 +28,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
+- Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -75,7 +77,7 @@ weitere Konten lassen sich nicht über die Oberfläche registrieren.
 - Das Display bleibt dauerhaft angemeldet (die Anmeldung verlängert sich bei Nutzung, bis zu einem
   Jahr ohne Nutzung).
 - Der Elternbereich (Zahnrad) ist zusätzlich durch die Eltern-PIN geschützt. Nach 2 Minuten ohne
-  Eingabe kehrt das Display zur Familienansicht zurück und sperrt ihn wieder.
+  Eingabe kehrt das Display zur Startseite zurück und sperrt ihn wieder.
 - Die PIN lässt sich im Elternbereich ändern oder abschalten. PIN vergessen: Mit dem Passwort des
   Kontos eine neue PIN festlegen.
 - Nach 5 falschen Versuchen (Passwort oder PIN) sind weitere Versuche 15 Minuten lang gesperrt.
@@ -145,11 +147,33 @@ Katalog erweitern: Namen aus dem Set `fluent-emoji-flat` (z. B. auf
 Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Tests prüfen, dass jedes Symbol
 existiert und in jeder Sprache eindeutig benannt ist.
 
+## Heute (Startseite)
+
+Die Startseite ist ein Tages-Dashboard fürs Wanddisplay: oben Familienname, Datum und eine große Uhr,
+darunter drei Spalten (auf schmalen Bildschirmen untereinander):
+
+- **Wetter** jetzt (Symbol, Temperatur, Beschreibung), heute Höchst-/Tiefstwert und
+  Regenwahrscheinlichkeit (ab 50 % mit Regenschirm), dazu die nächsten zwei Tage. Den Ort legen die
+  Eltern im Elternbereich unter **Wetter** fest (Name oder Postleitzahl suchen, dann aus der Liste
+  wählen).
+- **Termine**: die nächsten 5 Termine aus dem Kalender (laufende und kommende, bis zwei Wochen im
+  Voraus), jeweils mit „Heute“, „Morgen“ oder Datum, in der Personenfarbe mit Avataren. Darüber ein
+  Feiertag oder Ferien von heute. Ein Tipp öffnet die Details, der Pfeil die Wochenansicht.
+- **Aufgaben**: eine Zeile pro Person mit Avatar, Fortschrittsbalken, Punkten (Kinder) und den
+  heutigen Aufgaben als große Symbole mit kurzem Titel. **Ein Tipp** erledigt eine Aufgabe wie in
+  der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern, Avatar bei „Einer für
+  alle“); nochmal tippen macht es rückgängig. Der Avatar öffnet die Personenansicht, der Pfeil die
+  Familienansicht.
+- **Essen** und **Einkauf** sind Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phasen 4
+  und 5).
+
+Ohne Ort oder Kalender zeigen die Kacheln einen kurzen Hinweis mit Knopf zum Elternbereich.
+
 ## Familienansicht
 
-Die Startseite zeigt alle Familienmitglieder nebeneinander, jede Person mit großem Avatar und ihren
-heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe gehört, ergibt sich aus der
-Spalte.
+Die Familienansicht („Aufgaben“, Stern) zeigt alle Familienmitglieder nebeneinander, jede Person
+mit großem Avatar und ihren heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe
+gehört, ergibt sich aus der Spalte.
 
 - **Ein Tipp** auf eine Aufgabenkarte erledigt sie für diese Person (Haken, Einfärbung in der
   Personenfarbe). **Nochmal tippen** macht es rückgängig. Jede Aufgabe kann pro Person und Tag nur
@@ -159,11 +183,12 @@ Spalte.
   erledigt, klappt er zu einer Zeile mit Haken zusammen und lässt sich mit einem Tipp wieder öffnen.
   Tageszeiten: morgens bis 11 Uhr, mittags bis 14 Uhr, nachmittags bis 18 Uhr, danach abends.
 - Ein Tipp auf den **Avatar** öffnet die Personenansicht mit denselben Aufgaben in groß. Nach einer
-  Minute ohne Eingabe kehrt das Display zur Familienansicht zurück.
+  Minute ohne Eingabe kehrt das Display zur Startseite zurück.
 - Bei vielen Personen oder schmalem Bildschirm lassen sich die Spalten seitlich wischen. Am
   Smartphone steht eine Person pro Seite, oben eine Avatar-Leiste zum Wechseln.
-- Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Stern), zu
-  den Belohnungen (Geschenk) und zu den Einstellungen (Zahnrad, Elternbereich mit PIN). Eine rote
+- Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Haus), zu
+  den Aufgaben (Stern, die Familienansicht), zu den Belohnungen (Geschenk), zum Kalender und zu den
+  Einstellungen (Zahnrad, Elternbereich mit PIN). Eine rote
   Zahl am Zahnrad zeigt, wie viele Erledigungen auf die Kontrolle der Eltern warten.
 
 Die Oberfläche skaliert ab Tablet-Breite mit der Fensterhöhe: volle Größe bei 1080 px
@@ -288,6 +313,16 @@ Sie erscheinen dezent in Grau über den Terminen des Tages (🎉 Feiertag, 🏖�
 funktionieren auch ohne Google-Konto. Feiertage werden offline berechnet, Schulferien einmal am Tag
 von [OpenHolidays](https://www.openholidaysapi.org) geladen (übertragen wird nur das Bundesland,
 keine persönlichen Daten).
+
+## Wetter
+
+Die Startseite zeigt das Wetter für einen Ort. Die Vorhersage kommt von
+[Open-Meteo](https://open-meteo.com) (für nicht kommerzielle Nutzung kostenlos, ohne API-Schlüssel).
+Die Anfrage stellt der Server, nicht der Browser; übertragen werden nur die Koordinaten des Orts und
+die Zeitzone. Vorhersagen werden 15 Minuten zwischengespeichert; ist Open-Meteo nicht erreichbar,
+bleibt die letzte Vorhersage bis zu 6 Stunden mit Hinweis stehen. Auch die Ortssuche im
+Elternbereich läuft über den Server (Open-Meteo Geocoding). Ohne Ort stellt FamQuest keine
+Wetter-Anfragen.
 
 **Synchronisation:** Alle 5 Minuten (`CALENDAR_SYNC_MINUTES`) fragt FamQuest bei Google nach, ob
 sich etwas geändert hat (inkrementell per Sync-Token). Nur dann, beim Wochenwechsel oder zur
@@ -560,7 +595,8 @@ Browser ──► Reverse Proxy (optional) ──► app (FastAPI, Port 8000) �
                                            ├─ /api/*   JSON-API
                                            ├─ /*       gebautes React-Frontend
                                            ├─ /data/uploads (Volume)
-                                           └─ Kalender-Sync im Hintergrund ──► Google Calendar API
+                                           ├─ Kalender-Sync im Hintergrund ──► Google Calendar API
+                                           └─ Wetter bei Bedarf (zwischengespeichert) ──► Open-Meteo
 ```
 
 | Ordner | Inhalt |
@@ -593,7 +629,7 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Reihenfolge der Personen, Anzeigegröße je Gerät). Alles Weitere muss sich erst in der Praxis
   zeigen.
 
-**In Arbeit: Google Kalender (Phase 2)**
+**Google Kalender (Phase 2):** fertig.
 
 - [x] 1. Google-Konto verbinden (OAuth, Tokens verschlüsselt, automatisch erneuert)
 - [x] 2. Kalender auswählen und Personen oder „Familie“ zuordnen (mit eigener Farbe)
@@ -602,6 +638,17 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 - [x] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe und Avataren
 - [x] 5. Feinschliff: Termindetails per Tipp, ganztägige Termine im gleichen Stil, Feiertage und
   Schulferien je Bundesland, `PUBLIC_URL` für die Google-Weiterleitungs-URI
+
+**In Arbeit: Tages-Dashboard „Heute“ (Phase 3)**
+
+- [x] 1. Aufgaben bekommen einen eigenen Bereich: Die Familienansicht zieht nach „Aufgaben“ (Stern),
+  „Heute“ bekommt das Haus
+- [x] 2. Wetter: Ort im Elternbereich festlegen, Vorhersage von Open-Meteo
+- [x] 3. Startseite „Heute“: Uhr, Wetter, die nächsten 5 Termine, Aufgaben aller als antippbare
+  Symbole, Platz für Essen und Einkauf
+- [ ] 4. Wochen-Widget auf der Startseite und Wochenansicht im Aufgabenbereich (was kommt noch, was
+  ist erledigt)
+- [ ] 5. Feinschliff am echten Display
 
 **1.1: Anpassen**
 
@@ -620,11 +667,10 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Aufgaben anlegen von unterwegs
 - Erwachsene legen Aufgaben schnell direkt in der Familienansicht an, ohne Elternbereich
 
-**Später (Phasen 3–5 der Spezifikation)**
+**Später (Phasen 4–5 der Spezifikation)**
 
 | Phase | Inhalt |
 | --- | --- |
-| 3 | „Heute“ wird die Startseite: ein echtes Tages-Dashboard mit etwas Kalender, Aufgaben, Essensplan, Einkaufsliste und Wetter. Die Aufgaben bekommen einen eigenen Bereich, optional mit Wochenansicht zum Blättern (was kommt noch, was ist erledigt); dazu ein Wochen-Widget fürs Dashboard |
 | 4 | Essensplanung |
 | 5 | Einkaufslisten |
 

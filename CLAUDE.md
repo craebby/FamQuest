@@ -69,6 +69,17 @@ Anbieter erst später. Hauptansicht am Display: Woche.
 4. Kalenderansicht (Woche) in der Navigationsleiste, Termine in Personenfarbe mit Avatar
 5. Feinschliff
 
+## Etappen (Phase 3: Tages-Dashboard „Heute“)
+
+Entschieden: „Heute“ (Haus) wird die Startseite; die Familienansicht zieht als „Aufgaben“ (Stern)
+in einen eigenen Bereich. Wetter von Open-Meteo über den Server (ohne API-Schlüssel).
+
+1. Aufgabenbereich: Familienansicht unter `/tasks`, eigenes Symbol in der Navigationsleiste
+2. Wetter: Ort im Elternbereich suchen und festlegen, Vorhersage mit Zwischenspeicher
+3. Startseite: Uhr, Wetter, nächste Termine, Aufgaben aller kompakt (ein Tipp erledigt), Platz für Essen/Einkauf
+4. Wochen-Widget auf der Startseite und Wochenansicht im Aufgabenbereich
+5. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

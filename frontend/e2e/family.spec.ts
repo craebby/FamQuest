@@ -19,6 +19,17 @@ async function enterPin(page: Page, pin: string) {
   await page.getByRole('button', { name: 'Bestätigen' }).click()
 }
 
+/** Vom Elternbereich über die Startseite zu den Aufgaben (Familienansicht). */
+async function toTasks(page: Page) {
+  if (await page.getByRole('button', { name: 'Zur Startseite' }).isVisible()) {
+    await page.getByRole('button', { name: 'Zur Startseite' }).click()
+  }
+  await page
+    .getByRole('navigation', { name: 'Hauptnavigation' })
+    .getByRole('link', { name: 'Aufgaben' })
+    .click()
+}
+
 async function login(page: Page) {
   await page.goto('/login')
   await page.getByLabel('E-Mail').fill(EMAIL)
@@ -40,8 +51,10 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
   await enterPin(page, PIN)
   await enterPin(page, PIN)
 
-  // Noch keine Personen: Die Familienansicht verweist auf den Elternbereich.
+  // Noch keine Personen: Startseite und Familienansicht verweisen auf den Elternbereich.
   await expect(page.getByRole('heading', { name: 'Familie Sonnenschein' })).toBeVisible()
+  await expect(page.getByText('Im Elternbereich könnt ihr eure Familie anlegen.')).toBeVisible()
+  await toTasks(page)
   await expect(page.getByRole('heading', { name: 'Noch keine Familienmitglieder' })).toBeVisible()
 
   // Kind anlegen (Elternbereich über das Zahnrad, mit PIN)
@@ -67,7 +80,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
   await expect(page.getByRole('status')).toHaveText('„Zähne putzen“ ist gespeichert.')
 
   // Zurück zur Familienansicht
-  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+  await toTasks(page)
   const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
   await expect(column.getByRole('link', { name: 'Lena öffnen' })).toBeVisible()
   const card = column.getByRole('button', { name: /^Zähne putzen/ })
@@ -96,6 +109,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
 test('Personenansicht über den Avatar, auch am Smartphone', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await login(page)
+  await toTasks(page)
 
   // Am Smartphone: Avatar-Leiste oben, eine Person pro Seite.
   await expect(page.getByRole('group', { name: 'Person wählen' })).toBeVisible()
@@ -106,7 +120,7 @@ test('Personenansicht über den Avatar, auch am Smartphone', async ({ page }) =>
   await card.tap()
   await expect(card).toHaveAttribute('aria-pressed', 'true')
 
-  await page.getByRole('link', { name: 'Zurück zur Familienansicht' }).tap()
+  await page.getByRole('link', { name: 'Zurück' }).tap()
   await expect(
     page.getByRole('region', { name: 'Aufgaben von Lena' }).getByRole('button', {
       name: /Morgens/,
@@ -136,7 +150,7 @@ test('Eltern sehen die Buchungen und schreiben Punkte gut', async ({ page }) => 
   await expect(rows.first()).toContainText('Beim Tischdecken geholfen')
 
   await page.getByRole('button', { name: 'Zurück' }).click()
-  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+  await toTasks(page)
   await expect(
     page.getByRole('region', { name: 'Aufgaben von Lena' }).getByText('Insgesamt 4 Punkte'),
   ).toBeAttached()
@@ -158,7 +172,7 @@ test('Eltern wählen Belohnungen aus, das Kind löst am Display ein', async ({ p
   await page.getByRole('button', { name: 'Weniger Punkte' }).click()
   await page.getByRole('button', { name: 'Speichern' }).click()
   await expect(page.getByRole('status')).toHaveText('„Eine kleine Süßigkeit“ ist gespeichert.')
-  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+  await toTasks(page)
 
   // Geschenk → Lena → Belohnung → bestätigen. Lena hat 4 Punkte.
   await nav.getByRole('link', { name: 'Belohnungen' }).tap()
@@ -196,7 +210,7 @@ test('Aufgabe mit Elternkontrolle: erst nach Bestätigung gibt es Punkte', async
   await choose(page, 'radio', 'Jederzeit')
   await page.getByRole('button', { name: 'Speichern' }).click()
   await expect(page.getByRole('status')).toHaveText('„Spielzeug aufräumen“ ist gespeichert.')
-  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+  await toTasks(page)
 
   const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
   await column.getByRole('button', { name: /^Spielzeug aufräumen/ }).tap()
@@ -210,7 +224,7 @@ test('Aufgabe mit Elternkontrolle: erst nach Bestätigung gibt es Punkte', async
   await enterPin(page, PIN)
   await page.getByRole('button', { name: 'Spielzeug aufräumen von Lena bestätigen' }).click()
   await expect(page.getByRole('heading', { name: 'Zu prüfen' })).toBeHidden()
-  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+  await toTasks(page)
 
   await expect(column.getByText('Insgesamt 3 Punkte')).toBeAttached()
   // Alles erledigt und geprüft: Der Abschnitt ist zugeklappt, nichts wartet mehr.
@@ -239,7 +253,7 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   await page.getByRole('button', { name: 'Speichern' }).click()
   await expect(page.getByRole('status')).toHaveText('„Blumen gießen“ ist gespeichert.')
   await expect(page.getByText('Flexibel, etwa jede Woche')).toBeVisible()
-  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+  await toTasks(page)
 
   const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
   const soon = column.getByRole('region', { name: 'Demnächst' })
@@ -253,4 +267,29 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   // Heute ist damit alles erledigt; der Abschnitt klappt zu.
   await expect(column.getByRole('button', { name: 'Jederzeit: alles erledigt' })).toBeVisible()
   await expect(soon).toBeHidden()
+})
+
+test('Startseite: Aufgaben mit einem Tipp, Hinweise und Platz für später', async ({ page }) => {
+  await login(page)
+
+  await expect(page.getByRole('link', { name: 'Alle Aufgaben öffnen' })).toBeVisible()
+  const lena = page.getByRole('listitem', { name: 'Aufgaben von Lena' })
+  const teeth = lena.getByRole('button', { name: /^Zähne putzen/ })
+  const pressed = await teeth.getAttribute('aria-pressed')
+  const saved = page.waitForResponse((response) => response.url().includes('/api/today/tasks/'))
+  await teeth.tap()
+  await expect(teeth).not.toHaveAttribute('aria-pressed', pressed!)
+  expect((await saved).status()).toBe(204)
+  await page.reload()
+  await expect(teeth).not.toHaveAttribute('aria-pressed', pressed!)
+
+  // Ohne Ort und Kalender: Hinweise auf den Elternbereich; Essen und Einkauf kommen später.
+  await expect(
+    page.getByRole('region', { name: 'Wetter' }).getByRole('link', { name: 'Einrichten' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('region', { name: 'Termine' }).getByRole('link', { name: 'Einrichten' }),
+  ).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Essen' })).toContainText('Kommt bald')
+  await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Kommt bald')
 })

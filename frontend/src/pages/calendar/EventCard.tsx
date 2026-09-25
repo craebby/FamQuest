@@ -51,6 +51,7 @@ export function EventCard({
   familyColor,
   timeZone,
   past,
+  dayLabel,
   onOpen,
 }: {
   event: WeekEvent
@@ -59,6 +60,8 @@ export function EventCard({
   timeZone: string
   /** Schon vorbei: blasser, damit das Kommende auffällt. */
   past: boolean
+  /** Vor die Uhrzeit gestellt, z. B. „Morgen“ (Startseite). */
+  dayLabel?: string
   onOpen: () => void
 }) {
   const { t, i18n } = useTranslation()
@@ -70,9 +73,10 @@ export function EventCard({
     ...owners.members.map((member) => member.name),
     ...(owners.family ? [t('calendar.family')] : []),
   ]
-  const when = isAllDayOnThisDay(event)
+  const time = isAllDayOnThisDay(event)
     ? t('calendar.all_day')
     : eventWhen(event, language, timeZone, t)
+  const when = dayLabel ? `${dayLabel} · ${time}` : time
 
   return (
     <li className={past ? 'opacity-50' : ''} data-testid="calendar-event">

@@ -59,6 +59,8 @@ Ob die endgültige Startseite ein Dashboard, ein Kalender oder eine Kombination 
 
 *Entscheidung nach dem Prototyp:* „Heute“ wird später die Startseite als echtes Tages-Dashboard (etwas Kalender, Aufgaben, Essensplan, Einkaufsliste, Wetter). Die heutige Familienansicht wandert dann in einen eigenen Aufgabenbereich.
 
+*Umsetzung (Phase 3):* „Heute“ (Symbol Haus) zeigt Uhr und Datum, das Wetter, die nächsten 5 Termine, die heutigen Aufgaben aller Personen als antippbare Symbole (ein Tipp erledigt, wie in der Familienansicht) und klar gekennzeichnete Plätze für Essen und Einkauf. Die Familienansicht heißt jetzt „Aufgaben“ und behält den Stern, damit Kinder ihren gewohnten Weg nicht neu lernen müssen.
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -161,7 +163,7 @@ Alle Familienmitglieder stehen nebeneinander als Spalten, oben jeweils großer A
 
 **Navigation ohne Lesen**
 
-- Feste Navigationsleiste links (am Smartphone unten) mit großen, eindeutigen Symbolen: Heute (Stern), Belohnungen (Geschenk), später Kalender, Essen, Einkauf. Einstellungen (Zahnrad) abgesetzt am Ende
+- Feste Navigationsleiste links (am Smartphone unten) mit großen, eindeutigen Symbolen: Heute (Haus, seit Phase 3; vorher Stern), Aufgaben (Stern), Belohnungen (Geschenk), Kalender, später Essen, Einkauf. Einstellungen (Zahnrad) abgesetzt am Ende
 - Symbole, Farben und Avatare sind überall gleich; ein Kind lernt die Wege darüber, nicht über Text
 - Beschriftungen unter Symbolen sind erlaubt, aber nie die einzige Orientierung
 - Aufgabe erledigen: genau ein Tipp von der Startansicht. Belohnung einlösen: über den Avatar oder Geschenk → Avatar → Belohnung → Bestätigen
@@ -286,7 +288,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Entität | Zweck | Wichtige Felder |
 | --- | --- | --- |
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
-| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash |
+| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten) |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
 | Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle |
 | TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember |
@@ -320,6 +322,7 @@ Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen ein
 - Uploads: Größenlimit, nur JPEG/PNG/WebP, Inhalt prüfen statt Endung, serverseitig neu kodieren, zufällige Dateinamen
 - Keine Secrets im Repository, keine sensiblen Daten in Logs
 - Phase 2: OAuth-Tokens verschlüsselt speichern
+- Phase 3: Externe Dienste (Wetter) fragt nur der Server an, mit so wenig Daten wie möglich (nur Koordinaten und Zeitzone)
 
 **Git**
 

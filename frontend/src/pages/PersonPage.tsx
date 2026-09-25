@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 
@@ -17,11 +17,17 @@ import { RewardGrid } from './rewards/RewardGrid'
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
 export const PERSON_IDLE_TIMEOUT_MS = 60 * 1000
 
+/** Woher die Personenansicht geöffnet wurde; dorthin führt das Zurück-Symbol. */
+export interface PersonPageState {
+  from?: string
+}
+
 /** Personenansicht: dieselben Aufgaben wie in der Familienansicht, nur größer. */
 export function PersonPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { memberId } = useParams()
+  const from = (useLocation().state as PersonPageState | null)?.from ?? '/tasks'
   const { members, today, isPending, error, refetch } = useFamilyToday()
   useIdleTimeout(PERSON_IDLE_TIMEOUT_MS, () => navigate('/'))
 
@@ -42,7 +48,7 @@ export function PersonPage() {
   }
 
   const member = members.find((candidate) => String(candidate.id) === memberId)
-  if (!member) return <Navigate to="/" replace />
+  if (!member) return <Navigate to={from} replace />
   const tasks = tasksFor(today.tasks, member.id)
   const points = pointsFor(today, member.id)
 
@@ -50,7 +56,7 @@ export function PersonPage() {
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 sm:p-6">
       <header className="flex items-center gap-4">
         <Link
-          to="/"
+          to={from}
           aria-label={t('family.back')}
           className="flex size-20 shrink-0 items-center justify-center rounded-3xl bg-white shadow-sm hover:bg-orange-100 focus-visible:outline-4 focus-visible:outline-orange-400"
         >

@@ -13,11 +13,13 @@ services and without external CDNs. The full specification (in German) is in
 > area with PIN, family members with colour and photo, tasks and routines with templates, the
 > family view for ticking things off, points with daily progress, parent checks, rewards for
 > children, fair sharing between adults and family settings. The display test is done; the rest
-> will show in everyday use. Phase 2 (Google Calendar) is in progress: accounts, choosing
-> calendars, background sync and the week view work (see [Roadmap](#roadmap)).
+> will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
+> is now a day dashboard with the next events, everyone's tasks and the weather (see
+> [Roadmap](#roadmap)).
 
 ## Features
 
+- "Today" start page: clock, weather, the next events and everyone's tasks at a glance
 - Family view with one column per person; complete a task with a single tap
 - Routines (daily, specific weekdays, Mon–Fri, once, flexible "about every X days") and times of day
 - "One for all" tasks: done by one adult, done for everyone
@@ -26,6 +28,7 @@ services and without external CDNs. The full specification (in German) is in
 - Parent checks for selected tasks
 - Fair sharing: each adult's share of the week's tasks
 - Google Calendar (read-only): week view on the display, events in each person's colour
+- Weather for your town (Open-Meteo, no API key needed)
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -74,7 +77,7 @@ accounts can be registered through the interface.
 - The display stays signed in permanently (the session is extended with every use, up to one year
   without use).
 - The parents' area (gear icon) is additionally protected by the parents' PIN. After 2 minutes
-  without input the display returns to the family view and locks it again.
+  without input the display returns to the start page and locks it again.
 - The PIN can be changed or switched off in the parents' area. Forgot the PIN? Set a new one with
   the account password.
 - After 5 wrong attempts (password or PIN), further attempts are blocked for 15 minutes.
@@ -145,10 +148,30 @@ set). To extend the catalogue, add names from the `fluent-emoji-flat` set (e.g. 
 `frontend/src/locales/<language>/icons.json` (the first term is the label). Tests check that every
 icon exists and has a unique label in every language.
 
+## Today (start page)
+
+The start page is a day dashboard for the wall display: family name, date and a large clock at the
+top, below it three columns (stacked on narrow screens):
+
+- **Weather** now (icon, temperature, description), today's high/low and chance of rain (with an
+  umbrella from 50 %), plus the next two days. Parents choose the town in the parents' area under
+  **Weather** (search by name or postcode, then pick from the list).
+- **Events**: the next 5 events from the calendar (ongoing and upcoming, up to two weeks ahead),
+  each with "Today", "Tomorrow" or the date, in the person's colour with avatars. Today's public
+  or school holiday is shown above. A tap opens the details, the arrow opens the week view.
+- **Tasks**: one row per person with avatar, progress bar, points (children) and today's tasks as
+  large icons with a short title. **One tap** completes a task, just like in the family view
+  (with "+2", hourglass for parent checks, avatar for "One for all"); tap again to undo. The
+  avatar opens the person view, the arrow opens the family view.
+- **Meals** and **Shopping** are placeholders, clearly marked "Coming soon" (phases 4 and 5).
+
+Without a town or calendar the widgets show a short hint with a button to the parents' area.
+
 ## Family view
 
-The start page shows all family members side by side, each with a large avatar and today's tasks.
-Nobody has to sign in or switch users: whose task it is follows from the column.
+The family view ("Tasks", star icon) shows all family members side by side, each with a large
+avatar and today's tasks. Nobody has to sign in or switch users: whose task it is follows from the
+column.
 
 - **One tap** on a task card completes it for that person (tick, card in the person's colour).
   **Tap again** to undo. Each task can be done only once per person and day, even with double
@@ -158,11 +181,11 @@ Nobody has to sign in or switch users: whose task it is follows from the column.
   with a tick and can be opened again with a tap. Times of day: morning until 11:00, midday until
   14:00, afternoon until 18:00, evening after that.
 - A tap on the **avatar** opens the person view with the same tasks in large. After one minute
-  without input the display returns to the family view.
+  without input the display returns to the start page.
 - With many people or a narrow screen, the columns can be swiped sideways. On a phone there is one
   person per page, with an avatar bar at the top to switch.
-- The **navigation bar** (left, at the bottom on phones) uses icons for "Today" (star), rewards
-  (gift) and settings (gear, parents' area with PIN). A red number on the gear shows how many
+- The **navigation bar** (left, at the bottom on phones) uses icons for "Today" (house), tasks
+  (star, the family view), rewards (gift), calendar and settings (gear, parents' area with PIN). A red number on the gear shows how many
   completed tasks are waiting for a parent check.
 
 The layout scales with the window height from tablet width upwards: full size at 1080 px (wall
@@ -280,6 +303,15 @@ under **Calendar** has a **State** (Bundesland) setting with two switches, **pub
 🏖️ school holidays) and work without a Google account too. Public holidays are calculated
 offline; school holidays are loaded once a day from [OpenHolidays](https://www.openholidaysapi.org)
 (only the state is sent, no personal data).
+
+## Weather
+
+The start page shows the weather for one town. The forecast comes from
+[Open-Meteo](https://open-meteo.com) (free for non-commercial use, no API key). The server makes
+the request, not the browser; only the town's coordinates and the time zone are sent. Forecasts
+are cached for 15 minutes; if Open-Meteo is unreachable, the last forecast is shown for up to
+6 hours with a note. The town search in the parents' area also goes through the server
+(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all.
 
 **Sync:** every 5 minutes (`CALENDAR_SYNC_MINUTES`) FamQuest asks Google whether anything has
 changed (incremental, via sync token). Only then, when the week changes, or every 6 hours as a
@@ -548,7 +580,8 @@ Browser ──► reverse proxy (optional) ──► app (FastAPI, port 8000) �
                                            ├─ /api/*   JSON API
                                            ├─ /*       built React frontend
                                            ├─ /data/uploads (volume)
-                                           └─ calendar sync in the background ──► Google Calendar API
+                                           ├─ calendar sync in the background ──► Google Calendar API
+                                           └─ weather on request (cached) ──► Open-Meteo
 ```
 
 | Folder | Contents |
@@ -580,7 +613,7 @@ use.
   hardening, display test fixes (compact layout, order of people, display size per device).
   Everything else has to prove itself in practice first.
 
-**In progress: Google Calendar (phase 2)**
+**Google Calendar (phase 2):** done.
 
 - [x] 1. Connect a Google account (OAuth, encrypted tokens, refreshed automatically)
 - [x] 2. Choose calendars and link them to people or "Family" (with its own colour)
@@ -588,6 +621,16 @@ use.
 - [x] 4. Calendar view: week with events in the person's colour and avatars
 - [x] 5. Polish: event details on tap, all-day events in the same style, public and school
   holidays per German state, `PUBLIC_URL` for the Google redirect URI
+
+**In progress: "Today" dashboard (phase 3)**
+
+- [x] 1. Tasks get their own area: the family view moves to "Tasks" (star), "Today" gets the house
+- [x] 2. Weather: choose the town in the parents' area, forecast from Open-Meteo
+- [x] 3. Start page "Today": clock, weather, the next 5 events, everyone's tasks as tappable icons,
+  space for meals and shopping
+- [ ] 4. Week widget on the start page and a week view in the tasks area (what's coming up, what's
+  done)
+- [ ] 5. Polish on the real display
 
 **1.1: make it your own**
 
@@ -607,11 +650,10 @@ use.
   anywhere
 - Adults can quickly add tasks right from the family view, without the parents' area
 
-**Later (phases 3–5 of the specification)**
+**Later (phases 4–5 of the specification)**
 
 | Phase | Contents |
 | --- | --- |
-| 3 | "Today" becomes the start page: a real day dashboard with a bit of calendar, tasks, meal plan, shopping list and weather. Tasks move to their own area, optionally with a week view to browse what's coming up and what's done; a week widget for the dashboard |
 | 4 | Meal planning |
 | 5 | Shopping lists |
 

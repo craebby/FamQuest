@@ -141,7 +141,7 @@ describe('Aufgaben mit Kontrolle am Display', () => {
         return new Response(null, { status: 204 })
       },
     })
-    renderApp('/')
+    renderApp('/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Zimmer aufräumen, 5 Punkte' }))
 

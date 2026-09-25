@@ -42,7 +42,8 @@
     "rewards": "Belohnungen",
     "pending_one": "{{count}} Aufgabe wartet auf Kontrolle",
     "pending_other": "{{count}} Aufgaben warten auf Kontrolle",
-    "calendar": "Kalender"
+    "calendar": "Kalender",
+    "tasks": "Aufgaben"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -51,7 +52,7 @@
     "choose_person": "Person wählen",
     "open_person": "{{name}} öffnen",
     "tasks_of": "Aufgaben von {{name}}",
-    "back": "Zurück zur Familienansicht",
+    "back": "Zurück",
     "free_today": "Heute frei!",
     "now": "Jetzt",
     "section_done": "{{section}}: alles erledigt",
@@ -66,7 +67,7 @@
   },
   "parents": {
     "title": "Elternbereich",
-    "back": "Zur Familienansicht",
+    "back": "Zur Startseite",
     "pin_prompt": "Eltern-PIN eingeben",
     "forgot_pin": "PIN vergessen?",
     "reset_title": "Neue PIN festlegen",
@@ -360,6 +361,9 @@
       "rate_limited": "Google bremst gerade die Abrufe. Es geht gleich von selbst weiter.",
       "calendar_unavailable": "Dieser Kalender ist bei Google nicht mehr verfügbar",
       "calendar_not_found": "Diesen Kalender gibt es nicht mehr"
+    },
+    "weather": {
+      "unavailable": "Das Wetter ist gerade nicht verfügbar"
     }
   },
   "rewards": {
@@ -518,5 +522,55 @@
     "ST": "Sachsen-Anhalt",
     "SH": "Schleswig-Holstein",
     "TH": "Thüringen"
+  },
+  "home": {
+    "time": "Uhrzeit",
+    "tasks": "Aufgaben",
+    "open_tasks": "Alle Aufgaben öffnen",
+    "events": "Termine",
+    "open_calendar": "Kalender öffnen",
+    "no_events": "Keine Termine in den nächsten zwei Wochen",
+    "tomorrow": "Morgen",
+    "weather": "Wetter",
+    "setup": "Einrichten",
+    "setup_weather": "Für das Wetter im Elternbereich euren Ort festlegen.",
+    "setup_calendar": "Für Termine im Elternbereich einen Kalender verbinden oder Feiertage einschalten.",
+    "meals": "Essen",
+    "meals_hint": "Hier steht bald, was es heute zu essen gibt.",
+    "shopping": "Einkauf",
+    "shopping_hint": "Hier steht bald eure Einkaufsliste.",
+    "coming_soon": "Kommt bald"
+  },
+  "weather": {
+    "now": "Jetzt",
+    "degrees": "{{value}}°",
+    "max_min": "{{max}}° / {{min}}°",
+    "rain": "Regen {{percent}} %",
+    "stale": "Gerade keine Verbindung zum Wetterdienst; das ist die letzte Vorhersage.",
+    "kind": {
+      "clear": "Klar",
+      "mostly_clear": "Überwiegend klar",
+      "partly_cloudy": "Teils bewölkt",
+      "cloudy": "Bewölkt",
+      "fog": "Nebel",
+      "drizzle": "Nieselregen",
+      "rain": "Regen",
+      "showers": "Regenschauer",
+      "snow": "Schnee",
+      "thunder": "Gewitter"
+    }
+  },
+  "weather_settings": {
+    "section": "Wetter",
+    "intro": "Die Startseite zeigt das Wetter für euren Ort. Die Vorhersage kommt von Open-Meteo; dabei werden nur die Koordinaten des Orts übertragen.",
+    "none": "Noch kein Ort festgelegt",
+    "search": "Ort suchen",
+    "change": "Anderen Ort suchen",
+    "search_hint": "Name des Orts oder Postleitzahl, dann aus der Liste wählen.",
+    "search_button": "Suchen",
+    "no_results": "Kein Ort gefunden",
+    "saved": "Wetter für {{name}}",
+    "remove": "Entfernen",
+    "removed": "Das Wetter ist ausgeschaltet."
   }
 }

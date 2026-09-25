@@ -13,7 +13,7 @@ import {
   setupDone,
 } from '../test/utils'
 import { PERSON_IDLE_TIMEOUT_MS } from './PersonPage'
-import { POINTS_FEEDBACK_MS } from './family/TaskCard'
+import { POINTS_FEEDBACK_MS } from './family/useTaskToggle'
 import { COLLAPSE_DELAY_MS } from './family/TaskGroups'
 
 const lena = makeMember({ id: 1, name: 'Lena', color: 'purple' })
@@ -104,7 +104,7 @@ afterEach(() => {
 describe('Familienansicht', () => {
   it('zeigt eine Spalte pro Person mit ihren Aufgaben nach Tagesabschnitt', async () => {
     mockApi(familyRoutes())
-    renderApp('/')
+    renderApp('/tasks')
 
     expect(
       await screen.findByRole('heading', { name: 'Familie Sonnenschein', level: 1 }),
@@ -133,7 +133,7 @@ describe('Familienansicht', () => {
   it('erledigt eine Aufgabe mit einem Tipp und nimmt sie mit dem nächsten zurück', async () => {
     const user = userEvent.setup()
     const calls = mockApi(familyRoutes())
-    renderApp('/')
+    renderApp('/tasks')
 
     const card = await within(
       await screen.findByRole('region', { name: 'Aufgaben von Lena' }),
@@ -171,7 +171,7 @@ describe('Familienansicht', () => {
         }),
       ),
     )
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
     expect(lenaColumn.getByRole('img', { name: '1 von 3 Aufgaben erledigt' })).toBeVisible()
@@ -187,7 +187,7 @@ describe('Familienansicht', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     mockApi(familyRoutes())
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
     const card = lenaColumn.getByRole('button', { name: /Zähne putzen/ })
@@ -217,7 +217,7 @@ describe('Familienansicht', () => {
       fetchSpy(String(input))
       return originalFetch(input, init)
     })
-    renderApp('/')
+    renderApp('/tasks')
 
     await user.click(
       await within(await screen.findByRole('region', { name: 'Aufgaben von Lena' })).findByRole(
@@ -235,7 +235,7 @@ describe('Familienansicht', () => {
       ...familyRoutes(),
       'PUT /api/today/tasks/10/members/1': Response.json({ code: 'task.not_due' }, { status: 409 }),
     })
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
     const card = lenaColumn.getByRole('button', { name: /Zähne putzen/ })
@@ -259,7 +259,7 @@ describe('Familienansicht', () => {
         }),
       ),
     )
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
     expect(lenaColumn.queryByRole('button', { name: /Zähne putzen/ })).toBeNull()
@@ -276,7 +276,7 @@ describe('Familienansicht', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     mockApi(familyRoutes(makeToday({ tasks: [{ ...teeth, member_ids: [1] }] })))
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
     await user.click(lenaColumn.getByRole('button', { name: /Zähne putzen/ }))
@@ -289,7 +289,7 @@ describe('Familienansicht', () => {
 
   it('zeigt „Heute frei“ für Personen ohne Aufgaben', async () => {
     mockApi(familyRoutes(makeToday({ tasks: [homework] })))
-    renderApp('/')
+    renderApp('/tasks')
 
     expect(
       await within(await screen.findByRole('region', { name: 'Aufgaben von Lena' })).findByText(
@@ -300,7 +300,7 @@ describe('Familienansicht', () => {
 
   it('verweist ohne Familienmitglieder auf den Elternbereich', async () => {
     mockApi({ ...familyRoutes(), 'GET /api/members': Response.json([]) })
-    renderApp('/')
+    renderApp('/tasks')
 
     expect(
       await screen.findByRole('heading', { name: 'Noch keine Familienmitglieder' }),
@@ -328,7 +328,7 @@ describe('Familienansicht', () => {
       ),
       'GET /api/members': Response.json([lena, mama, papa]),
     })
-    renderApp('/')
+    renderApp('/tasks')
 
     const mamaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Mama' }))
     expect(
@@ -358,7 +358,7 @@ describe('Familienansicht', () => {
       due_dates: [{ member_id: 1, due_date: '2026-10-05' }],
     })
     mockApi(familyRoutes(makeToday({ tasks: [teeth, bath, plants], points: initialPoints })))
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
     expect(
@@ -391,7 +391,7 @@ describe('Familienansicht', () => {
       ),
       'GET /api/members': Response.json([mama, papa]),
     })
-    renderApp('/')
+    renderApp('/tasks')
 
     const mamaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Mama' }))
     const card = mamaColumn.getByRole('button', { name: 'Bad putzen, erledigt von Papa' })
@@ -403,12 +403,16 @@ describe('Familienansicht', () => {
     )
   })
 
-  it('hat eine Navigationsleiste mit Heute und Einstellungen', async () => {
+  it('hat eine Navigationsleiste mit Heute, Aufgaben und Einstellungen', async () => {
     mockApi(familyRoutes())
-    renderApp('/')
+    renderApp('/tasks')
 
     const nav = await screen.findByRole('navigation', { name: 'Hauptnavigation' })
-    expect(within(nav).getByRole('link', { name: 'Heute' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).getByRole('link', { name: 'Heute' })).toHaveAttribute('href', '/')
+    expect(within(nav).getByRole('link', { name: 'Aufgaben' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     expect(within(nav).getByRole('link', { name: 'Einstellungen' })).toHaveAttribute(
       'href',
       '/parents',
@@ -423,7 +427,7 @@ describe('Familienansicht', () => {
         makeMe({ family: { ...makeMe().family, default_language: 'en' } }),
       ),
     })
-    renderApp('/')
+    renderApp('/tasks')
 
     const lenaColumn = within(await screen.findByRole('region', { name: "Lena's tasks" }))
     expect(screen.getByText('Saturday, October 3')).toBeVisible()
@@ -444,7 +448,7 @@ describe('Personenansicht', () => {
   it('öffnet sich über den Avatar und führt zurück', async () => {
     const user = userEvent.setup()
     mockApi(familyRoutes())
-    renderApp('/')
+    renderApp('/tasks')
 
     await user.click(await screen.findByRole('link', { name: 'Lena öffnen' }))
 
@@ -453,7 +457,7 @@ describe('Personenansicht', () => {
     expect(screen.getByText('Insgesamt 10 Punkte')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Hausaufgaben/ })).toBeNull()
 
-    await user.click(screen.getByRole('link', { name: 'Zurück zur Familienansicht' }))
+    await user.click(screen.getByRole('link', { name: 'Zurück' }))
     expect(await screen.findByRole('region', { name: 'Aufgaben von Tom' })).toBeVisible()
   })
 
@@ -467,7 +471,7 @@ describe('Personenansicht', () => {
     expect(calls.some((call) => call.key === 'PUT /api/today/tasks/10/members/1')).toBe(true)
   })
 
-  it('kehrt nach Inaktivität zur Familienansicht zurück', async () => {
+  it('kehrt nach Inaktivität zur Startseite zurück', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     mockApi(familyRoutes())
     renderApp('/member/2')
@@ -475,7 +479,7 @@ describe('Personenansicht', () => {
 
     await act(() => vi.advanceTimersByTimeAsync(PERSON_IDLE_TIMEOUT_MS + 100))
 
-    expect(await screen.findByRole('region', { name: 'Aufgaben von Lena' })).toBeVisible()
+    expect(await screen.findByRole('link', { name: 'Alle Aufgaben öffnen' })).toBeVisible()
   })
 
   it('leitet bei unbekannter Person zur Familienansicht', async () => {

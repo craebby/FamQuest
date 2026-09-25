@@ -42,7 +42,8 @@
     "rewards": "Rewards",
     "pending_one": "{{count}} task waiting for a check",
     "pending_other": "{{count}} tasks waiting for a check",
-    "calendar": "Calendar"
+    "calendar": "Calendar",
+    "tasks": "Tasks"
   },
   "family": {
     "no_members": "No family members yet",
@@ -51,7 +52,7 @@
     "choose_person": "Choose a person",
     "open_person": "Open {{name}}",
     "tasks_of": "{{name}}'s tasks",
-    "back": "Back to family view",
+    "back": "Back",
     "free_today": "Nothing to do today!",
     "now": "Now",
     "section_done": "{{section}}: all done",
@@ -66,7 +67,7 @@
   },
   "parents": {
     "title": "Parent area",
-    "back": "Back to family view",
+    "back": "To the start page",
     "pin_prompt": "Enter parent PIN",
     "forgot_pin": "Forgot PIN?",
     "reset_title": "Choose a new PIN",
@@ -360,6 +361,9 @@
       "rate_limited": "Google is slowing down requests right now. It will continue on its own shortly.",
       "calendar_unavailable": "This calendar is no longer available at Google",
       "calendar_not_found": "This calendar no longer exists"
+    },
+    "weather": {
+      "unavailable": "The weather is not available right now"
     }
   },
   "rewards": {
@@ -518,5 +522,55 @@
     "ST": "Saxony-Anhalt",
     "SH": "Schleswig-Holstein",
     "TH": "Thuringia"
+  },
+  "home": {
+    "time": "Time",
+    "tasks": "Tasks",
+    "open_tasks": "Open all tasks",
+    "events": "Events",
+    "open_calendar": "Open calendar",
+    "no_events": "No events in the next two weeks",
+    "tomorrow": "Tomorrow",
+    "weather": "Weather",
+    "setup": "Set up",
+    "setup_weather": "To see the weather, choose your town in the parents' area.",
+    "setup_calendar": "To see events, connect a calendar or turn on public holidays in the parents' area.",
+    "meals": "Meals",
+    "meals_hint": "Soon you'll see what's for dinner here.",
+    "shopping": "Shopping",
+    "shopping_hint": "Soon your shopping list will be here.",
+    "coming_soon": "Coming soon"
+  },
+  "weather": {
+    "now": "Now",
+    "degrees": "{{value}}°",
+    "max_min": "{{max}}° / {{min}}°",
+    "rain": "Rain {{percent}}%",
+    "stale": "No connection to the weather service right now; this is the last forecast.",
+    "kind": {
+      "clear": "Clear",
+      "mostly_clear": "Mostly clear",
+      "partly_cloudy": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "showers": "Showers",
+      "snow": "Snow",
+      "thunder": "Thunderstorm"
+    }
+  },
+  "weather_settings": {
+    "section": "Weather",
+    "intro": "The start page shows the weather for your town. The forecast comes from Open-Meteo; only the town's coordinates are sent.",
+    "none": "No town chosen yet",
+    "search": "Search for your town",
+    "change": "Search for another town",
+    "search_hint": "Name of the town or postcode, then pick it from the list.",
+    "search_button": "Search",
+    "no_results": "No town found",
+    "saved": "Weather for {{name}}",
+    "remove": "Remove",
+    "removed": "The weather is turned off."
   }
 }

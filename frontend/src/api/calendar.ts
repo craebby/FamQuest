@@ -102,9 +102,25 @@ export interface CalendarWeek {
   }[]
 }
 
+/** Termin auf der Startseite, mit dem Tag, unter dem er steht (bei laufenden: heute). */
+export interface UpcomingEvent extends WeekEvent {
+  day: string
+}
+
+export interface CalendarUpcoming {
+  today: string
+  timezone: string
+  family_color: FamilyColor
+  problem: boolean
+  /** Feiertage und Schulferien heute. */
+  holidays: { kind: 'public' | 'school'; name: string }[]
+  events: UpcomingEvent[]
+}
+
 export const CALENDAR_SETTINGS_KEY = ['calendar-settings'] as const
 export const CALENDAR_STATUS_KEY = ['calendar-status'] as const
 export const CALENDAR_WEEK_KEY = ['calendar-week'] as const
+export const CALENDAR_UPCOMING_KEY = ['calendar-upcoming'] as const
 
 /** Solange ein ausgewählter Kalender noch nie geladen wurde, öfter nachsehen. */
 const LOADING_POLL_MS = 3000
@@ -147,6 +163,16 @@ export function useCalendarWeek(offset: number, language: string) {
   })
 }
 
+/** Die nächsten Termine für die Startseite; vergangene fallen jede Minute heraus. */
+export function useCalendarUpcoming(limit: number, language: string) {
+  return useQuery({
+    queryKey: [...CALENDAR_UPCOMING_KEY, limit, language],
+    queryFn: () =>
+      apiGet<CalendarUpcoming>(`/calendar/upcoming?limit=${limit}&lang=${language.slice(0, 2)}`),
+    refetchInterval: 60 * 1000,
+  })
+}
+
 /** Startet die Anmeldung bei Google; der Browser verlässt dafür die App. */
 export function useConnectGoogle() {
   return useMutation({
@@ -155,7 +181,12 @@ export function useConnectGoogle() {
   })
 }
 
-const CALENDAR_KEYS = [CALENDAR_SETTINGS_KEY, CALENDAR_STATUS_KEY, CALENDAR_WEEK_KEY]
+const CALENDAR_KEYS = [
+  CALENDAR_SETTINGS_KEY,
+  CALENDAR_STATUS_KEY,
+  CALENDAR_WEEK_KEY,
+  CALENDAR_UPCOMING_KEY,
+]
 
 export const useDisconnectCalendar = () =>
   useParentMutation(
@@ -168,7 +199,11 @@ function useSettingsMutation<TVariables>(
   request: (variables: TVariables) => Promise<CalendarSettings>,
 ) {
   const queryClient = useQueryClient()
-  const mutation = useParentMutation(request, [CALENDAR_STATUS_KEY, CALENDAR_WEEK_KEY])
+  const mutation = useParentMutation(request, [
+    CALENDAR_STATUS_KEY,
+    CALENDAR_WEEK_KEY,
+    CALENDAR_UPCOMING_KEY,
+  ])
   return {
     ...mutation,
     mutate: (variables: TVariables, options?: { onSuccess?: () => void }) =>

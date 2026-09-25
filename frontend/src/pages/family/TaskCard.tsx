@@ -1,22 +1,18 @@
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AlarmIcon from '~icons/fluent-emoji-flat/alarm-clock'
 import HourglassIcon from '~icons/fluent-emoji-flat/hourglass-not-done'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import CheckIcon from '~icons/lucide/check'
 
-import { ApiError } from '../../api/client'
-import { type Member, useMembers } from '../../api/members'
-import { type TodayTask, daysUntilDue, doneBy, isPendingFor, useSetDone } from '../../api/today'
+import type { Member } from '../../api/members'
+import type { TodayTask } from '../../api/today'
 import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { errorMessage } from '../../errors'
-import { colorTokens } from '../../memberColors'
+import { type MemberColor, colorTokens } from '../../memberColors'
+import { useTaskToggle } from './useTaskToggle'
 
 export type CardSize = 'md' | 'lg'
-
-/** So lange ist „+2 Punkte“ nach dem Abhaken zu sehen (auch ohne Animation). */
-export const POINTS_FEEDBACK_MS = 1200
 
 const SIZES = {
   // Klein und blass: flexible Aufgaben unter „Demnächst“.
@@ -54,63 +50,55 @@ interface TaskCardProps {
   size: CardSize | 'sm'
 }
 
+/** „+2 ⭐“ über der Aufgabe, kurz nach dem Abhaken; mit Sanduhr, wenn die Eltern noch prüfen. */
+export function PointsFeedback({
+  task,
+  count,
+  className,
+  color,
+}: {
+  task: TodayTask
+  /** Zähler aus `useTaskToggle`; jeder neue Wert startet die Animation neu. */
+  count: number
+  className: string
+  color: MemberColor
+}) {
+  const tokens = colorTokens(color)
+  if (!count) return null
+  return (
+    <span
+      key={count}
+      data-testid="points-feedback"
+      aria-hidden="true"
+      className={`pointer-events-none absolute flex items-center gap-1 rounded-full px-3 py-1 font-extrabold shadow-md motion-safe:animate-float-up ${className}`}
+      style={
+        task.needs_approval
+          ? { backgroundColor: '#ffffff', color: '#475569' }
+          : { backgroundColor: tokens.main, color: tokens.onMain }
+      }
+    >
+      {task.needs_approval && <HourglassIcon className="size-[1.2em]" aria-hidden="true" />}+
+      {task.points}
+      <StarIcon className="size-[1.2em]" aria-hidden="true" />
+    </span>
+  )
+}
+
 /** Aufgabenkarte: ein Tipp erledigt sie für diese Person, ein weiterer nimmt es zurück. */
 export function TaskCard({ task, member, date, size }: TaskCardProps) {
   const { t } = useTranslation()
-  const setDone = useSetDone(task.id, member.id)
-  // Die Haken-Animation gibt es nur direkt nach dem Antippen, nicht bei jedem Laden.
-  const [tapped, setTapped] = useState(false)
-  // Zähler für „+2 Punkte“; jeder neue Tipp startet die Anzeige neu (0 = nichts anzeigen).
-  const [feedback, setFeedback] = useState(0)
-  useEffect(() => {
-    if (!feedback) return
-    const timer = window.setTimeout(() => setFeedback(0), POINTS_FEEDBACK_MS)
-    return () => window.clearTimeout(timer)
-  }, [feedback])
-  const members = useMembers().data
-  const completer = doneBy(task, member.id)
-  const done = completer !== null
-  // „Einer für alle“, von jemand anderem erledigt: dessen Avatar statt des Hakens.
-  const doneByOther =
-    completer !== null && completer !== member.id
-      ? members?.find((candidate) => candidate.id === completer)
-      : undefined
-  // Erledigt, aber die Eltern müssen noch prüfen: Sanduhr statt Haken, noch keine Punkte.
-  const pending = isPendingFor(task, member.id)
-  // Flexible Aufgaben: negativ = überfällig, positiv = demnächst.
-  const dueIn = daysUntilDue(task, member.id, date)
-  // Erwachsene sammeln keine Punkte; bei ihnen zählt nur, dass es erledigt ist.
-  const showPoints = member.role !== 'parent'
+  const { done, doneByOther, pending, dueIn, showPoints, tapped, feedback, error, label, toggle } =
+    useTaskToggle(task, member, date)
   const tokens = colorTokens(task.color ?? member.color)
   const sizes = SIZES[size]
-  // Ein Tageswechsel wird still behoben: die Ansicht lädt den neuen Tag.
-  const error =
-    setDone.error instanceof ApiError && setDone.error.code === 'completion.day_changed'
-      ? null
-      : setDone.error
 
   return (
     <div className="flex flex-col gap-1">
       <button
         type="button"
         aria-pressed={done}
-        aria-label={[
-          showPoints
-            ? t('family.task_label', {
-                title: task.title,
-                points: t('tasks.points_count', { count: task.points }),
-              })
-            : task.title,
-          ...(pending ? [t('family.pending')] : []),
-          ...(doneByOther ? [t('family.done_by', { name: doneByOther.name })] : []),
-          ...(dueIn !== null && dueIn < 0 ? [t('family.overdue', { count: -dueIn })] : []),
-          ...(dueIn !== null && dueIn > 0 ? [t('family.due_in', { count: dueIn })] : []),
-        ].join(', ')}
-        onClick={() => {
-          setTapped(true)
-          if (!done && showPoints && task.points > 0) setFeedback((count) => count + 1)
-          setDone.mutate({ date, taskId: task.id, memberId: member.id, done: !done })
-        }}
+        aria-label={label}
+        onClick={toggle}
         className={`relative flex w-full items-center rounded-3xl border-4 text-left shadow-sm transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${sizes.card}`}
         style={{
           backgroundColor: done ? tokens.soft : '#ffffff',
@@ -176,23 +164,12 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
             </span>
           )
         )}
-        {feedback > 0 && (
-          <span
-            key={feedback}
-            data-testid="points-feedback"
-            aria-hidden="true"
-            className={`pointer-events-none absolute -top-4 right-3 flex items-center gap-1 rounded-full px-3 py-1 font-extrabold shadow-md motion-safe:animate-float-up ${sizes.feedback}`}
-            style={
-              task.needs_approval
-                ? { backgroundColor: '#ffffff', color: '#475569' }
-                : { backgroundColor: tokens.main, color: tokens.onMain }
-            }
-          >
-            {task.needs_approval && <HourglassIcon className="size-[1.2em]" aria-hidden="true" />}+
-            {task.points}
-            <StarIcon className="size-[1.2em]" aria-hidden="true" />
-          </span>
-        )}
+        <PointsFeedback
+          task={task}
+          count={feedback}
+          color={task.color ?? member.color}
+          className={`-top-4 right-3 ${sizes.feedback}`}
+        />
       </button>
       {error ? (
         <p role="alert" className="px-2 text-base font-semibold text-red-700">

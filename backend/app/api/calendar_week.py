@@ -22,6 +22,9 @@ router = APIRouter(prefix="/calendar", tags=["calendar"])
 
 # So weit lässt sich vor- und zurückblättern (die Synchronisation lädt ohnehin weniger).
 MAX_WEEK_OFFSET = 52
+# Die Startseite zeigt die nächsten Termine aus diesem Zeitraum (ab heute).
+UPCOMING_DAYS = 14
+MAX_UPCOMING = 20
 
 
 class WeekEventOut(BaseModel):
@@ -66,6 +69,21 @@ class WeekOut(BaseModel):
     days: list[WeekDayOut]
 
 
+class UpcomingEventOut(WeekEventOut):
+    # Tag, unter dem der Termin steht: sein erster Tag, bei laufenden Terminen heute.
+    day: dt.date
+
+
+class UpcomingOut(BaseModel):
+    today: dt.date
+    timezone: str
+    family_color: str
+    problem: bool
+    # Feiertage und Schulferien heute.
+    holidays: list[HolidayOut]
+    events: list[UpcomingEventOut]
+
+
 class _Merged:
     """Ein Termin, ggf. aus mehreren Kalendern zusammengeführt."""
 
@@ -91,6 +109,100 @@ def week(
     end = start + dt.timedelta(days=7)
     range_start, range_end = local_midnight(start, tz), local_midnight(end, tz)
 
+    merged = _merged_events(db, start, end, range_start, range_end)
+    positions = _positions(db)
+    holidays = holidays_between(db, family, start, end, lang or family.default_language)
+    days = []
+    for index in range(7):
+        day = start + dt.timedelta(days=index)
+        day_start, day_end = local_midnight(day, tz), local_midnight(day + dt.timedelta(days=1), tz)
+        events = []
+        for entry in merged:
+            out = _event_on_day(entry, day, day_start, day_end, positions)
+            if out is not None:
+                events.append(out)
+        # Ganztägige zuerst, dann nach Beginn.
+        events.sort(
+            key=lambda e: (
+                not (e.all_day or (e.continues_before and e.continues_after)),
+                e.start if isinstance(e.start, dt.datetime) else day_start,
+                (e.title or "").lower(),
+            )
+        )
+        days.append(
+            WeekDayOut(
+                date=day,
+                holidays=[
+                    HolidayOut(kind=h.kind, name=h.name) for h in holidays if h.start <= day < h.end
+                ],
+                events=events,
+            )
+        )
+
+    return WeekOut(
+        start=start,
+        today=today,
+        timezone=family.timezone,
+        family_color=family.calendar_color,
+        problem=_has_problem(db),
+        days=days,
+    )
+
+
+@router.get("/upcoming")
+def upcoming(
+    _: CurrentSession,
+    db: DbSession,
+    limit: Annotated[int, Query(ge=1, le=MAX_UPCOMING)] = 5,
+    lang: Annotated[str | None, Query(pattern=r"^[a-z]{2}$")] = None,
+) -> UpcomingOut:
+    """Die nächsten Termine für die Startseite: laufende und kommende, vorbei ist vorbei."""
+    family = get_family(db)
+    tz = ZoneInfo(family.timezone)
+    now = family_now(family)
+    today = now.date()
+    end = today + dt.timedelta(days=UPCOMING_DAYS)
+
+    positions = _positions(db)
+    found = []
+    for entry in _merged_events(db, today, end, now, local_midnight(end, tz)):
+        event = entry.event
+        first = event.start_date if event.all_day else event.start_at.astimezone(tz).date()
+        day = max(first, today)
+        day_start, day_end = local_midnight(day, tz), local_midnight(day + dt.timedelta(days=1), tz)
+        out = _event_on_day(entry, day, day_start, day_end, positions)
+        if out is None:
+            continue
+        whole_day = out.all_day or (out.continues_before and out.continues_after)
+        start = out.start if isinstance(out.start, dt.datetime) else day_start
+        order = (day, not whole_day, start, (out.title or "").lower())
+        found.append((order, UpcomingEventOut(**out.model_dump(), day=day)))
+    found.sort(key=lambda item: item[0])
+
+    holidays = holidays_between(
+        db, family, today, today + dt.timedelta(days=1), lang or family.default_language
+    )
+    return UpcomingOut(
+        today=today,
+        timezone=family.timezone,
+        family_color=family.calendar_color,
+        problem=_has_problem(db),
+        holidays=[HolidayOut(kind=h.kind, name=h.name) for h in holidays],
+        events=[event for _, event in found[:limit]],
+    )
+
+
+def _merged_events(
+    db: DbSession,
+    start: dt.date,
+    end: dt.date,
+    range_start: dt.datetime,
+    range_end: dt.datetime,
+) -> list[_Merged]:
+    """Termine ausgewählter Kalender, die in den Zeitraum fallen; doppelte zusammengeführt.
+
+    Ganztägige zählen nach Datum (`start` bis `end` exklusiv), andere nach Zeitpunkt.
+    """
     rows = db.execute(
         select(CalendarEvent, Calendar.member_id, Calendar.name)
         .join(Calendar, CalendarEvent.calendar_id == Calendar.id)
@@ -131,49 +243,17 @@ def week(
             entry.event.description is None and event.description
         ):
             entry.event = event
+    return list(merged.values())
 
-    positions = {
+
+def _positions(db: DbSession) -> dict[int, int]:
+    """Reihenfolge der Personen, nach der die Avatare eines Termins sortiert werden."""
+    return {
         member_id: index
         for index, member_id in enumerate(
             db.scalars(select(FamilyMember.id).order_by(FamilyMember.position, FamilyMember.id))
         )
     }
-    holidays = holidays_between(db, family, start, end, lang or family.default_language)
-    days = []
-    for index in range(7):
-        day = start + dt.timedelta(days=index)
-        day_start, day_end = local_midnight(day, tz), local_midnight(day + dt.timedelta(days=1), tz)
-        events = []
-        for entry in merged.values():
-            out = _event_on_day(entry, day, day_start, day_end, positions)
-            if out is not None:
-                events.append(out)
-        # Ganztägige zuerst, dann nach Beginn.
-        events.sort(
-            key=lambda e: (
-                not (e.all_day or (e.continues_before and e.continues_after)),
-                e.start if isinstance(e.start, dt.datetime) else day_start,
-                (e.title or "").lower(),
-            )
-        )
-        days.append(
-            WeekDayOut(
-                date=day,
-                holidays=[
-                    HolidayOut(kind=h.kind, name=h.name) for h in holidays if h.start <= day < h.end
-                ],
-                events=events,
-            )
-        )
-
-    return WeekOut(
-        start=start,
-        today=today,
-        timezone=family.timezone,
-        family_color=family.calendar_color,
-        problem=_has_problem(db),
-        days=days,
-    )
 
 
 def _event_on_day(

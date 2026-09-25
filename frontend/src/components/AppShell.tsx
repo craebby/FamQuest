@@ -5,6 +5,7 @@ import GearIcon from '~icons/fluent-emoji-flat/gear'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
+import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
 
 import { useCalendarStatus } from '../api/calendar'
 import { useToday } from '../api/today'
@@ -34,7 +35,7 @@ function NavItem({
       to={to}
       aria-current={active ? 'page' : undefined}
       aria-label={badge > 0 && badgeLabel ? `${label}, ${badgeLabel}` : undefined}
-      className={`flex min-h-20 min-w-20 flex-col items-center justify-center gap-1 rounded-3xl px-2 py-2 text-center text-sm leading-tight font-bold focus-visible:outline-4 focus-visible:outline-orange-400 ${active ? 'bg-orange-100 text-orange-800' : 'text-slate-600 hover:bg-orange-50'} ${className}`}
+      className={`flex min-h-20 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-3xl px-1 py-2 text-center text-xs leading-tight font-bold hyphens-auto sm:min-w-20 sm:hyphens-manual sm:flex-none sm:px-2 sm:text-sm focus-visible:outline-4 focus-visible:outline-orange-400 ${active ? 'bg-orange-100 text-orange-800' : 'text-slate-600 hover:bg-orange-50'} ${className}`}
     >
       <span className="relative">
         <Icon className="size-10" aria-hidden="true" />
@@ -54,12 +55,13 @@ function NavItem({
 
 /**
  * Rahmen des Alltagsbereichs: feste Navigationsleiste mit großen Symbolen,
- * links auf größeren Bildschirmen, unten am Smartphone.
+ * links auf größeren Bildschirmen, unten am Smartphone (dort teilen sich die Symbole die Breite).
  */
 export function AppShell() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
-  const onToday = pathname === '/' || pathname.startsWith('/member/')
+  // Die Personenansicht gehört zum Aufgabenbereich.
+  const onTasks = pathname.startsWith('/tasks') || pathname.startsWith('/member/')
   const pending = useToday().data?.pending_approvals ?? 0
   // Den Kalender gibt es erst, wenn im Elternbereich einer ausgewählt ist.
   const calendarEnabled = useCalendarStatus().data?.enabled ?? false
@@ -70,7 +72,9 @@ export function AppShell() {
         aria-label={t('nav.label')}
         className="fixed inset-x-0 bottom-0 z-10 flex gap-2 border-t border-orange-100 bg-white/95 p-2 backdrop-blur sm:sticky sm:top-0 sm:h-dvh sm:w-28 sm:shrink-0 sm:flex-col sm:border-t-0 sm:border-r sm:p-3"
       >
-        <NavItem to="/" label={t('nav.today')} icon={StarIcon} active={onToday} />
+        <NavItem to="/" label={t('nav.today')} icon={HouseIcon} active={pathname === '/'} />
+        {/* Der Stern bleibt bei den Aufgaben: Kinder finden ihre Aufgaben wie bisher. */}
+        <NavItem to="/tasks" label={t('nav.tasks')} icon={StarIcon} active={onTasks} />
         <NavItem
           to="/rewards"
           label={t('nav.rewards')}

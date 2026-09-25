@@ -21,6 +21,7 @@ from app.api import (
     setup,
     tasks,
     today,
+    weather,
 )
 from app.calendar_sync import run_periodically
 from app.config import Settings, get_settings
@@ -68,6 +69,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         approvals,
         calendar,
         calendar_week,
+        weather,
     ):
         api.include_router(module.router)
     app.include_router(api)

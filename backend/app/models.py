@@ -6,6 +6,7 @@ from sqlalchemy import (
     CheckConstraint,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     SmallInteger,
     String,
@@ -42,6 +43,10 @@ class Family(Base):
     holiday_region: Mapped[str | None] = mapped_column(String(10))
     show_public_holidays: Mapped[bool] = mapped_column(default=False, server_default="false")
     show_school_holidays: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # Ort für das Wetter auf der Startseite (aus der Ortssuche); None = kein Wetter.
+    weather_place: Mapped[str | None] = mapped_column(String(200))
+    weather_latitude: Mapped[float | None] = mapped_column(Float)
+    weather_longitude: Mapped[float | None] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
