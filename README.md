@@ -6,16 +6,20 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Phase 1, Etappe 6 ist fertig: Einrichtung beim ersten Start, Anmeldung,
-> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild, Aufgaben und Routinen,
-> die Familienansicht zum Abhaken sowie Punkte mit Tagesfortschritt. Belohnungen folgen in der
-> nächsten Etappe (siehe [Roadmap](#roadmap)).
+> **Status:** Phase 1, Etappe 7 ist fertig: Einrichtung beim ersten Start, Anmeldung,
+> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild, Aufgaben und Routinen
+> mit Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
+> Eltern, Belohnungen für Kinder und die faire Verteilung unter Erwachsenen. Als Nächstes folgt der
+> Feinschliff (siehe [Roadmap](#roadmap)).
 
 ## Features (Ziel Phase 1)
 
 - Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
 - Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig) und Tagesabschnitte
-- Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften; Belohnungen einlösen
+- Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften
+- Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
+- Kontrolle durch die Eltern für ausgewählte Aufgaben
+- Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -96,6 +100,14 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
 - **Tageszeit**: morgens, mittags, nachmittags, abends oder jederzeit
 - **Farbe der Karte**: standardmäßig die Farbe der jeweiligen Person
 - **Aktiv**: inaktive Aufgaben bleiben gespeichert, erscheinen aber nicht in der Familienansicht
+- **Eltern prüfen**: Punkte gibt es erst, wenn ihr die Erledigung bestätigt habt (siehe
+  [Kontrolle durch die Eltern](#kontrolle-durch-die-eltern))
+
+Beim Anlegen füllt **„Aus Vorlagen wählen“** das Formular mit einem Tipp vor. Es gibt zwei
+Gruppen: „Kinder“ (Zähne putzen, Anziehen, Spielzeug aufräumen, Tisch abräumen …) und „Haushalt“ für
+die Care-Arbeit der Erwachsenen (Kochen, Einkaufen, Wäsche, Kinder bringen und abholen, ins Bett
+bringen, Termine …). Alles bleibt danach änderbar. Die Vorlagen stehen in
+`frontend/src/pools/tasks.ts`, ihre Titel in `frontend/src/locales/<sprache>/pool.json`.
 
 Die Liste lässt sich mit einem Tipp auf eine Person filtern. Neue Aufgaben sind dann für diese
 Person vorausgewählt. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
@@ -125,8 +137,9 @@ Spalte.
   Minute ohne Eingabe kehrt das Display zur Familienansicht zurück.
 - Bei vielen Personen oder schmalem Bildschirm lassen sich die Spalten seitlich wischen. Am
   Smartphone steht eine Person pro Seite, oben eine Avatar-Leiste zum Wechseln.
-- Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Stern) und
-  zu den Einstellungen (Zahnrad, Elternbereich mit PIN).
+- Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Stern), zu
+  den Belohnungen (Geschenk) und zu den Einstellungen (Zahnrad, Elternbereich mit PIN). Eine rote
+  Zahl am Zahnrad zeigt, wie viele Erledigungen auf die Kontrolle der Eltern warten.
 
 „Heute“ rechnet der Server immer in der Zeitzone der Familie. Die Ansicht lädt sich jede Minute neu,
 damit Tageswechsel und Änderungen aus dem Elternbereich ankommen.
@@ -154,6 +167,59 @@ Im Elternbereich zeigt der Abschnitt **„Punkte“** den Stand jeder Person. Ei
 öffnet ihre **Buchungshistorie** (neueste zuerst, ältere per „Ältere Buchungen laden“) und ein
 Formular, um Punkte mit Begründung **gutzuschreiben oder abzuziehen** (1 bis 1000). Ein Abzug darf
 den Punktestand nicht unter 0 drücken.
+
+Erwachsene sammeln keine Punkte (siehe [Faire Verteilung](#faire-verteilung)); ihre Karten zeigen
+keine Punktwerte.
+
+## Kontrolle durch die Eltern
+
+Für Aufgaben wie „Zimmer aufräumen“ lässt sich im Editor **„Eltern prüfen“** einschalten. Das Kind
+tippt die Karte wie gewohnt an; statt des Hakens erscheint eine **Sanduhr**, und es gibt noch keine
+Punkte. Am Zahnrad der Navigationsleiste steht, wie viele Erledigungen warten.
+
+Im Elternbereich (nach PIN) steht dann ganz oben **„Zu prüfen“**:
+
+- **Passt** bestätigt die Erledigung und bucht die Punkte, genau einmal und für den Tag der
+  Erledigung. Mehrere Einträge lassen sich mit „Alle bestätigen“ auf einmal bestätigen.
+- **Nochmal** lehnt ab: Die Erledigung wird entfernt, die Aufgabe ist wieder offen.
+
+Auch Erledigungen früherer Tage bleiben prüfbar. Macht das Kind die Erledigung vor der Kontrolle
+selbst rückgängig, wird nichts gebucht.
+
+## Belohnungen
+
+Belohnungen gibt es **nur für Kinder**, und jedes Kind hat seine eigenen. So passen Auswahl und
+Kosten zum Alter. Im Elternbereich unter „Belohnungen“ wählt ihr ein Kind und dann:
+
+- **Aus Vorschlägen wählen**: eine Liste mit gut 30 Belohnungen in drei Größen (klein etwa 5–20,
+  mittel 20–50, groß 50–100 Punkte), z. B. Eis, eine Geschichte mehr, 15 Minuten länger
+  aufbleiben, Filmabend mit Popcorn, Zoo oder Freizeitpark. Mehrere lassen sich auf einmal
+  übernehmen, schon vorhandene sind markiert.
+- **Eigene Belohnung**: Name, Symbol (Kategorie „Belohnungen“ im Katalog), Kosten (1 bis 1000),
+  Beschreibung.
+
+Kosten und Namen lassen sich danach ändern. Inaktive Belohnungen sind am Display nicht zu sehen.
+Darunter steht, was das Kind zuletzt eingelöst hat.
+
+Am Display führt das **Geschenk** in der Navigationsleiste zur Auswahl der Kinder, ein Tipp auf den
+Avatar zu ihren Belohnungskarten (die Personenansicht eines Kindes zeigt sie ebenfalls):
+
+- Mit genug Punkten zeigt die Karte **„Einlösen“**, sonst **„Noch 8 Punkte nötig“** mit einem Balken.
+- Nach „Einlösen“ fragt eine große Karte mit ✓ und ✗ nach. Bestätigt, bucht der Server die Kosten ab.
+  Er prüft Punktestand und Kosten dabei in einer Transaktion, der Stand kann nie negativ werden.
+  Danach gibt es eine kurze Feier.
+
+Die Einlösung speichert Name, Symbol und Kosten. Die Historie stimmt also auch, wenn die Belohnung
+später geändert oder gelöscht wird. Die Vorschläge stehen in `frontend/src/pools/rewards.ts`.
+
+## Faire Verteilung
+
+Erwachsene bekommen keine Belohnungen. Ihre Spalte zeigt stattdessen, welchen **Anteil** der in
+dieser Woche (Montag bis Sonntag, Zeitzone der Familie) von Erwachsenen erledigten Aufgaben sie
+übernommen haben, z. B. 40 % und 60 %, als geteilten Balken in den Personenfarben. Die
+Personenansicht zeigt zusätzlich alle Anteile mit der Zahl der Aufgaben. Gezählt wird die Anzahl
+erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbewerb, sondern soll
+helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
 
 ## Konfiguration
 
@@ -202,8 +268,8 @@ Deutsch ist die Standardsprache. Ohne gespeicherte Auswahl richtet sich die App 
 Browsersprache.
 
 Übersetzungen liegen in `frontend/src/locales/<sprache>/<bereich>.json` (`common.json` für die
-Oberfläche, `icons.json` für die Suchbegriffe der Symbole). So kommt eine neue Sprache
-hinzu:
+Oberfläche, `icons.json` für die Suchbegriffe der Symbole, `pool.json` für die Vorschläge von
+Aufgaben und Belohnungen). So kommt eine neue Sprache hinzu:
 
 1. Den Ordner `frontend/src/locales/de` kopieren, z. B. nach `frontend/src/locales/fr`
 2. Alle Texte übersetzen
@@ -308,5 +374,5 @@ Etappen in Phase 1:
 - [x] 4. Aufgaben und Routinen im Elternbereich
 - [x] 5. Familienansicht
 - [x] 6. Punkte und Tagesfortschritt
-- [ ] 7. Belohnungen
+- [x] 7. Belohnungen, Aufgaben-Vorlagen, Kontrolle durch die Eltern, faire Verteilung
 - [ ] 8. Feinschliff, Wochenübersicht, Backup/Restore
