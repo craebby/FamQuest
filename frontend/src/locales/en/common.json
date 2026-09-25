@@ -419,5 +419,14 @@
     "timezone_hint": "Decides when a new day starts.",
     "save": "Save",
     "saved": "The family settings have been saved."
+  },
+  "device": {
+    "section": "This device",
+    "size": "Display size",
+    "size_hint": "Applies only to this device, e.g. smaller on a tablet or larger on a wall display. The size also adapts automatically to the screen height.",
+    "size_small": "Small",
+    "size_normal": "Normal",
+    "size_large": "Large",
+    "info": "Display: {{width}} × {{height}} px, scaling {{ratio}}, base font {{font}} px"
   }
 }

@@ -165,7 +165,10 @@ Spalte.
 
 Die Oberfläche skaliert ab Tablet-Breite mit der Fensterhöhe: volle Größe bei 1080 px
 (Wanddisplay), proportional kleiner auf Laptops mit Skalierung (z. B. 14"-Bildschirm), nie unter
-75 %. Am Smartphone bleibt sie in voller Größe.
+75 %. Am Smartphone bleibt sie in voller Größe. Im Elternbereich unter „Dieses Gerät“ lässt sich
+zusätzlich eine **Anzeigegröße** (klein, normal, groß) wählen, die nur auf diesem Gerät gilt, z. B.
+kleiner am Tablet und größer am Wanddisplay. Dort steht auch, was der Browser meldet
+(Fenstergröße, Skalierung, Grundschrift). Das hilft beim Einrichten eines neuen Displays.
 
 „Heute“ rechnet der Server immer in der Zeitzone der Familie. Die Ansicht lädt sich jede Minute neu,
 damit Tageswechsel und Änderungen aus dem Elternbereich ankommen.

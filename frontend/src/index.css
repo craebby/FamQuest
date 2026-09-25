@@ -12,12 +12,23 @@
 
   /*
    * Alle Größen sind in rem angegeben. Ab Tablet-Breite richtet sich die Grundgröße nach der
-   * Fensterhöhe: 16 px bei 1080 px Höhe (Wanddisplay), kleiner auf Laptops mit Skalierung
+   * Fensterhöhe: 16 px bei 1080 px Höhe (Wanddisplay), kleiner bei Geräten mit Skalierung
    * (z. B. 13 px bei 864 px), nie unter 12 px. Am Smartphone bleibt es bei 16 px.
+   * Die Anzeigegröße je Gerät (displaySize.ts) skaliert das zusätzlich über --ui-scale.
    */
+  html {
+    --ui-scale: 1;
+    font-size: calc(16px * var(--ui-scale));
+  }
+  html[data-size='small'] {
+    --ui-scale: 0.85;
+  }
+  html[data-size='large'] {
+    --ui-scale: 1.15;
+  }
   @media (min-width: 640px) {
     html {
-      font-size: clamp(12px, 1.5vh, 16px);
+      font-size: calc(clamp(12px, 1.5vh, 16px) * var(--ui-scale));
     }
   }
 }

@@ -419,5 +419,14 @@
     "timezone_hint": "Danach richtet sich, wann ein neuer Tag beginnt.",
     "save": "Speichern",
     "saved": "Die Einstellungen der Familie sind gespeichert."
+  },
+  "device": {
+    "section": "Dieses Gerät",
+    "size": "Anzeigegröße",
+    "size_hint": "Gilt nur auf diesem Gerät, z. B. kleiner am Tablet oder größer am Wanddisplay. Die Größe passt sich zusätzlich automatisch an die Bildschirmhöhe an.",
+    "size_small": "Klein",
+    "size_normal": "Normal",
+    "size_large": "Groß",
+    "info": "Anzeige: {{width}} × {{height}} px, Skalierung {{ratio}}, Grundschrift {{font}} px"
   }
 }

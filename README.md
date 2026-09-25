@@ -165,7 +165,10 @@ Nobody has to sign in or switch users: whose task it is follows from the column.
 
 The layout scales with the window height from tablet width upwards: full size at 1080 px (wall
 display), proportionally smaller on laptops with display scaling (e.g. a 14" screen), never below
-75 %. On phones it stays at full size.
+75 %. On phones it stays at full size. Under "This device" in the parents' area you can also pick a
+**display size** (small, normal, large) that only applies to that device, e.g. smaller on a tablet
+and larger on the wall display. The same section shows what the browser reports (window size,
+scaling, base font size), which helps when setting up a new display.
 
 The server always calculates "today" in the family's time zone. The view reloads every minute so
 day changes and edits from the parents' area show up.

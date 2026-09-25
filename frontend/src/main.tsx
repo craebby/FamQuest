@@ -4,8 +4,11 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 
 import App from './App'
+import { applyDisplaySize } from './displaySize'
 import './i18n'
 import './index.css'
+
+applyDisplaySize()
 
 const queryClient = new QueryClient()
 

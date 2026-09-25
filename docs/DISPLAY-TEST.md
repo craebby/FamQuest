@@ -10,6 +10,7 @@ Checkliste für den Praxistest auf dem Touchscreen am Kühlschrank (Hauptziel: Q
 - [ ] Einmal anmelden; die Session bleibt ein Jahr bestehen und verlängert sich bei Nutzung
 - [ ] Bildschirmschoner und Energiesparen so einstellen, dass das Display tagsüber an bleibt
 - [ ] Browser-Zoom auf 100 %, Systemsprache bzw. Familiensprache stimmt
+- [ ] Elternbereich → „Dieses Gerät“: Anzeige-Info notieren, bei Bedarf Anzeigegröße anpassen
 - [ ] Uhrzeit und Zeitzone des Geräts stimmen (wichtig ist aber die Zeitzone der Familie in der App)
 
 ## Alltag: Kinder (Test: kann ein Kind, das nicht lesen kann, es allein?)

@@ -24,6 +24,7 @@ import { Alert, Button, CenteredCard, Section, TextField } from '../components/u
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { ApprovalsSection } from './parents/ApprovalsSection'
+import { DeviceSection } from './parents/DeviceSection'
 import { FamilySection } from './parents/FamilySection'
 import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
@@ -446,6 +447,8 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
           </div>
         )}
       </Section>
+
+      <DeviceSection />
 
       <Section title={t('parents.account_section')}>
         <p className="text-lg text-slate-600">
