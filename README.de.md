@@ -11,7 +11,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > **Status:** Version 0.x (Alpha). Phase 1 ist funktional komplett: Einrichtung beim ersten Start,
 > Anmeldung, Elternbereich mit PIN, Familienmitglieder mit Farbe und Foto, Aufgaben und Routinen mit
 > Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
-> Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und eine Wochenübersicht. Vor
+> Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Vor
 > 1.0 fehlt noch der Test am echten Display (siehe [Roadmap](#roadmap)).
 
 ## Features
@@ -24,7 +24,6 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
-- Wochenübersicht mit Fortschrittsringen je Person und Tag
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -242,17 +241,6 @@ Personenansicht zeigt zusätzlich alle Anteile mit der Zahl der Aufgaben. Gezäh
 erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbewerb, sondern soll
 helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
 
-## Wochenübersicht
-
-Im Elternbereich zeigt der Abschnitt **„Woche“** für jede Person und jeden Tag (Montag bis Sonntag)
-einen Ring in der Personenfarbe: wie viele der anstehenden Aufgaben erledigt sind, mit Haken, wenn
-alles geschafft ist. Heute ist hervorgehoben, kommende Tage sind blass, rechts steht die
-Wochensumme. Mit ◀ ▶ blättert ihr in andere Wochen.
-
-Grundlage sind die aktuellen Aufgaben (ab ihrem Anlegedatum) und die tatsächlichen Erledigungen.
-Flexible Aufgaben zählen am Tag ihrer Erledigung bzw. an ihrem Fälligkeitstag, „Einer für alle“
-gilt als erledigt für alle Zugeordneten.
-
 ## Konfiguration
 
 Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
@@ -401,7 +389,7 @@ cd frontend && npm run e2e                           # braucht die laufende Date
 `npm run e2e` baut das Frontend, legt eine frische Datenbank `<POSTGRES_DB>_e2e` an und startet die
 App auf Port 8001. Getestet werden die Hauptabläufe im Browser: Setup, Kind und Aufgaben anlegen,
 abhaken und zurücknehmen, die Personenansicht am Smartphone, Punkte, Belohnungen, Kontrolle durch
-die Eltern, flexible Aufgaben und die Wochenübersicht.
+die Eltern und flexible Aufgaben.
 
 Die Backend-Tests legen eine eigene Datenbank `<POSTGRES_DB>_test` an und setzen sie bei jedem Lauf
 neu auf.
@@ -450,7 +438,7 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
 - [x] 5. Familienansicht
 - [x] 6. Punkte und Tagesfortschritt
 - [x] 7. Belohnungen, Aufgaben-Vorlagen, Kontrolle durch die Eltern, faire Verteilung
-- [ ] 8. Feinschliff: flexible Aufgaben und „Einer für alle“ ✓, Wochenübersicht ✓, Backup/Restore ✓,
+- [ ] 8. Feinschliff: flexible Aufgaben und „Einer für alle“ ✓, Backup/Restore ✓,
   Familien-Einstellungen ✓, Test am echten Display
 
 **1.1: Anpassen**
@@ -460,6 +448,7 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
 - Teenager-Stil: weniger kindliche Darstellung je Person für ältere Kinder
 - Icon-Picker: „Beliebt“ nach tatsächlicher Nutzung; beliebte Icons auch in ihrer Kategorie
 - Mehr als sieben Personen (mehr Farben)
+- About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
 
 **1.2: Unterwegs**
 
@@ -472,6 +461,12 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
 | Phase | Inhalt |
 | --- | --- |
 | 2 | Google Kalender: Kalender Personen zuordnen, Termine in Personenfarbe |
-| 3 | Familien-Dashboard: Tagesübersicht mit Aufgaben, Terminen und Fortschritt |
+| 3 | „Heute“ wird die Startseite: ein echtes Tages-Dashboard mit etwas Kalender, Aufgaben, Essensplan, Einkaufsliste und Wetter. Die Aufgaben bekommen einen eigenen Bereich, optional mit Wochenansicht zum Blättern (was kommt noch, was ist erledigt); dazu ein Wochen-Widget fürs Dashboard |
 | 4 | Essensplanung |
 | 5 | Einkaufslisten |
+
+**Ideen ohne Version**
+
+- Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
+  Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst
+  genau eine Familie pro Installation.

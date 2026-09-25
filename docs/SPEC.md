@@ -57,6 +57,8 @@ Bei der Wahl zwischen technisch elegant, aber kompliziert und einfach, sofort be
 
 Ob die endgültige Startseite ein Dashboard, ein Kalender oder eine Kombination wird, entscheiden wir erst nach dem ersten funktionierenden Prototyp. In Phase 1 ist die Familienansicht (Abschnitt 4) die Hauptansicht.
 
+*Entscheidung nach dem Prototyp:* „Heute“ wird später die Startseite als echtes Tages-Dashboard (etwas Kalender, Aufgaben, Essensplan, Einkaufsliste, Wetter). Die heutige Familienansicht wandert dann in einen eigenen Aufgabenbereich.
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -224,9 +226,11 @@ Nur nach Eltern-PIN bzw. Login erreichbar. Eltern können:
 
 Tabellarische Übersicht mit Aufgabe (Icon + Titel), Person, Wiederholung, Tagesabschnitt und Punkten, filterbar nach Person. Bearbeiten direkt aus der Liste, ohne lange Formularwege.
 
-**Wochenübersicht**
+**Wochenübersicht (verschoben)**
 
 Eine Wochenansicht zeigt pro Person und Wochentag, welche Aufgaben anstehen und wie viele erledigt wurden (z. B. Lena: Mo–Fr je 4, Sa–So je 2). Visuell ansprechend, mit Personenfarben, nicht als reine Zahlentabelle.
+
+*Entscheidung nach dem Praxistest (Etappe 8):* Im Elternbereich bringt sie keinen Mehrwert und wurde wieder entfernt. Sie kommt später optional in den eigenen Aufgabenbereich (blättern: was kommt noch, was ist erledigt) und als Widget auf die Startseite „Heute“ (siehe Phase 3).
 
 ## 6. Mehrsprachigkeit (Deutsch/Englisch) ab Phase 1
 
@@ -294,7 +298,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | CalendarConnection | Phase 2 | OAuth-Verbindung (noch nicht implementieren) |
 | CalendarMapping | Phase 2 | Kalender ↔ Person (noch nicht implementieren) |
 
-Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen einen klaren Ort haben. Es gibt aber keine Tenant-Logik.
+Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen einen klaren Ort haben. Es gibt aber keine Tenant-Logik. (Idee für später, ohne Version: mehrere, z. B. befreundete Familien auf einer Installation, angelegt vom ersten Admin oder über eine versteckte Funktion. Bis dahin nichts einbauen, was das unnötig verbaut.)
 
 **Docker**
 
@@ -333,7 +337,7 @@ Keine riesige Suite, aber die Geschäftslogik wird getestet: Setup/Auth und Sper
 | --- | --- |
 | 1 | Aufgabensystem: Docker, PostgreSQL, Setup/Admin, Familie, Mitglieder, Farben, Profilbilder mit Cropper, Aufgaben, Icons, Zuordnung, Routinen, Tagesabschnitte, Erledigen, Punkte als Buchungen, Belohnungen und Einlösen, Familienansicht, Elternbereich, Deutsch/Englisch |
 | 2 | Google Kalender: OAuth, Kalender abrufen und auswählen, Kalender Personen oder „Familie“ zuordnen, Termine in Personenfarbe anzeigen, Synchronisation, Fehlerbehandlung, Refresh-Tokens |
-| 3 | Familien-Dashboard: Tagesübersicht mit Aufgaben, Terminen, Fortschritt und Mitgliedern; Entscheidung Dashboard vs. Kalender als Hauptansicht |
+| 3 | Familien-Dashboard „Heute“ als Startseite: Kalender, Aufgaben, Essensplan, Einkaufsliste, Wetter, Wochen-Widget; Aufgaben in eigenem Bereich mit optionaler Wochenansicht |
 | 4 | Essensplanung: Wochenplan, Mahlzeiten, Rezepte optional |
 | 5 | Einkaufsliste: mehrere Listen, Einträge abhaken, später Verbindung zum Essensplan |
 

@@ -12,7 +12,7 @@ services and without external CDNs. The full specification (in German) is in
 > **Status:** version 0.x (alpha). Phase 1 is feature-complete: first-run setup, sign-in, parents'
 > area with PIN, family members with colour and photo, tasks and routines with templates, the
 > family view for ticking things off, points with daily progress, parent checks, rewards for
-> children, fair sharing between adults and a weekly overview. What's left before 1.0 is the test
+> children, fair sharing between adults and family settings. What's left before 1.0 is the test
 > on a real display (see [Roadmap](#roadmap)).
 
 ## Features
@@ -24,7 +24,6 @@ services and without external CDNs. The full specification (in German) is in
 - Rewards per child from a list of suggestions, redeemed on the display
 - Parent checks for selected tasks
 - Fair sharing: each adult's share of the week's tasks
-- Weekly overview with progress rings per person and day
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -237,17 +236,6 @@ people's colours. The person view additionally shows all shares with the number 
 counts is the number of completed tasks; point values don't matter. This is deliberately not a
 competition but a way to share the work fairly. With only one adult, the display is hidden.
 
-## Weekly overview
-
-In the parents' area, the **"Week"** section shows a ring in the person's colour for every person
-and every day (Monday to Sunday): how many of the scheduled tasks are done, with a tick when
-everything is. Today is highlighted, upcoming days are faded, and the weekly total is on the right.
-Use ◀ ▶ to browse other weeks.
-
-It is based on the current tasks (from the day they were created) and the actual completions.
-Flexible tasks count on the day they were done or on their due date; "One for all" counts as done
-for everyone assigned.
-
 ## Configuration
 
 Configuration is done exclusively through environment variables in `.env`. All variables are
@@ -396,8 +384,8 @@ cd frontend && npm run e2e                           # needs the running databas
 
 `npm run e2e` builds the frontend, creates a fresh database `<POSTGRES_DB>_e2e` and starts the app
 on port 8001. The tests cover the main flows in the browser: setup, adding a child and tasks,
-ticking off and undoing, the person view on a phone, points, rewards, parent checks, flexible tasks
-and the weekly overview.
+ticking off and undoing, the person view on a phone, points, rewards, parent checks and flexible
+tasks.
 
 The backend tests create their own database `<POSTGRES_DB>_test` and reset it on every run.
 
@@ -444,8 +432,8 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 - [x] 5. Family view
 - [x] 6. Points and daily progress
 - [x] 7. Rewards, task templates, parent checks, fair sharing
-- [ ] 8. Polish: flexible tasks and "One for all" ✓, weekly overview ✓, backup/restore ✓, family
-  settings ✓, test on a real display
+- [ ] 8. Polish: flexible tasks and "One for all" ✓, backup/restore ✓, family settings ✓, test on a
+  real display
 
 **1.1: make it your own**
 
@@ -455,6 +443,7 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 - Icon picker: "Popular" based on what the family actually uses; popular icons also shown in their
   category
 - More than seven people (more colours)
+- About page: author, licence, version and a check for updates
 
 **1.2: on the go**
 
@@ -467,6 +456,12 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 | Phase | Contents |
 | --- | --- |
 | 2 | Google Calendar: link calendars to people, events in the person's colour |
-| 3 | Family dashboard: day overview with tasks, events and progress |
+| 3 | "Today" becomes the start page: a real day dashboard with a bit of calendar, tasks, meal plan, shopping list and weather. Tasks move to their own area, optionally with a week view to browse what's coming up and what's done; a week widget for the dashboard |
 | 4 | Meal planning |
 | 5 | Shopping lists |
+
+**Ideas without a version yet**
+
+- Several families on one installation: e.g. the first admin (or a hidden function) creates
+  befriended families and grants access to them. Today FamQuest deliberately serves exactly one
+  family per installation.

@@ -30,7 +30,6 @@ Checkliste für den Praxistest auf dem Touchscreen am Kühlschrank (Hauptziel: Q
 - [ ] Anteil der Woche („40 % diese Woche“) ist verständlich und fühlt sich nicht nach Wettbewerb an
 - [ ] Zahl am Zahnrad → PIN → „Zu prüfen“ → „Passt“/„Nochmal“
 - [ ] Neue Aufgabe aus einer Vorlage anlegen, Belohnungen für ein Kind aus den Vorschlägen wählen
-- [ ] Wochenübersicht: ist auf einen Blick klar, wie die Woche lief?
 
 ## Darstellung
 
