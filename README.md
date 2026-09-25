@@ -6,9 +6,9 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Phase 1, Etappe 3 ist fertig: Einrichtung beim ersten Start, Anmeldung,
-> Elternbereich mit Eltern-PIN und Familienmitglieder mit Farbe und Profilbild. Die Familienansicht
-> ist noch ein Platzhalter; die eigentlichen Funktionen folgen in den nächsten Etappen (siehe
+> **Status:** Phase 1, Etappe 4 ist fertig: Einrichtung beim ersten Start, Anmeldung,
+> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild sowie Aufgaben und
+> Routinen. Die Familienansicht ist noch ein Platzhalter; sie folgt in der nächsten Etappe (siehe
 > [Roadmap](#roadmap)).
 
 ## Features (Ziel Phase 1)
@@ -37,6 +37,20 @@ docker compose up -d
 Danach ist die App unter `http://<host>:8080` erreichbar. Beim Start des App-Containers laufen
 die Datenbank-Migrationen automatisch.
 
+Status prüfen:
+
+```sh
+docker compose ps                        # beide Dienste sollten "healthy" sein
+curl http://localhost:8080/api/health    # {"status":"ok","database":"ok"}
+```
+
+Aktualisieren:
+
+```sh
+git pull
+docker compose up -d --build
+```
+
 ## Erster Start
 
 Beim ersten Aufruf erscheint die Einrichtung: Sprache, Familienname, E-Mail, Passwort und die
@@ -64,19 +78,35 @@ Im Elternbereich unter „Familienmitglieder“ legt ihr alle Personen des Haush
   5 MB), auf 512 × 512 px verkleinert und als WebP neu gespeichert. Metadaten wie GPS-Daten gehen
   dabei verloren. Die Bilder liegen im Volume `uploads` und sind nur mit Anmeldung abrufbar.
 
-Status prüfen:
+## Aufgaben und Routinen
 
-```sh
-docker compose ps                        # beide Dienste sollten "healthy" sein
-curl http://localhost:8080/api/health    # {"status":"ok","database":"ok"}
-```
+Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine Aufgabe hat:
 
-Aktualisieren:
+- **Symbol**: aus einem mitgelieferten Katalog von gut 200 farbigen Emoji-Symbolen
+  ([Fluent Emoji](https://github.com/microsoft/fluentui-emoji), MIT-Lizenz), sortiert nach
+  Kategorien wie Körperpflege, Anziehen, Schule oder Haushalt. Die Suche versteht Deutsch und
+  Englisch („Zahn“ und „tooth“ finden dieselbe Zahnbürste). Solange ihr kein Symbol selbst wählt,
+  schlägt die App eins passend zum Titel vor.
+- **Titel** und optional eine Beschreibung
+- **Punkte**: 0 bis 1000
+- **Für wen**: eine oder mehrere Personen; jede Person erledigt die Aufgabe und bekommt die Punkte
+  für sich
+- **Wie oft**: jeden Tag, an bestimmten Wochentagen (mit Schnellauswahl Mo–Fr oder Wochenende) oder
+  einmal an einem Datum
+- **Tageszeit**: morgens, mittags, nachmittags, abends oder jederzeit
+- **Farbe der Karte**: standardmäßig die Farbe der jeweiligen Person
+- **Aktiv**: inaktive Aufgaben bleiben gespeichert, erscheinen aber nicht in der Familienansicht
 
-```sh
-git pull
-docker compose up -d --build
-```
+Die Liste lässt sich mit einem Tipp auf eine Person filtern. Neue Aufgaben sind dann für diese
+Person vorausgewählt. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
+Person gelöscht, bleiben ihre Aufgaben erhalten; Aufgaben ohne Person sind in der Liste markiert.
+
+Die Symbole sind beim Build ins Frontend eingebettet (nur die Katalog-Symbole, nicht das ganze Set).
+Katalog erweitern: Namen aus dem Set `fluent-emoji-flat` (z. B. auf
+[icon-sets.iconify.design](https://icon-sets.iconify.design/fluent-emoji-flat/)) in
+`frontend/src/icons/categories.json` eintragen und in `frontend/src/locales/<sprache>/icons.json`
+Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Tests prüfen, dass jedes Symbol
+existiert und in jeder Sprache eindeutig benannt ist.
 
 ## Konfiguration
 
@@ -124,7 +154,8 @@ Die App muss auf einer eigenen (Sub-)Domain laufen, z. B. `familie.example.com`.
 Deutsch ist die Standardsprache. Ohne gespeicherte Auswahl richtet sich die App nach der
 Browsersprache.
 
-Übersetzungen liegen in `frontend/src/locales/<sprache>/<bereich>.json`. So kommt eine neue Sprache
+Übersetzungen liegen in `frontend/src/locales/<sprache>/<bereich>.json` (`common.json` für die
+Oberfläche, `icons.json` für die Suchbegriffe der Symbole). So kommt eine neue Sprache
 hinzu:
 
 1. Den Ordner `frontend/src/locales/de` kopieren, z. B. nach `frontend/src/locales/fr`
@@ -216,7 +247,7 @@ Etappen in Phase 1:
 - [x] 1. Grundgerüst: Backend, Frontend mit i18n, Docker, Alembic, Healthchecks
 - [x] 2. First-Run-Setup, Login/Logout, Sperre der Registrierung, Eltern-PIN
 - [x] 3. Familienmitglieder mit Farbe und Profilbild
-- [ ] 4. Aufgaben und Routinen im Elternbereich
+- [x] 4. Aufgaben und Routinen im Elternbereich
 - [ ] 5. Familienansicht
 - [ ] 6. Punkte und Tagesfortschritt
 - [ ] 7. Belohnungen

@@ -8,6 +8,11 @@ _VALIDATION_CODES = {
     "string_too_short": "validation.too_short",
     "string_too_long": "validation.too_long",
     "string_pattern_mismatch": "validation.invalid_format",
+    "too_short": "validation.required",
+    "greater_than_equal": "validation.out_of_range",
+    "less_than_equal": "validation.out_of_range",
+    "union_tag_invalid": "validation.invalid_choice",
+    "literal_error": "validation.invalid_choice",
 }
 
 

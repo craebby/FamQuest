@@ -1,8 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import type { MemberColor } from '../memberColors'
-import { ME_KEY } from './auth'
-import { ApiError, api, apiGet } from './client'
+import { api, apiGet } from './client'
+import { useParentMutation } from './mutations'
+import { TASKS_KEY } from './tasks'
 
 // Muss zu MEMBER_ROLES im Backend passen (backend/app/schemas.py).
 export const MEMBER_ROLES = ['parent', 'child'] as const
@@ -36,19 +37,9 @@ export const uploadAvatar = (id: number, image: Blob) =>
   api<Member>('PUT', `/members/${id}/avatar`, image)
 export const removeAvatar = (id: number) => api<Member>('DELETE', `/members/${id}/avatar`)
 
-/** Änderung an Familienmitgliedern; lädt danach die Liste neu. */
+/** Änderung an Familienmitgliedern; lädt danach Personen und (wegen Zuordnungen) Aufgaben neu. */
 export function useMembersMutation<TVariables, TResult>(
   request: (variables: TVariables) => Promise<TResult>,
 ) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: request,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: MEMBERS_KEY }),
-    onError: (error) => {
-      // Entsperrung abgelaufen oder abgemeldet: /auth/me neu laden, damit die PIN-Abfrage erscheint.
-      if (error instanceof ApiError && (error.status === 401 || error.code === 'parent.locked')) {
-        void queryClient.invalidateQueries({ queryKey: ME_KEY })
-      }
-    },
-  })
+  return useParentMutation(request, [MEMBERS_KEY, TASKS_KEY])
 }

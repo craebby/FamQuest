@@ -1,0 +1,89 @@
+from fastapi import APIRouter, status
+from sqlalchemy import select
+
+from app.api.members import get_member
+from app.auth import DbSession, ParentSession
+from app.errors import ApiError
+from app.models import Task, TaskAssignment, TaskRecurrence
+from app.schemas import TaskIn, TaskOut
+
+router = APIRouter(tags=["tasks"])
+
+
+def task_out(task: Task) -> TaskOut:
+    recurrence = task.recurrence
+    return TaskOut(
+        id=task.id,
+        title=task.title,
+        icon=task.icon,
+        description=task.description or "",
+        points=task.points,
+        time_of_day=task.time_of_day,
+        color=task.color,
+        active=task.active,
+        recurrence={
+            "kind": recurrence.kind,
+            "weekdays": recurrence.weekdays,
+            "date": recurrence.date,
+        },
+        member_ids=sorted(assignment.member_id for assignment in task.assignments),
+    )
+
+
+def get_task(db: DbSession, task_id: int) -> Task:
+    task = db.get(Task, task_id)
+    if task is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "task.not_found")
+    return task
+
+
+def apply_task(db: DbSession, task: Task, body: TaskIn) -> None:
+    for member_id in body.member_ids:
+        get_member(db, member_id)
+
+    task.title, task.icon, task.points = body.title, body.icon, body.points
+    task.description = body.description or None
+    task.time_of_day, task.color, task.active = body.time_of_day, body.color, body.active
+
+    rule = body.recurrence
+    if task.recurrence is None:
+        task.recurrence = TaskRecurrence()
+    task.recurrence.kind = rule.kind
+    task.recurrence.weekdays = getattr(rule, "weekdays", None)
+    task.recurrence.date = getattr(rule, "date", None)
+
+    # Bestehende Zuordnungen behalten, damit sie ihre Id nicht wechseln.
+    wanted = set(body.member_ids)
+    task.assignments = [a for a in task.assignments if a.member_id in wanted] + [
+        TaskAssignment(member_id=member_id)
+        for member_id in sorted(wanted - {a.member_id for a in task.assignments})
+    ]
+
+
+@router.get("/tasks")
+def list_tasks(_: ParentSession, db: DbSession) -> list[TaskOut]:
+    tasks = db.scalars(select(Task).order_by(Task.id))
+    return [task_out(task) for task in tasks]
+
+
+@router.post("/tasks", status_code=status.HTTP_201_CREATED)
+def create_task(body: TaskIn, _: ParentSession, db: DbSession) -> TaskOut:
+    task = Task()
+    apply_task(db, task, body)
+    db.add(task)
+    db.commit()
+    return task_out(task)
+
+
+@router.put("/tasks/{task_id}")
+def update_task(task_id: int, body: TaskIn, _: ParentSession, db: DbSession) -> TaskOut:
+    task = get_task(db, task_id)
+    apply_task(db, task, body)
+    db.commit()
+    return task_out(task)
+
+
+@router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_task(task_id: int, _: ParentSession, db: DbSession) -> None:
+    db.delete(get_task(db, task_id))
+    db.commit()

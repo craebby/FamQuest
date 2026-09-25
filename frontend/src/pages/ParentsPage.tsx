@@ -16,12 +16,15 @@ import {
   useUnlockParent,
 } from '../api/auth'
 import { type Member, useMembers } from '../api/members'
+import { type Task, useTasks } from '../api/tasks'
 import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
+import { TaskEditor } from './parents/TaskEditor'
+import { TasksSection } from './parents/TasksSection'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
 export const PARENT_IDLE_TIMEOUT_MS = 2 * 60 * 1000
@@ -177,8 +180,11 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const disablePin = useDisablePin()
   const logout = useLogout()
   const members = useMembers()
+  const tasks = useTasks()
   const [editingPin, setEditingPin] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | 'new' | null>(null)
+  const [editingTask, setEditingTask] = useState<Task | 'new' | null>(null)
+  const [taskFilter, setTaskFilter] = useState<number | null>(null)
   const [confirmDisable, setConfirmDisable] = useState(false)
   const [notice, setNotice] = useState<string>()
 
@@ -194,6 +200,24 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         onSaved={(name) => closeWith(t('members.saved', { name }))}
         onDeleted={(name) => closeWith(t('members.deleted', { name }))}
         onCancel={() => setEditingMember(null)}
+      />
+    )
+  }
+
+  if (editingTask) {
+    const closeWith = (message: string) => {
+      setEditingTask(null)
+      setNotice(message)
+    }
+    return (
+      <TaskEditor
+        task={editingTask === 'new' ? undefined : editingTask}
+        members={members.data ?? []}
+        initialMemberIds={taskFilter === null ? [] : [taskFilter]}
+        timeZone={me.family.timezone}
+        onSaved={(title) => closeWith(t('tasks.saved', { title }))}
+        onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
+        onCancel={() => setEditingTask(null)}
       />
     )
   }
@@ -245,6 +269,22 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         onAdd={() => {
           setNotice(undefined)
           setEditingMember('new')
+        }}
+      />
+
+      <TasksSection
+        tasks={tasks.data}
+        members={members.data ?? []}
+        error={tasks.error}
+        filter={taskFilter}
+        onFilter={setTaskFilter}
+        onEdit={(task) => {
+          setNotice(undefined)
+          setEditingTask(task)
+        }}
+        onAdd={() => {
+          setNotice(undefined)
+          setEditingTask('new')
         }}
       />
 

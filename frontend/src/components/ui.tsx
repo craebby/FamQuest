@@ -1,4 +1,10 @@
-import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, useId } from 'react'
+import {
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+  useId,
+} from 'react'
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger'
 
@@ -52,6 +58,56 @@ export function TextField({
         </p>
       ) : null}
     </div>
+  )
+}
+
+export function TextAreaField({
+  label,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
+  const id = useId()
+  return (
+    <div className="flex flex-col gap-1.5 text-left">
+      <label htmlFor={id} className="text-base font-bold text-slate-700">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        rows={3}
+        className="rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-lg outline-none focus:border-orange-400"
+        {...props}
+      />
+    </div>
+  )
+}
+
+/** Großer Ein/Aus-Schalter. Ohne `showLabel` ist die Beschriftung nur für Screenreader. */
+export function Switch({
+  checked,
+  onChange,
+  label,
+  showLabel = false,
+  disabled,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label: string
+  showLabel?: boolean
+  disabled?: boolean
+}) {
+  return (
+    <label className="inline-flex min-h-12 cursor-pointer items-center gap-3 has-disabled:cursor-not-allowed has-disabled:opacity-50">
+      <input
+        type="checkbox"
+        role="switch"
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+        className="peer sr-only"
+      />
+      <span className="relative h-9 w-16 shrink-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:outline-4 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange-400 after:absolute after:top-1 after:left-1 after:size-7 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-7 motion-reduce:after:transition-none" />
+      <span className={showLabel ? 'text-lg font-bold text-slate-700' : 'sr-only'}>{label}</span>
+    </label>
   )
 }
 

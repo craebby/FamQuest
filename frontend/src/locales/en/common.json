@@ -105,6 +105,81 @@
     "zoom": "Zoom",
     "confirm": "Apply"
   },
+  "tasks": {
+    "section": "Tasks",
+    "empty": "No tasks yet. Add your first one, for example brushing teeth.",
+    "need_members": "Add your family members first, then you can give them tasks.",
+    "add": "Add task",
+    "filter": "Filter by person",
+    "filter_all": "All",
+    "filter_empty": "{{name}} has no tasks yet.",
+    "new_title": "New task",
+    "edit_title": "Edit {{title}}",
+    "title": "Title",
+    "icon": "Icon",
+    "change_icon": "Change icon",
+    "points": "Points",
+    "points_count_one": "{{count}} point",
+    "points_count_other": "{{count}} points",
+    "fewer_points": "Fewer points",
+    "more_points": "More points",
+    "members": "For whom?",
+    "recurrence": "How often?",
+    "kind_daily": "Every day",
+    "kind_weekly": "On certain days",
+    "kind_once": "Once",
+    "weekdays": "Days of the week",
+    "workdays": "Mon–Fri",
+    "weekend": "Weekend",
+    "date": "Date",
+    "summary_daily": "Daily",
+    "summary_workdays": "Monday to Friday",
+    "summary_weekend": "At the weekend",
+    "summary_once": "On {{date}}",
+    "time_of_day": "Time of day",
+    "anytime": "Any time",
+    "color": "Card colour",
+    "color_member": "Person's colour",
+    "description": "Description (optional)",
+    "active": "Active",
+    "active_hint": "Inactive tasks don't appear in the family view.",
+    "inactive": "Inactive",
+    "active_toggle": "{{title}} active",
+    "unassigned": "Nobody assigned",
+    "save": "Save",
+    "saved": "“{{title}}” has been saved.",
+    "delete": "Delete task",
+    "delete_confirm": "Really delete “{{title}}”? This can't be undone. If you only want to pause it, set it to inactive.",
+    "deleted": "“{{title}}” has been deleted."
+  },
+  "times_of_day": {
+    "morning": "Morning",
+    "midday": "Midday",
+    "afternoon": "Afternoon",
+    "evening": "Evening"
+  },
+  "icon_picker": {
+    "title": "Choose an icon",
+    "search": "Search icons",
+    "search_placeholder": "e.g. tooth, bed, dog",
+    "categories": "Categories",
+    "no_results": "No icon found. Try another word.",
+    "close": "Close"
+  },
+  "icon_categories": {
+    "popular": "Popular",
+    "hygiene": "Personal care",
+    "clothes": "Getting dressed",
+    "room": "Room & toys",
+    "school": "School & learning",
+    "music": "Music",
+    "food": "Food & drink",
+    "household": "Household",
+    "pets": "Animals & plants",
+    "activities": "Sports & free time",
+    "day": "Day & weather",
+    "more": "Praise & more"
+  },
   "errors": {
     "common": {
       "network": "No connection to the server",
@@ -121,7 +196,10 @@
       "invalid_timezone": "Unknown time zone",
       "invalid": "Invalid input",
       "password_length": "At least {{min}} characters",
-      "invalid_choice": "Please pick one of the options"
+      "invalid_choice": "Please pick one of the options",
+      "out_of_range": "This value is not allowed",
+      "choose_member": "Please choose at least one person",
+      "choose_weekday": "Please choose at least one day"
     },
     "auth": {
       "not_authenticated": "Please sign in",
@@ -147,6 +225,9 @@
     "avatar": {
       "too_large": "The image is too large (5 MB max)",
       "invalid_image": "The image could not be read. Please choose another photo."
+    },
+    "task": {
+      "not_found": "This task no longer exists"
     }
   }
 }

@@ -105,6 +105,81 @@
     "zoom": "Zoom",
     "confirm": "Übernehmen"
   },
+  "tasks": {
+    "section": "Aufgaben",
+    "empty": "Noch keine Aufgaben. Legt eine erste an, zum Beispiel Zähne putzen.",
+    "need_members": "Legt zuerst Familienmitglieder an, dann könnt ihr ihnen Aufgaben geben.",
+    "add": "Aufgabe hinzufügen",
+    "filter": "Nach Person filtern",
+    "filter_all": "Alle",
+    "filter_empty": "{{name}} hat noch keine Aufgaben.",
+    "new_title": "Neue Aufgabe",
+    "edit_title": "{{title}} bearbeiten",
+    "title": "Titel",
+    "icon": "Symbol",
+    "change_icon": "Symbol ändern",
+    "points": "Punkte",
+    "points_count_one": "{{count}} Punkt",
+    "points_count_other": "{{count}} Punkte",
+    "fewer_points": "Weniger Punkte",
+    "more_points": "Mehr Punkte",
+    "members": "Für wen?",
+    "recurrence": "Wie oft?",
+    "kind_daily": "Jeden Tag",
+    "kind_weekly": "An bestimmten Tagen",
+    "kind_once": "Einmal",
+    "weekdays": "Wochentage",
+    "workdays": "Mo–Fr",
+    "weekend": "Wochenende",
+    "date": "Datum",
+    "summary_daily": "Täglich",
+    "summary_workdays": "Montag bis Freitag",
+    "summary_weekend": "Am Wochenende",
+    "summary_once": "Am {{date}}",
+    "time_of_day": "Tageszeit",
+    "anytime": "Jederzeit",
+    "color": "Farbe der Karte",
+    "color_member": "Personenfarbe",
+    "description": "Beschreibung (optional)",
+    "active": "Aktiv",
+    "active_hint": "Inaktive Aufgaben erscheinen nicht in der Familienansicht.",
+    "inactive": "Inaktiv",
+    "active_toggle": "{{title}} aktiv",
+    "unassigned": "Niemand zugeordnet",
+    "save": "Speichern",
+    "saved": "„{{title}}“ ist gespeichert.",
+    "delete": "Aufgabe löschen",
+    "delete_confirm": "„{{title}}“ wirklich löschen? Das lässt sich nicht rückgängig machen. Wenn ihr sie nur pausieren wollt, schaltet sie auf inaktiv.",
+    "deleted": "„{{title}}“ ist gelöscht."
+  },
+  "times_of_day": {
+    "morning": "Morgens",
+    "midday": "Mittags",
+    "afternoon": "Nachmittags",
+    "evening": "Abends"
+  },
+  "icon_picker": {
+    "title": "Symbol wählen",
+    "search": "Symbol suchen",
+    "search_placeholder": "z. B. Zahn, Bett, Hund",
+    "categories": "Kategorien",
+    "no_results": "Kein Symbol gefunden. Versuche ein anderes Wort.",
+    "close": "Schließen"
+  },
+  "icon_categories": {
+    "popular": "Beliebt",
+    "hygiene": "Körperpflege",
+    "clothes": "Anziehen",
+    "room": "Zimmer & Spielzeug",
+    "school": "Schule & Lernen",
+    "music": "Musik",
+    "food": "Essen & Trinken",
+    "household": "Haushalt",
+    "pets": "Tiere & Pflanzen",
+    "activities": "Sport & Freizeit",
+    "day": "Tag & Wetter",
+    "more": "Lob & mehr"
+  },
   "errors": {
     "common": {
       "network": "Keine Verbindung zum Server",
@@ -121,7 +196,10 @@
       "invalid_timezone": "Unbekannte Zeitzone",
       "invalid": "Ungültige Eingabe",
       "password_length": "Mindestens {{min}} Zeichen",
-      "invalid_choice": "Bitte eine der Möglichkeiten wählen"
+      "invalid_choice": "Bitte eine der Möglichkeiten wählen",
+      "out_of_range": "Dieser Wert ist nicht erlaubt",
+      "choose_member": "Bitte mindestens eine Person wählen",
+      "choose_weekday": "Bitte mindestens einen Tag wählen"
     },
     "auth": {
       "not_authenticated": "Bitte melde dich an",
@@ -147,6 +225,9 @@
     "avatar": {
       "too_large": "Das Bild ist zu groß (höchstens 5 MB)",
       "invalid_image": "Das Bild konnte nicht gelesen werden. Bitte ein anderes Foto wählen."
+    },
+    "task": {
+      "not_found": "Diese Aufgabe gibt es nicht mehr"
     }
   }
 }
