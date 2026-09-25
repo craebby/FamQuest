@@ -19,6 +19,9 @@ class Settings(BaseSettings):
 
     # Verzeichnis mit dem gebauten Frontend; leer = nur API (lokale Entwicklung mit Vite).
     static_dir: Path | None = None
+    # debug, info, warning, error, critical; debug protokolliert z. B. die eingegebene E-Mail
+    # bei fehlgeschlagenen Anmeldungen.
+    log_level: str = "info"
     upload_dir: Path = Path("data/uploads")
 
     def database_url(self, database: str | None = None) -> URL:

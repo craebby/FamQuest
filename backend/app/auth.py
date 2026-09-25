@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.errors import ApiError
+from app.logs import logger
 from app.models import AuthSession, Family, User
 from app.schemas import FamilyOut, MeResponse, UserOut
 from app.security import new_token, token_hash
@@ -43,7 +44,16 @@ def get_family(db: Session) -> Family:
 def check_origin(request: Request) -> None:
     """CSRF-Schutz für Requests ohne Session (Setup, Login): nur von der eigenen Seite."""
     origin = request.headers.get("origin")
-    if origin and urlsplit(origin).netloc != request.headers.get("host"):
+    host = request.headers.get("host")
+    if origin and urlsplit(origin).netloc != host:
+        # Häufige Ursache hinter einem Reverse Proxy: Er gibt den Host-Header nicht weiter.
+        logger.warning(
+            "Anfrage an %s abgelehnt: Origin %s passt nicht zum Host %s "
+            "(Reverse Proxy muss den Host-Header weitergeben)",
+            request.url.path,
+            origin,
+            host,
+        )
         raise ApiError(status.HTTP_403_FORBIDDEN, "auth.csrf_failed")
 
 
@@ -90,6 +100,9 @@ def current_session(request: Request, db: DbSession) -> AuthSession:
     if request.method not in SAFE_METHODS:
         sent = request.headers.get(CSRF_HEADER, "")
         if not hmac.compare_digest(sent.encode(), auth_session.csrf_token.encode()):
+            logger.warning(
+                "Anfrage an %s abgelehnt: CSRF-Token fehlt oder falsch", request.url.path
+            )
             raise ApiError(status.HTTP_403_FORBIDDEN, "auth.csrf_failed")
 
     if now - auth_session.last_seen_at >= SESSION_REFRESH_INTERVAL:

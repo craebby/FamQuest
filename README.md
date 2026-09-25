@@ -64,7 +64,8 @@ On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
 
 ## First start
 
-On first visit the setup appears: language, family name, e-mail, password and the parents' PIN.
+On first visit the setup appears: language, family name, e-mail, password (entered twice) and the
+parents' PIN.
 The first account becomes the administrator. After that, setup is locked for good; no further
 accounts can be registered through the interface.
 
@@ -247,8 +248,9 @@ described in [`.env.example`](.env.example).
 | `POSTGRES_PASSWORD` | – (required) | Database password |
 | `POSTGRES_DB` | `famquest` | Database name |
 | `APP_PORT` | `8080` | Port on the host |
-| `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` |
+| `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` (for troubleshooting) |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Trusted reverse proxies |
+| `PROXY_NETWORK` | `proxy` | Docker network of your reverse proxy (see below) |
 
 Data lives in two Docker volumes: `db-data` (PostgreSQL) and `uploads` (uploaded images). How to
 back them up is described under [Backup and restore](#backup-and-restore).
@@ -299,6 +301,24 @@ The cron user needs access to Docker (group `docker`).
 
 ## Behind a reverse proxy
 
+### Proxy as a container in a Docker network (e.g. Nginx Proxy Manager)
+
+If your proxy runs as a container in its own Docker network (for example called `proxy`), add
+these two lines to `.env`:
+
+```sh
+COMPOSE_FILE=docker-compose.yml:docker-compose.proxy.yml
+PROXY_NETWORK=proxy
+```
+
+Then run `docker compose up -d`. The app joins that network and is reachable there as
+**`famquest`, port `8000`**. No port is published on the host any more, and `FORWARDED_ALLOW_IPS`
+defaults to `*` (only the proxy can reach the app). In Nginx Proxy Manager: new proxy host, scheme
+`http`, forward hostname `famquest`, forward port `8000`, plus an SSL certificate. This needs
+Docker Compose 2.24 or newer.
+
+### Proxy on the host or another machine
+
 The app evaluates `X-Forwarded-For` and `X-Forwarded-Proto`, but only from the addresses in
 `FORWARDED_ALLOW_IPS`. This matters: only if the app knows it is served over HTTPS does the session
 cookie get the `Secure` flag.
@@ -321,6 +341,24 @@ the app's own page.
 
 The app must run on its own (sub)domain, e.g. `family.example.com`. A sub-path such as
 `example.com/family` is not supported.
+
+## Troubleshooting
+
+**Sign-in fails although the password should be right.** The app logs why a sign-in was rejected
+(`docker compose logs app`), e.g. `Anmeldung fehlgeschlagen: falsches Passwort für Konto 1` (wrong
+password) or `kein Konto mit dieser E-Mail` (no account with this e-mail). With `LOG_LEVEL=debug` in
+`.env` (then `docker compose up -d`) it also logs the e-mail address that was entered. Passwords and
+PINs are never logged. If a reverse proxy doesn't pass on the `Host` header, the log says so too.
+
+**Forgot the password.** There is no e-mail reset on purpose; reset it on the server instead:
+
+```sh
+docker compose exec app python -m app.cli users                             # list accounts
+docker compose exec -it app python -m app.cli reset-password mama@example.org
+```
+
+After 5 failed attempts, sign-in is blocked for 15 minutes; restarting the app
+(`docker compose restart app`) lifts the block right away.
 
 ## Languages
 

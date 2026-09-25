@@ -7,10 +7,12 @@ from fastapi.staticfiles import StaticFiles
 from app.api import approvals, auth, health, members, parent, points, rewards, setup, tasks, today
 from app.config import Settings, get_settings
 from app.errors import register_error_handlers
+from app.logs import configure_logging
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
+    configure_logging(settings.log_level)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
     app = FastAPI(title="FamQuest", docs_url="/api/docs", openapi_url="/api/openapi.json")

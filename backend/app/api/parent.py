@@ -10,6 +10,7 @@ from app.auth import (
     unlock_parent_area,
 )
 from app.errors import ApiError
+from app.logs import logger
 from app.schemas import FamilyName, LanguageCode, MeResponse, Pin, Timezone
 from app.security import hash_secret, login_limiter, pin_limiter, verify_secret
 
@@ -44,6 +45,7 @@ def unlock(body: UnlockRequest, auth_session: CurrentSession, db: DbSession) -> 
             raise ApiError(status.HTTP_429_TOO_MANY_REQUESTS, "auth.rate_limited")
         if not verify_secret(family.parent_pin_hash, body.pin):
             pin_limiter.record_failure(limit_key)
+            logger.warning("Falsche Eltern-PIN (Session %s)", auth_session.id)
             raise ApiError(status.HTTP_403_FORBIDDEN, "pin.wrong")
         pin_limiter.reset(limit_key)
     unlock_parent_area(auth_session)

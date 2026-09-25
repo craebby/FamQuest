@@ -4,6 +4,7 @@ from sqlalchemy import exists, select, text
 
 from app.auth import DbSession, check_origin, me_response, start_session
 from app.errors import ApiError
+from app.logs import logger
 from app.models import Family, User
 from app.schemas import Email, FamilyName, LanguageCode, MeResponse, Password, Pin, Timezone
 from app.security import hash_secret
@@ -62,4 +63,5 @@ def run_setup(
     db.add(user)
     auth_session = start_session(db, request, response, user)
     db.commit()
+    logger.info("Einrichtung abgeschlossen: Konto %s angelegt, Registrierung gesperrt", user.id)
     return me_response(db, auth_session)

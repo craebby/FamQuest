@@ -41,6 +41,23 @@ describe('Setup', () => {
     expect(screen.getByText('Mindestens 10 Zeichen')).toBeVisible()
   })
 
+  it('verlangt das Passwort ein zweites Mal', async () => {
+    const user = userEvent.setup()
+    mockApi({ 'GET /api/setup/status': setupRequired })
+    renderApp('/setup')
+
+    await user.type(await screen.findByLabelText('Familienname'), 'Familie Test')
+    await user.type(screen.getByLabelText('E-Mail'), 'mama@example.org')
+    await user.type(screen.getByLabelText('Passwort'), 'sehr-geheim-123')
+    await user.type(screen.getByLabelText('Passwort wiederholen'), 'sehr-geheim-124')
+    await user.click(screen.getByRole('button', { name: 'Weiter' }))
+
+    expect(screen.getByLabelText('Passwort wiederholen')).toHaveAccessibleDescription(
+      'Die Passwörter stimmen nicht überein',
+    )
+    expect(screen.queryByRole('heading', { name: 'Eltern-PIN festlegen' })).toBeNull()
+  })
+
   it('richtet die Familie mit Sprache, Konto und PIN ein', async () => {
     const user = userEvent.setup()
     const calls = mockApi({
@@ -60,6 +77,7 @@ describe('Setup', () => {
     await user.type(screen.getByLabelText('Family name'), 'Familie Sonnenschein')
     await user.type(screen.getByLabelText('Email'), 'mama@example.org')
     await user.type(screen.getByLabelText('Password'), 'sehr-geheim-123')
+    await user.type(screen.getByLabelText('Repeat password'), 'sehr-geheim-123')
     await user.click(screen.getByRole('button', { name: 'Next' }))
 
     expect(screen.getByRole('heading', { name: 'Choose a parent PIN' })).toBeVisible()
@@ -86,6 +104,7 @@ describe('Setup', () => {
     await user.type(await screen.findByLabelText('Familienname'), 'Familie Test')
     await user.type(screen.getByLabelText('E-Mail'), 'mama@example.org')
     await user.type(screen.getByLabelText('Passwort'), 'sehr-geheim-123')
+    await user.type(screen.getByLabelText('Passwort wiederholen'), 'sehr-geheim-123')
     await user.click(screen.getByRole('button', { name: 'Weiter' }))
     await enterPin(user, '1234')
     await enterPin(user, '9999')

@@ -26,7 +26,8 @@
     "password_hint": "Mindestens {{min}} Zeichen",
     "pin_intro": "Die Eltern-PIN schützt den Elternbereich, damit Kinder nichts versehentlich ändern.",
     "pin_title": "Eltern-PIN festlegen",
-    "pin_repeat_title": "Eltern-PIN wiederholen"
+    "pin_repeat_title": "Eltern-PIN wiederholen",
+    "password_repeat": "Passwort wiederholen"
   },
   "login": {
     "title": "Anmelden",
@@ -290,7 +291,8 @@
       "out_of_range": "Dieser Wert ist nicht erlaubt",
       "choose_member": "Bitte mindestens eine Person wählen",
       "choose_weekday": "Bitte mindestens einen Tag wählen",
-      "not_zero": "Bitte eine Zahl größer als 0 eingeben"
+      "not_zero": "Bitte eine Zahl größer als 0 eingeben",
+      "password_mismatch": "Die Passwörter stimmen nicht überein"
     },
     "auth": {
       "not_authenticated": "Bitte melde dich an",

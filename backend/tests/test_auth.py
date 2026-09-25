@@ -1,9 +1,11 @@
+import logging
 from datetime import timedelta
 
 from sqlalchemy import update
 
 from app.auth import utcnow
 from app.db import engine
+from app.logs import logger
 from app.models import AuthSession
 from tests.conftest import SETUP_DATA, csrf
 
@@ -106,3 +108,22 @@ def test_session_is_extended_on_use(client, admin):
             AuthSession.__table__.select().with_only_columns(AuthSession.expires_at)
         )
     assert expires_at > utcnow() + timedelta(days=364)
+
+
+def test_failed_login_is_logged_with_reason(client, admin, caplog):
+    logger.addHandler(caplog.handler)
+    try:
+        caplog.set_level(logging.INFO, logger="famquest")
+        client.post("/api/auth/logout", headers={"X-CSRF-Token": admin["csrf_token"]})
+        client.post("/api/auth/login", json={"email": "papa@example.org", "password": "x"})
+        client.post(
+            "/api/auth/login", json={"email": "mama@example.org", "password": "falsch-falsch"}
+        )
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("kein Konto mit dieser E-Mail" in m for m in messages)
+    assert any("falsches Passwort für Konto 1" in m for m in messages)
+    # E-Mail-Adressen nur auf Stufe debug, Passwörter nie.
+    assert not any("example.org" in m or "falsch-falsch" in m for m in messages)

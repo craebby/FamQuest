@@ -65,8 +65,8 @@ Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Han
 
 ## Erster Start
 
-Beim ersten Aufruf erscheint die Einrichtung: Sprache, Familienname, E-Mail, Passwort und die
-Eltern-PIN. Das erste Konto wird Administrator. Danach ist die Einrichtung dauerhaft gesperrt;
+Beim ersten Aufruf erscheint die Einrichtung: Sprache, Familienname, E-Mail, Passwort (zweimal)
+und die Eltern-PIN. Das erste Konto wird Administrator. Danach ist die Einrichtung dauerhaft gesperrt;
 weitere Konten lassen sich nicht über die Oberfläche registrieren.
 
 - Das Display bleibt dauerhaft angemeldet (die Anmeldung verlängert sich bei Nutzung, bis zu einem
@@ -252,8 +252,9 @@ Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Al
 | `POSTGRES_PASSWORD` | – (Pflicht) | Datenbank-Passwort |
 | `POSTGRES_DB` | `famquest` | Name der Datenbank |
 | `APP_PORT` | `8080` | Port auf dem Host |
-| `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` |
+| `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` (zur Fehlersuche) |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Vertrauenswürdige Reverse Proxies |
+| `PROXY_NETWORK` | `proxy` | Docker-Netzwerk eures Reverse Proxys (siehe unten) |
 
 Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
 Wie ihr sie sichert, steht unter [Backup und Restore](#backup-und-restore).
@@ -304,6 +305,24 @@ Der Benutzer des Cronjobs braucht Zugriff auf Docker (Gruppe `docker`).
 
 ## Hinter einem Reverse Proxy
 
+### Proxy als Container in einem Docker-Netzwerk (z. B. Nginx Proxy Manager)
+
+Läuft euer Proxy als Container in einem eigenen Docker-Netzwerk (z. B. `proxy`), diese beiden
+Zeilen in die `.env` schreiben:
+
+```sh
+COMPOSE_FILE=docker-compose.yml:docker-compose.proxy.yml
+PROXY_NETWORK=proxy
+```
+
+Danach `docker compose up -d`. Die App hängt dann in diesem Netzwerk und ist dort als
+**`famquest`, Port `8000`** erreichbar. Auf dem Host wird kein Port mehr veröffentlicht, und
+`FORWARDED_ALLOW_IPS` ist standardmäßig `*` (nur der Proxy erreicht die App). Im Nginx Proxy
+Manager: neuer Proxy Host, Schema `http`, Forward Hostname `famquest`, Forward Port `8000`, dazu ein
+SSL-Zertifikat. Nötig ist Docker Compose 2.24 oder neuer.
+
+### Proxy auf dem Host oder einem anderen Rechner
+
 Die App wertet `X-Forwarded-For` und `X-Forwarded-Proto` aus, aber nur von den Adressen in
 `FORWARDED_ALLOW_IPS`. Das ist wichtig: Nur wenn die App erkennt, dass sie per HTTPS aufgerufen
 wird, bekommt das Session-Cookie das `Secure`-Flag.
@@ -326,6 +345,25 @@ Anfrage von der eigenen Seite kommt.
 
 Die App muss auf einer eigenen (Sub-)Domain laufen, z. B. `familie.example.com`. Ein Unterpfad wie
 `example.com/familie` wird nicht unterstützt.
+
+## Fehlersuche
+
+**Anmeldung klappt nicht, obwohl das Passwort stimmen sollte.** Die App protokolliert, warum eine
+Anmeldung abgelehnt wurde (`docker compose logs app`), z. B. `Anmeldung fehlgeschlagen: falsches
+Passwort für Konto 1` oder `kein Konto mit dieser E-Mail`. Mit `LOG_LEVEL=debug` in der `.env`
+(danach `docker compose up -d`) steht dort auch die eingegebene E-Mail-Adresse. Passwörter und PINs
+werden nie protokolliert. Gibt ein Reverse Proxy den `Host`-Header nicht weiter, steht das ebenfalls
+im Log.
+
+**Passwort vergessen.** Einen Reset per E-Mail gibt es bewusst nicht; stattdessen auf dem Server:
+
+```sh
+docker compose exec app python -m app.cli users                             # Konten anzeigen
+docker compose exec -it app python -m app.cli reset-password mama@example.org
+```
+
+Nach 5 Fehlversuchen ist die Anmeldung 15 Minuten gesperrt; ein Neustart der App
+(`docker compose restart app`) hebt die Sperre sofort auf.
 
 ## Sprachen
 

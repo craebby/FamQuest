@@ -12,6 +12,7 @@ from app.auth import (
     start_session,
 )
 from app.errors import ApiError
+from app.logs import logger
 from app.models import User
 from app.schemas import Email, MeResponse
 from app.security import hash_secret, login_limiter, needs_rehash, verify_secret
@@ -28,11 +29,18 @@ class LoginRequest(BaseModel):
 def login(body: LoginRequest, request: Request, response: Response, db: DbSession) -> MeResponse:
     limit_keys = (f"ip:{client_ip(request)}", f"email:{body.email}")
     if login_limiter.is_blocked(*limit_keys):
+        logger.warning("Anmeldung gesperrt: zu viele Fehlversuche (von %s)", client_ip(request))
         raise ApiError(status.HTTP_429_TOO_MANY_REQUESTS, "auth.rate_limited")
 
     user = db.scalars(select(User).where(User.email == body.email)).one_or_none()
     if not verify_secret(user.password_hash if user else None, body.password):
         login_limiter.record_failure(*limit_keys)
+        logger.warning(
+            "Anmeldung fehlgeschlagen: %s (von %s)",
+            f"falsches Passwort für Konto {user.id}" if user else "kein Konto mit dieser E-Mail",
+            client_ip(request),
+        )
+        logger.debug("Fehlgeschlagene Anmeldung mit E-Mail %r", body.email)
         raise ApiError(status.HTTP_401_UNAUTHORIZED, "auth.invalid_credentials")
 
     assert user is not None
@@ -41,6 +49,7 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
         user.password_hash = hash_secret(body.password)
     auth_session = start_session(db, request, response, user)
     db.commit()
+    logger.info("Anmeldung: Konto %s (von %s)", user.id, client_ip(request))
     return me_response(db, auth_session)
 
 
@@ -48,6 +57,7 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
 def logout(auth_session: CurrentSession, response: Response, db: DbSession) -> None:
     end_session(db, response, auth_session)
     db.commit()
+    logger.info("Abmeldung: Konto %s", auth_session.user_id)
 
 
 @router.get("/me")

@@ -26,7 +26,8 @@
     "password_hint": "At least {{min}} characters",
     "pin_intro": "The parent PIN protects the parent area so children don't change anything by accident.",
     "pin_title": "Choose a parent PIN",
-    "pin_repeat_title": "Repeat the parent PIN"
+    "pin_repeat_title": "Repeat the parent PIN",
+    "password_repeat": "Repeat password"
   },
   "login": {
     "title": "Sign in",
@@ -290,7 +291,8 @@
       "out_of_range": "This value is not allowed",
       "choose_member": "Please choose at least one person",
       "choose_weekday": "Please choose at least one day",
-      "not_zero": "Please enter a number greater than 0"
+      "not_zero": "Please enter a number greater than 0",
+      "password_mismatch": "The passwords don't match"
     },
     "auth": {
       "not_authenticated": "Please sign in",

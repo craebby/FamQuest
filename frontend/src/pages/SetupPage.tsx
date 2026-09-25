@@ -12,7 +12,8 @@ import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../i18n'
 import { PASSWORD_MIN_LENGTH, isValidEmail } from '../validation'
 
 type Step = 'details' | 'pin' | 'pin-repeat'
-type DetailField = 'family_name' | 'email' | 'password'
+type DetailField = 'family_name' | 'email' | 'password' | 'password_repeat'
+/** Felder, zu denen der Server Fehler melden kann (die Wiederholung prüft nur das Frontend). */
 const DETAIL_FIELDS: DetailField[] = ['family_name', 'email', 'password']
 
 function browserTimezone() {
@@ -29,6 +30,7 @@ export function SetupPage() {
     family_name: '',
     email: '',
     password: '',
+    password_repeat: '',
   })
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<DetailField, string>>>({})
   const [firstPin, setFirstPin] = useState('')
@@ -43,6 +45,9 @@ export function SetupPage() {
     if (!isValidEmail(details.email)) errors.email = 'validation.invalid_email'
     if (details.password.length < PASSWORD_MIN_LENGTH)
       errors.password = 'validation.password_length'
+    // Ohne Wiederholung sperrt ein Tippfehler das einzige Konto aus.
+    else if (details.password !== details.password_repeat)
+      errors.password_repeat = 'validation.password_mismatch'
     return errors
   }
 
@@ -65,7 +70,8 @@ export function SetupPage() {
       setStep('pin')
       return
     }
-    const data: SetupData = { ...details, language, pin, timezone: browserTimezone() }
+    const { password_repeat: _repeat, ...account } = details
+    const data: SetupData = { ...account, language, pin, timezone: browserTimezone() }
     setup.mutate(data, {
       onSuccess: () => navigate('/', { replace: true }),
       onError: (error) => {
@@ -144,7 +150,8 @@ export function SetupPage() {
           value={details.email}
           onChange={(event) => setDetails({ ...details, email: event.target.value })}
           error={fieldError('email')}
-          autoComplete="email"
+          // „username“, damit Passwortmanager E-Mail und Passwort als Paar speichern.
+          autoComplete="username"
         />
         <TextField
           label={t('setup.password')}
@@ -153,6 +160,14 @@ export function SetupPage() {
           onChange={(event) => setDetails({ ...details, password: event.target.value })}
           error={fieldError('password')}
           hint={t('setup.password_hint', { min: PASSWORD_MIN_LENGTH })}
+          autoComplete="new-password"
+        />
+        <TextField
+          label={t('setup.password_repeat')}
+          type="password"
+          value={details.password_repeat}
+          onChange={(event) => setDetails({ ...details, password_repeat: event.target.value })}
+          error={fieldError('password_repeat')}
           autoComplete="new-password"
         />
         <Button type="submit">{t('actions.next')}</Button>
