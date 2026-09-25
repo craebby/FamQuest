@@ -23,3 +23,6 @@ frontend/playwright-report/
 .DS_Store
 .idea/
 *.swp
+
+# Backups (scripts/backup.sh)
+/backup/

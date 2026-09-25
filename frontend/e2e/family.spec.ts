@@ -274,5 +274,4 @@ test('Wochenübersicht im Elternbereich', async ({ page }) => {
   await expect(
     week.getByRole('img', { name: new RegExp(`^${today}: (\\d+) von \\1 `) }),
   ).toBeVisible()
-  await page.screenshot({ path: `${process.env.SHOTS ?? 'test-results'}/week.png`, fullPage: true })
 })

@@ -258,6 +258,51 @@ Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Al
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Vertrauenswürdige Reverse Proxies |
 
 Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
+Wie ihr sie sichert, steht unter [Backup und Restore](#backup-und-restore).
+
+## Backup und Restore
+
+Zu sichern sind die **Datenbank** und die **hochgeladenen Bilder**. Beides geht im laufenden
+Betrieb, im Projektordner (dort, wo `docker-compose.yml` liegt):
+
+```sh
+mkdir -p backup
+# Datenbank (PostgreSQL-Dump im Custom-Format)
+docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom' \
+  > backup/famquest-$(date +%F).dump
+# Bilder
+docker compose exec -T app tar czf - -C /data uploads > backup/uploads-$(date +%F).tar.gz
+```
+
+Legt die Dateien zusätzlich außerhalb des Rechners ab (NAS, externe Platte). Die `.env` gehört
+ebenfalls dazu, sie liegt aber nicht im Repository.
+
+**Wiederherstellen**, z. B. auf einem neuen Rechner nach `git clone` und `cp .env.example .env`
+(mit denselben `POSTGRES_*`-Werten):
+
+```sh
+docker compose up -d db
+# Datenbank einspielen (vorhandene Tabellen werden ersetzt)
+docker compose exec -T db sh -c \
+  'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner' \
+  < backup/famquest-2026-10-03.dump
+# Bilder einspielen
+docker compose run --rm -T --no-deps --entrypoint tar app xzf - -C /data \
+  < backup/uploads-2026-10-03.tar.gz
+docker compose up -d
+```
+
+Beim Start bringt die App die Datenbank per Migration auf den neuesten Stand. Ein Backup einer
+älteren Version lässt sich also in eine neuere einspielen, nicht umgekehrt.
+
+Beides zusammen erledigt `scripts/backup.sh [ZIELORDNER] [TAGE]` (Standard: `backup/`, Backups
+älter als 30 Tage werden gelöscht). Für ein nächtliches Backup per Cronjob:
+
+```
+0 3 * * * /pfad/zu/famquest/scripts/backup.sh /mnt/nas/famquest 30
+```
+
+Der Benutzer des Cronjobs braucht Zugriff auf Docker (Gruppe `docker`).
 
 ## Hinter einem Reverse Proxy
 
@@ -397,4 +442,5 @@ Etappen in Phase 1:
 - [x] 5. Familienansicht
 - [x] 6. Punkte und Tagesfortschritt
 - [x] 7. Belohnungen, Aufgaben-Vorlagen, Kontrolle durch die Eltern, faire Verteilung
-- [ ] 8. Feinschliff, Wochenübersicht, Backup/Restore
+- [ ] 8. Feinschliff: flexible Aufgaben und „Einer für alle“ ✓, Wochenübersicht ✓, Backup/Restore ✓,
+  Test am echten Display ([Checkliste](docs/DISPLAY-TEST.md))
