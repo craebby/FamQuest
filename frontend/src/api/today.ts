@@ -17,12 +17,21 @@ export interface TodayTask {
   done_member_ids: number[]
 }
 
+export interface MemberPoints {
+  member_id: number
+  /** Heute mit Aufgaben verdiente Punkte. */
+  today: number
+  /** Punktestand (Summe aller Buchungen). */
+  total: number
+}
+
 export interface Today {
   /** Heutiges Datum (`YYYY-MM-DD`) in der Zeitzone der Familie. */
   date: string
   /** Aktueller Tagesabschnitt in der Zeitzone der Familie. */
   time_of_day: TimeOfDay
   tasks: TodayTask[]
+  points: MemberPoints[]
 }
 
 export const TODAY_KEY = ['today'] as const
@@ -50,15 +59,32 @@ function setDone({ date, taskId, memberId, done }: SetDoneVariables) {
   return api<void>(done ? 'PUT' : 'DELETE', path)
 }
 
+/** Setzt den Status und schätzt die Punkte; die Antwort des Servers ersetzt die Schätzung. */
 function withDone(today: Today, { taskId, memberId, done }: SetDoneVariables): Today {
+  const task = today.tasks.find((candidate) => candidate.id === taskId)
+  if (!task || task.done_member_ids.includes(memberId) === done) return today
+  const delta = done ? task.points : -task.points
+  const before = pointsFor(today, memberId)
+  const after = { ...before, today: before.today + delta, total: before.total + delta }
   return {
     ...today,
-    tasks: today.tasks.map((task) => {
-      if (task.id !== taskId) return task
+    tasks: today.tasks.map((candidate) => {
+      if (candidate !== task) return candidate
       const others = task.done_member_ids.filter((id) => id !== memberId)
       return { ...task, done_member_ids: done ? [...others, memberId] : others }
     }),
+    points: [...today.points.filter((entry) => entry.member_id !== memberId), after],
   }
+}
+
+export function pointsFor(today: Today, memberId: number): MemberPoints {
+  return (
+    today.points.find((entry) => entry.member_id === memberId) ?? {
+      member_id: memberId,
+      today: 0,
+      total: 0,
+    }
+  )
 }
 
 /**

@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 import shutil
 import tempfile
@@ -19,6 +20,10 @@ os.environ["POSTGRES_DB"] = TEST_DB
 # Hochgeladene Bilder landen in einem temporären Verzeichnis.
 UPLOAD_DIR = Path(tempfile.mkdtemp(prefix="famquest-test-uploads-"))
 os.environ["UPLOAD_DIR"] = str(UPLOAD_DIR)
+
+# Freitag, 2. Oktober 2026, 23:30 UTC = Samstag, 3. Oktober, 01:30 in Berlin.
+SATURDAY_NIGHT_UTC = dt.datetime(2026, 10, 2, 23, 30, tzinfo=dt.UTC)
+SATURDAY = "2026-10-03"
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -99,3 +104,21 @@ def parent(client, admin) -> dict:
     )
     assert response.status_code == 200, response.text
     return response.json()
+
+
+@pytest.fixture
+def now(monkeypatch):
+    """Stellt die Uhr; Standard ist Samstag früh in Berlin."""
+    import app.today
+
+    current = {"value": SATURDAY_NIGHT_UTC}
+    monkeypatch.setattr(app.today, "utcnow", lambda: current["value"])
+    return current
+
+
+@pytest.fixture
+def lena(client, parent) -> int:
+    """Ein Kind namens Lena; liefert die Id."""
+    from tests.test_tasks import add_member
+
+    return add_member(client, parent)

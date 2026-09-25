@@ -5,11 +5,12 @@ import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
 
 import { useMe } from '../api/auth'
 import type { Member } from '../api/members'
-import type { Today } from '../api/today'
+import { type Today, pointsFor } from '../api/today'
 import { Avatar } from '../components/Avatar'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { formatLongDate } from '../weekdays'
+import { DayProgress } from './family/DayProgress'
 import { TaskGroups } from './family/TaskGroups'
 import { tasksFor, useFamilyToday } from './family/useFamilyToday'
 
@@ -102,6 +103,7 @@ function MemberColumn({
   className: string
 }) {
   const { t } = useTranslation()
+  const tasks = tasksFor(today.tasks, member.id)
   return (
     <section
       aria-label={t('family.tasks_of', { name: member.name })}
@@ -115,9 +117,10 @@ function MemberColumn({
         <Avatar name={member.name} color={member.color} src={member.avatar_url} size="lg" />
         <span className="text-2xl font-extrabold break-words text-slate-800">{member.name}</span>
       </Link>
+      <DayProgress member={member} tasks={tasks} points={pointsFor(today, member.id)} size="md" />
       <TaskGroups
         member={member}
-        tasks={tasksFor(today.tasks, member.id)}
+        tasks={tasks}
         date={today.date}
         currentTimeOfDay={today.time_of_day}
         size="md"

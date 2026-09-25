@@ -13,6 +13,7 @@ import {
   setupDone,
 } from '../test/utils'
 import { PERSON_IDLE_TIMEOUT_MS } from './PersonPage'
+import { POINTS_FEEDBACK_MS } from './family/TaskCard'
 import { COLLAPSE_DELAY_MS } from './family/TaskGroups'
 
 const lena = makeMember({ id: 1, name: 'Lena', color: 'purple' })
@@ -42,11 +43,26 @@ const anytime = makeTodayTask({
 })
 
 /** API wie der Server: Erledigungen verändern, was GET /api/today danach liefert. */
-function familyRoutes(initial = makeToday({ tasks: [teeth, bed, homework, anytime] })) {
+const initialPoints = [
+  { member_id: 1, today: 0, total: 10 },
+  { member_id: 2, today: 0, total: 0 },
+]
+
+function familyRoutes(
+  initial = makeToday({ tasks: [teeth, bed, homework, anytime], points: initialPoints }),
+) {
   let today = initial
   const setDone = (taskId: number, memberId: number, done: boolean) => () => {
+    const task = today.tasks.find((candidate) => candidate.id === taskId)!
+    const delta =
+      task.done_member_ids.includes(memberId) === done ? 0 : done ? task.points : -task.points
     today = {
       ...today,
+      points: today.points.map((entry) =>
+        entry.member_id === memberId
+          ? { ...entry, today: entry.today + delta, total: entry.total + delta }
+          : entry,
+      ),
       tasks: today.tasks.map((task) =>
         task.id !== taskId
           ? task
@@ -140,6 +156,55 @@ describe('Familienansicht', () => {
       'DELETE /api/today/tasks/10/members/1',
     ])
     expect(writes[0].headers['X-CSRF-Token']).toBe('csrf-123')
+  })
+
+  it('zeigt Tagesfortschritt und Punkte unter dem Avatar', async () => {
+    mockApi(
+      familyRoutes(
+        makeToday({
+          tasks: [{ ...teeth, done_member_ids: [1] }, bed, homework, anytime],
+          points: [
+            { member_id: 1, today: 2, total: 12 },
+            { member_id: 2, today: 0, total: 1 },
+          ],
+        }),
+      ),
+    )
+    renderApp('/')
+
+    const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
+    expect(lenaColumn.getByRole('img', { name: '1 von 3 Aufgaben erledigt' })).toBeVisible()
+    expect(lenaColumn.getByText('Heute 2 Punkte verdient')).toBeInTheDocument()
+    expect(lenaColumn.getByText('Insgesamt 12 Punkte')).toBeInTheDocument()
+
+    const tomColumn = within(column('Tom'))
+    expect(tomColumn.getByRole('img', { name: '0 von 2 Aufgaben erledigt' })).toBeVisible()
+    expect(tomColumn.getByText('Insgesamt 1 Punkt')).toBeInTheDocument()
+  })
+
+  it('bucht Punkte sofort und zeigt kurz „+2“', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    mockApi(familyRoutes())
+    renderApp('/')
+
+    const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
+    const card = lenaColumn.getByRole('button', { name: /Zähne putzen/ })
+    await user.click(card)
+
+    expect(within(card).getByTestId('points-feedback')).toHaveTextContent('+2')
+    expect(lenaColumn.getByText('Heute 2 Punkte verdient')).toBeInTheDocument()
+    expect(lenaColumn.getByText('Insgesamt 12 Punkte')).toBeInTheDocument()
+    expect(lenaColumn.getByRole('img', { name: '1 von 3 Aufgaben erledigt' })).toBeVisible()
+
+    await act(() => vi.advanceTimersByTimeAsync(POINTS_FEEDBACK_MS + 100))
+    expect(within(card).queryByTestId('points-feedback')).toBeNull()
+
+    // Rückgängig: Punkte werden abgezogen, ohne „+2“.
+    await user.click(card)
+    expect(within(card).queryByTestId('points-feedback')).toBeNull()
+    expect(lenaColumn.getByText('Heute 0 Punkte verdient')).toBeInTheDocument()
+    expect(lenaColumn.getByText('Insgesamt 10 Punkte')).toBeInTheDocument()
   })
 
   it('sendet das angezeigte Datum mit', async () => {
@@ -276,6 +341,8 @@ describe('Familienansicht', () => {
     expect(lenaColumn.getByRole('button', { name: /Bett machen/ })).toHaveAccessibleName(
       'Bett machen, 1 point',
     )
+    expect(lenaColumn.getByRole('img', { name: '0 of 3 tasks done' })).toBeVisible()
+    expect(lenaColumn.getByText('10 points in total')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Today' })).toBeVisible()
   })
 })
@@ -290,6 +357,7 @@ describe('Personenansicht', () => {
 
     expect(await screen.findByRole('heading', { name: 'Lena', level: 1 })).toBeVisible()
     expect(screen.getByRole('button', { name: /Bett machen/ })).toBeVisible()
+    expect(screen.getByText('Insgesamt 10 Punkte')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Hausaufgaben/ })).toBeNull()
 
     await user.click(screen.getByRole('link', { name: 'Zurück zur Familienansicht' }))

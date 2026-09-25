@@ -78,5 +78,5 @@ export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {
 }
 
 export function makeToday(overrides: Partial<Today> = {}): Today {
-  return { date: '2026-10-03', time_of_day: 'morning', tasks: [], ...overrides }
+  return { date: '2026-10-03', time_of_day: 'morning', tasks: [], points: [], ...overrides }
 }

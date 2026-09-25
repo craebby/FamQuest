@@ -2,10 +2,12 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 
+import { pointsFor } from '../api/today'
 import { Avatar } from '../components/Avatar'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
+import { DayProgress } from './family/DayProgress'
 import { TaskGroups } from './family/TaskGroups'
 import { tasksFor, useFamilyToday } from './family/useFamilyToday'
 
@@ -38,6 +40,7 @@ export function PersonPage() {
 
   const member = members.find((candidate) => String(candidate.id) === memberId)
   if (!member) return <Navigate to="/" replace />
+  const tasks = tasksFor(today.tasks, member.id)
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 sm:p-6">
@@ -54,9 +57,10 @@ export function PersonPage() {
           {member.name}
         </h1>
       </header>
+      <DayProgress member={member} tasks={tasks} points={pointsFor(today, member.id)} size="lg" />
       <TaskGroups
         member={member}
-        tasks={tasksFor(today.tasks, member.id)}
+        tasks={tasks}
         date={today.date}
         currentTimeOfDay={today.time_of_day}
         size="lg"

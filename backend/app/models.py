@@ -154,7 +154,8 @@ class TaskCompletion(Base):
     """Erledigung einer Aufgabe durch eine Person an einem Kalendertag der Familie.
 
     Rückgängig machen löscht die Zeile; der Unique-Constraint verhindert doppelte Erledigungen
-    am selben Tag, auch bei gleichzeitigen Doppel-Tipps.
+    am selben Tag, auch bei gleichzeitigen Doppel-Tipps. Die Punkte stehen als Buchungen in
+    PointTransaction.
     """
 
     __tablename__ = "task_completions"
@@ -170,3 +171,45 @@ class TaskCompletion(Base):
     completed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    # Gutgeschriebene Punkte; Rückgängig bucht genau diesen Betrag zurück, auch wenn sich
+    # der Punktwert der Aufgabe inzwischen geändert hat.
+    points: Mapped[int] = mapped_column(server_default="0")
+
+
+class PointTransaction(Base):
+    """Punktebuchung. Der Punktestand einer Person ist die Summe ihrer Buchungen.
+
+    Buchungen werden nie geändert; Korrekturen sind Gegenbuchungen. Die Quelle hängt von der
+    Art ab (siehe schemas.POINT_KINDS): Aufgabe und Tag bei Erledigungen, das buchende Konto
+    bei manuellen Buchungen.
+    """
+
+    __tablename__ = "point_transactions"
+    __table_args__ = (
+        CheckConstraint("amount <> 0", name="amount_not_zero"),
+        CheckConstraint(
+            "(kind NOT IN ('task_completed', 'task_undone') OR task_date IS NOT NULL)"
+            " AND (kind <> 'manual' OR reason IS NOT NULL)",
+            name="source_for_kind",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), index=True
+    )
+    amount: Mapped[int]
+    # Erweiterbare Werte, bewusst kein Datenbank-Enum.
+    kind: Mapped[str] = mapped_column(String(20))
+    # Titel der Aufgabe zum Buchungszeitpunkt bzw. Begründung der Eltern.
+    reason: Mapped[str | None] = mapped_column(String(200))
+    # Bleibt erhalten, wenn die Aufgabe gelöscht wird.
+    task_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id", ondelete="SET NULL"))
+    # Tag der Erledigung in der Zeitzone der Familie.
+    task_date: Mapped[dt.date | None] = mapped_column(Date)
+    created_by_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    task: Mapped[Task | None] = relationship(lazy="joined")

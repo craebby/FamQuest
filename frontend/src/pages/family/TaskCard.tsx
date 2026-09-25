@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import CheckIcon from '~icons/lucide/check'
@@ -12,9 +12,24 @@ import { colorTokens } from '../../memberColors'
 
 export type CardSize = 'md' | 'lg'
 
+/** So lange ist „+2 Punkte“ nach dem Abhaken zu sehen (auch ohne Animation). */
+export const POINTS_FEEDBACK_MS = 1200
+
 const SIZES = {
-  md: { card: 'min-h-24 gap-3 p-3', icon: 'size-16', title: 'text-xl', badge: 'size-9' },
-  lg: { card: 'min-h-32 gap-5 p-5', icon: 'size-24', title: 'text-3xl', badge: 'size-12' },
+  md: {
+    card: 'min-h-24 gap-3 p-3',
+    icon: 'size-16',
+    title: 'text-xl',
+    badge: 'size-9',
+    feedback: 'text-2xl',
+  },
+  lg: {
+    card: 'min-h-32 gap-5 p-5',
+    icon: 'size-24',
+    title: 'text-3xl',
+    badge: 'size-12',
+    feedback: 'text-4xl',
+  },
 } as const
 
 interface TaskCardProps {
@@ -31,6 +46,13 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
   const setDone = useSetDone(task.id, member.id)
   // Die Haken-Animation gibt es nur direkt nach dem Antippen, nicht bei jedem Laden.
   const [tapped, setTapped] = useState(false)
+  // Zähler für „+2 Punkte“; jeder neue Tipp startet die Anzeige neu (0 = nichts anzeigen).
+  const [feedback, setFeedback] = useState(0)
+  useEffect(() => {
+    if (!feedback) return
+    const timer = window.setTimeout(() => setFeedback(0), POINTS_FEEDBACK_MS)
+    return () => window.clearTimeout(timer)
+  }, [feedback])
   const done = task.done_member_ids.includes(member.id)
   const tokens = colorTokens(task.color ?? member.color)
   const sizes = SIZES[size]
@@ -51,6 +73,7 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
         })}
         onClick={() => {
           setTapped(true)
+          if (!done && task.points > 0) setFeedback((count) => count + 1)
           setDone.mutate({ date, taskId: task.id, memberId: member.id, done: !done })
         }}
         className={`relative flex w-full items-center rounded-3xl border-4 text-left shadow-sm transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${sizes.card}`}
@@ -80,6 +103,18 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
             aria-hidden="true"
           >
             <CheckIcon className="size-2/3" strokeWidth={4} />
+          </span>
+        )}
+        {feedback > 0 && (
+          <span
+            key={feedback}
+            data-testid="points-feedback"
+            aria-hidden="true"
+            className={`pointer-events-none absolute -top-4 right-3 flex items-center gap-1 rounded-full px-3 py-1 font-extrabold shadow-md motion-safe:animate-float-up ${sizes.feedback}`}
+            style={{ backgroundColor: tokens.main, color: tokens.onMain }}
+          >
+            +{task.points}
+            <StarIcon className="size-[1.2em]" aria-hidden="true" />
           </span>
         )}
       </button>

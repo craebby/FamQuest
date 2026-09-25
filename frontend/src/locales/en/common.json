@@ -194,6 +194,40 @@
     "day": "Day & weather",
     "more": "Praise & more"
   },
+  "points": {
+    "section": "Points",
+    "need_members": "Once you have family members, their points will show up here.",
+    "open": "{{name}}'s points",
+    "balance": "Balance",
+    "progress": "{{done}} of {{total}} tasks done",
+    "today": "today",
+    "total": "total",
+    "today_label_one": "Earned {{count}} point today",
+    "today_label_other": "Earned {{count}} points today",
+    "total_label_one": "{{count}} point in total",
+    "total_label_other": "{{count}} points in total",
+    "book_title": "Add or remove points",
+    "direction": "What would you like to do?",
+    "credit": "Add",
+    "deduct": "Remove",
+    "amount": "Number of points",
+    "reason": "Reason",
+    "reason_hint": "For example: Helped set the table",
+    "submit_credit_one": "Add {{count}} point",
+    "submit_credit_other": "Add {{count}} points",
+    "submit_deduct_one": "Remove {{count}} point",
+    "submit_deduct_other": "Remove {{count}} points",
+    "credited_one": "{{name}} got {{count}} point.",
+    "credited_other": "{{name}} got {{count}} points.",
+    "deducted_one": "Removed {{count}} point from {{name}}.",
+    "deducted_other": "Removed {{count}} points from {{name}}.",
+    "history": "Transactions",
+    "history_empty": "No transactions yet.",
+    "load_more": "Load older transactions",
+    "kind_task_completed": "Task done",
+    "kind_task_undone": "Task undone",
+    "kind_manual": "Booked by parents"
+  },
   "errors": {
     "common": {
       "network": "No connection to the server",
@@ -213,7 +247,8 @@
       "invalid_choice": "Please pick one of the options",
       "out_of_range": "This value is not allowed",
       "choose_member": "Please choose at least one person",
-      "choose_weekday": "Please choose at least one day"
+      "choose_weekday": "Please choose at least one day",
+      "not_zero": "Please enter a number greater than 0"
     },
     "auth": {
       "not_authenticated": "Please sign in",
@@ -246,6 +281,9 @@
     },
     "completion": {
       "day_changed": "A new day has started. The tasks have been updated."
+    },
+    "points": {
+      "insufficient": "There aren't enough points for that."
     }
   }
 }

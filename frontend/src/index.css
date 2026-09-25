@@ -13,6 +13,7 @@
 
 @theme {
   --animate-pop: pop 350ms ease-out;
+  --animate-float-up: float-up 1000ms ease-out forwards;
 
   @keyframes pop {
     0% {
@@ -23,6 +24,24 @@
     }
     100% {
       transform: scale(1);
+    }
+  }
+
+  @keyframes float-up {
+    0% {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.8);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(0) scale(1.1);
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-2.5rem) scale(1);
     }
   }
 }

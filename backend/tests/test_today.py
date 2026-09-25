@@ -2,26 +2,8 @@ import datetime as dt
 
 import pytest
 
-import app.today
-from tests.conftest import csrf
+from tests.conftest import SATURDAY, csrf
 from tests.test_tasks import add_member, create, task_data
-
-# Freitag, 2. Oktober 2026, 23:30 UTC = Samstag, 3. Oktober, 01:30 in Berlin.
-SATURDAY_NIGHT_UTC = dt.datetime(2026, 10, 2, 23, 30, tzinfo=dt.UTC)
-SATURDAY = "2026-10-03"
-
-
-@pytest.fixture
-def now(monkeypatch):
-    """Stellt die Uhr; Standard ist Samstag früh in Berlin."""
-    current = {"value": SATURDAY_NIGHT_UTC}
-    monkeypatch.setattr(app.today, "utcnow", lambda: current["value"])
-    return current
-
-
-@pytest.fixture
-def lena(client, parent) -> int:
-    return add_member(client, parent)
 
 
 def add_task(client, me, member_ids, **overrides) -> int:

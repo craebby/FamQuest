@@ -15,6 +15,9 @@ MEMBER_COLORS = ("orange", "blue", "purple", "green", "red", "teal", "yellow")
 # Tagesabschnitte in zeitlicher Reihenfolge; weitere Werte lassen sich ergänzen.
 TIMES_OF_DAY = ("morning", "midday", "afternoon", "evening")
 TASK_MAX_POINTS = 1000
+# Arten von Punktebuchungen; Einlösungen kommen später dazu.
+POINT_KINDS = ("task_completed", "task_undone", "manual")
+MANUAL_MAX_POINTS = 1000
 _EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+$")
 
 
@@ -41,6 +44,12 @@ def _unique_sorted(values: list[int]) -> list[int]:
     return sorted(set(values))
 
 
+def _not_zero(value: int) -> int:
+    if value == 0:
+        raise PydanticCustomError("validation.not_zero", "must not be zero")
+    return value
+
+
 def _one_of(values: tuple[str, ...]) -> AfterValidator:
     def check(value: str) -> str:
         if value not in values:
@@ -64,6 +73,7 @@ TaskDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_le
 # Iconify-Name "set:icon"; die Auswahl selbst kommt aus dem Icon-Katalog im Frontend.
 IconName = Annotated[str, Field(max_length=100, pattern=r"^[a-z0-9-]+:[a-z0-9-]+$")]
 TimeOfDay = Annotated[str, _one_of(TIMES_OF_DAY)]
+PointReason = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Weekday = Annotated[int, Field(ge=1, le=7)]
 
 
@@ -159,7 +169,44 @@ class TodayTaskOut(BaseModel):
     done_member_ids: list[int]
 
 
+class MemberPointsOut(BaseModel):
+    member_id: int
+    # Heute mit Aufgaben verdiente Punkte (Tag in der Zeitzone der Familie).
+    today: int
+    total: int
+
+
 class TodayOut(BaseModel):
     date: dt.date
     time_of_day: str
     tasks: list[TodayTaskOut]
+    points: list[MemberPointsOut]
+
+
+class PointBookingIn(BaseModel):
+    """Manuelle Gutschrift (positiv) oder Abzug (negativ) durch die Eltern."""
+
+    amount: Annotated[
+        int,
+        Field(ge=-MANUAL_MAX_POINTS, le=MANUAL_MAX_POINTS),
+        AfterValidator(_not_zero),
+    ]
+    reason: PointReason
+
+
+class PointTransactionOut(BaseModel):
+    id: int
+    amount: int
+    kind: str
+    reason: str | None
+    # Icon der Aufgabe, solange sie noch existiert.
+    task_icon: str | None
+    task_date: dt.date | None
+    created_at: dt.datetime
+
+
+class PointHistoryOut(BaseModel):
+    total: int
+    transactions: list[PointTransactionOut]
+    # Es gibt ältere Buchungen; abrufbar mit `before=<id der letzten Buchung>`.
+    has_more: bool

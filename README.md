@@ -6,16 +6,16 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Phase 1, Etappe 5 ist fertig: Einrichtung beim ersten Start, Anmeldung,
-> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild, Aufgaben und Routinen
-> sowie die Familienansicht zum Abhaken. Punkte werden ab der nächsten Etappe gebucht (siehe
-> [Roadmap](#roadmap)).
+> **Status:** Phase 1, Etappe 6 ist fertig: Einrichtung beim ersten Start, Anmeldung,
+> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild, Aufgaben und Routinen,
+> die Familienansicht zum Abhaken sowie Punkte mit Tagesfortschritt. Belohnungen folgen in der
+> nächsten Etappe (siehe [Roadmap](#roadmap)).
 
 ## Features (Ziel Phase 1)
 
 - Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
 - Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig) und Tagesabschnitte
-- Punkte als Buchungen, Tagesfortschritt, Belohnungen einlösen
+- Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften; Belohnungen einlösen
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -130,6 +130,30 @@ Spalte.
 
 „Heute“ rechnet der Server immer in der Zeitzone der Familie. Die Ansicht lädt sich jede Minute neu,
 damit Tageswechsel und Änderungen aus dem Elternbereich ankommen.
+
+## Punkte
+
+Unter jedem Avatar zeigt eine **Sterne-Reihe** den Tagesfortschritt (ein Stern pro Aufgabe, erledigte
+leuchten; ab 9 Aufgaben ein Balken). Daneben stehen die **heute verdienten Punkte** (Stern) und der
+**Punktestand** (Pokal). Beim Abhaken schwebt kurz „+2 ⭐“ über der Karte. Wer in den
+Systemeinstellungen reduzierte Bewegung eingestellt hat, sieht die Anzeige ohne Animation.
+
+Punkte werden nie als Zähler gespeichert, sondern als **Buchungen**; der Punktestand ist ihre Summe.
+
+- Erledigen bucht den Punktwert der Aufgabe, Rückgängig bucht genau diesen Betrag zurück
+  (Gegenbuchung), auch wenn der Punktwert inzwischen geändert wurde.
+- Pro Aufgabe, Person und Tag gibt es höchstens eine Erledigung (Datenbank-Constraint). Nur die
+  Anfrage, die sie tatsächlich anlegt oder löscht, bucht; Doppel-Tipps bringen also keine doppelten
+  Punkte.
+- Buchungen werden nie geändert oder gelöscht. Wird eine Aufgabe gelöscht, bleiben ihre Buchungen
+  mit dem damaligen Titel erhalten. Nur wenn eine Person gelöscht wird, verschwinden auch ihre
+  Buchungen.
+- Aufgaben mit 0 Punkten erzeugen keine Buchung.
+
+Im Elternbereich zeigt der Abschnitt **„Punkte“** den Stand jeder Person. Ein Tipp auf die Person
+öffnet ihre **Buchungshistorie** (neueste zuerst, ältere per „Ältere Buchungen laden“) und ein
+Formular, um Punkte mit Begründung **gutzuschreiben oder abzuziehen** (1 bis 1000). Ein Abzug darf
+den Punktestand nicht unter 0 drücken.
 
 ## Konfiguration
 
@@ -283,6 +307,6 @@ Etappen in Phase 1:
 - [x] 3. Familienmitglieder mit Farbe und Profilbild
 - [x] 4. Aufgaben und Routinen im Elternbereich
 - [x] 5. Familienansicht
-- [ ] 6. Punkte und Tagesfortschritt
+- [x] 6. Punkte und Tagesfortschritt
 - [ ] 7. Belohnungen
 - [ ] 8. Feinschliff, Wochenübersicht, Backup/Restore

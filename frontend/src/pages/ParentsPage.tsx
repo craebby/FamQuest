@@ -17,12 +17,15 @@ import {
 } from '../api/auth'
 import { type Member, useMembers } from '../api/members'
 import { type Task, useTasks } from '../api/tasks'
+import { useToday } from '../api/today'
 import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
+import { PointsEditor } from './parents/PointsEditor'
+import { PointsSection } from './parents/PointsSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
 
@@ -181,9 +184,11 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const logout = useLogout()
   const members = useMembers()
   const tasks = useTasks()
+  const today = useToday()
   const [editingPin, setEditingPin] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | 'new' | null>(null)
   const [editingTask, setEditingTask] = useState<Task | 'new' | null>(null)
+  const [pointsMember, setPointsMember] = useState<Member | null>(null)
   const [taskFilter, setTaskFilter] = useState<number | null>(null)
   const [confirmDisable, setConfirmDisable] = useState(false)
   const [notice, setNotice] = useState<string>()
@@ -218,6 +223,16 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         onSaved={(title) => closeWith(t('tasks.saved', { title }))}
         onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
         onCancel={() => setEditingTask(null)}
+      />
+    )
+  }
+
+  if (pointsMember) {
+    return (
+      <PointsEditor
+        member={pointsMember}
+        timeZone={me.family.timezone}
+        onBack={() => setPointsMember(null)}
       />
     )
   }
@@ -285,6 +300,16 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         onAdd={() => {
           setNotice(undefined)
           setEditingTask('new')
+        }}
+      />
+
+      <PointsSection
+        members={members.data ?? []}
+        today={today.data}
+        error={today.error}
+        onOpen={(member) => {
+          setNotice(undefined)
+          setPointsMember(member)
         }}
       />
 

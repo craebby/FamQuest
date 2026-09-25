@@ -194,6 +194,40 @@
     "day": "Tag & Wetter",
     "more": "Lob & mehr"
   },
+  "points": {
+    "section": "Punkte",
+    "need_members": "Sobald es Familienmitglieder gibt, seht ihr hier ihre Punkte.",
+    "open": "Punkte von {{name}}",
+    "balance": "Punktestand",
+    "progress": "{{done}} von {{total}} Aufgaben erledigt",
+    "today": "heute",
+    "total": "gesamt",
+    "today_label_one": "Heute {{count}} Punkt verdient",
+    "today_label_other": "Heute {{count}} Punkte verdient",
+    "total_label_one": "Insgesamt {{count}} Punkt",
+    "total_label_other": "Insgesamt {{count}} Punkte",
+    "book_title": "Punkte gutschreiben oder abziehen",
+    "direction": "Was möchtet ihr tun?",
+    "credit": "Gutschreiben",
+    "deduct": "Abziehen",
+    "amount": "Anzahl Punkte",
+    "reason": "Begründung",
+    "reason_hint": "Zum Beispiel: Beim Tischdecken geholfen",
+    "submit_credit_one": "{{count}} Punkt gutschreiben",
+    "submit_credit_other": "{{count}} Punkte gutschreiben",
+    "submit_deduct_one": "{{count}} Punkt abziehen",
+    "submit_deduct_other": "{{count}} Punkte abziehen",
+    "credited_one": "{{name}} hat {{count}} Punkt bekommen.",
+    "credited_other": "{{name}} hat {{count}} Punkte bekommen.",
+    "deducted_one": "{{name}} wurde {{count}} Punkt abgezogen.",
+    "deducted_other": "{{name}} wurden {{count}} Punkte abgezogen.",
+    "history": "Buchungen",
+    "history_empty": "Noch keine Buchungen.",
+    "load_more": "Ältere Buchungen laden",
+    "kind_task_completed": "Aufgabe erledigt",
+    "kind_task_undone": "Erledigung zurückgenommen",
+    "kind_manual": "Von Eltern gebucht"
+  },
   "errors": {
     "common": {
       "network": "Keine Verbindung zum Server",
@@ -213,7 +247,8 @@
       "invalid_choice": "Bitte eine der Möglichkeiten wählen",
       "out_of_range": "Dieser Wert ist nicht erlaubt",
       "choose_member": "Bitte mindestens eine Person wählen",
-      "choose_weekday": "Bitte mindestens einen Tag wählen"
+      "choose_weekday": "Bitte mindestens einen Tag wählen",
+      "not_zero": "Bitte eine Zahl größer als 0 eingeben"
     },
     "auth": {
       "not_authenticated": "Bitte melde dich an",
@@ -246,6 +281,9 @@
     },
     "completion": {
       "day_changed": "Ein neuer Tag hat begonnen. Die Aufgaben sind jetzt aktualisiert."
+    },
+    "points": {
+      "insufficient": "So viele Punkte sind nicht vorhanden."
     }
   }
 }
