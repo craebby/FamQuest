@@ -4,7 +4,19 @@ from fastapi import APIRouter, FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import approvals, auth, health, members, parent, points, rewards, setup, tasks, today
+from app.api import (
+    approvals,
+    auth,
+    health,
+    members,
+    parent,
+    points,
+    rewards,
+    setup,
+    tasks,
+    today,
+    week,
+)
 from app.config import Settings, get_settings
 from app.errors import register_error_handlers
 
@@ -17,7 +29,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     register_error_handlers(app)
 
     api = APIRouter(prefix="/api")
-    for module in (health, setup, auth, parent, members, tasks, today, points, rewards, approvals):
+    for module in (
+        health,
+        setup,
+        auth,
+        parent,
+        members,
+        tasks,
+        today,
+        points,
+        rewards,
+        approvals,
+        week,
+    ):
         api.include_router(module.router)
     app.include_router(api)
 

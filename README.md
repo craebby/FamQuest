@@ -20,6 +20,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
+- Wochenübersicht mit Fortschrittsringen je Person und Tag
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -230,6 +231,17 @@ dieser Woche (Montag bis Sonntag, Zeitzone der Familie) von Erwachsenen erledigt
 Personenansicht zeigt zusätzlich alle Anteile mit der Zahl der Aufgaben. Gezählt wird die Anzahl
 erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbewerb, sondern soll
 helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
+
+## Wochenübersicht
+
+Im Elternbereich zeigt der Abschnitt **„Woche“** für jede Person und jeden Tag (Montag bis Sonntag)
+einen Ring in der Personenfarbe: wie viele der anstehenden Aufgaben erledigt sind, mit Haken, wenn
+alles geschafft ist. Heute ist hervorgehoben, kommende Tage sind blass, rechts steht die
+Wochensumme. Mit ◀ ▶ blättert ihr in andere Wochen.
+
+Grundlage sind die aktuellen Aufgaben (ab ihrem Anlegedatum) und die tatsächlichen Erledigungen.
+Flexible Aufgaben zählen am Tag ihrer Erledigung bzw. an ihrem Fälligkeitstag, „Einer für alle“
+gilt als erledigt für alle Zugeordneten.
 
 ## Konfiguration
 

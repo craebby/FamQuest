@@ -33,6 +33,7 @@ import { RewardPoolPicker } from './parents/RewardPoolPicker'
 import { RewardsSection } from './parents/RewardsSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
+import { WeekSection } from './parents/WeekSection'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
 export const PARENT_IDLE_TIMEOUT_MS = 2 * 60 * 1000
@@ -320,6 +321,8 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
       {disablePin.isError && <Alert>{errorMessage(t, disablePin.error)}</Alert>}
 
       <ApprovalsSection members={members.data ?? []} today={today.data?.date} />
+
+      <WeekSection members={members.data ?? []} />
 
       <MembersSection
         members={members.data}

@@ -296,3 +296,22 @@ class ApprovalOut(BaseModel):
     member_id: int
     date: dt.date
     completed_at: dt.datetime
+
+
+class WeekDayOut(BaseModel):
+    date: dt.date
+    # Anstehende Aufgaben an diesem Tag (inkl. erledigter, die heute anders geplant sind).
+    planned: int
+    done: int
+
+
+class WeekMemberOut(BaseModel):
+    member_id: int
+    days: list[WeekDayOut]
+
+
+class WeekOut(BaseModel):
+    # Montag der gezeigten Woche.
+    start: dt.date
+    today: dt.date
+    members: list[WeekMemberOut]

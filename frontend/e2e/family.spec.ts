@@ -253,3 +253,26 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   await expect(column.getByRole('button', { name: 'Jederzeit: alles erledigt' })).toBeVisible()
   await expect(soon).toBeHidden()
 })
+
+test('Wochenübersicht im Elternbereich', async ({ page }) => {
+  await login(page)
+  await page
+    .getByRole('navigation', { name: 'Hauptnavigation' })
+    .getByRole('link', { name: 'Einstellungen' })
+    .click()
+  await enterPin(page, PIN)
+
+  const week = page.getByRole('table')
+  await expect(week.getByRole('rowheader', { name: 'Lena' })).toBeVisible()
+  // Heute ist bei Lena alles erledigt (aus den vorigen Tests).
+  const today = new Date().toLocaleDateString('de-DE', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Europe/Berlin',
+  })
+  await expect(
+    week.getByRole('img', { name: new RegExp(`^${today}: (\\d+) von \\1 `) }),
+  ).toBeVisible()
+  await page.screenshot({ path: `${process.env.SHOTS ?? 'test-results'}/week.png`, fullPage: true })
+})

@@ -401,5 +401,18 @@
     "reject_label": "Reject {{title}} by {{name}}",
     "approve_all_one": "Confirm {{count}}",
     "approve_all_other": "Confirm all {{count}}"
+  },
+  "week": {
+    "section": "Week",
+    "previous": "Previous week",
+    "next": "Next week",
+    "this_week": "This week",
+    "range": "{{from}} – {{to}}",
+    "person": "Person",
+    "total": "Week",
+    "day_label_one": "{{day}}: {{done}} of {{count}} task done",
+    "day_label_other": "{{day}}: {{done}} of {{count}} tasks done",
+    "total_label_one": "This week {{done}} of {{count}} task done",
+    "total_label_other": "This week {{done}} of {{count}} tasks done"
   }
 }

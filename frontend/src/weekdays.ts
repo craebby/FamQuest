@@ -59,3 +59,25 @@ export function formatLongDate(language: string, isoDate: string) {
     timeZone: 'UTC',
   }).format(new Date(Date.UTC(year, month - 1, day)))
 }
+
+/** `YYYY-MM-DD` plus `days` Tage, wieder als `YYYY-MM-DD`. */
+export function addDays(isoDate: string, days: number) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10)
+}
+
+/** ISO-Wochentag (1 = Montag … 7 = Sonntag) eines `YYYY-MM-DD`. */
+export function isoWeekday(isoDate: string) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay() || 7
+}
+
+/** `YYYY-MM-DD` → kurzes Datum ohne Jahr, z. B. „3. Okt.“. */
+export function formatShortDate(language: string, isoDate: string) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return new Intl.DateTimeFormat(language, {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(year, month - 1, day)))
+}
