@@ -493,6 +493,8 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
   ergänzen und entfernen (in der Datenbank statt im Code); überarbeitete Beispiel-Vorlagen
+- Vorschläge nach Alter: Aufgaben-Vorlagen und Belohnungs-Vorschläge passend zum Alter der Kinder
+  (z. B. Geburtsjahr je Kind; bei mehreren Kindern je Kind passende Vorschläge)
 - Teenager-Stil: weniger kindliche Darstellung je Person für ältere Kinder
 - Icon-Picker: „Beliebt“ nach tatsächlicher Nutzung; beliebte Icons auch in ihrer Kategorie
 - Mehr als sieben Personen (mehr Farben)

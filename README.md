@@ -486,6 +486,8 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
+- Age-based suggestions: task templates and reward suggestions that fit each child's age (e.g. a
+  birth year per child; with several children, suggestions per child)
 - Teen style: a less childlike look per person for older children
 - Icon picker: "Popular" based on what the family actually uses; popular icons also shown in their
   category
