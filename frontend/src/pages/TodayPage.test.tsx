@@ -257,4 +257,88 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByRole('listitem', { name: "Lena's tasks" })).toBeVisible()
     expect((await region('Meals')).getByText('Coming soon')).toBeVisible()
   })
+
+  it('zählt „Einer für alle“ nur für den, der es erledigt hat', async () => {
+    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'orange' })
+    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'blue' })
+    mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe()),
+      'GET /api/members': Response.json([LENA, mama, papa]),
+      'GET /api/today': Response.json(
+        makeToday({
+          tasks: [
+            makeTodayTask({ id: 1, title: 'Müll', member_ids: [3, 4], done_member_ids: [3] }),
+            makeTodayTask({ id: 2, title: 'Bad', member_ids: [3, 4], done_member_ids: [4] }),
+            makeTodayTask({
+              id: 3,
+              title: 'Spülmaschine',
+              member_ids: [3, 4],
+              shared: true,
+              done_member_ids: [3],
+            }),
+            makeTodayTask({ id: 4, title: 'Zähne', member_ids: [1], shared: true }),
+          ],
+          points: [
+            { member_id: 3, today: 0, total: 0, week_done: 2 },
+            { member_id: 4, today: 0, total: 0, week_done: 1 },
+          ],
+        }),
+      ),
+      'GET /api/weather': Response.json(WEATHER),
+      'GET /api/calendar/status': Response.json({ enabled: false }),
+    })
+    renderApp('/')
+
+    // Erwachsene: Anteil an der Woche wie in der Familienansicht (2 zu 1).
+    const mamaRow = within(await screen.findByRole('listitem', { name: 'Aufgaben von Mama' }))
+    const papaRow = within(screen.getByRole('listitem', { name: 'Aufgaben von Papa' }))
+    expect(mamaRow.getByRole('img', { name: /67 %/ })).toBeInTheDocument()
+    expect(papaRow.getByRole('img', { name: /33 %/ })).toBeInTheDocument()
+    // Bei Papa steht die Spülmaschine als von Mama erledigt.
+    expect(papaRow.getByRole('button', { name: /^Spülmaschine.*erledigt von Mama/ })).toBeVisible()
+  })
+
+  it('zeigt Routinen in ihrer Reihenfolge und Extras getrennt, ohne sie mitzuzählen', async () => {
+    mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe()),
+      'GET /api/members': Response.json([LENA]),
+      'GET /api/today': Response.json(
+        makeToday({
+          tasks: [
+            makeTodayTask({ id: 1, title: 'Zähne', positions: [{ member_id: 1, position: 2 }] }),
+            makeTodayTask({ id: 2, title: 'Anziehen', positions: [{ member_id: 1, position: 0 }] }),
+            makeTodayTask({
+              id: 3,
+              title: 'Schlafi an',
+              time_of_day: 'evening',
+              positions: [{ member_id: 1, position: 1 }],
+            }),
+            makeTodayTask({
+              id: 4,
+              title: 'Tisch abräumen',
+              time_of_day: null,
+              extra: true,
+              positions: [{ member_id: 1, position: 3 }],
+            }),
+          ],
+        }),
+      ),
+      'GET /api/weather': Response.json(WEATHER),
+      'GET /api/calendar/status': Response.json({ enabled: false }),
+    })
+    renderApp('/')
+
+    const row = within(await screen.findByRole('listitem', { name: 'Aufgaben von Lena' }))
+    const extras = within(row.getByRole('region', { name: 'Extras' }))
+    expect(extras.getByRole('button', { name: /^Tisch abräumen/ })).toBeVisible()
+    expect(
+      row
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('title'))
+        .filter(Boolean),
+    ).toEqual(['Anziehen', 'Zähne', 'Schlafi an', 'Tisch abräumen'])
+    expect(row.getByRole('img', { name: '0 von 3 Aufgaben erledigt' })).toBeInTheDocument()
+  })
 })

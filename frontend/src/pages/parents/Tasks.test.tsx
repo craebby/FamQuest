@@ -21,8 +21,10 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     active: true,
     needs_approval: false,
     shared: false,
+    extra: false,
     recurrence: { kind: 'daily' },
     member_ids: [1],
+    positions: [{ member_id: 1, position: 0 }],
     ...overrides,
   }
 }
@@ -127,6 +129,7 @@ describe('Aufgaben im Elternbereich', () => {
       description: '',
       points: 2,
       time_of_day: 'evening',
+      extra: false,
       color: null,
       active: true,
       needs_approval: false,
@@ -309,6 +312,83 @@ describe('Aufgaben im Elternbereich', () => {
 
     expect(await screen.findByRole('status')).toHaveTextContent('„Zähne putzen“ ist gelöscht.')
     expect(calls.some((call) => call.key === 'DELETE /api/tasks/1')).toBe(true)
+  })
+
+  it('legt die Reihenfolge einer Routine je Person fest', async () => {
+    const user = userEvent.setup()
+    const tasks = [
+      makeTask({ id: 1, title: 'Zähne putzen', positions: [{ member_id: 1, position: 0 }] }),
+      makeTask({
+        id: 2,
+        title: 'Anziehen',
+        member_ids: [1, 2],
+        positions: [
+          { member_id: 1, position: 1 },
+          { member_id: 2, position: 0 },
+        ],
+      }),
+      makeTask({
+        id: 3,
+        title: 'Tisch abräumen',
+        time_of_day: null,
+        extra: true,
+        positions: [{ member_id: 1, position: 2 }],
+      }),
+    ]
+    let current = tasks
+    const calls = api(tasks, {
+      'GET /api/tasks': () => Response.json(current),
+      'PUT /api/members/1/task-order': (body) => {
+        const ids = (body as { task_ids: number[] }).task_ids
+        current = current.map((task) => ({
+          ...task,
+          positions: task.positions.map((entry) =>
+            entry.member_id === 1 ? { ...entry, position: ids.indexOf(task.id) } : entry,
+          ),
+        }))
+        return new Response(null, { status: 204 })
+      },
+    })
+    renderApp('/parents')
+
+    const filter = await screen.findByRole('group', { name: 'Nach Person filtern' })
+    await user.click(within(filter).getByRole('button', { name: /Lena/ }))
+
+    const morning = within(screen.getByRole('region', { name: 'Morgens' }))
+    expect(morning.getByRole('button', { name: 'Zähne putzen nach oben' })).toBeDisabled()
+    expect(within(screen.getByRole('region', { name: 'Extras' })).getByText('Tisch abräumen'))
+    await user.click(morning.getByRole('button', { name: 'Anziehen nach oben' }))
+
+    expect(calls.find((call) => call.key === 'PUT /api/members/1/task-order')?.body).toEqual({
+      task_ids: [2, 1, 3],
+    })
+    // Sofort in der neuen Reihenfolge.
+    expect(
+      morning
+        .getAllByRole('button', { name: /bearbeiten$/ })
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['Anziehen bearbeiten', 'Zähne putzen bearbeiten'])
+  })
+
+  it('legt eine Extra-Aufgabe ohne Tageszeit an', async () => {
+    const user = userEvent.setup()
+    const calls = api([], {
+      'POST /api/tasks': (body) => Response.json({ ...(body as object), id: 5, positions: [] }),
+    })
+    renderApp('/parents')
+
+    await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
+    await user.type(screen.getByLabelText('Titel'), 'Tisch abräumen')
+    await user.click(screen.getByRole('checkbox', { name: /Lena/ }))
+    await user.click(screen.getByRole('radio', { name: 'Morgens' }))
+    await user.click(screen.getByRole('radio', { name: 'Extra' }))
+    expect(screen.getByText(/zählt aber nicht zum Tagesfortschritt/)).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
+      extra: true,
+      time_of_day: null,
+    })
   })
 
   it('funktioniert auch auf Englisch', async () => {

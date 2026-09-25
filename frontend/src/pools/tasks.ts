@@ -25,6 +25,8 @@ export interface TaskTemplate {
   needs_approval?: boolean
   /** „Einer für alle“ (typisch im Haushalt). */
   shared?: boolean
+  /** Freiwillige Extra-Aufgabe statt Teil einer Routine. */
+  extra?: boolean
 }
 
 /** Vorlagen für neue Aufgaben; sie füllen den Editor nur vor, alles bleibt änderbar. */
@@ -75,8 +77,9 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     group: 'kids',
     icon: 'fork-and-knife-with-plate',
     points: 3,
-    time_of_day: 'evening',
+    time_of_day: null,
     recurrence: { kind: 'daily' },
+    extra: true,
   },
   {
     id: 'laundry_basket',
@@ -126,6 +129,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     time_of_day: null,
     recurrence: { kind: 'weekly', weekdays: [6] },
     needs_approval: true,
+    extra: true,
   },
   {
     id: 'lunchbox',

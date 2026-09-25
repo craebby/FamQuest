@@ -77,8 +77,10 @@ in einen eigenen Bereich. Wetter von Open-Meteo über den Server (ohne API-Schl�
 1. Aufgabenbereich: Familienansicht unter `/tasks`, eigenes Symbol in der Navigationsleiste
 2. Wetter: Ort im Elternbereich suchen und festlegen, Vorhersage mit Zwischenspeicher
 3. Startseite: Uhr, Wetter, nächste Termine, Aufgaben aller kompakt (ein Tipp erledigt), Platz für Essen/Einkauf
-4. Wochen-Widget auf der Startseite und Wochenansicht im Aufgabenbereich
-5. Feinschliff
+4. Wochenansicht im Aufgabenbereich (blättern: was kommt noch, was ist erledigt)
+5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und Reihenfolge,
+   gilt für die ganze Familie; Wochen-Widget als optionale Kachel
+6. Feinschliff
 
 ## Befehle
 

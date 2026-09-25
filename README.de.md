@@ -22,6 +22,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
 - Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig, flexibel „etwa alle X Tage“) und
   Tagesabschnitte
+- Routinen in fester Reihenfolge je Person, freiwillige Extra-Aufgaben im eigenen Block
 - „Einer für alle“: von einem Erwachsenen erledigt, für alle erledigt
 - Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
@@ -116,7 +117,10 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
   zeigen den Avatar der Person, die es war; Punkte und der Anteil an der Woche zählen für sie.
 - **Wie oft**: jeden Tag, an bestimmten Wochentagen (mit Schnellauswahl Mo–Fr oder Wochenende),
   einmal an einem Datum oder **flexibel** (siehe unten)
-- **Tageszeit**: morgens, mittags, nachmittags, abends oder jederzeit
+- **Wann**: morgens, mittags, nachmittags, abends, jederzeit oder **Extra**. Die Aufgaben eines
+  Tagesabschnitts bilden eine **Routine** in fester Reihenfolge (z. B. morgens: Zähne putzen →
+  anziehen → Kuscheltier einpacken). **Extras** sind freiwillig (z. B. Tisch abräumen): Sie stehen
+  in einem eigenen Block am Ende, bringen Punkte, zählen aber nicht zum Tagesfortschritt
 - **Farbe der Karte**: standardmäßig die Farbe der jeweiligen Person
 - **Aktiv**: inaktive Aufgaben bleiben gespeichert, erscheinen aber nicht in der Familienansicht
 - **Eltern prüfen**: Punkte gibt es erst, wenn ihr die Erledigung bestätigt habt (siehe
@@ -137,7 +141,10 @@ wieder dran. Vorher steht sie klein unter **„Demnächst“** und kann schon fr
 der Rhythmus beginnt dann ab diesem Tag neu. „Demnächst“ zählt nicht zum Tagesfortschritt.
 
 Die Liste lässt sich mit einem Tipp auf eine Person filtern. Neue Aufgaben sind dann für diese
-Person vorausgewählt. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
+Person vorausgewählt. Gefiltert auf eine Person zeigt die Liste deren Routinen genau wie am Display,
+mit großen ↑/↓-Knöpfen für die **Reihenfolge innerhalb jeder Routine**. Die Reihenfolge gilt je
+Person: Zwei Kinder können das Zähneputzen an unterschiedlicher Stelle haben. Neue Aufgaben kommen
+ans Ende. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
 Person gelöscht, bleiben ihre Aufgaben erhalten; Aufgaben ohne Person sind in der Liste markiert.
 
 Die Symbole sind beim Build ins Frontend eingebettet (nur die Katalog-Symbole, nicht das ganze Set).
@@ -160,7 +167,9 @@ darunter drei Spalten (auf schmalen Bildschirmen untereinander):
   Voraus), jeweils mit „Heute“, „Morgen“ oder Datum, in der Personenfarbe mit Avataren. Darüber ein
   Feiertag oder Ferien von heute. Ein Tipp öffnet die Details, der Pfeil die Wochenansicht.
 - **Aufgaben**: eine Zeile pro Person mit Avatar, Fortschrittsbalken, Punkten (Kinder) und den
-  heutigen Aufgaben als große Symbole mit kurzem Titel. **Ein Tipp** erledigt eine Aufgabe wie in
+  heutigen Aufgaben als große Symbole mit kurzem Titel, Routinen in ihrer Reihenfolge und Extras
+  hinter einer gestrichelten Linie. Erwachsene sehen statt eines Balkens ihren Anteil an der Woche.
+  **Ein Tipp** erledigt eine Aufgabe wie in
   der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern, Avatar bei „Einer für
   alle“); nochmal tippen macht es rückgängig. Der Avatar öffnet die Personenansicht, der Pfeil die
   Familienansicht.
@@ -178,8 +187,9 @@ gehört, ergibt sich aus der Spalte.
 - **Ein Tipp** auf eine Aufgabenkarte erledigt sie für diese Person (Haken, Einfärbung in der
   Personenfarbe). **Nochmal tippen** macht es rückgängig. Jede Aufgabe kann pro Person und Tag nur
   einmal erledigt sein, auch bei Doppel-Tipps.
-- Die Aufgaben sind nach **Tageszeit** gruppiert (Sonnenaufgang, Sonne, Sonne mit Wolke, Mond; dazu
-  „Jederzeit“). Der aktuelle Abschnitt ist farbig hervorgehoben. Ist ein Abschnitt komplett
+- Die Aufgaben sind nach **Tageszeit** als Routinen in der von den Eltern festgelegten Reihenfolge
+  gruppiert (Sonnenaufgang, Sonne, Sonne mit Wolke, Mond; dazu „Jederzeit“), danach folgen die
+  freiwilligen **Extras** (Bizeps). Der aktuelle Abschnitt ist farbig hervorgehoben. Ist ein Abschnitt komplett
   erledigt, klappt er zu einer Zeile mit Haken zusammen und lässt sich mit einem Tipp wieder öffnen.
   Tageszeiten: morgens bis 11 Uhr, mittags bis 14 Uhr, nachmittags bis 18 Uhr, danach abends.
 - Ein Tipp auf den **Avatar** öffnet die Personenansicht mit denselben Aufgaben in groß. Nach einer
@@ -646,9 +656,10 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 - [x] 2. Wetter: Ort im Elternbereich festlegen, Vorhersage von Open-Meteo
 - [x] 3. Startseite „Heute“: Uhr, Wetter, die nächsten 5 Termine, Aufgaben aller als antippbare
   Symbole, Platz für Essen und Einkauf
-- [ ] 4. Wochen-Widget auf der Startseite und Wochenansicht im Aufgabenbereich (was kommt noch, was
-  ist erledigt)
-- [ ] 5. Feinschliff am echten Display
+- [ ] 4. Wochenansicht im Aufgabenbereich (was kommt noch, was ist erledigt)
+- [ ] 5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und
+  Reihenfolge, gilt für die ganze Familie; Wochen-Widget als optionale Kachel
+- [ ] 6. Feinschliff am echten Display
 
 **1.1: Anpassen**
 

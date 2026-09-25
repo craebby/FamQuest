@@ -1,12 +1,26 @@
 import { useTranslation } from 'react-i18next'
+import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
+import SparklesIcon from '~icons/fluent-emoji-flat/sparkles'
 import SharedIcon from '~icons/fluent-emoji-flat/handshake'
 import ReviewIcon from '~icons/fluent-emoji-flat/magnifying-glass-tilted-left'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
+import DownIcon from '~icons/lucide/arrow-down'
+import UpIcon from '~icons/lucide/arrow-up'
 import PlusIcon from '~icons/lucide/plus'
 
 import type { Member } from '../../api/members'
-import { TIMES_OF_DAY, type Task, taskData, updateTask, useTasksMutation } from '../../api/tasks'
+import {
+  TASK_BLOCKS,
+  type Task,
+  type TaskBlock,
+  blockOf,
+  sortForMember,
+  taskData,
+  updateTask,
+  useSetTaskOrder,
+  useTasksMutation,
+} from '../../api/tasks'
 import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
@@ -26,11 +40,19 @@ interface TasksSectionProps {
   onAdd: () => void
 }
 
-/** Sortierung: nach Tagesabschnitt (ohne Abschnitt zuletzt), dann nach Titel. */
+/** Sortierung für alle: nach Block (Tagesabschnitte, „Jederzeit“, Extras), dann nach Titel. */
 function sortTasks(tasks: Task[], language: string) {
-  const order = (task: Task) =>
-    task.time_of_day ? TIMES_OF_DAY.indexOf(task.time_of_day) : TIMES_OF_DAY.length
+  const order = (task: Task) => TASK_BLOCKS.indexOf(blockOf(task))
   return [...tasks].sort((a, b) => order(a) - order(b) || a.title.localeCompare(b.title, language))
+}
+
+function blockLabel(t: (key: string) => string, block: TaskBlock) {
+  return t(block === 'extra' ? 'family.extras' : block ? `times_of_day.${block}` : 'tasks.anytime')
+}
+
+function BlockIcon({ block }: { block: TaskBlock }) {
+  const Icon = block === 'extra' ? ExtraIcon : block ? TIME_OF_DAY_ICONS[block] : SparklesIcon
+  return <Icon className="size-8 shrink-0" aria-hidden="true" />
 }
 
 /** Aufgabenübersicht im Elternbereich, filterbar nach Person. */
@@ -49,17 +71,51 @@ export function TasksSection({
     updateTask(task.id, { ...taskData(task), active: !task.active }),
   )
 
+  const setOrder = useSetTaskOrder()
+
   const membersById = new Map(members.map((member) => [member.id, member]))
   const filterMember = filter === null ? undefined : membersById.get(filter)
-  const visible = sortTasks(
-    (tasks ?? []).filter((task) => !filterMember || task.member_ids.includes(filterMember.id)),
-    language,
+  // Für eine Person: ihre Reihenfolge am Display, zum Umsortieren; sonst alphabetisch.
+  const visible = filterMember
+    ? sortForMember(
+        (tasks ?? []).filter((task) => task.member_ids.includes(filterMember.id)),
+        filterMember.id,
+      )
+    : sortTasks(tasks ?? [], language)
+
+  /** Verschiebt eine Aufgabe innerhalb ihres Blocks um einen Platz. */
+  const move = (task: Task, direction: -1 | 1) => {
+    if (!filterMember) return
+    const ids = visible.map((candidate) => candidate.id)
+    const from = ids.indexOf(task.id)
+    ;[ids[from], ids[from + direction]] = [ids[from + direction], ids[from]]
+    setOrder.mutate({ memberId: filterMember.id, taskIds: ids })
+  }
+  const row = (task: Task, index: number, list: Task[]) => (
+    <TaskRow
+      key={task.id}
+      task={task}
+      members={task.member_ids.flatMap((id) => membersById.get(id) ?? [])}
+      language={language}
+      busy={toggleActive.isPending && toggleActive.variables?.id === task.id}
+      onEdit={() => onEdit(task)}
+      onToggleActive={() => toggleActive.mutate(task)}
+      move={
+        filterMember && list.length > 1
+          ? {
+              up: index > 0 ? () => move(task, -1) : undefined,
+              down: index < list.length - 1 ? () => move(task, 1) : undefined,
+            }
+          : undefined
+      }
+    />
   )
 
   return (
     <Section title={t('tasks.section')}>
       {error ? <Alert>{errorMessage(t, error)}</Alert> : null}
       {toggleActive.isError && <Alert>{errorMessage(t, toggleActive.error)}</Alert>}
+      {setOrder.isError && <Alert>{errorMessage(t, setOrder.error)}</Alert>}
 
       {members.length === 0 ? (
         <p className="text-lg text-slate-600">{t('tasks.need_members')}</p>
@@ -99,20 +155,37 @@ export function TasksSection({
             </p>
           )}
 
-          {visible.length > 0 && (
+          {visible.length > 0 && !filterMember && (
             <ul className="flex flex-col gap-3">
-              {visible.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  members={task.member_ids.flatMap((id) => membersById.get(id) ?? [])}
-                  language={language}
-                  busy={toggleActive.isPending && toggleActive.variables?.id === task.id}
-                  onEdit={() => onEdit(task)}
-                  onToggleActive={() => toggleActive.mutate(task)}
-                />
-              ))}
+              {visible.map((task, index, list) => row(task, index, list))}
             </ul>
+          )}
+          {visible.length > 0 && filterMember && (
+            <>
+              <p className="text-lg text-slate-600">
+                {t('tasks.order_hint', { name: filterMember.name })}
+              </p>
+              {TASK_BLOCKS.map((block) => {
+                const list = visible.filter((task) => blockOf(task) === block)
+                if (list.length === 0) return null
+                const label = blockLabel(t, block)
+                return (
+                  <section
+                    key={block ?? 'anytime'}
+                    aria-label={label}
+                    className="flex flex-col gap-2"
+                  >
+                    <h3 className="flex items-center gap-2 text-lg font-extrabold text-slate-700">
+                      <BlockIcon block={block} />
+                      {label}
+                    </h3>
+                    <ol className="flex flex-col gap-3">
+                      {list.map((task, index) => row(task, index, list))}
+                    </ol>
+                  </section>
+                )
+              })}
+            </>
           )}
 
           <Button className="self-start" onClick={onAdd} disabled={tasks === undefined}>
@@ -132,6 +205,7 @@ function TaskRow({
   busy,
   onEdit,
   onToggleActive,
+  move,
 }: {
   task: Task
   members: Member[]
@@ -139,6 +213,8 @@ function TaskRow({
   busy: boolean
   onEdit: () => void
   onToggleActive: () => void
+  /** Nur in der Reihenfolge einer Person: einen Platz nach oben bzw. unten. */
+  move?: { up?: () => void; down?: () => void }
 }) {
   const { t } = useTranslation()
   const TimeIcon = task.time_of_day ? TIME_OF_DAY_ICONS[task.time_of_day] : null
@@ -169,6 +245,12 @@ function TaskRow({
               <span className="inline-flex items-center gap-1">
                 <TimeIcon className="size-6" aria-hidden="true" />
                 {t(`times_of_day.${task.time_of_day}`)}
+              </span>
+            )}
+            {task.extra && (
+              <span className="inline-flex items-center gap-1">
+                <ExtraIcon className="size-6" aria-hidden="true" />
+                {t('tasks.extra')}
               </span>
             )}
             {task.shared && task.member_ids.length > 1 && (
@@ -210,6 +292,28 @@ function TaskRow({
           </span>
         )}
       </button>
+      {move && (
+        <span className="flex shrink-0 flex-col gap-1">
+          <button
+            type="button"
+            onClick={move.up}
+            disabled={!move.up}
+            aria-label={t('tasks.move_up', { title: task.title })}
+            className="flex size-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-orange-100 focus-visible:outline-4 focus-visible:outline-orange-400 disabled:opacity-30"
+          >
+            <UpIcon className="size-6" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={move.down}
+            disabled={!move.down}
+            aria-label={t('tasks.move_down', { title: task.title })}
+            className="flex size-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-orange-100 focus-visible:outline-4 focus-visible:outline-orange-400 disabled:opacity-30"
+          >
+            <DownIcon className="size-6" aria-hidden="true" />
+          </button>
+        </span>
+      )}
       <Switch
         checked={task.active}
         onChange={onToggleActive}

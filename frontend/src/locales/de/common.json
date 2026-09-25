@@ -63,7 +63,8 @@
     "overdue_one": "seit {{count}} Tag fällig",
     "overdue_other": "seit {{count}} Tagen fällig",
     "due_in_one": "morgen fällig",
-    "due_in_other": "in {{count}} Tagen fällig"
+    "due_in_other": "in {{count}} Tagen fällig",
+    "extras": "Extras"
   },
   "parents": {
     "title": "Elternbereich",
@@ -214,7 +215,13 @@
     "interval_weeks_one": "Jede Woche",
     "interval_weeks_other": "Alle {{count}} Wochen",
     "interval_months_one": "Jeden Monat",
-    "interval_months_other": "Alle {{count}} Monate"
+    "interval_months_other": "Alle {{count}} Monate",
+    "extra": "Extra",
+    "extra_hint": "Extra: freiwillig, steht im eigenen Block „Extras“. Bringt Punkte, zählt aber nicht zum Tagesfortschritt.",
+    "routine_hint": "Aufgaben eines Tagesabschnitts bilden zusammen eine Routine. Die Reihenfolge legt ihr fest, wenn die Liste nach einer Person gefiltert ist.",
+    "order_hint": "So sieht {{name}} die Aufgaben am Display. Mit den Pfeilen legt ihr die Reihenfolge innerhalb jeder Routine fest.",
+    "move_up": "{{title}} nach oben",
+    "move_down": "{{title}} nach unten"
   },
   "times_of_day": {
     "morning": "Morgens",
@@ -331,7 +338,8 @@
     },
     "task": {
       "not_found": "Diese Aufgabe gibt es nicht mehr",
-      "not_due": "Diese Aufgabe steht heute nicht an."
+      "not_due": "Diese Aufgabe steht heute nicht an.",
+      "order_invalid": "Die Reihenfolge passt nicht mehr zu den Aufgaben. Bitte neu laden."
     },
     "completion": {
       "day_changed": "Ein neuer Tag hat begonnen. Die Aufgaben sind jetzt aktualisiert."

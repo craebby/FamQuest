@@ -8,6 +8,7 @@ import TrashIcon from '~icons/fluent-emoji-flat/wastebasket'
 import DailyIcon from '~icons/fluent-emoji-flat/repeat-button'
 import FlexibleIcon from '~icons/fluent-emoji-flat/shuffle-tracks-button'
 import AnytimeIcon from '~icons/fluent-emoji-flat/infinity'
+import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
 import CheckIcon from '~icons/lucide/check'
 
 import { ApiError } from '../../api/client'
@@ -96,7 +97,10 @@ export function TaskEditor({
     recurrence?.kind === 'flexible' ? recurrence.interval_days : 7,
   )
   const [shared, setShared] = useState(task?.shared ?? false)
-  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | null>(task?.time_of_day ?? null)
+  // Block der Aufgabe: ein Tagesabschnitt der Routine, „Jederzeit“ (null) oder „Extra“.
+  const [block, setBlock] = useState<TimeOfDay | null | 'extra'>(
+    task?.extra ? 'extra' : (task?.time_of_day ?? null),
+  )
   const [color, setColor] = useState<MemberColor | null>(task?.color ?? null)
   const [description, setDescription] = useState(task?.description ?? '')
   const [active, setActive] = useState(task?.active ?? true)
@@ -141,7 +145,8 @@ export function TaskEditor({
         icon,
         description: description.trim(),
         points,
-        time_of_day: timeOfDay,
+        time_of_day: block === 'extra' ? null : block,
+        extra: block === 'extra',
         color,
         active,
         needs_approval: needsApproval,
@@ -169,7 +174,7 @@ export function TaskEditor({
     setTitle(templateTitle)
     setChosenIcon(taskTemplateIcon(template))
     setPoints(template.points)
-    setTimeOfDay(template.time_of_day)
+    setBlock(template.extra ? 'extra' : template.time_of_day)
     setNeedsApproval(template.needs_approval ?? false)
     setShared(template.shared ?? false)
     setKind(template.recurrence.kind)
@@ -400,11 +405,7 @@ export function TaskEditor({
 
         <Field label={t('tasks.time_of_day')}>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-3">
-            <ChoiceTile
-              name="time_of_day"
-              checked={timeOfDay === null}
-              onChange={() => setTimeOfDay(null)}
-            >
+            <ChoiceTile name="time_of_day" checked={block === null} onChange={() => setBlock(null)}>
               <AnytimeIcon className="size-10" aria-hidden="true" />
               {t('tasks.anytime')}
             </ChoiceTile>
@@ -414,15 +415,26 @@ export function TaskEditor({
                 <ChoiceTile
                   key={value}
                   name="time_of_day"
-                  checked={timeOfDay === value}
-                  onChange={() => setTimeOfDay(value)}
+                  checked={block === value}
+                  onChange={() => setBlock(value)}
                 >
                   <Icon className="size-10" aria-hidden="true" />
                   {t(`times_of_day.${value}`)}
                 </ChoiceTile>
               )
             })}
+            <ChoiceTile
+              name="time_of_day"
+              checked={block === 'extra'}
+              onChange={() => setBlock('extra')}
+            >
+              <ExtraIcon className="size-10" aria-hidden="true" />
+              {t('tasks.extra')}
+            </ChoiceTile>
           </div>
+          <p className="text-base text-slate-500">
+            {t(block === 'extra' ? 'tasks.extra_hint' : 'tasks.routine_hint')}
+          </p>
         </Field>
 
         <Field label={t('tasks.color')}>

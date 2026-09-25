@@ -52,8 +52,10 @@ def test_create_and_list_task(client, parent, lena):
         "active": True,
         "needs_approval": False,
         "shared": False,
+        "extra": False,
         "recurrence": {"kind": "daily"},
         "member_ids": [lena],
+        "positions": [{"member_id": lena, "position": 0}],
     }
     assert client.get("/api/tasks").json() == [task]
 
@@ -161,8 +163,10 @@ def test_update_task(client, parent, lena):
         "active": False,
         "needs_approval": False,
         "shared": False,
+        "extra": False,
         "recurrence": {"kind": "weekly", "weekdays": [1, 2, 3, 4, 5]},
         "member_ids": [tom],
+        "positions": [{"member_id": tom, "position": 0}],
     }
     assert client.get("/api/tasks").json() == [response.json()]
 
@@ -256,3 +260,79 @@ def test_once_occurs_only_on_its_date():
 
 def test_unknown_kind_never_occurs():
     assert days_matching(TaskRecurrence(kind="monthly")) == []
+
+
+# --- Routinen: Reihenfolge je Person, Extra-Aufgaben ------------------------------------
+
+
+def positions(client) -> dict[str, dict[int, int]]:
+    return {
+        task["title"]: {p["member_id"]: p["position"] for p in task["positions"]}
+        for task in client.get("/api/tasks").json()
+    }
+
+
+def order(client, me, member_id, task_ids):
+    return client.put(
+        f"/api/members/{member_id}/task-order", json={"task_ids": task_ids}, headers=csrf(me)
+    )
+
+
+def test_new_tasks_go_to_the_end_of_each_persons_order(client, parent, lena):
+    tom = add_member(client, parent, "Tom", "green")
+    create(client, parent, task_data([lena], title="Zähne"))
+    create(client, parent, task_data([tom], title="Anziehen"))
+    both = create(client, parent, task_data([lena, tom], title="Kuscheltier")).json()
+
+    assert positions(client) == {
+        "Zähne": {lena: 0},
+        "Anziehen": {tom: 0},
+        "Kuscheltier": {lena: 1, tom: 1},
+    }
+    # Kommt später jemand dazu, landet die Aufgabe bei ihm am Ende; die anderen bleiben.
+    anna = add_member(client, parent, "Anna", "blue")
+    create(client, parent, task_data([anna], title="Schuhe"))
+    client.put(
+        f"/api/tasks/{both['id']}",
+        json=task_data([lena, tom, anna], title="Kuscheltier"),
+        headers=csrf(parent),
+    )
+    assert positions(client)["Kuscheltier"] == {lena: 1, tom: 1, anna: 1}
+
+
+def test_order_tasks_of_one_person(client, parent, lena):
+    tom = add_member(client, parent, "Tom", "green")
+    teeth = create(client, parent, task_data([lena, tom], title="Zähne")).json()["id"]
+    dress = create(client, parent, task_data([lena], title="Anziehen")).json()["id"]
+    bear = create(client, parent, task_data([lena], title="Kuscheltier")).json()["id"]
+
+    response = order(client, parent, lena, [bear, teeth])
+
+    assert response.status_code == 204, response.text
+    found = positions(client)
+    assert [found["Kuscheltier"][lena], found["Zähne"][lena], found["Anziehen"][lena]] == [0, 1, 2]
+    # Toms Reihenfolge bleibt unberührt.
+    assert found["Zähne"][tom] == 0
+    assert dress
+
+
+def test_order_is_validated(client, parent, lena):
+    tom = add_member(client, parent, "Tom", "green")
+    teeth = create(client, parent, task_data([lena], title="Zähne")).json()["id"]
+    toms = create(client, parent, task_data([tom], title="Anziehen")).json()["id"]
+
+    for task_ids in ([toms], [teeth, teeth], [999]):
+        response = order(client, parent, lena, task_ids)
+        assert (response.status_code, response.json()["code"]) == (409, "task.order_invalid")
+    assert order(client, parent, 999, [teeth]).status_code == 404
+
+
+def test_order_needs_parent_area(client, admin):
+    response = client.put("/api/members/1/task-order", json={"task_ids": []}, headers=csrf(admin))
+    assert response.status_code == 403
+
+
+def test_extra_task(client, parent, lena):
+    task = create(client, parent, task_data([lena], extra=True, time_of_day=None)).json()
+    assert task["extra"] is True
+    assert client.get("/api/today").json()["tasks"][0]["extra"] is True

@@ -4,7 +4,7 @@ from fastapi import APIRouter, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 
-from app.api.tasks import get_task
+from app.api.tasks import get_task, positions_out
 from app.auth import CurrentSession, DbSession, get_family
 from app.errors import ApiError
 from app.models import FamilyMember, Task, TaskCompletion
@@ -110,6 +110,8 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
                 member_ids=[a.member_id for a in task.assignments],
                 needs_approval=task.needs_approval,
                 shared=task.shared,
+                extra=task.extra,
+                positions=positions_out(task),
                 due_dates=dues.get(task.id, []),
                 # Nur Personen, denen die Aufgabe (noch) zugeordnet ist.
                 done_member_ids=assigned_only(task, done.get(task.id, [])),

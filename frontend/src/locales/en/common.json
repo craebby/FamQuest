@@ -63,7 +63,8 @@
     "overdue_one": "due for {{count}} day",
     "overdue_other": "due for {{count}} days",
     "due_in_one": "due tomorrow",
-    "due_in_other": "due in {{count}} days"
+    "due_in_other": "due in {{count}} days",
+    "extras": "Extras"
   },
   "parents": {
     "title": "Parent area",
@@ -214,7 +215,13 @@
     "interval_weeks_one": "Every week",
     "interval_weeks_other": "Every {{count}} weeks",
     "interval_months_one": "Every month",
-    "interval_months_other": "Every {{count}} months"
+    "interval_months_other": "Every {{count}} months",
+    "extra": "Extra",
+    "extra_hint": "Extra: optional, shown in its own \"Extras\" block. Earns points but doesn't count towards the daily progress.",
+    "routine_hint": "Tasks of one time of day form a routine together. You set their order when the list is filtered by one person.",
+    "order_hint": "This is how {{name}} sees the tasks on the display. Use the arrows to set the order within each routine.",
+    "move_up": "Move {{title}} up",
+    "move_down": "Move {{title}} down"
   },
   "times_of_day": {
     "morning": "Morning",
@@ -331,7 +338,8 @@
     },
     "task": {
       "not_found": "This task no longer exists",
-      "not_due": "This task isn't due today."
+      "not_due": "This task isn't due today.",
+      "order_invalid": "The order no longer matches the tasks. Please reload."
     },
     "completion": {
       "day_changed": "A new day has started. The tasks have been updated."

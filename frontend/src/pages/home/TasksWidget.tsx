@@ -2,29 +2,25 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import AlarmIcon from '~icons/fluent-emoji-flat/alarm-clock'
 import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
+import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import HourglassIcon from '~icons/fluent-emoji-flat/hourglass-not-done'
 import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 import CheckIcon from '~icons/lucide/check'
 
 import type { Member } from '../../api/members'
-import { TIMES_OF_DAY } from '../../api/tasks'
-import { type Today, type TodayTask, isDoneFor, pointsFor } from '../../api/today'
+import { type Today, type TodayTask, doneBy, isUpcoming, pointsFor } from '../../api/today'
 import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { errorMessage } from '../../errors'
+import { type CareSegment, careShares } from '../../care'
 import { colorTokens } from '../../memberColors'
 import type { PersonPageState } from '../PersonPage'
+import { CareShare } from '../family/CareShare'
 import { PointsFeedback } from '../family/TaskCard'
 import { useTaskToggle } from '../family/useTaskToggle'
-import { currentTasks, tasksFor, useFamilyToday } from '../family/useFamilyToday'
+import { tasksFor, useFamilyToday } from '../family/useFamilyToday'
 import { SetupHint, Widget } from './Widget'
-
-const ORDER = [...TIMES_OF_DAY, null]
-
-/** Nach Tagesabschnitt, „Jederzeit“ zuletzt; die Reihenfolge ändert sich beim Abhaken nicht. */
-const byTimeOfDay = (a: TodayTask, b: TodayTask) =>
-  ORDER.indexOf(a.time_of_day) - ORDER.indexOf(b.time_of_day)
 
 /** Heutige Aufgaben aller Personen, kompakt: eine Zeile je Person, ein Symbol je Aufgabe. */
 export function TasksWidget({ className }: { className?: string }) {
@@ -49,7 +45,12 @@ export function TasksWidget({ className }: { className?: string }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {members.map((member) => (
-            <MemberRow key={member.id} member={member} today={today} />
+            <MemberRow
+              key={member.id}
+              member={member}
+              today={today}
+              care={careShares(members, today)}
+            />
           ))}
         </ul>
       )}
@@ -57,13 +58,31 @@ export function TasksWidget({ className }: { className?: string }) {
   )
 }
 
-function MemberRow({ member, today }: { member: Member; today: Today }) {
+function MemberRow({
+  member,
+  today,
+  care,
+}: {
+  member: Member
+  today: Today
+  /** Anteile der Erwachsenen an der Woche; null bei weniger als zwei Erwachsenen. */
+  care: CareSegment[] | null
+}) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
-  const tasks = currentTasks(tasksFor(today.tasks, member.id), member.id, today.date).sort(
-    byTimeOfDay,
+  // In der Reihenfolge der Routinen; flexible Aufgaben erst, wenn sie fällig sind.
+  const tasks = tasksFor(today.tasks, member.id).filter(
+    (task) => !isUpcoming(task, member.id, today.date),
   )
-  const done = tasks.filter((task) => isDoneFor(task, member.id)).length
+  const routine = tasks.filter((task) => !task.extra)
+  const extras = tasks.filter((task) => task.extra)
+  // Fortschritt: nur, was diese Person selbst erledigt hat. „Einer für alle“, von jemand
+  // anderem erledigt, zählt für den anderen und fällt hier heraus.
+  const own = routine.filter((task) => {
+    const by = doneBy(task, member.id)
+    return by === null || by === member.id
+  })
+  const done = own.filter((task) => doneBy(task, member.id) === member.id).length
   const points = pointsFor(today, member.id)
   const state: PersonPageState = { from: '/' }
 
@@ -85,26 +104,33 @@ function MemberRow({ member, today }: { member: Member; today: Today }) {
         </span>
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        {tasks.length > 0 && (
-          <div className="flex items-center gap-3">
-            <span
-              role="img"
-              aria-label={t('points.progress', { done, total: tasks.length })}
-              className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100"
-            >
+        {member.role === 'parent' && care ? (
+          // Wie in der Familienansicht: Erwachsene sehen ihren Anteil an der Woche.
+          <CareShare member={member} shares={care} size="md" />
+        ) : (
+          own.length > 0 && (
+            <div className="flex items-center gap-3">
               <span
-                className="block h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none"
-                style={{ width: `${(done / tasks.length) * 100}%`, backgroundColor: tokens.main }}
-              />
-            </span>
-            {member.role === 'child' && (
-              <span className="flex shrink-0 items-center gap-1 text-lg font-extrabold text-slate-700 tabular-nums">
-                <TrophyIcon className="size-6" aria-hidden="true" />
-                <span className="sr-only">{t('points.total_label', { count: points.total })}</span>
-                <span aria-hidden="true">{points.total}</span>
+                role="img"
+                aria-label={t('points.progress', { done, total: own.length })}
+                className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100"
+              >
+                <span
+                  className="block h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none"
+                  style={{ width: `${(done / own.length) * 100}%`, backgroundColor: tokens.main }}
+                />
               </span>
-            )}
-          </div>
+              {member.role === 'child' && (
+                <span className="flex shrink-0 items-center gap-1 text-lg font-extrabold text-slate-700 tabular-nums">
+                  <TrophyIcon className="size-6" aria-hidden="true" />
+                  <span className="sr-only">
+                    {t('points.total_label', { count: points.total })}
+                  </span>
+                  <span aria-hidden="true">{points.total}</span>
+                </span>
+              )}
+            </div>
+          )
         )}
         {tasks.length === 0 ? (
           <p className="flex items-center gap-2 text-lg font-bold text-slate-500">
@@ -112,11 +138,28 @@ function MemberRow({ member, today }: { member: Member; today: Today }) {
             {t('family.free_today')}
           </p>
         ) : (
-          <ul className="flex flex-wrap gap-2">
-            {tasks.map((task) => (
-              <TaskChip key={task.id} task={task} member={member} date={today.date} />
-            ))}
-          </ul>
+          <>
+            {routine.length > 0 && (
+              <ul className="flex flex-wrap gap-2">
+                {routine.map((task) => (
+                  <TaskChip key={task.id} task={task} member={member} date={today.date} />
+                ))}
+              </ul>
+            )}
+            {extras.length > 0 && (
+              <section
+                aria-label={t('family.extras')}
+                className="flex flex-wrap items-center gap-2 border-t-2 border-dashed border-slate-200 pt-2"
+              >
+                <ExtraIcon className="size-8 shrink-0" aria-hidden="true" />
+                <ul className="flex flex-wrap gap-2">
+                  {extras.map((task) => (
+                    <TaskChip key={task.id} task={task} member={member} date={today.date} />
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
         )}
       </div>
     </li>
@@ -141,12 +184,20 @@ function TaskChip({ task, member, date }: { task: TodayTask; member: Member; dat
         title={task.title}
         onClick={toggle}
         className="flex w-24 flex-col items-center gap-1 rounded-2xl border-4 px-1 pt-2 pb-1 transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100"
-        style={{
-          backgroundColor: done ? tokens.soft : '#ffffff',
-          borderColor: done ? tokens.main : tokens.soft,
-        }}
+        style={
+          doneByOther
+            ? // Von jemand anderem erledigt: neutral statt in der eigenen Farbe.
+              { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }
+            : {
+                backgroundColor: done ? tokens.soft : '#ffffff',
+                borderColor: done ? tokens.main : tokens.soft,
+              }
+        }
       >
-        <TaskIcon icon={task.icon} className={`size-12 ${done && !pending ? 'opacity-60' : ''}`} />
+        <TaskIcon
+          icon={task.icon}
+          className={`size-12 ${doneByOther ? 'opacity-40 grayscale' : done && !pending ? 'opacity-60' : ''}`}
+        />
         <span
           className={`line-clamp-2 w-full text-center text-sm leading-tight font-bold break-words hyphens-auto ${done ? 'text-slate-500 line-through' : 'text-slate-700'}`}
         >

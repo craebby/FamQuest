@@ -22,6 +22,7 @@ services and without external CDNs. The full specification (in German) is in
 - "Today" start page: clock, weather, the next events and everyone's tasks at a glance
 - Family view with one column per person; complete a task with a single tap
 - Routines (daily, specific weekdays, Mon–Fri, once, flexible "about every X days") and times of day
+- Routines in a fixed order per person, optional extra tasks in their own block
 - "One for all" tasks: done by one adult, done for everyone
 - Points as ledger entries, daily progress, manual credits
 - Rewards per child from a list of suggestions, redeemed on the display
@@ -116,7 +117,10 @@ Under "Tasks" in the parents' area you decide who does what and when. A task has
   avatar of whoever did it; points and the weekly share count for that person.
 - **How often**: every day, on specific weekdays (with shortcuts Mon–Fri or weekend), once on a
   date, or **flexible** (see below)
-- **Time of day**: morning, midday, afternoon, evening or anytime
+- **When**: morning, midday, afternoon, evening, anytime or **Extra**. Tasks of one time of day
+  form a **routine** in a fixed order (e.g. morning: brush teeth → get dressed → pack teddy).
+  **Extras** are optional (e.g. clear the table): they have their own block at the end, earn
+  points, but don't count towards the daily progress
 - **Card colour**: the person's colour by default
 - **Active**: inactive tasks are kept but don't appear in the family view
 - **Parents check**: points are only given once you have confirmed the task (see
@@ -137,7 +141,10 @@ clock ("due for 3 days"). After that it is due again X days after it was done. B
 it appears small under **"Coming up"** and can already be done early; the rhythm then restarts from
 that day. "Coming up" does not count towards the daily progress.
 
-The list can be filtered by tapping a person; new tasks are then preselected for that person. The
+The list can be filtered by tapping a person; new tasks are then preselected for that person.
+Filtered by one person, the list shows that person's routines exactly as on the display, with
+large ↑/↓ buttons to set the **order within each routine**. The order is per person: two children
+can brush their teeth at different steps. New tasks go to the end. The
 switch in each row sets a task active or inactive. When a person is deleted their tasks are kept;
 tasks without anyone assigned are marked in the list.
 
@@ -160,7 +167,8 @@ top, below it three columns (stacked on narrow screens):
   each with "Today", "Tomorrow" or the date, in the person's colour with avatars. Today's public
   or school holiday is shown above. A tap opens the details, the arrow opens the week view.
 - **Tasks**: one row per person with avatar, progress bar, points (children) and today's tasks as
-  large icons with a short title. **One tap** completes a task, just like in the family view
+  large icons with a short title, routines in their order and extras after a dashed line.
+  Adults see their share of the week instead of a progress bar. **One tap** completes a task, just like in the family view
   (with "+2", hourglass for parent checks, avatar for "One for all"); tap again to undo. The
   avatar opens the person view, the arrow opens the family view.
 - **Meals** and **Shopping** are placeholders, clearly marked "Coming soon" (phases 4 and 5).
@@ -176,7 +184,8 @@ column.
 - **One tap** on a task card completes it for that person (tick, card in the person's colour).
   **Tap again** to undo. Each task can be done only once per person and day, even with double
   taps.
-- Tasks are grouped by **time of day** (sunrise, sun, sun behind cloud, moon; plus "Anytime"). The
+- Tasks are grouped by **time of day** as routines in the order set by the parents (sunrise, sun,
+  sun behind cloud, moon; plus "Anytime"), followed by the optional **Extras** (flexed biceps). The
   current section is highlighted. A section that is completely done collapses into a single line
   with a tick and can be opened again with a tap. Times of day: morning until 11:00, midday until
   14:00, afternoon until 18:00, evening after that.
@@ -628,9 +637,10 @@ use.
 - [x] 2. Weather: choose the town in the parents' area, forecast from Open-Meteo
 - [x] 3. Start page "Today": clock, weather, the next 5 events, everyone's tasks as tappable icons,
   space for meals and shopping
-- [ ] 4. Week widget on the start page and a week view in the tasks area (what's coming up, what's
-  done)
-- [ ] 5. Polish on the real display
+- [ ] 4. Week view in the tasks area (what's coming up, what's done)
+- [ ] 5. Configurable start page: gear on "Today" (with the parents' PIN) to switch tiles on and
+  off and change their order, for the whole family; week widget as an optional tile
+- [ ] 6. Polish on the real display
 
 **1.1: make it your own**
 

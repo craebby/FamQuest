@@ -120,8 +120,13 @@ Im UI wird das Bild überall kreisförmig mit Farbring dargestellt. Ohne Foto ze
 | Aktiv | ja | inaktive Aufgaben erscheinen nicht mehr |
 | Eltern prüfen | nein | Punkte erst nach Kontrolle durch die Eltern (z. B. „Zimmer aufgeräumt“) |
 | Einer für alle | nein | bei mehreren Personen: eine Erledigung gilt für alle |
+| Extra | nein | freiwillige Aufgabe außerhalb der Routinen (z. B. Tisch abräumen); eigener Block, Punkte ja, Tagesfortschritt nein |
 
 Ist eine Aufgabe mehreren Personen zugeordnet, erledigt und punktet jede Person sie getrennt. Mit der Option **„Einer für alle“** (typisch für Haushaltsaufgaben wie „Bad putzen“ bei Mama und Papa) gilt sie dagegen für alle als erledigt, sobald eine zugeordnete Person sie erledigt hat; die anderen Spalten zeigen, wer es war. Punkte und der Anteil an der Woche zählen für diese Person.
+
+**Routinen und Reihenfolge** *(nach dem Praxistest, Phase 3)*
+
+Die Aufgaben eines Tagesabschnitts bilden eine Routine, die als Block in fester Reihenfolge erscheint (z. B. morgens: Zähne putzen → anziehen → Kuscheltier einpacken; nachmittags: Rucksack aufhängen → Brotdose in die Küche; abends: Schlafi an → Zähne putzen). Die Reihenfolge legen Eltern je Person fest (in der nach einer Person gefilterten Aufgabenliste). Freiwillige Extras stehen in einem eigenen Block danach und zählen nicht zum Tagesfortschritt.
 
 **Aufgaben-Vorlagen**
 
@@ -290,8 +295,8 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
 | Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten) |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
-| Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle |
-| TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember |
+| Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle, Extra |
+| TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember, Position (Reihenfolge je Person) |
 | TaskRecurrence | Wiederholungsregel | Typ, Wochentage, Datum, Intervall in Tagen (flexibel) |
 | TaskCompletion | Erledigung | Task, Person, Datum, Zeitpunkt, geprüft am; eindeutig je Task/Person/Tag |
 | PointTransaction | Punktebuchung | Person, Betrag, Grund, Quelle |

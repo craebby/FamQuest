@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { MemberColor } from '../memberColors'
 import { ApiError, api, apiGet } from './client'
-import type { TimeOfDay } from './tasks'
+import type { MemberPosition, TimeOfDay } from './tasks'
 
 export interface TodayTask {
   id: number
@@ -16,6 +16,10 @@ export interface TodayTask {
   needs_approval: boolean
   /** „Einer für alle“: erledigt für alle, sobald jemand in `done_member_ids` steht. */
   shared: boolean
+  /** Extra-Aufgabe: freiwillig, eigener Block, zählt nicht zum Tagesfortschritt. */
+  extra: boolean
+  /** Platz in der Reihenfolge jeder Person. */
+  positions: MemberPosition[]
   /** Nur bei flexiblen Aufgaben: Fälligkeit (`YYYY-MM-DD`) je Person. */
   due_dates: { member_id: number; due_date: string }[]
   /** Personen, die die Aufgabe heute schon erledigt haben (auch ungeprüft). */

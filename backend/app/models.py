@@ -123,6 +123,8 @@ class Task(Base):
     needs_approval: Mapped[bool] = mapped_column(default=False, server_default="false")
     # „Einer für alle“: Eine Erledigung durch eine zugeordnete Person gilt für alle.
     shared: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # Extra-Aufgabe: freiwillig, steht außerhalb der Routinen und zählt nicht zum Tagesfortschritt.
+    extra: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     recurrence: Mapped["TaskRecurrence"] = relationship(cascade="all, delete-orphan", lazy="joined")
@@ -169,6 +171,8 @@ class TaskAssignment(Base):
     member_id: Mapped[int] = mapped_column(
         ForeignKey("family_members.id", ondelete="CASCADE"), index=True
     )
+    # Reihenfolge der Aufgaben dieser Person (Routinen in fester Abfolge); kleiner = früher.
+    position: Mapped[int] = mapped_column(default=0, server_default="0")
 
 
 class TaskCompletion(Base):

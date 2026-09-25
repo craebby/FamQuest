@@ -4,10 +4,11 @@ import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
 import SoonIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import SparklesIcon from '~icons/fluent-emoji-flat/sparkles'
+import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
 import ChevronIcon from '~icons/lucide/chevron-down'
 
 import type { Member } from '../../api/members'
-import { TIMES_OF_DAY, type TimeOfDay } from '../../api/tasks'
+import { TASK_BLOCKS, type TaskBlock, type TimeOfDay, blockOf } from '../../api/tasks'
 import { type TodayTask, daysUntilDue, isDoneFor, isUpcoming } from '../../api/today'
 import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { colorTokens } from '../../memberColors'
@@ -25,7 +26,10 @@ interface TaskGroupsProps {
   size: CardSize
 }
 
-/** Aufgaben einer Person, gruppiert nach Tagesabschnitt; „Jederzeit“ steht am Ende. */
+/**
+ * Aufgaben einer Person als Blöcke: Routinen je Tagesabschnitt in der festgelegten Reihenfolge,
+ * dann „Jederzeit“ und zuletzt die freiwilligen Extras.
+ */
 export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: TaskGroupsProps) {
   const { t } = useTranslation()
 
@@ -35,12 +39,10 @@ export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: Task
       (a, b) => (daysUntilDue(a, member.id, date) ?? 0) - (daysUntilDue(b, member.id, date) ?? 0),
     )
   const current = tasks.filter((task) => !upcoming.includes(task))
-  const groups = [...TIMES_OF_DAY, null]
-    .map((timeOfDay) => ({
-      timeOfDay,
-      tasks: current.filter((task) => task.time_of_day === timeOfDay),
-    }))
-    .filter((group) => group.tasks.length > 0)
+  const groups = TASK_BLOCKS.map((block) => ({
+    block,
+    tasks: current.filter((task) => blockOf(task) === block),
+  })).filter((group) => group.tasks.length > 0)
 
   return (
     <div className={`flex flex-col ${size === 'lg' ? 'gap-3' : 'gap-2'}`}>
@@ -52,12 +54,12 @@ export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: Task
       )}
       {groups.map((group) => (
         <TaskGroup
-          key={group.timeOfDay ?? 'anytime'}
+          key={group.block ?? 'anytime'}
           member={member}
-          timeOfDay={group.timeOfDay}
+          block={group.block}
           tasks={group.tasks}
           date={date}
-          current={group.timeOfDay === currentTimeOfDay}
+          current={group.block === currentTimeOfDay}
           size={size}
         />
       ))}
@@ -81,14 +83,14 @@ export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: Task
 
 interface TaskGroupProps {
   member: Member
-  timeOfDay: TimeOfDay | null
+  block: TaskBlock
   tasks: TodayTask[]
   date: string
   current: boolean
   size: CardSize
 }
 
-function TaskGroup({ member, timeOfDay, tasks, date, current, size }: TaskGroupProps) {
+function TaskGroup({ member, block, tasks, date, current, size }: TaskGroupProps) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
   const allDone = tasks.every((task) => isDoneFor(task, member.id))
@@ -107,8 +109,10 @@ function TaskGroup({ member, timeOfDay, tasks, date, current, size }: TaskGroupP
     return () => window.clearTimeout(timer)
   }, [allDone])
   const collapsible = allDone && delayPassed
-  const Icon = timeOfDay ? TIME_OF_DAY_ICONS[timeOfDay] : SparklesIcon
-  const label = t(timeOfDay ? `times_of_day.${timeOfDay}` : 'tasks.anytime')
+  const Icon = block === 'extra' ? ExtraIcon : block ? TIME_OF_DAY_ICONS[block] : SparklesIcon
+  const label = t(
+    block === 'extra' ? 'family.extras' : block ? `times_of_day.${block}` : 'tasks.anytime',
+  )
   const iconSize = size === 'lg' ? 'size-12' : 'size-9'
 
   if (collapsible && !expanded) {

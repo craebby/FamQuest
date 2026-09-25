@@ -165,8 +165,14 @@ class TaskIn(BaseModel):
     active: bool = True
     needs_approval: bool = False
     shared: bool = False
+    extra: bool = False
     recurrence: Recurrence
     member_ids: Annotated[list[int], Field(min_length=1), AfterValidator(_unique_sorted)]
+
+
+class MemberPositionOut(BaseModel):
+    member_id: int
+    position: int
 
 
 class TaskOut(BaseModel):
@@ -180,8 +186,17 @@ class TaskOut(BaseModel):
     active: bool
     needs_approval: bool
     shared: bool
+    extra: bool
     recurrence: Recurrence
     member_ids: list[int]
+    # Platz in der Reihenfolge jeder Person.
+    positions: list[MemberPositionOut]
+
+
+class TaskOrderIn(BaseModel):
+    # Aufgaben der Person in der gewünschten Reihenfolge (nicht genannte behalten ihre Abfolge
+    # dahinter).
+    task_ids: Annotated[list[int], Field(max_length=500)]
 
 
 class MemberDueOut(BaseModel):
@@ -201,6 +216,8 @@ class TodayTaskOut(BaseModel):
     needs_approval: bool
     # „Einer für alle“: erledigt für alle, sobald eine Person in done_member_ids steht.
     shared: bool
+    extra: bool
+    positions: list[MemberPositionOut]
     # Nur bei flexiblen Aufgaben: Fälligkeit je Person (bei „Einer für alle“ überall gleich).
     due_dates: list[MemberDueOut]
     # Personen, die die Aufgabe heute schon erledigt haben (auch ungeprüft).

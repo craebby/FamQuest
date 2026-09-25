@@ -419,6 +419,43 @@ describe('Familienansicht', () => {
     )
   })
 
+  it('zeigt Routinen in der festgelegten Reihenfolge und Extras als eigenen Block', async () => {
+    const first = makeTodayTask({
+      id: 20,
+      title: 'Anziehen',
+      member_ids: [1],
+      positions: [{ member_id: 1, position: 0 }],
+    })
+    const second = makeTodayTask({
+      id: 21,
+      title: 'Kuscheltier einpacken',
+      member_ids: [1],
+      positions: [{ member_id: 1, position: 1 }],
+    })
+    const extra = makeTodayTask({
+      id: 22,
+      title: 'Tisch abräumen',
+      time_of_day: null,
+      extra: true,
+      member_ids: [1],
+    })
+    mockApi(familyRoutes(makeToday({ tasks: [extra, second, first] })))
+    renderApp('/tasks')
+
+    const column = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
+    const morning = within(column.getByRole('region', { name: 'Morgens' }))
+    expect(
+      morning.getAllByRole('button', { pressed: false }).map((card) => card.textContent),
+    ).toEqual([expect.stringContaining('Anziehen'), expect.stringContaining('Kuscheltier')])
+    expect(
+      within(column.getByRole('region', { name: 'Extras' })).getByRole('button', {
+        name: /^Tisch abräumen/,
+      }),
+    ).toBeVisible()
+    // Extras zählen nicht zum Tagesfortschritt.
+    expect(column.getByRole('img', { name: '0 von 2 Aufgaben erledigt' })).toBeInTheDocument()
+  })
+
   it('funktioniert auch auf Englisch', async () => {
     await i18n.changeLanguage('en')
     mockApi({
