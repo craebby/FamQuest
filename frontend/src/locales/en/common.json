@@ -165,7 +165,12 @@
     "saved": "“{{title}}” has been saved.",
     "delete": "Delete task",
     "delete_confirm": "Really delete “{{title}}”? This can't be undone. If you only want to pause it, set it to inactive.",
-    "deleted": "“{{title}}” has been deleted."
+    "deleted": "“{{title}}” has been deleted.",
+    "from_template": "Choose from templates",
+    "templates": "Choose a template",
+    "template_groups": "Template groups",
+    "template_group_kids": "Children",
+    "template_group_household": "Household"
   },
   "times_of_day": {
     "morning": "Morning",

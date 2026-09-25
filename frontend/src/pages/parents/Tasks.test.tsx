@@ -132,6 +132,51 @@ describe('Aufgaben im Elternbereich', () => {
     })
   })
 
+  it('füllt den Editor aus einer Vorlage vor', async () => {
+    const user = userEvent.setup()
+    const calls = api([], {
+      'POST /api/tasks': (body) =>
+        Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
+    })
+    renderApp('/parents')
+
+    await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
+    await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))
+    const dialog = screen.getByRole('dialog', { name: 'Vorlage wählen' })
+    await user.click(
+      within(dialog).getByRole('button', { name: /Sachen für die Kita vorbereiten/ }),
+    )
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByLabelText('Titel')).toHaveValue('Sachen für die Kita vorbereiten')
+    await user.click(screen.getByRole('checkbox', { name: /Lena/ }))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('ist gespeichert.')
+    expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
+      title: 'Sachen für die Kita vorbereiten',
+      icon: 'fluent-emoji-flat:backpack',
+      points: 2,
+      time_of_day: 'evening',
+      recurrence: { kind: 'weekly', weekdays: [1, 2, 3, 4, 5] },
+    })
+  })
+
+  it('zeigt Haushaltsvorlagen für Erwachsene', async () => {
+    const user = userEvent.setup()
+    api([], {
+      'GET /api/members': Response.json([makeMember({ id: 3, name: 'Mama', role: 'parent' })]),
+    })
+    renderApp('/parents')
+
+    await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
+    await user.click(screen.getByRole('checkbox', { name: /Mama/ }))
+    await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))
+
+    expect(screen.getByRole('button', { name: 'Haushalt' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Kinder ins Bett bringen/ })).toBeVisible()
+  })
+
   it('verlangt Titel und mindestens eine Person', async () => {
     const user = userEvent.setup()
     const calls = api([])

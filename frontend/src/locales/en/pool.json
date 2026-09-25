@@ -34,5 +34,31 @@
     "day_trip": "Day trip",
     "family_day": "Plan a special family day",
     "big_wish": "A big wish"
+  },
+  "tasks": {
+    "teeth_morning": "Brush teeth",
+    "get_dressed": "Get dressed",
+    "make_bed": "Make the bed",
+    "homework": "Homework",
+    "tidy_toys": "Tidy up toys",
+    "clear_table": "Clear the table",
+    "laundry_basket": "Clothes in the laundry basket",
+    "kita_bag": "Get things ready for nursery",
+    "teeth_evening": "Brush teeth",
+    "read": "Reading",
+    "take_out_trash": "Take out the rubbish",
+    "help_tidy": "Help with tidying up",
+    "lunchbox": "Pack the lunchbox",
+    "drop_off": "Take the kids to nursery/school",
+    "pick_up": "Pick up the kids",
+    "cook": "Cook dinner",
+    "dishwasher": "Load and unload the dishwasher",
+    "bedtime": "Put the kids to bed",
+    "laundry": "Wash and hang up laundry",
+    "groceries": "Grocery shopping",
+    "clean_bathroom": "Clean the bathroom",
+    "vacuum": "Vacuum",
+    "trash": "Take out the bins",
+    "appointments": "Plan appointments (doctor, nursery, birthdays)"
   }
 }

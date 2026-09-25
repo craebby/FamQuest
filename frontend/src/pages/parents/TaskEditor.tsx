@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import OnceIcon from '~icons/fluent-emoji-flat/tear-off-calendar'
 import StarIcon from '~icons/fluent-emoji-flat/star'
+import ListIcon from '~icons/fluent-emoji-flat/clipboard'
 import TrashIcon from '~icons/fluent-emoji-flat/wastebasket'
 import DailyIcon from '~icons/fluent-emoji-flat/repeat-button'
 import AnytimeIcon from '~icons/fluent-emoji-flat/infinity'
@@ -30,7 +31,9 @@ import { errorMessage } from '../../errors'
 import { DEFAULT_TASK_ICON, iconLabel, iconName, suggestIcon } from '../../icons/catalog'
 import { COLOR_TOKENS, MEMBER_COLORS, type MemberColor } from '../../memberColors'
 import { WEEKEND, WORKDAYS, sameDays, todayIn, weekdayName, weekdayOrder } from '../../weekdays'
+import { type TaskTemplate, taskTemplateIcon } from '../../pools/tasks'
 import { IconPicker } from './IconPicker'
+import { TaskTemplatePicker } from './TaskTemplatePicker'
 import { ChoiceTile, Field, NumberStepper } from './formParts'
 
 const KIND_ICONS: Record<RecurrenceKind, typeof DailyIcon> = {
@@ -85,6 +88,7 @@ export function TaskEditor({
   const [description, setDescription] = useState(task?.description ?? '')
   const [active, setActive] = useState(task?.active ?? true)
   const [pickingIcon, setPickingIcon] = useState(false)
+  const [pickingTemplate, setPickingTemplate] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
@@ -138,6 +142,20 @@ export function TaskEditor({
   const toggle = (list: number[], value: number) =>
     list.includes(value) ? list.filter((item) => item !== value) : [...list, value]
   const busy = save.isPending || remove.isPending
+
+  const applyTemplate = (template: TaskTemplate, templateTitle: string) => {
+    setTitle(templateTitle)
+    setChosenIcon(taskTemplateIcon(template))
+    setPoints(template.points)
+    setTimeOfDay(template.time_of_day)
+    setKind(template.recurrence.kind)
+    if (template.recurrence.kind === 'weekly') setWeekdays(template.recurrence.weekdays)
+    setPickingTemplate(false)
+  }
+  // Nur Erwachsene gewählt: Haushaltsvorlagen zuerst zeigen.
+  const onlyAdults =
+    memberIds.length > 0 &&
+    memberIds.every((id) => members.find((member) => member.id === id)?.role === 'parent')
   const iconText = iconLabel(t, iconName(icon) ?? '')
 
   return (
@@ -145,6 +163,13 @@ export function TaskEditor({
       <h1 className="text-3xl font-extrabold break-words text-orange-600">
         {task ? t('tasks.edit_title', { title: task.title }) : t('tasks.new_title')}
       </h1>
+
+      {!task && (
+        <Button variant="secondary" className="self-start" onClick={() => setPickingTemplate(true)}>
+          <ListIcon className="size-7" aria-hidden="true" />
+          {t('tasks.from_template')}
+        </Button>
+      )}
 
       <form
         className="flex flex-col gap-6 rounded-3xl bg-white p-6 shadow-sm"
@@ -381,6 +406,14 @@ export function TaskEditor({
             {t('tasks.delete')}
           </Button>
         ))}
+
+      {pickingTemplate && (
+        <TaskTemplatePicker
+          initialGroup={onlyAdults ? 'household' : 'kids'}
+          onSelect={applyTemplate}
+          onClose={() => setPickingTemplate(false)}
+        />
+      )}
 
       {pickingIcon && (
         <IconPicker

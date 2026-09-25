@@ -165,7 +165,12 @@
     "saved": "„{{title}}“ ist gespeichert.",
     "delete": "Aufgabe löschen",
     "delete_confirm": "„{{title}}“ wirklich löschen? Das lässt sich nicht rückgängig machen. Wenn ihr sie nur pausieren wollt, schaltet sie auf inaktiv.",
-    "deleted": "„{{title}}“ ist gelöscht."
+    "deleted": "„{{title}}“ ist gelöscht.",
+    "from_template": "Aus Vorlagen wählen",
+    "templates": "Vorlage wählen",
+    "template_groups": "Vorlagen-Gruppen",
+    "template_group_kids": "Kinder",
+    "template_group_household": "Haushalt"
   },
   "times_of_day": {
     "morning": "Morgens",

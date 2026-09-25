@@ -34,5 +34,31 @@
     "day_trip": "Tagesausflug",
     "family_day": "Einen besonderen Familientag planen",
     "big_wish": "Großer Wunsch"
+  },
+  "tasks": {
+    "teeth_morning": "Zähne putzen",
+    "get_dressed": "Anziehen",
+    "make_bed": "Bett machen",
+    "homework": "Hausaufgaben",
+    "tidy_toys": "Spielzeug aufräumen",
+    "clear_table": "Tisch abräumen",
+    "laundry_basket": "Wäsche in den Wäschekorb",
+    "kita_bag": "Sachen für die Kita vorbereiten",
+    "teeth_evening": "Zähne putzen",
+    "read": "Lesen",
+    "take_out_trash": "Müll wegbringen",
+    "help_tidy": "Beim Aufräumen helfen",
+    "lunchbox": "Brotdose packen",
+    "drop_off": "Kinder zur Kita/Schule bringen",
+    "pick_up": "Kinder abholen",
+    "cook": "Kochen",
+    "dishwasher": "Spülmaschine ein- und ausräumen",
+    "bedtime": "Kinder ins Bett bringen",
+    "laundry": "Wäsche waschen und aufhängen",
+    "groceries": "Einkaufen",
+    "clean_bathroom": "Bad putzen",
+    "vacuum": "Staubsaugen",
+    "trash": "Müll rausbringen",
+    "appointments": "Termine planen (Arzt, Kita, Geburtstage)"
   }
 }
