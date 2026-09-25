@@ -15,6 +15,7 @@ import { ParentsPage } from './pages/ParentsPage'
 import { PersonPage } from './pages/PersonPage'
 import { RewardsPage } from './pages/RewardsPage'
 import { SetupPage } from './pages/SetupPage'
+import { TasksWeekPage } from './pages/TasksWeekPage'
 import { TodayPage } from './pages/TodayPage'
 
 function Loading() {
@@ -85,6 +86,7 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route index element={<TodayPage />} />
             <Route path="/tasks" element={<FamilyPage />} />
+            <Route path="/tasks/week" element={<TasksWeekPage />} />
             <Route path="/member/:memberId" element={<PersonPage />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/rewards/:memberId" element={<RewardsPage />} />

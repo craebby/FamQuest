@@ -197,6 +197,15 @@ column.
   (star, the family view), rewards (gift), calendar and settings (gear, parents' area with PIN). A red number on the gear shows how many
   completed tasks are waiting for a parent check.
 
+**Day | Week:** the switch at the top right of the family view opens the **week view**
+(Monday–Sunday, browse with the arrows like the calendar). For each day and person it shows the
+tasks as small icons in routine order: done in the person's colour with a tick, waiting for a
+parent check with an hourglass, still to do in white, not done on past days faded, "One for all"
+done by someone else in grey. Next to each person: how many routine tasks are done (extras don't
+count). The week view is for looking only; tasks are completed today, in the day view or on the
+start page. Past days show the tasks as they are set up now (from the day they were created) plus
+everything that was actually done.
+
 The layout scales with the window height from tablet width upwards: full size at 1080 px (wall
 display), proportionally smaller on laptops with display scaling (e.g. a 14" screen), never below
 75 %. On phones it stays at full size. Under "This device" in the parents' area you can also pick a
@@ -637,7 +646,8 @@ use.
 - [x] 2. Weather: choose the town in the parents' area, forecast from Open-Meteo
 - [x] 3. Start page "Today": clock, weather, the next 5 events, everyone's tasks as tappable icons,
   space for meals and shopping
-- [ ] 4. Week view in the tasks area (what's coming up, what's done)
+- [x] 4. Week view in the tasks area (what's coming up, what's done); routines in a fixed order per
+  person and optional extra tasks
 - [ ] 5. Configurable start page: gear on "Today" (with the parents' PIN) to switch tiles on and
   off and change their order, for the whole family; week widget as an optional tile
 - [ ] 6. Polish on the real display

@@ -293,3 +293,17 @@ test('Startseite: Aufgaben mit einem Tipp, Hinweise und Platz für später', asy
   await expect(page.getByRole('region', { name: 'Essen' })).toContainText('Kommt bald')
   await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Kommt bald')
 })
+
+test('Wochenansicht im Aufgabenbereich', async ({ page }) => {
+  await login(page)
+  await toTasks(page)
+  await page
+    .getByRole('navigation', { name: 'Ansicht' })
+    .getByRole('link', { name: 'Woche' })
+    .click()
+
+  const today = page.locator('section[aria-current="date"]')
+  await expect(today.getByRole('listitem', { name: /^Zähne putzen: / })).toBeVisible()
+  await page.getByRole('button', { name: 'Nächste Woche' }).click()
+  await expect(page.getByRole('button', { name: 'Diese Woche' })).toBeVisible()
+})

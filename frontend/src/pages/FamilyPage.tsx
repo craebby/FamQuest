@@ -13,6 +13,7 @@ import { formatLongDate } from '../weekdays'
 import { type CareSegment, careShares } from '../care'
 import { DayProgress } from './family/DayProgress'
 import { TaskGroups } from './family/TaskGroups'
+import { ViewToggle } from './family/ViewToggle'
 import { currentTasks, tasksFor, useFamilyToday } from './family/useFamilyToday'
 
 /** Familienansicht: eine Spalte pro Person mit ihren heutigen Aufgaben. */
@@ -25,11 +26,14 @@ export function FamilyPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
-      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <h1 className="text-3xl font-extrabold text-orange-600">{me?.family.name}</h1>
         {today && (
           <p className="text-xl font-bold text-slate-600">{formatLongDate(language, today.date)}</p>
         )}
+        <div className="ml-auto">
+          <ViewToggle current="day" />
+        </div>
       </header>
       {isPending ? (
         <p role="status" className="text-xl text-slate-600">

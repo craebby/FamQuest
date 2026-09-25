@@ -201,6 +201,15 @@ gehört, ergibt sich aus der Spalte.
   Einstellungen (Zahnrad, Elternbereich mit PIN). Eine rote
   Zahl am Zahnrad zeigt, wie viele Erledigungen auf die Kontrolle der Eltern warten.
 
+**Tag | Woche:** Der Umschalter oben rechts in der Familienansicht öffnet die **Wochenansicht**
+(Montag bis Sonntag, blättern mit den Pfeilen wie im Kalender). Sie zeigt je Tag und Person die
+Aufgaben als kleine Symbole in der Reihenfolge der Routine: erledigt in der Personenfarbe mit Haken,
+wartet auf Kontrolle mit Sanduhr, kommt noch in Weiß, an vergangenen Tagen nicht erledigt blass,
+„Einer für alle“ von jemand anderem erledigt in Grau. Neben jeder Person steht, wie viele
+Routine-Aufgaben erledigt sind (Extras zählen nicht mit). Die Woche ist nur zum Anschauen; erledigt
+wird heute, in der Tagesansicht oder auf der Startseite. Vergangene Tage zeigen die Aufgaben so, wie
+sie jetzt eingerichtet sind (ab ihrem Anlegetag), dazu alles, was tatsächlich erledigt wurde.
+
 Die Oberfläche skaliert ab Tablet-Breite mit der Fensterhöhe: volle Größe bei 1080 px
 (Wanddisplay), proportional kleiner auf Laptops mit Skalierung (z. B. 14"-Bildschirm), nie unter
 75 %. Am Smartphone bleibt sie in voller Größe. Im Elternbereich unter „Dieses Gerät“ lässt sich
@@ -656,7 +665,8 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 - [x] 2. Wetter: Ort im Elternbereich festlegen, Vorhersage von Open-Meteo
 - [x] 3. Startseite „Heute“: Uhr, Wetter, die nächsten 5 Termine, Aufgaben aller als antippbare
   Symbole, Platz für Essen und Einkauf
-- [ ] 4. Wochenansicht im Aufgabenbereich (was kommt noch, was ist erledigt)
+- [x] 4. Wochenansicht im Aufgabenbereich (was kommt noch, was ist erledigt); Routinen in fester
+  Reihenfolge je Person und freiwillige Extra-Aufgaben
 - [ ] 5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und
   Reihenfolge, gilt für die ganze Familie; Wochen-Widget als optionale Kachel
 - [ ] 6. Feinschliff am echten Display

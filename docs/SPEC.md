@@ -239,6 +239,8 @@ Eine Wochenansicht zeigt pro Person und Wochentag, welche Aufgaben anstehen und 
 
 *Entscheidung nach dem Praxistest (Etappe 8):* Im Elternbereich bringt sie keinen Mehrwert und wurde wieder entfernt. Sie kommt später optional in den eigenen Aufgabenbereich (blättern: was kommt noch, was ist erledigt) und als Widget auf die Startseite „Heute“ (siehe Phase 3).
 
+*Umsetzung (Phase 3, Etappe 4):* Im Aufgabenbereich schaltet „Tag | Woche“ auf eine Wochenansicht: je Tag und Person die Aufgaben als Symbole mit Status (erledigt, wartet auf Kontrolle, kommt noch, nicht erledigt), nur zum Anschauen. Das Wochen-Widget für die Startseite folgt als optionale Kachel mit der konfigurierbaren Startseite (Etappe 5).
+
 ## 6. Mehrsprachigkeit (Deutsch/Englisch) ab Phase 1
 
 Die App ist ab dem ersten Commit zweisprachig: **Deutsch (Standard) und Englisch**. Eine weitere Sprache soll später nur durch eine zusätzliche Übersetzungsdatei möglich sein.

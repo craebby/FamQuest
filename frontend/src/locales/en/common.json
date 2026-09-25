@@ -580,5 +580,14 @@
     "saved": "Weather for {{name}}",
     "remove": "Remove",
     "removed": "The weather is turned off."
+  },
+  "task_week": {
+    "views": "View",
+    "day": "Day",
+    "week": "Week",
+    "free": "Free",
+    "done": "done",
+    "open": "still to do",
+    "missed": "not done"
   }
 }
