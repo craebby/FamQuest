@@ -5,7 +5,7 @@ import { useParentMutation } from './mutations'
 import { TODAY_KEY } from './today'
 
 // Muss zu POINT_KINDS im Backend passen (backend/app/schemas.py).
-export type PointKind = 'task_completed' | 'task_undone' | 'manual'
+export type PointKind = 'task_completed' | 'task_undone' | 'manual' | 'reward_redeemed'
 
 export interface PointTransaction {
   id: number
@@ -13,8 +13,8 @@ export interface PointTransaction {
   kind: PointKind
   /** Aufgabentitel zum Buchungszeitpunkt bzw. Begründung der Eltern. */
   reason: string | null
-  /** Icon der Aufgabe, solange sie noch existiert. */
-  task_icon: string | null
+  /** Icon der Aufgabe (solange sie noch existiert) bzw. der eingelösten Belohnung. */
+  icon: string | null
   task_date: string | null
   created_at: string
 }

@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
@@ -12,6 +11,7 @@ import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { Alert, Button, Section, Switch } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { recurrenceSummary } from '../../recurrence'
+import { FilterChip } from './formParts'
 
 interface TasksSectionProps {
   tasks: Task[] | undefined
@@ -120,27 +120,6 @@ export function TasksSection({
         </>
       )}
     </Section>
-  )
-}
-
-function FilterChip({
-  pressed,
-  onClick,
-  children,
-}: {
-  pressed: boolean
-  onClick: () => void
-  children: ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      onClick={onClick}
-      className="flex min-h-14 shrink-0 items-center gap-2 rounded-full py-1 pr-5 pl-1 text-lg font-bold whitespace-nowrap text-slate-700 ring-2 ring-slate-200 first:pl-5 focus-visible:outline-4 focus-visible:outline-orange-400 aria-pressed:bg-orange-500 aria-pressed:text-white aria-pressed:ring-orange-500"
-    >
-      {children}
-    </button>
   )
 }
 

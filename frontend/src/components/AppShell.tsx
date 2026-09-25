@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
+import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 
 interface NavItemProps {
   to: string
@@ -41,6 +42,12 @@ export function AppShell() {
         className="fixed inset-x-0 bottom-0 z-10 flex gap-2 border-t border-orange-100 bg-white/95 p-2 backdrop-blur sm:sticky sm:top-0 sm:h-dvh sm:w-28 sm:shrink-0 sm:flex-col sm:border-t-0 sm:border-r sm:p-3"
       >
         <NavItem to="/" label={t('nav.today')} icon={StarIcon} active={onToday} />
+        <NavItem
+          to="/rewards"
+          label={t('nav.rewards')}
+          icon={GiftIcon}
+          active={pathname.startsWith('/rewards')}
+        />
         {/* Einstellungen abgesetzt am Ende der Leiste. */}
         <NavItem
           to="/parents"

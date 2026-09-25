@@ -21,7 +21,11 @@ def transaction_out(transaction: PointTransaction) -> PointTransactionOut:
         amount=transaction.amount,
         kind=transaction.kind,
         reason=transaction.reason,
-        task_icon=transaction.task.icon if transaction.task else None,
+        icon=transaction.redemption.reward_icon
+        if transaction.redemption
+        else transaction.task.icon
+        if transaction.task
+        else None,
         task_date=transaction.task_date,
         created_at=transaction.created_at,
     )

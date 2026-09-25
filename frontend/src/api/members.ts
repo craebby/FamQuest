@@ -24,6 +24,9 @@ export interface MemberData {
   color: MemberColor
 }
 
+/** Kinder der Familie; nur sie haben Belohnungen. */
+export const childrenOf = (members: Member[]) => members.filter((member) => member.role === 'child')
+
 export const MEMBERS_KEY = ['members'] as const
 
 export function useMembers() {

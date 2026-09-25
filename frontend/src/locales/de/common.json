@@ -37,7 +37,8 @@
   "nav": {
     "label": "Hauptnavigation",
     "today": "Heute",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "rewards": "Belohnungen"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -192,7 +193,8 @@
     "pets": "Tiere & Pflanzen",
     "activities": "Sport & Freizeit",
     "day": "Tag & Wetter",
-    "more": "Lob & mehr"
+    "more": "Lob & mehr",
+    "rewards": "Belohnungen"
   },
   "points": {
     "section": "Punkte",
@@ -226,7 +228,8 @@
     "load_more": "Ältere Buchungen laden",
     "kind_task_completed": "Aufgabe erledigt",
     "kind_task_undone": "Erledigung zurückgenommen",
-    "kind_manual": "Von Eltern gebucht"
+    "kind_manual": "Von Eltern gebucht",
+    "kind_reward_redeemed": "Belohnung eingelöst"
   },
   "errors": {
     "common": {
@@ -284,6 +287,59 @@
     },
     "points": {
       "insufficient": "So viele Punkte sind nicht vorhanden."
+    },
+    "reward": {
+      "not_found": "Diese Belohnung gibt es nicht mehr",
+      "inactive": "Diese Belohnung ist gerade nicht verfügbar",
+      "insufficient_points": "Dafür reichen die Punkte noch nicht",
+      "child_only": "Belohnungen gibt es nur für Kinder"
     }
+  },
+  "rewards": {
+    "title": "Belohnungen",
+    "section": "Belohnungen",
+    "of": "Belohnungen von {{name}}",
+    "back": "Zurück zur Auswahl",
+    "no_children": "Belohnungen gibt es für Kinder. Legt im Elternbereich ein Kind an.",
+    "none_yet": "Noch keine Belohnungen. Mama oder Papa können welche aussuchen.",
+    "redeem": "Einlösen",
+    "redeem_label": "{{name}} einlösen",
+    "progress": "{{balance}} von {{cost}} Punkten",
+    "missing_one": "Noch {{count}} Punkt nötig",
+    "missing_other": "Noch {{count}} Punkte nötig",
+    "confirm_title": "{{name}} einlösen?",
+    "confirm_cost_one": "Kostet {{count}} Punkt",
+    "confirm_cost_other": "Kostet {{count}} Punkte",
+    "confirm": "Ja, einlösen",
+    "enjoy": "Viel Spaß: {{name}}!",
+    "close": "Fertig",
+    "need_children": "Belohnungen gibt es nur für Kinder. Legt zuerst ein Kind an.",
+    "choose_child": "Kind wählen",
+    "empty": "{{name}} hat noch keine Belohnungen. Sucht welche aus den Vorschlägen aus.",
+    "new_title": "Neue Belohnung für {{name}}",
+    "edit_title": "{{name}} bearbeiten",
+    "name": "Name",
+    "cost": "Kosten in Punkten",
+    "active_hint": "Inaktive Belohnungen sind am Display nicht zu sehen.",
+    "active_toggle": "{{name}} aktiv",
+    "from_pool": "Aus Vorschlägen wählen",
+    "add_custom": "Eigene Belohnung",
+    "saved": "„{{name}}“ ist gespeichert.",
+    "delete": "Belohnung löschen",
+    "delete_confirm": "„{{name}}“ wirklich löschen? Bereits eingelöste bleiben in der Historie.",
+    "deleted": "„{{name}}“ ist gelöscht.",
+    "history": "Eingelöst von {{name}}",
+    "history_empty": "Noch nichts eingelöst.",
+    "load_more": "Ältere laden",
+    "pool_title": "Belohnungen für {{name}} auswählen",
+    "pool_intro": "Tippt alle Belohnungen an, die passen. Kosten und Namen könnt ihr danach noch ändern.",
+    "tier_small": "Klein",
+    "tier_medium": "Mittel",
+    "tier_large": "Groß",
+    "pool_present": "Schon vorhanden",
+    "pool_add_one": "{{count}} Belohnung hinzufügen",
+    "pool_add_other": "{{count}} Belohnungen hinzufügen",
+    "pool_added_one": "{{name}} hat {{count}} neue Belohnung.",
+    "pool_added_other": "{{name}} hat {{count}} neue Belohnungen."
   }
 }

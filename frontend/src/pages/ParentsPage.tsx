@@ -15,7 +15,8 @@ import {
   useSetPin,
   useUnlockParent,
 } from '../api/auth'
-import { type Member, useMembers } from '../api/members'
+import { type Member, childrenOf, useMembers } from '../api/members'
+import { type Reward, useRewards } from '../api/rewards'
 import { type Task, useTasks } from '../api/tasks'
 import { useToday } from '../api/today'
 import { PinPad } from '../components/PinPad'
@@ -26,6 +27,9 @@ import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
 import { PointsEditor } from './parents/PointsEditor'
 import { PointsSection } from './parents/PointsSection'
+import { RewardEditor } from './parents/RewardEditor'
+import { RewardPoolPicker } from './parents/RewardPoolPicker'
+import { RewardsSection } from './parents/RewardsSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
 
@@ -185,11 +189,17 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const members = useMembers()
   const tasks = useTasks()
   const today = useToday()
+  const rewards = useRewards()
   const [editingPin, setEditingPin] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | 'new' | null>(null)
   const [editingTask, setEditingTask] = useState<Task | 'new' | null>(null)
   const [pointsMember, setPointsMember] = useState<Member | null>(null)
   const [taskFilter, setTaskFilter] = useState<number | null>(null)
+  const [rewardsChildId, setRewardsChildId] = useState<number | null>(null)
+  const [editingReward, setEditingReward] = useState<{ reward?: Reward; member: Member } | null>(
+    null,
+  )
+  const [poolMember, setPoolMember] = useState<Member | null>(null)
   const [confirmDisable, setConfirmDisable] = useState(false)
   const [notice, setNotice] = useState<string>()
 
@@ -223,6 +233,40 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         onSaved={(title) => closeWith(t('tasks.saved', { title }))}
         onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
         onCancel={() => setEditingTask(null)}
+      />
+    )
+  }
+
+  const childMembers = childrenOf(members.data ?? [])
+  const rewardsChild =
+    childMembers.find((member) => member.id === rewardsChildId) ?? childMembers[0]
+
+  if (editingReward) {
+    const closeWith = (message: string) => {
+      setEditingReward(null)
+      setNotice(message)
+    }
+    return (
+      <RewardEditor
+        reward={editingReward.reward}
+        member={editingReward.member}
+        onSaved={(name) => closeWith(t('rewards.saved', { name }))}
+        onDeleted={(name) => closeWith(t('rewards.deleted', { name }))}
+        onCancel={() => setEditingReward(null)}
+      />
+    )
+  }
+
+  if (poolMember) {
+    return (
+      <RewardPoolPicker
+        member={poolMember}
+        existing={(rewards.data ?? []).filter((reward) => reward.member_id === poolMember.id)}
+        onDone={(count) => {
+          setPoolMember(null)
+          setNotice(t('rewards.pool_added', { count, name: poolMember.name }))
+        }}
+        onCancel={() => setPoolMember(null)}
       />
     )
   }
@@ -311,6 +355,29 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
           setNotice(undefined)
           setPointsMember(member)
         }}
+      />
+
+      <RewardsSection
+        childMembers={childMembers}
+        rewards={rewards.data}
+        error={rewards.error}
+        member={rewardsChild}
+        onSelect={setRewardsChildId}
+        onEdit={(reward) => {
+          const member = childMembers.find((child) => child.id === reward.member_id)
+          if (!member) return
+          setNotice(undefined)
+          setEditingReward({ reward, member })
+        }}
+        onAdd={(member) => {
+          setNotice(undefined)
+          setEditingReward({ member })
+        }}
+        onPickFromPool={(member) => {
+          setNotice(undefined)
+          setPoolMember(member)
+        }}
+        timeZone={me.family.timezone}
       />
 
       <Section title={t('parents.pin_section')}>

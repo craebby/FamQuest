@@ -37,7 +37,8 @@
   "nav": {
     "label": "Main navigation",
     "today": "Today",
-    "settings": "Settings"
+    "settings": "Settings",
+    "rewards": "Rewards"
   },
   "family": {
     "no_members": "No family members yet",
@@ -192,7 +193,8 @@
     "pets": "Animals & plants",
     "activities": "Sports & free time",
     "day": "Day & weather",
-    "more": "Praise & more"
+    "more": "Praise & more",
+    "rewards": "Rewards"
   },
   "points": {
     "section": "Points",
@@ -226,7 +228,8 @@
     "load_more": "Load older transactions",
     "kind_task_completed": "Task done",
     "kind_task_undone": "Task undone",
-    "kind_manual": "Booked by parents"
+    "kind_manual": "Booked by parents",
+    "kind_reward_redeemed": "Reward redeemed"
   },
   "errors": {
     "common": {
@@ -284,6 +287,59 @@
     },
     "points": {
       "insufficient": "There aren't enough points for that."
+    },
+    "reward": {
+      "not_found": "This reward no longer exists",
+      "inactive": "This reward is not available right now",
+      "insufficient_points": "Not enough points yet",
+      "child_only": "Rewards are only for children"
     }
+  },
+  "rewards": {
+    "title": "Rewards",
+    "section": "Rewards",
+    "of": "{{name}}'s rewards",
+    "back": "Back to the choice",
+    "no_children": "Rewards are for children. Add a child in the parents' area.",
+    "none_yet": "No rewards yet. Mum or Dad can pick some.",
+    "redeem": "Redeem",
+    "redeem_label": "Redeem {{name}}",
+    "progress": "{{balance}} of {{cost}} points",
+    "missing_one": "{{count}} more point needed",
+    "missing_other": "{{count}} more points needed",
+    "confirm_title": "Redeem {{name}}?",
+    "confirm_cost_one": "Costs {{count}} point",
+    "confirm_cost_other": "Costs {{count}} points",
+    "confirm": "Yes, redeem",
+    "enjoy": "Enjoy: {{name}}!",
+    "close": "Done",
+    "need_children": "Rewards are only for children. Add a child first.",
+    "choose_child": "Choose a child",
+    "empty": "{{name}} has no rewards yet. Pick some from the suggestions.",
+    "new_title": "New reward for {{name}}",
+    "edit_title": "Edit {{name}}",
+    "name": "Name",
+    "cost": "Cost in points",
+    "active_hint": "Inactive rewards are hidden on the display.",
+    "active_toggle": "{{name}} active",
+    "from_pool": "Choose from suggestions",
+    "add_custom": "Custom reward",
+    "saved": "“{{name}}” has been saved.",
+    "delete": "Delete reward",
+    "delete_confirm": "Really delete “{{name}}”? Past redemptions stay in the history.",
+    "deleted": "“{{name}}” has been deleted.",
+    "history": "Redeemed by {{name}}",
+    "history_empty": "Nothing redeemed yet.",
+    "load_more": "Load older",
+    "pool_title": "Choose rewards for {{name}}",
+    "pool_intro": "Tap every reward that fits. You can change cost and name afterwards.",
+    "tier_small": "Small",
+    "tier_medium": "Medium",
+    "tier_large": "Big",
+    "pool_present": "Already added",
+    "pool_add_one": "Add {{count}} reward",
+    "pool_add_other": "Add {{count}} rewards",
+    "pool_added_one": "{{name}} has {{count}} new reward.",
+    "pool_added_other": "{{name}} has {{count}} new rewards."
   }
 }

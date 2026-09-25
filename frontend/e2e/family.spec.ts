@@ -140,3 +140,42 @@ test('Eltern sehen die Buchungen und schreiben Punkte gut', async ({ page }) => 
     page.getByRole('region', { name: 'Aufgaben von Lena' }).getByText('Insgesamt 4 Punkte'),
   ).toBeAttached()
 })
+
+test('Eltern wählen Belohnungen aus, das Kind löst am Display ein', async ({ page }) => {
+  await login(page)
+  const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
+  await nav.getByRole('link', { name: 'Einstellungen' }).click()
+  await enterPin(page, PIN)
+
+  // Aus dem Pool zwei Belohnungen für Lena übernehmen, eine davon günstiger machen.
+  await page.getByRole('button', { name: 'Aus Vorschlägen wählen' }).click()
+  await choose(page, 'checkbox', /Eine kleine Süßigkeit/)
+  await choose(page, 'checkbox', /Ein Eis/)
+  await page.getByRole('button', { name: '2 Belohnungen hinzufügen' }).click()
+  await expect(page.getByRole('status')).toHaveText('Lena hat 2 neue Belohnungen.')
+  await page.getByRole('button', { name: 'Eine kleine Süßigkeit bearbeiten' }).click()
+  await page.getByRole('button', { name: 'Weniger Punkte' }).click()
+  await page.getByRole('button', { name: 'Speichern' }).click()
+  await expect(page.getByRole('status')).toHaveText('„Eine kleine Süßigkeit“ ist gespeichert.')
+  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+
+  // Geschenk → Lena → Belohnung → bestätigen. Lena hat 4 Punkte.
+  await nav.getByRole('link', { name: 'Belohnungen' }).tap()
+  await page.getByRole('link', { name: 'Belohnungen von Lena' }).tap()
+  await expect(page.getByText('Noch 6 Punkte nötig')).toBeVisible()
+  await page.getByRole('button', { name: 'Eine kleine Süßigkeit einlösen' }).tap()
+  await page.getByRole('button', { name: 'Ja, einlösen' }).tap()
+  await expect(
+    page.getByRole('heading', { name: 'Viel Spaß: Eine kleine Süßigkeit!' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Fertig' }).tap()
+  await expect(page.getByText('Insgesamt 0 Punkte')).toBeAttached()
+  await expect(page.getByText('Noch 10 Punkte nötig')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Eine kleine Süßigkeit einlösen' })).toBeHidden()
+
+  // Die Einlösung steht in der Historie im Elternbereich.
+  await nav.getByRole('link', { name: 'Einstellungen' }).click()
+  await enterPin(page, PIN)
+  await expect(page.getByRole('heading', { name: 'Eingelöst von Lena' })).toBeVisible()
+  await expect(page.getByText('−4', { exact: true })).toBeVisible()
+})

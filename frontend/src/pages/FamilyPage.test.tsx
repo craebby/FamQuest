@@ -82,6 +82,7 @@ function familyRoutes(
     'GET /api/auth/me': Response.json(makeMe()),
     'GET /api/members': Response.json([lena, tom]),
     'GET /api/today': () => Response.json(today),
+    'GET /api/rewards': Response.json([]),
     'PUT /api/today/tasks/10/members/1': setDone(10, 1, true),
     'DELETE /api/today/tasks/10/members/1': setDone(10, 1, false),
   }

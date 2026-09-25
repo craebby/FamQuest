@@ -206,5 +206,22 @@
   "unicorn": "Unicorn, fantasy",
   "t-rex": "Dinosaur, T-Rex",
   "dragon": "Dragon, fantasy",
-  "ghost": "Ghost"
+  "ghost": "Ghost",
+  "soft-ice-cream": "Ice cream, soft serve",
+  "ice-cream": "Ice cream sundae, ice cream parlour",
+  "lollipop": "Lollipop, sweets, candy, treat",
+  "candy": "Wrapped candy, sweet",
+  "chocolate-bar": "Chocolate, chocolate bar",
+  "popcorn": "Popcorn, movie night",
+  "cupcake": "Baking, cupcake, muffin",
+  "pancakes": "Pancakes, breakfast",
+  "clapper-board": "Pick a movie, film, show",
+  "cinema": "Cinema, movies",
+  "playground-slide": "Playground, slide",
+  "roller-coaster": "Theme park, roller coaster",
+  "ferris-wheel": "Ferris wheel, fair, funfair",
+  "giraffe": "Zoo, animal park, giraffe",
+  "camping": "Camping, tent, sleepover",
+  "locomotive": "Day trip, train, excursion, railway",
+  "national-park": "Nature, hike, park"
 }

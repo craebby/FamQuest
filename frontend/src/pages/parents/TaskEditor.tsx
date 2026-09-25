@@ -7,8 +7,6 @@ import TrashIcon from '~icons/fluent-emoji-flat/wastebasket'
 import DailyIcon from '~icons/fluent-emoji-flat/repeat-button'
 import AnytimeIcon from '~icons/fluent-emoji-flat/infinity'
 import CheckIcon from '~icons/lucide/check'
-import MinusIcon from '~icons/lucide/minus'
-import PlusIcon from '~icons/lucide/plus'
 
 import { ApiError } from '../../api/client'
 import type { Member } from '../../api/members'
@@ -33,7 +31,7 @@ import { DEFAULT_TASK_ICON, iconLabel, iconName, suggestIcon } from '../../icons
 import { COLOR_TOKENS, MEMBER_COLORS, type MemberColor } from '../../memberColors'
 import { WEEKEND, WORKDAYS, sameDays, todayIn, weekdayName, weekdayOrder } from '../../weekdays'
 import { IconPicker } from './IconPicker'
-import { ChoiceTile, Field } from './formParts'
+import { ChoiceTile, Field, NumberStepper } from './formParts'
 
 const KIND_ICONS: Record<RecurrenceKind, typeof DailyIcon> = {
   daily: DailyIcon,
@@ -139,8 +137,6 @@ export function TaskEditor({
 
   const toggle = (list: number[], value: number) =>
     list.includes(value) ? list.filter((item) => item !== value) : [...list, value]
-  const setPointsClamped = (value: number) =>
-    setPoints(Math.min(TASK_MAX_POINTS, Math.max(0, Number.isFinite(value) ? value : 0)))
   const busy = save.isPending || remove.isPending
   const iconText = iconLabel(t, iconName(icon) ?? '')
 
@@ -193,37 +189,16 @@ export function TaskEditor({
         </div>
 
         <Field label={t('tasks.points')}>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="secondary"
-              aria-label={t('tasks.fewer_points')}
-              disabled={points <= 0}
-              onClick={() => setPointsClamped(points - 1)}
-            >
-              <MinusIcon className="size-7" aria-hidden="true" />
-            </Button>
-            <label className="flex min-h-14 items-center gap-2 rounded-2xl border-2 border-slate-200 px-4 focus-within:border-orange-400">
-              <StarIcon className="size-8 shrink-0" aria-hidden="true" />
-              <span className="sr-only">{t('tasks.points')}</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={TASK_MAX_POINTS}
-                value={points}
-                onChange={(event) => setPointsClamped(Math.trunc(Number(event.target.value)))}
-                className="w-20 bg-transparent text-center text-2xl font-extrabold outline-none"
-              />
-            </label>
-            <Button
-              variant="secondary"
-              aria-label={t('tasks.more_points')}
-              disabled={points >= TASK_MAX_POINTS}
-              onClick={() => setPointsClamped(points + 1)}
-            >
-              <PlusIcon className="size-7" aria-hidden="true" />
-            </Button>
-          </div>
+          <NumberStepper
+            label={t('tasks.points')}
+            value={points}
+            min={0}
+            max={TASK_MAX_POINTS}
+            onChange={setPoints}
+            decreaseLabel={t('tasks.fewer_points')}
+            increaseLabel={t('tasks.more_points')}
+            icon={<StarIcon className="size-8 shrink-0" aria-hidden="true" />}
+          />
         </Field>
 
         <Field label={t('tasks.members')} error={membersError}>

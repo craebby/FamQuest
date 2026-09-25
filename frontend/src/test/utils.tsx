@@ -6,6 +6,7 @@ import { vi } from 'vitest'
 import App from '../App'
 import type { Me } from '../api/auth'
 import type { Member } from '../api/members'
+import type { Reward } from '../api/rewards'
 import type { Today, TodayTask } from '../api/today'
 
 type Handler = Response | ((body: unknown) => Response)
@@ -79,4 +80,17 @@ export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {
 
 export function makeToday(overrides: Partial<Today> = {}): Today {
   return { date: '2026-10-03', time_of_day: 'morning', tasks: [], points: [], ...overrides }
+}
+
+export function makeReward(overrides: Partial<Reward> = {}): Reward {
+  return {
+    id: 1,
+    member_id: 1,
+    name: 'Ein Eis',
+    icon: 'fluent-emoji-flat:soft-ice-cream',
+    description: '',
+    cost: 10,
+    active: true,
+    ...overrides,
+  }
 }

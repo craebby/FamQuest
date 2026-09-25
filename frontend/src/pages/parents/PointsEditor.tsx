@@ -1,14 +1,13 @@
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
+import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 import UndoIcon from '~icons/fluent-emoji-flat/counterclockwise-arrows-button'
 import MinusCircleIcon from '~icons/fluent-emoji-flat/minus'
 import PlusCircleIcon from '~icons/fluent-emoji-flat/plus'
 import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 import ManualIcon from '~icons/fluent-emoji-flat/writing-hand'
-import MinusIcon from '~icons/lucide/minus'
-import PlusIcon from '~icons/lucide/plus'
 
 import { ApiError } from '../../api/client'
 import type { Member } from '../../api/members'
@@ -23,12 +22,13 @@ import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { Alert, Button, Section, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
-import { ChoiceTile, Field } from './formParts'
+import { ChoiceTile, Field, NumberStepper } from './formParts'
 
 const KIND_ICONS: Record<PointKind, typeof ManualIcon> = {
   task_completed: CheckIcon,
   task_undone: UndoIcon,
   manual: ManualIcon,
+  reward_redeemed: GiftIcon,
 }
 
 type Direction = 'credit' | 'deduct'
@@ -59,9 +59,6 @@ export function PointsEditor({ member, timeZone, onBack }: PointsEditorProps) {
       : book.error instanceof ApiError && book.error.fields.reason
         ? errorMessage(t, book.error.fields.reason)
         : undefined
-
-  const setAmountClamped = (value: number) =>
-    setAmount(Math.min(MANUAL_MAX_POINTS, Math.max(1, Number.isFinite(value) ? value : 1)))
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -145,36 +142,15 @@ export function PointsEditor({ member, timeZone, onBack }: PointsEditorProps) {
           </div>
         </Field>
         <Field label={t('points.amount')}>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="secondary"
-              aria-label={t('tasks.fewer_points')}
-              disabled={amount <= 1}
-              onClick={() => setAmountClamped(amount - 1)}
-            >
-              <MinusIcon className="size-7" aria-hidden="true" />
-            </Button>
-            <label className="flex min-h-14 items-center gap-2 rounded-2xl border-2 border-slate-200 px-4 focus-within:border-orange-400">
-              <span className="sr-only">{t('points.amount')}</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={MANUAL_MAX_POINTS}
-                value={amount}
-                onChange={(event) => setAmountClamped(Math.trunc(Number(event.target.value)))}
-                className="w-20 bg-transparent text-center text-2xl font-extrabold outline-none"
-              />
-            </label>
-            <Button
-              variant="secondary"
-              aria-label={t('tasks.more_points')}
-              disabled={amount >= MANUAL_MAX_POINTS}
-              onClick={() => setAmountClamped(amount + 1)}
-            >
-              <PlusIcon className="size-7" aria-hidden="true" />
-            </Button>
-          </div>
+          <NumberStepper
+            label={t('points.amount')}
+            value={amount}
+            min={1}
+            max={MANUAL_MAX_POINTS}
+            onChange={setAmount}
+            decreaseLabel={t('tasks.fewer_points')}
+            increaseLabel={t('tasks.more_points')}
+          />
         </Field>
         <TextField
           label={t('points.reason')}
@@ -244,8 +220,8 @@ function TransactionRow({
   return (
     <li className="flex items-center gap-3 py-3">
       <span className="shrink-0">
-        {transaction.task_icon ? (
-          <TaskIcon icon={transaction.task_icon} className="size-12" />
+        {transaction.icon ? (
+          <TaskIcon icon={transaction.icon} className="size-12" />
         ) : (
           <KindIcon className="size-12" aria-hidden="true" />
         )}
@@ -253,7 +229,7 @@ function TransactionRow({
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="text-lg font-bold break-words text-slate-800">{transaction.reason}</span>
         <span className="flex flex-wrap items-center gap-x-2 text-base text-slate-500">
-          {transaction.task_icon && <KindIcon className="size-5" aria-hidden="true" />}
+          {transaction.icon && <KindIcon className="size-5" aria-hidden="true" />}
           {t(`points.kind_${transaction.kind}`)} · {when}
         </span>
       </span>

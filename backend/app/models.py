@@ -181,7 +181,7 @@ class PointTransaction(Base):
 
     Buchungen werden nie geändert; Korrekturen sind Gegenbuchungen. Die Quelle hängt von der
     Art ab (siehe schemas.POINT_KINDS): Aufgabe und Tag bei Erledigungen, das buchende Konto
-    bei manuellen Buchungen.
+    bei manuellen Buchungen, die Einlösung bei Belohnungen.
     """
 
     __tablename__ = "point_transactions"
@@ -189,7 +189,8 @@ class PointTransaction(Base):
         CheckConstraint("amount <> 0", name="amount_not_zero"),
         CheckConstraint(
             "(kind NOT IN ('task_completed', 'task_undone') OR task_date IS NOT NULL)"
-            " AND (kind <> 'manual' OR reason IS NOT NULL)",
+            " AND (kind <> 'manual' OR reason IS NOT NULL)"
+            " AND (kind <> 'reward_redeemed' OR redemption_id IS NOT NULL)",
             name="source_for_kind",
         ),
     )
@@ -207,9 +208,51 @@ class PointTransaction(Base):
     task_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id", ondelete="SET NULL"))
     # Tag der Erledigung in der Zeitzone der Familie.
     task_date: Mapped[dt.date | None] = mapped_column(Date)
+    redemption_id: Mapped[int | None] = mapped_column(
+        ForeignKey("reward_redemptions.id", ondelete="CASCADE")
+    )
     created_by_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL")
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     task: Mapped[Task | None] = relationship(lazy="joined")
+    redemption: Mapped["RewardRedemption | None"] = relationship(lazy="joined")
+
+
+class Reward(Base):
+    """Belohnung eines Kindes; Auswahl und Kosten sind je Kind festgelegt."""
+
+    __tablename__ = "rewards"
+    __table_args__ = (CheckConstraint("cost > 0", name="cost_positive"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(100))
+    # Iconify-Name wie bei Aufgaben.
+    icon: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(String(500))
+    cost: Mapped[int]
+    active: Mapped[bool] = mapped_column(default=True, server_default="true")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RewardRedemption(Base):
+    """Einlösung einer Belohnung. Name, Icon und Kosten werden kopiert, damit die Historie
+    auch nach Änderung oder Löschen der Belohnung stimmt."""
+
+    __tablename__ = "reward_redemptions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    reward_id: Mapped[int | None] = mapped_column(ForeignKey("rewards.id", ondelete="SET NULL"))
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), index=True
+    )
+    # Erweiterbare Werte (siehe schemas.REDEMPTION_STATUSES); in Phase 1 immer "redeemed".
+    status: Mapped[str] = mapped_column(String(20))
+    reward_name: Mapped[str] = mapped_column(String(100))
+    reward_icon: Mapped[str] = mapped_column(String(100))
+    cost: Mapped[int]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

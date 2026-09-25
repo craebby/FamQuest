@@ -12,6 +12,7 @@ import { FamilyPage } from './pages/FamilyPage'
 import { LoginPage } from './pages/LoginPage'
 import { ParentsPage } from './pages/ParentsPage'
 import { PersonPage } from './pages/PersonPage'
+import { RewardsPage } from './pages/RewardsPage'
 import { SetupPage } from './pages/SetupPage'
 
 function Loading() {
@@ -82,6 +83,8 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route index element={<FamilyPage />} />
             <Route path="/member/:memberId" element={<PersonPage />} />
+            <Route path="/rewards" element={<RewardsPage />} />
+            <Route path="/rewards/:memberId" element={<RewardsPage />} />
           </Route>
           <Route path="/parents" element={<ParentsPage />} />
         </Route>

@@ -11,13 +11,15 @@ interface IconPickerProps {
   value: string
   onSelect: (icon: string) => void
   onClose: () => void
+  /** Kategorie, die beim Öffnen gezeigt wird (Standard: die erste). */
+  initialCategory?: string
 }
 
 /** Auswahl aus dem Icon-Katalog: Kategorien zum Stöbern, Suche auf Deutsch und Englisch. */
-export function IconPicker({ value, onSelect, onClose }: IconPickerProps) {
+export function IconPicker({ value, onSelect, onClose, initialCategory }: IconPickerProps) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState(ICON_CATEGORIES[0].id)
+  const [category, setCategory] = useState(initialCategory ?? ICON_CATEGORIES[0].id)
   const dialog = useRef<HTMLDivElement>(null)
   const selected = iconName(value)
 

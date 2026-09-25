@@ -51,7 +51,7 @@ def test_completion_books_points_and_undo_books_them_back(client, parent, lena, 
         ("task_undone", -2, "Zähne putzen"),
         ("task_completed", 2, "Zähne putzen"),
     ]
-    assert transactions[0]["task_icon"] == "fluent-emoji-flat:toothbrush"
+    assert transactions[0]["icon"] == "fluent-emoji-flat:toothbrush"
     assert transactions[0]["task_date"] == "2026-10-03"
 
 
@@ -115,7 +115,7 @@ def test_deleting_task_keeps_transactions(client, parent, lena, now):
     data = history(client, lena)
     assert data["total"] == 2
     assert data["transactions"][0]["reason"] == "Bett machen"
-    assert data["transactions"][0]["task_icon"] is None
+    assert data["transactions"][0]["icon"] is None
 
 
 def test_manual_credit_and_deduction(client, parent, lena, now):

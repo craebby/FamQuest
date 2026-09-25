@@ -243,6 +243,28 @@
     ]
   },
   {
+    "id": "rewards",
+    "icons": [
+      "soft-ice-cream",
+      "ice-cream",
+      "lollipop",
+      "candy",
+      "chocolate-bar",
+      "popcorn",
+      "cupcake",
+      "pancakes",
+      "clapper-board",
+      "cinema",
+      "playground-slide",
+      "roller-coaster",
+      "ferris-wheel",
+      "giraffe",
+      "camping",
+      "locomotive",
+      "national-park"
+    ]
+  },
+  {
     "id": "more",
     "icons": [
       "red-heart",

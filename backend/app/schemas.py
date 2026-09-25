@@ -15,9 +15,12 @@ MEMBER_COLORS = ("orange", "blue", "purple", "green", "red", "teal", "yellow")
 # Tagesabschnitte in zeitlicher Reihenfolge; weitere Werte lassen sich ergänzen.
 TIMES_OF_DAY = ("morning", "midday", "afternoon", "evening")
 TASK_MAX_POINTS = 1000
-# Arten von Punktebuchungen; Einlösungen kommen später dazu.
-POINT_KINDS = ("task_completed", "task_undone", "manual")
+# Arten von Punktebuchungen.
+POINT_KINDS = ("task_completed", "task_undone", "manual", "reward_redeemed")
 MANUAL_MAX_POINTS = 1000
+REWARD_MAX_COST = 1000
+# Status von Einlösungen; ein Freigabeprozess (requested, approved, rejected) kann folgen.
+REDEMPTION_STATUSES = ("redeemed",)
 _EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+$")
 
 
@@ -73,6 +76,7 @@ TaskDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_le
 # Iconify-Name "set:icon"; die Auswahl selbst kommt aus dem Icon-Katalog im Frontend.
 IconName = Annotated[str, Field(max_length=100, pattern=r"^[a-z0-9-]+:[a-z0-9-]+$")]
 TimeOfDay = Annotated[str, _one_of(TIMES_OF_DAY)]
+RewardName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 PointReason = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Weekday = Annotated[int, Field(ge=1, le=7)]
 
@@ -199,8 +203,8 @@ class PointTransactionOut(BaseModel):
     amount: int
     kind: str
     reason: str | None
-    # Icon der Aufgabe, solange sie noch existiert.
-    task_icon: str | None
+    # Icon der Aufgabe (solange sie noch existiert) bzw. der eingelösten Belohnung.
+    icon: str | None
     task_date: dt.date | None
     created_at: dt.datetime
 
@@ -209,4 +213,40 @@ class PointHistoryOut(BaseModel):
     total: int
     transactions: list[PointTransactionOut]
     # Es gibt ältere Buchungen; abrufbar mit `before=<id der letzten Buchung>`.
+    has_more: bool
+
+
+class RewardIn(BaseModel):
+    member_id: int
+    name: RewardName
+    icon: IconName
+    description: TaskDescription = ""
+    cost: Annotated[int, Field(ge=1, le=REWARD_MAX_COST)]
+    active: bool = True
+
+
+class RewardOut(BaseModel):
+    id: int
+    member_id: int
+    name: str
+    icon: str
+    description: str
+    cost: int
+    active: bool
+
+
+class RedemptionOut(BaseModel):
+    id: int
+    reward_id: int | None
+    member_id: int
+    status: str
+    reward_name: str
+    reward_icon: str
+    cost: int
+    created_at: dt.datetime
+
+
+class RedemptionHistoryOut(BaseModel):
+    redemptions: list[RedemptionOut]
+    # Es gibt ältere Einlösungen; abrufbar mit `before=<id der letzten Einlösung>`.
     has_more: bool

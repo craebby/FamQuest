@@ -5,7 +5,7 @@ import datetime as dt
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import FamilyMember, PointTransaction
+from app.models import FamilyMember, PointTransaction, RewardRedemption
 
 TASK_KINDS = ("task_completed", "task_undone")
 
@@ -20,6 +20,7 @@ def book(
     task_id: int | None = None,
     task_date: dt.date | None = None,
     user_id: int | None = None,
+    redemption: RewardRedemption | None = None,
 ) -> None:
     """Legt eine Buchung an; Aufgaben mit 0 Punkten erzeugen keine."""
     if amount == 0:
@@ -33,6 +34,7 @@ def book(
             task_id=task_id,
             task_date=task_date,
             created_by_user_id=user_id,
+            redemption=redemption,
         )
     )
 

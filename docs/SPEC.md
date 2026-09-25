@@ -114,8 +114,17 @@ Im UI wird das Bild überall kreisförmig mit Farbring dargestellt. Ohne Foto ze
 | Beschreibung | nein | in der Familienansicht nicht prominent |
 | Farbe | nein | Standard = Personenfarbe |
 | Aktiv | ja | inaktive Aufgaben erscheinen nicht mehr |
+| Eltern prüfen | nein | Punkte erst nach Kontrolle durch die Eltern (z. B. „Zimmer aufgeräumt“) |
 
 Ist eine Aufgabe mehreren Personen zugeordnet, erledigt und punktet jede Person sie getrennt.
+
+**Aufgaben-Vorlagen**
+
+Beim Anlegen einer Aufgabe können Eltern aus einem Vorlagen-Pool wählen (zweisprachig, gruppiert in „Kinder“ und „Haushalt“ für die Erwachsenen). Eine Vorlage füllt Titel, Icon, Punkte, Tagesabschnitt und Wiederholung vor; alles bleibt änderbar. Beispiele: Zähne putzen morgens/abends (2), Spielzeug aufräumen (3), Tisch abräumen (3), Anziehen (2), Wäsche in den Wäschekorb (1), Sachen für die Kita vorbereiten (2), Bett machen (2), Müll wegbringen (3), beim Aufräumen helfen (5).
+
+**Kontrolle durch die Eltern**
+
+Aufgaben mit „Eltern prüfen“ werden am Display wie gewohnt angetippt, gelten dann aber als *wartet auf Kontrolle* (Sanduhr statt Haken) und bringen noch keine Punkte. Das Zahnrad der Navigationsleiste zeigt, wie viele Erledigungen warten. Im Elternbereich (nach PIN; später auch per PWA am Smartphone) bestätigen Eltern die Erledigung, dann werden die Punkte gebucht, oder lehnen sie ab, dann ist die Aufgabe wieder offen. Auch Erledigungen früherer Tage bleiben prüfbar.
 
 **Icons**
 
@@ -171,9 +180,15 @@ Punkte werden nie als einzelner Zähler gespeichert, sondern als Buchungen. Der 
 - Buchungen werden nie gelöscht oder geändert; Korrekturen sind Gegenbuchungen.
 - Eine Aufgabe kann pro Person und Tag nur einmal Punkte bringen (per Datenbank-Constraint abgesichert, auch bei Doppel-Tipps).
 
-**Belohnungen**
+**Belohnungen (nur für Kinder)**
 
-Eltern legen Belohnungen an: Name, Beschreibung, Icon oder Bild, Punktkosten, aktiv/inaktiv. Beispiele: 30 Minuten Gaming (20), Eis (30), Film aussuchen (40), Familienausflug (100).
+Belohnungen gehören jeweils einem Kind, damit Auswahl und Kosten zum Alter passen. Eltern legen sie an: Name, Beschreibung, Icon, Punktkosten, aktiv/inaktiv (Bilder statt Icons vorerst nicht). Dafür gibt es einen vorgegebenen, zweisprachigen Pool, aus dem Eltern je Kind mehrere Belohnungen auf einmal auswählen, gruppiert nach Größe:
+
+- klein (ca. 5–20): Eis, Süßigkeit, 15 Minuten länger fernsehen/spielen/Tablet, eine Geschichte mehr, Lied für die Autofahrt aussuchen, Kuscheltier im Elternbett, Schaumbad
+- mittel (ca. 20–50): Lieblingsessen aussuchen, Filmabend mit Popcorn, gemeinsam backen, Spielplatz/Fahrradtour/Bastelprojekt aussuchen, Spiel mit Mama/Papa, Frühstückswunsch
+- groß (ca. 50–100+): Kino, Pizza bestellen, Schwimmbad, Zoo, Freizeitpark, Übernachtungsabend, kleines Spielzeug, Tagesausflug, besonderer Familientag, großer Wunsch
+
+Daneben sind eigene Belohnungen mit frei gewähltem Icon möglich.
 
 Belohnungen erscheinen als große Karten:
 
@@ -185,6 +200,10 @@ Belohnungen erscheinen als große Karten:
 Antippen von Einlösen und einmal bestätigen. Danach: Punkte abziehen, Buchung erzeugen, Einlösung speichern, visuelles Feedback. Punktestand und Kosten werden serverseitig in einer Transaktion geprüft, der Stand kann nie negativ werden.
 
 Einlösungen haben bereits einen Status (in Phase 1 immer *eingelöst*). Ein späterer Freigabeprozess (*angefragt → genehmigt / abgelehnt*) lässt sich so ohne Umbau ergänzen.
+
+**Faire Verteilung bei Erwachsenen**
+
+Erwachsene bekommen keine Belohnungen. Statt Punkten zeigt ihre Spalte, welchen Anteil der in dieser Woche (Montag–Sonntag, Zeitzone der Familie) von Erwachsenen erledigten Aufgaben sie übernommen haben, z. B. 40 % / 60 % als geteilter Balken in den Personenfarben. Gezählt wird die Anzahl erledigter Aufgaben. Das ist ausdrücklich kein Wettbewerb, sondern soll helfen, die Arbeit fair zu verteilen. Bei nur einem Erwachsenen entfällt die Anzeige.
 
 **Elternbereich**
 
@@ -261,12 +280,12 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
 | Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
-| Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv |
+| Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen |
 | TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember |
 | TaskRecurrence | Wiederholungsregel | Typ, Wochentage, Datum |
-| TaskCompletion | Erledigung | Task, Person, Datum, Zeitpunkt; eindeutig je Task/Person/Tag |
+| TaskCompletion | Erledigung | Task, Person, Datum, Zeitpunkt, geprüft am; eindeutig je Task/Person/Tag |
 | PointTransaction | Punktebuchung | Person, Betrag, Grund, Quelle |
-| Reward | Belohnung | Name, Beschreibung, Icon/Bild, Kosten, aktiv |
+| Reward | Belohnung eines Kindes | Person, Name, Beschreibung, Icon, Kosten, aktiv |
 | RewardRedemption | Einlösung | Reward, Person, Status, Zeitpunkt |
 | CalendarConnection | Phase 2 | OAuth-Verbindung (noch nicht implementieren) |
 | CalendarMapping | Phase 2 | Kalender ↔ Person (noch nicht implementieren) |
