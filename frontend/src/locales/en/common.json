@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "FamQuest",
+    "tagline": "Routines, tasks, points and rewards for the whole family"
+  },
+  "health": {
+    "checking": "Checking connection …",
+    "ok": "All set",
+    "error": "Server unreachable"
+  },
+  "errors": {
+    "common": {
+      "network": "No connection to the server",
+      "not_found": "Not found",
+      "unknown": "Something went wrong"
+    }
+  }
+}

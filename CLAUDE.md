@@ -59,4 +59,20 @@ Bei Widersprüchen gilt `docs/SPEC.md`, beim Stack gilt diese Datei.
 
 ## Befehle
 
-(Nach Etappe 1 hier eintragen: Start, Tests, Migrationen, Lint.)
+Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt
+`COMPOSE_FILE` so, dass der DB-Port auf 127.0.0.1 veröffentlicht wird):
+
+- DB starten: `docker compose up -d db`
+- Backend: `cd backend && uv run uvicorn app.main:app --reload` (Port 8000)
+- Frontend: `cd frontend && npm run dev` (Port 5173, leitet `/api` weiter)
+- Migration anlegen: `cd backend && uv run alembic revision --autogenerate -m "..."`
+- Migration anwenden: `cd backend && uv run alembic upgrade head`
+- Backend-Tests: `cd backend && uv run pytest` (legt DB `<POSTGRES_DB>_test` neu an)
+- Backend-Lint: `cd backend && uv run ruff check . && uv run ruff format --check .`
+- Frontend-Tests/Lint: `cd frontend && npm test && npm run lint && npm run typecheck`
+- Gesamtes Image: `docker compose up -d --build`, Tests im Container:
+  `docker compose --profile test run --rm --build tests`
+
+Hinweis: Die Shell ist fish. Falls Docker „permission denied“ meldet, ist die Gruppe `docker` in der
+Sitzung noch nicht aktiv; dann Befehle als Bash-Skript über `echo "bash skript.sh" | newgrp docker`
+ausführen.

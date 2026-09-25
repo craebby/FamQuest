@@ -1,0 +1,5 @@
+# Nur für die lokale Entwicklung: Datenbank-Port auf localhost veröffentlichen.
+services:
+  db:
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"

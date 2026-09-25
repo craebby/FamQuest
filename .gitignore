@@ -1,0 +1,25 @@
+# Umgebung / Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+backend/data/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+*.tsbuildinfo
+
+# Editor / System
+.DS_Store
+.idea/
+*.swp
