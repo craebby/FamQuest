@@ -8,6 +8,9 @@ import { WORKDAYS } from '../weekdays'
 export const TASK_TEMPLATE_GROUPS = ['kids', 'household'] as const
 export type TaskTemplateGroup = (typeof TASK_TEMPLATE_GROUPS)[number]
 
+export type TemplateRecurrence =
+  Exclude<Recurrence, { kind: 'flexible' }> | { kind: 'flexible'; interval_days: number }
+
 export interface TaskTemplate {
   /** Schlüssel für den Titel in locales/<sprache>/pool.json (`tasks.<id>`). */
   id: string
@@ -16,9 +19,12 @@ export interface TaskTemplate {
   icon: string
   points: number
   time_of_day: TimeOfDay | null
-  recurrence: Recurrence
+  /** Flexible Vorlagen bekommen beim Übernehmen heute als erste Fälligkeit. */
+  recurrence: TemplateRecurrence
   /** Punkte erst nach Kontrolle durch die Eltern. */
   needs_approval?: boolean
+  /** „Einer für alle“ (typisch im Haushalt). */
+  shared?: boolean
 }
 
 /** Vorlagen für neue Aufgaben; sie füllen den Editor nur vor, alles bleibt änderbar. */
@@ -128,6 +134,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: 'morning',
     recurrence: { kind: 'weekly', weekdays: WORKDAYS },
+    shared: true,
   },
   {
     id: 'drop_off',
@@ -136,6 +143,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: 'morning',
     recurrence: { kind: 'weekly', weekdays: WORKDAYS },
+    shared: true,
   },
   {
     id: 'pick_up',
@@ -144,6 +152,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: 'afternoon',
     recurrence: { kind: 'weekly', weekdays: WORKDAYS },
+    shared: true,
   },
   {
     id: 'cook',
@@ -152,6 +161,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: 'evening',
     recurrence: { kind: 'daily' },
+    shared: true,
   },
   {
     id: 'dishwasher',
@@ -160,6 +170,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: null,
     recurrence: { kind: 'daily' },
+    shared: true,
   },
   {
     id: 'bedtime',
@@ -168,6 +179,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: 'evening',
     recurrence: { kind: 'daily' },
+    shared: true,
   },
   {
     id: 'laundry',
@@ -176,6 +188,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: null,
     recurrence: { kind: 'daily' },
+    shared: true,
   },
   {
     id: 'groceries',
@@ -183,7 +196,8 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     icon: 'shopping-cart',
     points: 1,
     time_of_day: null,
-    recurrence: { kind: 'weekly', weekdays: [6] },
+    recurrence: { kind: 'flexible', interval_days: 7 },
+    shared: true,
   },
   {
     id: 'clean_bathroom',
@@ -191,7 +205,8 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     icon: 'toilet',
     points: 1,
     time_of_day: null,
-    recurrence: { kind: 'weekly', weekdays: [6] },
+    recurrence: { kind: 'flexible', interval_days: 7 },
+    shared: true,
   },
   {
     id: 'vacuum',
@@ -199,7 +214,8 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     icon: 'broom',
     points: 1,
     time_of_day: null,
-    recurrence: { kind: 'weekly', weekdays: [6] },
+    recurrence: { kind: 'flexible', interval_days: 7 },
+    shared: true,
   },
   {
     id: 'trash',
@@ -208,6 +224,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 1,
     time_of_day: null,
     recurrence: { kind: 'daily' },
+    shared: true,
   },
   {
     id: 'appointments',
@@ -215,7 +232,8 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     icon: 'tear-off-calendar',
     points: 1,
     time_of_day: null,
-    recurrence: { kind: 'weekly', weekdays: [6] },
+    recurrence: { kind: 'flexible', interval_days: 7 },
+    shared: true,
   },
 ]
 

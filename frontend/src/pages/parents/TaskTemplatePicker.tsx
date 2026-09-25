@@ -14,7 +14,7 @@ import {
   taskTemplateIcon,
   taskTemplateTitle,
 } from '../../pools/tasks'
-import { recurrenceSummary } from '../../recurrence'
+import { flexibleSummary, recurrenceSummary } from '../../recurrence'
 import { FilterChip } from './formParts'
 
 interface TaskTemplatePickerProps {
@@ -84,7 +84,9 @@ export function TaskTemplatePicker({ initialGroup, onSelect, onClose }: TaskTemp
                       {title}
                     </span>
                     <span className="flex flex-wrap items-center gap-x-3 text-base text-slate-600">
-                      {recurrenceSummary(t, language, template.recurrence)}
+                      {template.recurrence.kind === 'flexible'
+                        ? flexibleSummary(t, template.recurrence.interval_days)
+                        : recurrenceSummary(t, language, template.recurrence)}
                       {TimeIcon && <TimeIcon className="size-6" aria-hidden="true" />}
                       <span className="inline-flex items-center gap-1 font-bold">
                         <StarIcon className="size-5" aria-hidden="true" />

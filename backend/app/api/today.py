@@ -9,8 +9,8 @@ from app.auth import CurrentSession, DbSession, get_family
 from app.errors import ApiError
 from app.models import FamilyMember, Task, TaskCompletion
 from app.points import book, earned_on, totals
-from app.recurrence import occurs_on
-from app.schemas import MemberPointsOut, TodayOut, TodayTaskOut
+from app.recurrence import flexible_due, occurs_on
+from app.schemas import MemberDueOut, MemberPointsOut, TodayOut, TodayTaskOut
 from app.today import family_now, time_of_day_at
 
 router = APIRouter(tags=["today"])
@@ -24,6 +24,40 @@ def is_due(task: Task, day: dt.date) -> bool:
 
 def assigned_only(task: Task, member_ids: list[int]) -> list[int]:
     return [m for m in member_ids if any(a.member_id == m for a in task.assignments)]
+
+
+def due_dates(db: DbSession, tasks: list[Task], day: dt.date) -> dict[int, list[MemberDueOut]]:
+    """Fälligkeit flexibler Aufgaben je Person, aus der letzten Erledigung vor heute."""
+    flexible = [task for task in tasks if task.recurrence.kind == "flexible"]
+    if not flexible:
+        return {}
+    last: dict[tuple[int, int], dt.date] = {
+        (task_id, member_id): date
+        for task_id, member_id, date in db.execute(
+            select(TaskCompletion.task_id, TaskCompletion.member_id, func.max(TaskCompletion.date))
+            .where(
+                TaskCompletion.task_id.in_([task.id for task in flexible]),
+                TaskCompletion.date < day,
+            )
+            .group_by(TaskCompletion.task_id, TaskCompletion.member_id)
+        )
+    }
+    result: dict[int, list[MemberDueOut]] = {}
+    for task in flexible:
+        members = [a.member_id for a in task.assignments]
+        if task.shared:
+            # Bei „Einer für alle“ zählt die letzte Erledigung durch irgendwen.
+            done = [date for (task_id, _), date in last.items() if task_id == task.id]
+            due = flexible_due(task.recurrence, max(done, default=None))
+            result[task.id] = [MemberDueOut(member_id=m, due_date=due) for m in members]
+        else:
+            result[task.id] = [
+                MemberDueOut(
+                    member_id=m, due_date=flexible_due(task.recurrence, last.get((task.id, m)))
+                )
+                for m in members
+            ]
+    return result
 
 
 @router.get("/today")
@@ -46,6 +80,7 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
         if approved_at is None:
             pending.setdefault(task_id, []).append(member_id)
     earned, total = earned_on(db, day), totals(db)
+    dues = due_dates(db, tasks, day)
     week_start = day - dt.timedelta(days=day.weekday())
     week_done = {
         member_id: count
@@ -74,6 +109,8 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
                 color=task.color,
                 member_ids=[a.member_id for a in task.assignments],
                 needs_approval=task.needs_approval,
+                shared=task.shared,
+                due_dates=dues.get(task.id, []),
                 # Nur Personen, denen die Aufgabe (noch) zugeordnet ist.
                 done_member_ids=assigned_only(task, done.get(task.id, [])),
                 pending_member_ids=assigned_only(task, pending.get(task.id, [])),
@@ -122,6 +159,18 @@ def complete_task(
     Elternkontrolle warten ungeprüft; ihre Punkte bucht erst die Bestätigung (api/approvals).
     """
     task, today = check_completable(db, task_id, member_id, date)
+    if task.shared:
+        # „Einer für alle“: Sperre auf die Aufgabe, damit gleichzeitige Tipps in verschiedenen
+        # Spalten nicht zwei Erledigungen anlegen.
+        db.execute(select(Task.id).where(Task.id == task_id).with_for_update())
+        already = db.scalar(
+            select(TaskCompletion.id).where(
+                TaskCompletion.task_id == task_id, TaskCompletion.date == today
+            )
+        )
+        if already is not None:
+            db.commit()
+            return
     created = db.scalar(
         insert(TaskCompletion)
         .values(
@@ -154,22 +203,26 @@ def undo_task(
     """Macht die heutige Erledigung rückgängig und bucht ihre Punkte zurück (Gegenbuchung).
 
     War sie nicht erledigt, passiert nichts; war sie noch ungeprüft, gibt es nichts zurückzubuchen.
+    Bei „Einer für alle“ nimmt jede zugeordnete Person die Erledigung zurück, egal wer sie war;
+    die Gegenbuchung trifft die Person, die sie erledigt hatte.
     """
     task, today = check_completable(db, task_id, member_id, date)
+    condition = [TaskCompletion.task_id == task_id, TaskCompletion.date == today]
+    if not task.shared:
+        condition.append(TaskCompletion.member_id == member_id)
     removed = db.execute(
         delete(TaskCompletion)
-        .where(
-            TaskCompletion.task_id == task_id,
-            TaskCompletion.member_id == member_id,
-            TaskCompletion.date == today,
-        )
-        .returning(TaskCompletion.points, TaskCompletion.approved_at)
-    ).first()
-    if removed is not None and removed.approved_at is not None:
+        .where(*condition)
+        .returning(TaskCompletion.member_id, TaskCompletion.points, TaskCompletion.approved_at)
+    ).all()
+    # Mehrere Zeilen nur, wenn eine Aufgabe erst nachträglich auf „Einer für alle“ gestellt wurde.
+    for completion in removed:
+        if completion.approved_at is None:
+            continue
         book(
             db,
-            member_id,
-            -removed.points,
+            completion.member_id,
+            -completion.points,
             "task_undone",
             reason=task.title,
             task_id=task_id,

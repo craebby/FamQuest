@@ -9,10 +9,15 @@ import { TODAY_KEY } from './today'
 export const TIMES_OF_DAY = ['morning', 'midday', 'afternoon', 'evening'] as const
 export type TimeOfDay = (typeof TIMES_OF_DAY)[number]
 export const TASK_MAX_POINTS = 1000
+export const MAX_INTERVAL_DAYS = 365
 
 /** Wochentage nach ISO: 1 = Montag … 7 = Sonntag. Datum als `YYYY-MM-DD`. */
 export type Recurrence =
-  { kind: 'daily' } | { kind: 'weekly'; weekdays: number[] } | { kind: 'once'; date: string }
+  | { kind: 'daily' }
+  | { kind: 'weekly'; weekdays: number[] }
+  | { kind: 'once'; date: string }
+  /** Ohne festen Tag: fällig ab `date`, danach `interval_days` nach der letzten Erledigung. */
+  | { kind: 'flexible'; interval_days: number; date: string }
 export type RecurrenceKind = Recurrence['kind']
 
 export interface TaskData {
@@ -26,6 +31,8 @@ export interface TaskData {
   active: boolean
   /** Punkte erst nach Kontrolle durch die Eltern. */
   needs_approval: boolean
+  /** „Einer für alle“: eine Erledigung gilt für alle zugeordneten Personen. */
+  shared: boolean
   recurrence: Recurrence
   member_ids: number[]
 }

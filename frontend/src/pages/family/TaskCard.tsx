@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import AlarmIcon from '~icons/fluent-emoji-flat/alarm-clock'
 import HourglassIcon from '~icons/fluent-emoji-flat/hourglass-not-done'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import CheckIcon from '~icons/lucide/check'
 
 import { ApiError } from '../../api/client'
-import type { Member } from '../../api/members'
-import { type TodayTask, useSetDone } from '../../api/today'
+import { type Member, useMembers } from '../../api/members'
+import { type TodayTask, daysUntilDue, doneBy, isPendingFor, useSetDone } from '../../api/today'
+import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { errorMessage } from '../../errors'
 import { colorTokens } from '../../memberColors'
@@ -17,6 +19,14 @@ export type CardSize = 'md' | 'lg'
 export const POINTS_FEEDBACK_MS = 1200
 
 const SIZES = {
+  // Klein und blass: flexible Aufgaben unter „Demnächst“.
+  sm: {
+    card: 'min-h-16 gap-3 p-2 opacity-75',
+    icon: 'size-10',
+    title: 'text-lg',
+    badge: 'size-8',
+    feedback: 'text-xl',
+  },
   md: {
     card: 'min-h-24 gap-3 p-3',
     icon: 'size-16',
@@ -38,7 +48,7 @@ interface TaskCardProps {
   member: Member
   /** Tag, den die Ansicht zeigt (`YYYY-MM-DD`). */
   date: string
-  size: CardSize
+  size: CardSize | 'sm'
 }
 
 /** Aufgabenkarte: ein Tipp erledigt sie für diese Person, ein weiterer nimmt es zurück. */
@@ -54,9 +64,18 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
     const timer = window.setTimeout(() => setFeedback(0), POINTS_FEEDBACK_MS)
     return () => window.clearTimeout(timer)
   }, [feedback])
-  const done = task.done_member_ids.includes(member.id)
+  const members = useMembers().data
+  const completer = doneBy(task, member.id)
+  const done = completer !== null
+  // „Einer für alle“, von jemand anderem erledigt: dessen Avatar statt des Hakens.
+  const doneByOther =
+    completer !== null && completer !== member.id
+      ? members?.find((candidate) => candidate.id === completer)
+      : undefined
   // Erledigt, aber die Eltern müssen noch prüfen: Sanduhr statt Haken, noch keine Punkte.
-  const pending = done && task.pending_member_ids.includes(member.id)
+  const pending = isPendingFor(task, member.id)
+  // Flexible Aufgaben: negativ = überfällig, positiv = demnächst.
+  const dueIn = daysUntilDue(task, member.id, date)
   // Erwachsene sammeln keine Punkte; bei ihnen zählt nur, dass es erledigt ist.
   const showPoints = member.role !== 'parent'
   const tokens = colorTokens(task.color ?? member.color)
@@ -80,6 +99,9 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
               })
             : task.title,
           ...(pending ? [t('family.pending')] : []),
+          ...(doneByOther ? [t('family.done_by', { name: doneByOther.name })] : []),
+          ...(dueIn !== null && dueIn < 0 ? [t('family.overdue', { count: -dueIn })] : []),
+          ...(dueIn !== null && dueIn > 0 ? [t('family.due_in', { count: dueIn })] : []),
         ].join(', ')}
         onClick={() => {
           setTapped(true)
@@ -107,6 +129,17 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
               {task.points}
             </span>
           )}
+          {dueIn !== null && dueIn < 0 && (
+            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-base font-bold text-red-800">
+              <AlarmIcon className="size-5" aria-hidden="true" />
+              {t('family.overdue', { count: -dueIn })}
+            </span>
+          )}
+          {dueIn !== null && dueIn > 0 && (
+            <span className="text-base font-bold text-slate-500">
+              {t('family.due_in', { count: dueIn })}
+            </span>
+          )}
         </span>
         {pending ? (
           <span
@@ -115,6 +148,19 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
             aria-hidden="true"
           >
             <HourglassIcon className="size-3/4" />
+          </span>
+        ) : doneByOther ? (
+          <span
+            data-testid="done-by"
+            className={`shrink-0 ${tapped ? 'motion-safe:animate-pop' : ''}`}
+            aria-hidden="true"
+          >
+            <Avatar
+              name={doneByOther.name}
+              color={doneByOther.color}
+              src={doneByOther.avatar_url}
+              size="sm"
+            />
           </span>
         ) : (
           done && (

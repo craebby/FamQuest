@@ -14,6 +14,10 @@ export interface TodayTask {
   color: MemberColor | null
   member_ids: number[]
   needs_approval: boolean
+  /** „Einer für alle“: erledigt für alle, sobald jemand in `done_member_ids` steht. */
+  shared: boolean
+  /** Nur bei flexiblen Aufgaben: Fälligkeit (`YYYY-MM-DD`) je Person. */
+  due_dates: { member_id: number; due_date: string }[]
   /** Personen, die die Aufgabe heute schon erledigt haben (auch ungeprüft). */
   done_member_ids: number[]
   /** Davon: Erledigungen, die noch auf die Kontrolle der Eltern warten. */
@@ -71,12 +75,16 @@ function setDone({ date, taskId, memberId, done }: SetDoneVariables) {
 /** Setzt den Status und schätzt die Punkte; die Antwort des Servers ersetzt die Schätzung. */
 function withDone(today: Today, { taskId, memberId, done }: SetDoneVariables): Today {
   const task = today.tasks.find((candidate) => candidate.id === taskId)
-  if (!task || task.done_member_ids.includes(memberId) === done) return today
+  const by = task ? doneBy(task, memberId) : null
+  if (!task || (by !== null) === done) return today
+  // Wessen Erledigung sich ändert: beim Zurücknehmen von „Einer für alle“ die der Person,
+  // die sie erledigt hatte.
+  const target = done ? memberId : (by ?? memberId)
   // Ungeprüfte Erledigungen bringen noch keine Punkte und zählen noch nicht für die Woche.
-  const wasPending = task.pending_member_ids.includes(memberId)
+  const wasPending = task.pending_member_ids.includes(target)
   const counts = done ? !task.needs_approval : !wasPending
   const delta = counts ? (done ? task.points : -task.points) : 0
-  const before = pointsFor(today, memberId)
+  const before = pointsFor(today, target)
   const after = {
     ...before,
     today: before.today + delta,
@@ -88,18 +96,50 @@ function withDone(today: Today, { taskId, memberId, done }: SetDoneVariables): T
     ...today,
     tasks: today.tasks.map((candidate) => {
       if (candidate !== task) return candidate
-      const others = task.done_member_ids.filter((id) => id !== memberId)
-      const otherPending = task.pending_member_ids.filter((id) => id !== memberId)
+      const others = task.done_member_ids.filter((id) => id !== target)
+      const otherPending = task.pending_member_ids.filter((id) => id !== target)
       return {
         ...task,
-        done_member_ids: done ? [...others, memberId] : others,
-        pending_member_ids: pendingNow ? [...otherPending, memberId] : otherPending,
+        done_member_ids: done ? [...others, target] : others,
+        pending_member_ids: pendingNow ? [...otherPending, target] : otherPending,
       }
     }),
-    points: [...today.points.filter((entry) => entry.member_id !== memberId), after],
+    points: [...today.points.filter((entry) => entry.member_id !== target), after],
     pending_approvals: today.pending_approvals + (pendingNow ? 1 : wasPending && !done ? -1 : 0),
   }
 }
+
+/**
+ * Wer die Aufgabe heute für diese Person erledigt hat: die Person selbst oder, bei
+ * „Einer für alle“, jemand anderes. null = offen.
+ */
+export function doneBy(task: TodayTask, memberId: number): number | null {
+  if (task.done_member_ids.includes(memberId)) return memberId
+  return task.shared ? (task.done_member_ids[0] ?? null) : null
+}
+
+export const isDoneFor = (task: TodayTask, memberId: number) => doneBy(task, memberId) !== null
+
+export function isPendingFor(task: TodayTask, memberId: number) {
+  const by = doneBy(task, memberId)
+  return by !== null && task.pending_member_ids.includes(by)
+}
+
+const dayNumber = (date: string) => Date.parse(`${date}T00:00:00Z`) / 86_400_000
+
+/**
+ * Flexible Aufgaben: Tage bis zur Fälligkeit (negativ = überfällig, 0 = heute fällig).
+ * null bei anderen Aufgaben oder wenn sie heute schon erledigt ist.
+ */
+export function daysUntilDue(task: TodayTask, memberId: number, date: string): number | null {
+  const due = task.due_dates.find((entry) => entry.member_id === memberId)
+  if (!due || isDoneFor(task, memberId)) return null
+  return dayNumber(due.due_date) - dayNumber(date)
+}
+
+/** Noch nicht fällig: steht unter „Demnächst“ und zählt nicht zum Tagesfortschritt. */
+export const isUpcoming = (task: TodayTask, memberId: number, date: string) =>
+  (daysUntilDue(task, memberId, date) ?? 0) > 0
 
 export function pointsFor(today: Today, memberId: number): MemberPoints {
   return (

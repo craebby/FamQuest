@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
+import SoonIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import SparklesIcon from '~icons/fluent-emoji-flat/sparkles'
 import ChevronIcon from '~icons/lucide/chevron-down'
 
 import type { Member } from '../../api/members'
 import { TIMES_OF_DAY, type TimeOfDay } from '../../api/tasks'
-import type { TodayTask } from '../../api/today'
+import { type TodayTask, daysUntilDue, isDoneFor, isUpcoming } from '../../api/today'
 import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { colorTokens } from '../../memberColors'
 import { type CardSize, TaskCard } from './TaskCard'
@@ -28,24 +29,27 @@ interface TaskGroupsProps {
 export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: TaskGroupsProps) {
   const { t } = useTranslation()
 
-  if (tasks.length === 0) {
-    return (
-      <p className="flex flex-col items-center gap-3 py-8 text-center text-2xl font-bold text-slate-600">
-        <BeachIcon className="size-24" aria-hidden="true" />
-        {t('family.free_today')}
-      </p>
+  const upcoming = tasks
+    .filter((task) => isUpcoming(task, member.id, date))
+    .sort(
+      (a, b) => (daysUntilDue(a, member.id, date) ?? 0) - (daysUntilDue(b, member.id, date) ?? 0),
     )
-  }
-
+  const current = tasks.filter((task) => !upcoming.includes(task))
   const groups = [...TIMES_OF_DAY, null]
     .map((timeOfDay) => ({
       timeOfDay,
-      tasks: tasks.filter((task) => task.time_of_day === timeOfDay),
+      tasks: current.filter((task) => task.time_of_day === timeOfDay),
     }))
     .filter((group) => group.tasks.length > 0)
 
   return (
     <div className="flex flex-col gap-3">
+      {current.length === 0 && (
+        <p className="flex flex-col items-center gap-3 py-8 text-center text-2xl font-bold text-slate-600">
+          <BeachIcon className="size-24" aria-hidden="true" />
+          {t('family.free_today')}
+        </p>
+      )}
       {groups.map((group) => (
         <TaskGroup
           key={group.timeOfDay ?? 'anytime'}
@@ -57,6 +61,20 @@ export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: Task
           size={size}
         />
       ))}
+      {upcoming.length > 0 && (
+        <section aria-label={t('family.upcoming')} className="mt-2 flex flex-col gap-2 px-1">
+          <h3 className="flex items-center gap-3 text-lg font-extrabold text-slate-500">
+            <SoonIcon
+              className={`${size === 'lg' ? 'size-10' : 'size-8'} shrink-0 opacity-70`}
+              aria-hidden="true"
+            />
+            {t('family.upcoming')}
+          </h3>
+          {upcoming.map((task) => (
+            <TaskCard key={task.id} task={task} member={member} date={date} size="sm" />
+          ))}
+        </section>
+      )}
     </div>
   )
 }
@@ -73,7 +91,7 @@ interface TaskGroupProps {
 function TaskGroup({ member, timeOfDay, tasks, date, current, size }: TaskGroupProps) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
-  const allDone = tasks.every((task) => task.done_member_ids.includes(member.id))
+  const allDone = tasks.every((task) => isDoneFor(task, member.id))
   // Ein gerade fertig gewordener Abschnitt klappt erst verzögert zu; beim Laden sofort.
   const [delayPassed, setDelayPassed] = useState(allDone)
   const [expanded, setExpanded] = useState(false)

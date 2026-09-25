@@ -15,6 +15,7 @@ MEMBER_COLORS = ("orange", "blue", "purple", "green", "red", "teal", "yellow")
 # Tagesabschnitte in zeitlicher Reihenfolge; weitere Werte lassen sich ergänzen.
 TIMES_OF_DAY = ("morning", "midday", "afternoon", "evening")
 TASK_MAX_POINTS = 1000
+MAX_INTERVAL_DAYS = 365
 # Arten von Punktebuchungen.
 POINT_KINDS = ("task_completed", "task_undone", "manual", "reward_redeemed")
 MANUAL_MAX_POINTS = 1000
@@ -130,9 +131,18 @@ class OnceRecurrence(BaseModel):
     date: dt.date
 
 
-# Neue Arten (z. B. alle zwei Wochen, monatlich) kommen hier als weiteres Modell dazu.
+class FlexibleRecurrence(BaseModel):
+    """Ohne festen Tag: fällig ab `date`, danach `interval_days` nach der letzten Erledigung."""
+
+    kind: Literal["flexible"]
+    interval_days: Annotated[int, Field(ge=1, le=MAX_INTERVAL_DAYS)]
+    date: dt.date
+
+
+# Neue Arten (z. B. monatlich an einem Tag) kommen hier als weiteres Modell dazu.
 Recurrence = Annotated[
-    DailyRecurrence | WeeklyRecurrence | OnceRecurrence, Field(discriminator="kind")
+    DailyRecurrence | WeeklyRecurrence | OnceRecurrence | FlexibleRecurrence,
+    Field(discriminator="kind"),
 ]
 
 
@@ -145,6 +155,7 @@ class TaskIn(BaseModel):
     color: MemberColor | None = None
     active: bool = True
     needs_approval: bool = False
+    shared: bool = False
     recurrence: Recurrence
     member_ids: Annotated[list[int], Field(min_length=1), AfterValidator(_unique_sorted)]
 
@@ -159,8 +170,15 @@ class TaskOut(BaseModel):
     color: str | None
     active: bool
     needs_approval: bool
+    shared: bool
     recurrence: Recurrence
     member_ids: list[int]
+
+
+class MemberDueOut(BaseModel):
+    member_id: int
+    # Vor heute: überfällig; nach heute: „demnächst“, kann aber schon erledigt werden.
+    due_date: dt.date
 
 
 class TodayTaskOut(BaseModel):
@@ -172,6 +190,10 @@ class TodayTaskOut(BaseModel):
     color: str | None
     member_ids: list[int]
     needs_approval: bool
+    # „Einer für alle“: erledigt für alle, sobald eine Person in done_member_ids steht.
+    shared: bool
+    # Nur bei flexiblen Aufgaben: Fälligkeit je Person (bei „Einer für alle“ überall gleich).
+    due_dates: list[MemberDueOut]
     # Personen, die die Aufgabe heute schon erledigt haben (auch ungeprüft).
     done_member_ids: list[int]
     # Davon: Erledigungen, die noch auf die Kontrolle der Eltern warten.

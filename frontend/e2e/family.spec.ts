@@ -217,3 +217,39 @@ test('Aufgabe mit Elternkontrolle: erst nach Bestätigung gibt es Punkte', async
   await expect(column.getByRole('button', { name: /wartet auf Kontrolle/ })).toHaveCount(0)
   await expect(nav.getByRole('link', { name: 'Einstellungen', exact: true })).toBeVisible()
 })
+
+test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ page }) => {
+  await login(page)
+  const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
+  await nav.getByRole('link', { name: 'Einstellungen' }).click()
+  await enterPin(page, PIN)
+
+  // Erstmals fällig in drei Tagen, danach etwa jede Woche.
+  const inThreeDays = new Date(Date.now() + 3 * 86_400_000).toLocaleDateString('sv-SE', {
+    timeZone: 'Europe/Berlin',
+  })
+  await page.getByRole('button', { name: 'Aufgabe hinzufügen' }).click()
+  await page.getByLabel('Titel').fill('Blumen gießen')
+  await choose(page, 'checkbox', /Lena/)
+  await choose(page, 'radio', 'Flexibel')
+  await page.getByRole('button', { name: 'Jede Woche' }).click()
+  await page.getByLabel('Erstmals fällig am').fill(inThreeDays)
+  await choose(page, 'radio', 'Jederzeit')
+  await page.getByRole('button', { name: 'Speichern' }).click()
+  await expect(page.getByRole('status')).toHaveText('„Blumen gießen“ ist gespeichert.')
+  await expect(page.getByText('Flexibel, etwa jede Woche')).toBeVisible()
+  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+
+  const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
+  const soon = column.getByRole('region', { name: 'Demnächst' })
+  const card = soon.getByRole('button', { name: /^Blumen gießen.*in 3 Tagen fällig$/ })
+  await expect(card).toBeVisible()
+
+  // Früher erledigen: Sie wandert zu den heutigen Aufgaben und zählt als erledigt.
+  await card.tap()
+  await expect(soon).toBeHidden()
+  await page.reload()
+  // Heute ist damit alles erledigt; der Abschnitt klappt zu.
+  await expect(column.getByRole('button', { name: 'Jederzeit: alles erledigt' })).toBeVisible()
+  await expect(soon).toBeHidden()
+})

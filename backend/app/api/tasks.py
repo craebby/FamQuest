@@ -22,10 +22,12 @@ def task_out(task: Task) -> TaskOut:
         color=task.color,
         active=task.active,
         needs_approval=task.needs_approval,
+        shared=task.shared,
         recurrence={
             "kind": recurrence.kind,
             "weekdays": recurrence.weekdays,
             "date": recurrence.date,
+            "interval_days": recurrence.interval_days,
         },
         member_ids=sorted(assignment.member_id for assignment in task.assignments),
     )
@@ -45,7 +47,7 @@ def apply_task(db: DbSession, task: Task, body: TaskIn) -> None:
     task.title, task.icon, task.points = body.title, body.icon, body.points
     task.description = body.description or None
     task.time_of_day, task.color, task.active = body.time_of_day, body.color, body.active
-    task.needs_approval = body.needs_approval
+    task.needs_approval, task.shared = body.needs_approval, body.shared
 
     rule = body.recurrence
     if task.recurrence is None:
@@ -53,6 +55,7 @@ def apply_task(db: DbSession, task: Task, body: TaskIn) -> None:
     task.recurrence.kind = rule.kind
     task.recurrence.weekdays = getattr(rule, "weekdays", None)
     task.recurrence.date = getattr(rule, "date", None)
+    task.recurrence.interval_days = getattr(rule, "interval_days", None)
 
     # Bestehende Zuordnungen behalten, damit sie ihre Id nicht wechseln.
     wanted = set(body.member_ids)

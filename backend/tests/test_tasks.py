@@ -51,6 +51,7 @@ def test_create_and_list_task(client, parent, lena):
         "color": None,
         "active": True,
         "needs_approval": False,
+        "shared": False,
         "recurrence": {"kind": "daily"},
         "member_ids": [lena],
     }
@@ -62,6 +63,10 @@ def test_create_and_list_task(client, parent, lena):
     [
         ({"kind": "weekly", "weekdays": [5, 1, 3, 1]}, {"kind": "weekly", "weekdays": [1, 3, 5]}),
         ({"kind": "once", "date": "2026-10-03"}, {"kind": "once", "date": "2026-10-03"}),
+        (
+            {"kind": "flexible", "interval_days": 7, "date": "2026-10-03"},
+            {"kind": "flexible", "interval_days": 7, "date": "2026-10-03"},
+        ),
     ],
 )
 def test_recurrence_kinds(client, parent, lena, recurrence, expected):
@@ -102,6 +107,11 @@ def test_task_for_several_members(client, parent, lena):
             "validation.out_of_range",
         ),
         ({"recurrence": {"kind": "once"}}, "recurrence.once.date", "validation.required"),
+        (
+            {"recurrence": {"kind": "flexible", "interval_days": 0, "date": "2026-10-03"}},
+            "recurrence.flexible.interval_days",
+            "validation.out_of_range",
+        ),
     ],
 )
 def test_invalid_task_data(client, parent, lena, overrides, field, code):
@@ -150,6 +160,7 @@ def test_update_task(client, parent, lena):
         "color": "teal",
         "active": False,
         "needs_approval": False,
+        "shared": False,
         "recurrence": {"kind": "weekly", "weekdays": [1, 2, 3, 4, 5]},
         "member_ids": [tom],
     }

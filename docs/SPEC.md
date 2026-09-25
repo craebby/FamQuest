@@ -115,8 +115,9 @@ Im UI wird das Bild überall kreisförmig mit Farbring dargestellt. Ohne Foto ze
 | Farbe | nein | Standard = Personenfarbe |
 | Aktiv | ja | inaktive Aufgaben erscheinen nicht mehr |
 | Eltern prüfen | nein | Punkte erst nach Kontrolle durch die Eltern (z. B. „Zimmer aufgeräumt“) |
+| Einer für alle | nein | bei mehreren Personen: eine Erledigung gilt für alle |
 
-Ist eine Aufgabe mehreren Personen zugeordnet, erledigt und punktet jede Person sie getrennt.
+Ist eine Aufgabe mehreren Personen zugeordnet, erledigt und punktet jede Person sie getrennt. Mit der Option **„Einer für alle“** (typisch für Haushaltsaufgaben wie „Bad putzen“ bei Mama und Papa) gilt sie dagegen für alle als erledigt, sobald eine zugeordnete Person sie erledigt hat; die anderen Spalten zeigen, wer es war. Punkte und der Anteil an der Woche zählen für diese Person.
 
 **Aufgaben-Vorlagen**
 
@@ -138,6 +139,9 @@ Aufgaben mit „Eltern prüfen“ werden am Display wie gewohnt angetippt, gelte
 - bestimmte Wochentage (Mehrfachauswahl)
 - Montag–Freitag (Schnellauswahl)
 - einmalig an einem Datum
+- flexibel: alle X Tage, ohne festen Wochentag (z. B. „Bad putzen, etwa einmal pro Woche“)
+
+**Flexible Aufgaben:** Die erste Fälligkeit ist ein Startdatum, danach X Tage nach der letzten Erledigung. Ab der Fälligkeit steht die Aufgabe in der Familienansicht, bis sie erledigt ist; überfällige Aufgaben sind deutlich markiert (z. B. „seit 3 Tagen fällig“). Vor der Fälligkeit steht sie klein unter „Demnächst“ und kann schon früher erledigt werden; der Rhythmus beginnt dann ab diesem Tag neu. „Demnächst“-Aufgaben zählen nicht zum Tagesfortschritt.
 
 Das Modell soll spätere Erweiterungen erlauben (z. B. alle zwei Wochen, monatlich). „Heute“ wird serverseitig in der Zeitzone der Familie berechnet (Standard Europe/Berlin), nicht in UTC.
 
@@ -280,9 +284,9 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
 | Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
-| Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen |
+| Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle |
 | TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember |
-| TaskRecurrence | Wiederholungsregel | Typ, Wochentage, Datum |
+| TaskRecurrence | Wiederholungsregel | Typ, Wochentage, Datum, Intervall in Tagen (flexibel) |
 | TaskCompletion | Erledigung | Task, Person, Datum, Zeitpunkt, geprüft am; eindeutig je Task/Person/Tag |
 | PointTransaction | Punktebuchung | Person, Betrag, Grund, Quelle |
 | Reward | Belohnung eines Kindes | Person, Name, Beschreibung, Icon, Kosten, aktiv |

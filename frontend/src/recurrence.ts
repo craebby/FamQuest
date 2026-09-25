@@ -20,5 +20,21 @@ export function recurrenceSummary(t: TFunction, language: string, recurrence: Re
     }
     case 'once':
       return t('tasks.summary_once', { date: formatDate(language, recurrence.date) })
+    case 'flexible':
+      return flexibleSummary(t, recurrence.interval_days)
   }
+}
+
+/** Kurz für die Schnellwahl: „Jede Woche“, „Alle 3 Tage“, „Jeden Monat“. */
+export function intervalLabel(t: TFunction, days: number): string {
+  if (days % 30 === 0) return t('tasks.interval_months', { count: days / 30 })
+  if (days % 7 === 0) return t('tasks.interval_weeks', { count: days / 7 })
+  return t('tasks.interval_days_label', { count: days })
+}
+
+/** „Flexibel, etwa jede Woche“, „… alle 3 Tage“, „… jeden Monat“. */
+export function flexibleSummary(t: TFunction, days: number): string {
+  if (days % 30 === 0) return t('tasks.summary_flexible_months', { count: days / 30 })
+  if (days % 7 === 0) return t('tasks.summary_flexible_weeks', { count: days / 7 })
+  return t('tasks.summary_flexible_days', { count: days })
 }

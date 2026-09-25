@@ -13,7 +13,7 @@ import { formatLongDate } from '../weekdays'
 import { type CareSegment, careShares } from '../care'
 import { DayProgress } from './family/DayProgress'
 import { TaskGroups } from './family/TaskGroups'
-import { tasksFor, useFamilyToday } from './family/useFamilyToday'
+import { currentTasks, tasksFor, useFamilyToday } from './family/useFamilyToday'
 
 /** Familienansicht: eine Spalte pro Person mit ihren heutigen Aufgaben. */
 export function FamilyPage() {
@@ -124,7 +124,7 @@ function MemberColumn({
       </Link>
       <DayProgress
         member={member}
-        tasks={tasks}
+        tasks={currentTasks(tasks, member.id, today.date)}
         points={pointsFor(today, member.id)}
         care={care}
         size="md"

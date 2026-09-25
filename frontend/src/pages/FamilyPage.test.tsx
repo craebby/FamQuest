@@ -344,6 +344,65 @@ describe('Familienansicht', () => {
     expect(within(column('Lena')).getByText('Insgesamt 10 Punkte')).toBeInTheDocument()
   })
 
+  it('zeigt flexible Aufgaben überfällig oder unter „Demnächst“', async () => {
+    const bath = makeTodayTask({
+      id: 30,
+      title: 'Bad putzen',
+      time_of_day: null,
+      due_dates: [{ member_id: 1, due_date: '2026-09-30' }],
+    })
+    const plants = makeTodayTask({
+      id: 31,
+      title: 'Blumen gießen',
+      time_of_day: null,
+      due_dates: [{ member_id: 1, due_date: '2026-10-05' }],
+    })
+    mockApi(familyRoutes(makeToday({ tasks: [teeth, bath, plants], points: initialPoints })))
+    renderApp('/')
+
+    const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
+    expect(
+      lenaColumn.getByRole('button', { name: 'Bad putzen, 2 Punkte, seit 3 Tagen fällig' }),
+    ).toBeVisible()
+    const soon = within(lenaColumn.getByRole('region', { name: 'Demnächst' }))
+    expect(
+      soon.getByRole('button', { name: 'Blumen gießen, 2 Punkte, in 2 Tagen fällig' }),
+    ).toBeVisible()
+    // „Demnächst“ zählt nicht zum Tagesfortschritt.
+    expect(lenaColumn.getByRole('img', { name: '0 von 2 Aufgaben erledigt' })).toBeVisible()
+  })
+
+  it('zeigt „Einer für alle“ bei allen als erledigt, mit Avatar', async () => {
+    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
+    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'orange' })
+    const bath = makeTodayTask({
+      id: 30,
+      title: 'Bad putzen',
+      member_ids: [3, 4],
+      shared: true,
+      done_member_ids: [4],
+    })
+    mockApi({
+      // Eine offene Aufgabe, damit der Abschnitt nicht zuklappt.
+      ...familyRoutes(
+        makeToday({
+          tasks: [bath, makeTodayTask({ id: 31, title: 'Kochen', member_ids: [3, 4] })],
+        }),
+      ),
+      'GET /api/members': Response.json([mama, papa]),
+    })
+    renderApp('/')
+
+    const mamaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Mama' }))
+    const card = mamaColumn.getByRole('button', { name: 'Bad putzen, erledigt von Papa' })
+    expect(card).toHaveAttribute('aria-pressed', 'true')
+    expect(within(card).getByTestId('done-by')).toBeInTheDocument()
+    expect(within(column('Papa')).getByRole('button', { name: 'Bad putzen' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
   it('hat eine Navigationsleiste mit Heute und Einstellungen', async () => {
     mockApi(familyRoutes())
     renderApp('/')

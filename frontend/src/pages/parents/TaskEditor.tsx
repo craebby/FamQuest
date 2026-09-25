@@ -6,6 +6,7 @@ import StarIcon from '~icons/fluent-emoji-flat/star'
 import ListIcon from '~icons/fluent-emoji-flat/clipboard'
 import TrashIcon from '~icons/fluent-emoji-flat/wastebasket'
 import DailyIcon from '~icons/fluent-emoji-flat/repeat-button'
+import FlexibleIcon from '~icons/fluent-emoji-flat/shuffle-tracks-button'
 import AnytimeIcon from '~icons/fluent-emoji-flat/infinity'
 import CheckIcon from '~icons/lucide/check'
 
@@ -13,6 +14,7 @@ import { ApiError } from '../../api/client'
 import type { Member } from '../../api/members'
 import {
   type RecurrenceKind,
+  MAX_INTERVAL_DAYS,
   TASK_MAX_POINTS,
   TIMES_OF_DAY,
   type Task,
@@ -35,12 +37,17 @@ import { type TaskTemplate, taskTemplateIcon } from '../../pools/tasks'
 import { IconPicker } from './IconPicker'
 import { TaskTemplatePicker } from './TaskTemplatePicker'
 import { ChoiceTile, Field, NumberStepper } from './formParts'
+import { intervalLabel } from '../../recurrence'
 
 const KIND_ICONS: Record<RecurrenceKind, typeof DailyIcon> = {
   daily: DailyIcon,
   weekly: CalendarIcon,
   once: OnceIcon,
+  flexible: FlexibleIcon,
 }
+
+/** Schnellwahl für flexible Aufgaben, in Tagen. */
+const INTERVAL_PRESETS = [2, 7, 14, 30]
 
 /** Farbverlauf aller Personenfarben als Symbol für „Farbe der jeweiligen Person“. */
 const MEMBER_COLOR_GRADIENT = `conic-gradient(${MEMBER_COLORS.map((color) => COLOR_TOKENS[color].main).join(', ')}, ${COLOR_TOKENS[MEMBER_COLORS[0]].main})`
@@ -81,8 +88,14 @@ export function TaskEditor({
     recurrence?.kind === 'weekly' ? recurrence.weekdays : WORKDAYS,
   )
   const [date, setDate] = useState(
-    recurrence?.kind === 'once' ? recurrence.date : todayIn(timeZone),
+    recurrence?.kind === 'once' || recurrence?.kind === 'flexible'
+      ? recurrence.date
+      : todayIn(timeZone),
   )
+  const [intervalDays, setIntervalDays] = useState(
+    recurrence?.kind === 'flexible' ? recurrence.interval_days : 7,
+  )
+  const [shared, setShared] = useState(task?.shared ?? false)
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | null>(task?.time_of_day ?? null)
   const [color, setColor] = useState<MemberColor | null>(task?.color ?? null)
   const [description, setDescription] = useState(task?.description ?? '')
@@ -112,13 +125,16 @@ export function TaskEditor({
       ? errorMessage(t, 'validation.choose_weekday')
       : undefined
   const dateError =
-    submitted && kind === 'once' && !date ? errorMessage(t, 'validation.required') : undefined
+    submitted && (kind === 'once' || kind === 'flexible') && !date
+      ? errorMessage(t, 'validation.required')
+      : undefined
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     setSubmitted(true)
     if (!title.trim() || memberIds.length === 0) return
-    if ((kind === 'weekly' && weekdays.length === 0) || (kind === 'once' && !date)) return
+    if (kind === 'weekly' && weekdays.length === 0) return
+    if ((kind === 'once' || kind === 'flexible') && !date) return
     save.mutate(
       {
         title: title.trim(),
@@ -129,12 +145,16 @@ export function TaskEditor({
         color,
         active,
         needs_approval: needsApproval,
+        // Bei nur einer Person hat „Einer für alle“ keine Wirkung.
+        shared: shared && memberIds.length > 1,
         recurrence:
           kind === 'weekly'
             ? { kind, weekdays: [...weekdays].sort() }
             : kind === 'once'
               ? { kind, date }
-              : { kind },
+              : kind === 'flexible'
+                ? { kind, interval_days: intervalDays, date }
+                : { kind },
         member_ids: memberIds,
       },
       { onSuccess: (saved) => onSaved(saved.title) },
@@ -151,8 +171,13 @@ export function TaskEditor({
     setPoints(template.points)
     setTimeOfDay(template.time_of_day)
     setNeedsApproval(template.needs_approval ?? false)
+    setShared(template.shared ?? false)
     setKind(template.recurrence.kind)
     if (template.recurrence.kind === 'weekly') setWeekdays(template.recurrence.weekdays)
+    if (template.recurrence.kind === 'flexible') {
+      setIntervalDays(template.recurrence.interval_days)
+      setDate(todayIn(timeZone))
+    }
     setPickingTemplate(false)
   }
   // Nur Erwachsene gewählt: Haushaltsvorlagen zuerst zeigen.
@@ -258,9 +283,16 @@ export function TaskEditor({
           </div>
         </Field>
 
+        {memberIds.length > 1 && (
+          <div className="flex flex-col gap-1">
+            <Switch checked={shared} onChange={setShared} label={t('tasks.shared')} showLabel />
+            <p className="text-base text-slate-500">{t('tasks.shared_hint')}</p>
+          </div>
+        )}
+
         <Field label={t('tasks.recurrence')}>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {(['daily', 'weekly', 'once'] as const).map((value) => {
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {(['daily', 'weekly', 'flexible', 'once'] as const).map((value) => {
               const Icon = KIND_ICONS[value]
               return (
                 <ChoiceTile
@@ -322,6 +354,48 @@ export function TaskEditor({
             onChange={(event) => setDate(event.target.value)}
             error={dateError}
           />
+        )}
+
+        {kind === 'flexible' && (
+          <>
+            <Field label={t('tasks.interval')}>
+              <p className="-mt-1 text-base text-slate-500">{t('tasks.flexible_hint')}</p>
+              <div className="flex flex-wrap gap-3">
+                {INTERVAL_PRESETS.map((days) => (
+                  <Button
+                    key={days}
+                    variant="secondary"
+                    aria-pressed={intervalDays === days}
+                    className="aria-pressed:bg-orange-500 aria-pressed:text-white aria-pressed:ring-orange-500"
+                    onClick={() => setIntervalDays(days)}
+                  >
+                    {intervalLabel(t, days)}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <NumberStepper
+                  label={t('tasks.interval_days')}
+                  value={intervalDays}
+                  min={1}
+                  max={MAX_INTERVAL_DAYS}
+                  onChange={setIntervalDays}
+                  decreaseLabel={t('tasks.fewer_days')}
+                  increaseLabel={t('tasks.more_days')}
+                />
+                <span className="text-lg font-bold text-slate-700">
+                  {t('tasks.days', { count: intervalDays })}
+                </span>
+              </div>
+            </Field>
+            <TextField
+              label={t('tasks.first_due')}
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              error={dateError}
+            />
+          </>
         )}
 
         <Field label={t('tasks.time_of_day')}>

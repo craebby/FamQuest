@@ -107,6 +107,8 @@ class Task(Base):
     active: Mapped[bool] = mapped_column(default=True, server_default="true")
     # Punkte erst, nachdem Eltern die Erledigung geprüft haben (z. B. „Zimmer aufgeräumt“).
     needs_approval: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # „Einer für alle“: Eine Erledigung durch eine zugeordnete Person gilt für alle.
+    shared: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     recurrence: Mapped["TaskRecurrence"] = relationship(cascade="all, delete-orphan", lazy="joined")
@@ -122,7 +124,8 @@ class TaskRecurrence(Base):
     __table_args__ = (
         CheckConstraint(
             "(kind <> 'weekly' OR cardinality(weekdays) > 0)"
-            " AND (kind <> 'once' OR date IS NOT NULL)",
+            " AND (kind <> 'once' OR date IS NOT NULL)"
+            " AND (kind <> 'flexible' OR (date IS NOT NULL AND interval_days > 0))",
             name="fields_for_kind",
         ),
     )
@@ -134,8 +137,10 @@ class TaskRecurrence(Base):
     kind: Mapped[str] = mapped_column(String(20))
     # ISO-Wochentage 1 (Montag) bis 7 (Sonntag), nur bei "weekly".
     weekdays: Mapped[list[int] | None] = mapped_column(ARRAY(SmallInteger))
-    # Datum bei "once".
+    # Datum bei "once"; bei "flexible" die erste Fälligkeit.
     date: Mapped[dt.date | None] = mapped_column(Date)
+    # Bei "flexible": fällig so viele Tage nach der letzten Erledigung.
+    interval_days: Mapped[int | None] = mapped_column(SmallInteger)
 
 
 class TaskAssignment(Base):

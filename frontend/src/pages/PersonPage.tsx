@@ -11,7 +11,7 @@ import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { DayProgress } from './family/DayProgress'
 import { TaskGroups } from './family/TaskGroups'
-import { tasksFor, useFamilyToday } from './family/useFamilyToday'
+import { currentTasks, tasksFor, useFamilyToday } from './family/useFamilyToday'
 import { RewardGrid } from './rewards/RewardGrid'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
@@ -63,7 +63,7 @@ export function PersonPage() {
       </header>
       <DayProgress
         member={member}
-        tasks={tasks}
+        tasks={currentTasks(tasks, member.id, today.date)}
         points={points}
         care={careShares(members, today)}
         size="lg"

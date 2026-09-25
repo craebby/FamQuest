@@ -20,6 +20,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     color: null,
     active: true,
     needs_approval: false,
+    shared: false,
     recurrence: { kind: 'daily' },
     member_ids: [1],
     ...overrides,
@@ -129,6 +130,7 @@ describe('Aufgaben im Elternbereich', () => {
       color: null,
       active: true,
       needs_approval: false,
+      shared: false,
       recurrence: { kind: 'weekly', weekdays: [1, 6, 7] },
       member_ids: [1],
     })
@@ -177,6 +179,35 @@ describe('Aufgaben im Elternbereich', () => {
 
     expect(screen.getByRole('button', { name: 'Haushalt' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: /Kinder ins Bett bringen/ })).toBeVisible()
+  })
+
+  it('legt eine flexible Aufgabe für alle an', async () => {
+    const user = userEvent.setup()
+    const calls = api([], {
+      'POST /api/tasks': (body) =>
+        Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
+    })
+    renderApp('/parents')
+
+    await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
+    await user.type(screen.getByLabelText('Titel'), 'Bad putzen')
+    await user.click(screen.getByRole('checkbox', { name: /Lena/ }))
+    // „Einer für alle“ gibt es erst ab zwei Personen.
+    expect(screen.queryByRole('switch', { name: 'Einer für alle' })).toBeNull()
+    await user.click(screen.getByRole('checkbox', { name: /Tom/ }))
+    await user.click(screen.getByRole('switch', { name: 'Einer für alle' }))
+    await user.click(screen.getByRole('radio', { name: 'Flexibel' }))
+    await user.click(screen.getByRole('button', { name: 'Alle 2 Wochen' }))
+    await user.clear(screen.getByLabelText('Erstmals fällig am'))
+    await user.type(screen.getByLabelText('Erstmals fällig am'), '2026-10-05')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('„Bad putzen“ ist gespeichert.')
+    expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
+      shared: true,
+      recurrence: { kind: 'flexible', interval_days: 14, date: '2026-10-05' },
+      member_ids: [1, 2],
+    })
   })
 
   it('verlangt Titel und mindestens eine Person', async () => {

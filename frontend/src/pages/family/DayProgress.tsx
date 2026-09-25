@@ -5,7 +5,7 @@ import StarIcon from '~icons/fluent-emoji-flat/star'
 import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 
 import type { Member } from '../../api/members'
-import type { MemberPoints, TodayTask } from '../../api/today'
+import { type MemberPoints, type TodayTask, isDoneFor } from '../../api/today'
 import type { CareSegment } from '../../care'
 import { colorTokens } from '../../memberColors'
 import { CareShare } from './CareShare'
@@ -20,7 +20,7 @@ const SIZES = {
 
 interface DayProgressProps {
   member: Member
-  /** Heutige Aufgaben dieser Person. */
+  /** Heutige Aufgaben dieser Person, ohne „Demnächst“. */
   tasks: TodayTask[]
   points: MemberPoints
   /** Anteile der Erwachsenen an dieser Woche; null bei weniger als zwei Erwachsenen. */
@@ -37,7 +37,7 @@ export function DayProgress({ member, tasks, points, care, size }: DayProgressPr
   const tokens = colorTokens(member.color)
   const sizes = SIZES[size]
   const total = tasks.length
-  const done = tasks.filter((task) => task.done_member_ids.includes(member.id)).length
+  const done = tasks.filter((task) => isDoneFor(task, member.id)).length
 
   return (
     <div className="flex flex-col items-center gap-2">

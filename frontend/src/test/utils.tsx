@@ -74,6 +74,8 @@ export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {
     color: null,
     member_ids: [1],
     needs_approval: false,
+    shared: false,
+    due_dates: [],
     done_member_ids: [],
     pending_member_ids: [],
     ...overrides,

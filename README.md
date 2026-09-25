@@ -94,9 +94,11 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
 - **Titel** und optional eine Beschreibung
 - **Punkte**: 0 bis 1000
 - **Für wen**: eine oder mehrere Personen; jede Person erledigt die Aufgabe und bekommt die Punkte
-  für sich
-- **Wie oft**: jeden Tag, an bestimmten Wochentagen (mit Schnellauswahl Mo–Fr oder Wochenende) oder
-  einmal an einem Datum
+  für sich. Mit **„Einer für alle“** (ab zwei Personen) gilt sie dagegen für alle als erledigt,
+  sobald eine Person sie erledigt hat, etwa „Bad putzen“ bei Mama und Papa. Die anderen Spalten
+  zeigen den Avatar der Person, die es war; Punkte und der Anteil an der Woche zählen für sie.
+- **Wie oft**: jeden Tag, an bestimmten Wochentagen (mit Schnellauswahl Mo–Fr oder Wochenende),
+  einmal an einem Datum oder **flexibel** (siehe unten)
 - **Tageszeit**: morgens, mittags, nachmittags, abends oder jederzeit
 - **Farbe der Karte**: standardmäßig die Farbe der jeweiligen Person
 - **Aktiv**: inaktive Aufgaben bleiben gespeichert, erscheinen aber nicht in der Familienansicht
@@ -106,8 +108,16 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
 Beim Anlegen füllt **„Aus Vorlagen wählen“** das Formular mit einem Tipp vor. Es gibt zwei
 Gruppen: „Kinder“ (Zähne putzen, Anziehen, Spielzeug aufräumen, Tisch abräumen …) und „Haushalt“ für
 die Care-Arbeit der Erwachsenen (Kochen, Einkaufen, Wäsche, Kinder bringen und abholen, ins Bett
-bringen, Termine …). Alles bleibt danach änderbar. Die Vorlagen stehen in
+bringen, Termine …). Haushaltsvorlagen sind „Einer für alle“; Bad putzen, Staubsaugen, Einkaufen
+und Termine sind flexibel mit etwa einer Woche. Alles bleibt danach änderbar. Die Vorlagen stehen in
 `frontend/src/pools/tasks.ts`, ihre Titel in `frontend/src/locales/<sprache>/pool.json`.
+
+**Flexible Aufgaben** haben keinen festen Tag, sondern einen Rhythmus: alle X Tage (Schnellwahl
+alle 2 Tage, jede Woche, alle 2 Wochen, jeden Monat) und ein Datum für die erste Fälligkeit. Ab dann
+steht die Aufgabe in der Familienansicht, bis sie erledigt ist; ist sie überfällig, zeigt die Karte
+einen roten Hinweis mit Wecker („seit 3 Tagen fällig“). Danach ist sie X Tage nach der Erledigung
+wieder dran. Vorher steht sie klein unter **„Demnächst“** und kann schon früher erledigt werden,
+der Rhythmus beginnt dann ab diesem Tag neu. „Demnächst“ zählt nicht zum Tagesfortschritt.
 
 Die Liste lässt sich mit einem Tipp auf eine Person filtern. Neue Aufgaben sind dann für diese
 Person vorausgewählt. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import SharedIcon from '~icons/fluent-emoji-flat/handshake'
 import ReviewIcon from '~icons/fluent-emoji-flat/magnifying-glass-tilted-left'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
@@ -168,6 +169,12 @@ function TaskRow({
               <span className="inline-flex items-center gap-1">
                 <TimeIcon className="size-6" aria-hidden="true" />
                 {t(`times_of_day.${task.time_of_day}`)}
+              </span>
+            )}
+            {task.shared && task.member_ids.length > 1 && (
+              <span className="inline-flex items-center gap-1">
+                <SharedIcon className="size-6" aria-hidden="true" />
+                {t('tasks.shared')}
               </span>
             )}
             {task.needs_approval && (
