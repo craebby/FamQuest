@@ -13,7 +13,8 @@ services and without external CDNs. The full specification (in German) is in
 > area with PIN, family members with colour and photo, tasks and routines with templates, the
 > family view for ticking things off, points with daily progress, parent checks, rewards for
 > children, fair sharing between adults and family settings. The display test is done; the rest
-> will show in everyday use. Next up is Google Calendar (see [Roadmap](#roadmap)).
+> will show in everyday use. Phase 2 (Google Calendar) is in progress: accounts, choosing
+> calendars, background sync and the week view work (see [Roadmap](#roadmap)).
 
 ## Features
 
@@ -24,6 +25,7 @@ services and without external CDNs. The full specification (in German) is in
 - Rewards per child from a list of suggestions, redeemed on the display
 - Parent checks for selected tasks
 - Fair sharing: each adult's share of the week's tasks
+- Google Calendar (read-only): week view on the display, events in each person's colour
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -248,9 +250,34 @@ competition but a way to share the work fairly. With only one adult, the display
 
 ## Google Calendar
 
-*Work in progress (phase 2).* So far you can connect and disconnect Google accounts in the
-parents' area under **Calendar**. Choosing calendars and showing events comes next (see
-[Roadmap](#roadmap)). FamQuest only reads the calendars and never changes them.
+FamQuest shows your Google calendars as a week on the display: one column per day (Monday to
+Sunday), events in the colour of the person they belong to, with their avatar. FamQuest only
+reads the calendars and never changes them.
+
+**In the parents' area under Calendar:**
+
+- Connect one or more Google accounts (setup below).
+- All calendars of the account are listed. Switch on the ones that should appear on the display.
+- For each calendar, choose who it **belongs to**: a person or **Family** (for everything that
+  concerns everyone, e.g. a shared family calendar, bin collection or holidays).
+- **Family colour**: "Family" gets its own colour and a house as its avatar. Pink and grey are
+  reserved for the family; colours already used by people are greyed out.
+- Each calendar shows when it was last updated, or what went wrong. **Update now** fetches
+  immediately.
+
+**On the display:** once at least one calendar is switched on, the navigation bar shows a
+calendar symbol. The arrows browse weeks; today is highlighted and events that are over fade out.
+Tapping an avatar at the top shows only that person's events (plus family events); tapping again
+shows everyone. If the same event is in several calendars (e.g. an invite to both parents), it
+appears once with all avatars. If a calendar can't be updated, a note appears above the week;
+the last known events stay visible.
+
+**Sync:** every 5 minutes (`CALENDAR_SYNC_MINUTES`) FamQuest asks Google whether anything has
+changed (incremental, via sync token). Only then, when the week changes, or every 6 hours as a
+safety net are the events reloaded, for a window from 4 weeks before the current week to about
+half a year ahead. Recurring events are stored as individual occurrences; all-day and multi-day
+events are supported. If Google is unreachable or throttles requests, the next run simply tries
+again.
 
 Because FamQuest is self-hosted, every installation needs its own access to Google. This is a
 one-time, free setup. FamQuest must be reachable via **HTTPS on a domain** (e.g.
@@ -309,6 +336,7 @@ described in [`.env.example`](.env.example).
 | `GOOGLE_CLIENT_ID` | – | OAuth client for [Google Calendar](#google-calendar) |
 | `GOOGLE_CLIENT_SECRET` | – | Its client secret |
 | `TOKEN_ENCRYPTION_KEY` | – | Encrypts the Google tokens in the database |
+| `CALENDAR_SYNC_MINUTES` | `5` | Minutes between calendar syncs in the background; `0` = off |
 
 Data lives in two Docker volumes: `db-data` (PostgreSQL) and `uploads` (uploaded images). How to
 back them up is described under [Backup and restore](#backup-and-restore).
@@ -501,7 +529,8 @@ A test fails if models were changed without creating a migration.
 Browser ──► reverse proxy (optional) ──► app (FastAPI, port 8000) ──► db (PostgreSQL 16)
                                            ├─ /api/*   JSON API
                                            ├─ /*       built React frontend
-                                           └─ /data/uploads (volume)
+                                           ├─ /data/uploads (volume)
+                                           └─ calendar sync in the background ──► Google Calendar API
 ```
 
 | Folder | Contents |
@@ -533,12 +562,12 @@ use.
   hardening, display test fixes (compact layout, order of people, display size per device).
   Everything else has to prove itself in practice first.
 
-**Next: Google Calendar (phase 2)**
+**In progress: Google Calendar (phase 2)**
 
 - [x] 1. Connect a Google account (OAuth, encrypted tokens, refreshed automatically)
-- [ ] 2. Choose calendars and link them to people or "Family"
-- [ ] 3. Background sync, error handling
-- [ ] 4. Calendar view: week with events in the person's colour
+- [x] 2. Choose calendars and link them to people or "Family" (with its own colour)
+- [x] 3. Background sync (incremental), recurring and all-day events, error handling
+- [x] 4. Calendar view: week with events in the person's colour and avatars
 - [ ] 5. Polish
 
 **1.1: make it your own**

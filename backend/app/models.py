@@ -36,6 +36,8 @@ class Family(Base):
     timezone: Mapped[str] = mapped_column(String(64), server_default="Europe/Berlin")
     parent_pin_hash: Mapped[str | None] = mapped_column(String(255))
     pin_enabled: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # Farbe der Familie im Kalender (Termine, die allen gehören); siehe schemas.FAMILY_COLORS.
+    calendar_color: Mapped[str] = mapped_column(String(20), server_default="pink")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -301,6 +303,72 @@ class CalendarConnection(Base):
         ForeignKey("users.id", ondelete="SET NULL")
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Calendar(Base):
+    """Kalender eines verbundenen Kontos.
+
+    Ausgewählte Kalender werden synchronisiert und angezeigt. Sie gehören einer Person
+    (`member_id`) oder, ohne Person, der ganzen Familie.
+    """
+
+    __tablename__ = "calendars"
+    __table_args__ = (UniqueConstraint("connection_id", "external_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    connection_id: Mapped[int] = mapped_column(
+        ForeignKey("calendar_connections.id", ondelete="CASCADE")
+    )
+    # Kalender-Id beim Anbieter, bei Google z. B. die E-Mail-Adresse oder "…@group.calendar…".
+    external_id: Mapped[str] = mapped_column(String(1024))
+    name: Mapped[str] = mapped_column(String(255))
+    # Hauptkalender des Kontos.
+    primary: Mapped[bool] = mapped_column(default=False, server_default="false")
+    selected: Mapped[bool] = mapped_column(default=False, server_default="false")
+    member_id: Mapped[int | None] = mapped_column(
+        ForeignKey("family_members.id", ondelete="SET NULL"), index=True
+    )
+    # Stand der inkrementellen Synchronisation (siehe app.calendar_sync).
+    sync_token: Mapped[str | None] = mapped_column(Text)
+    # Zeitraum der gespeicherten Termine und wann er zuletzt vollständig geladen wurde.
+    window_start: Mapped[dt.date | None] = mapped_column(Date)
+    window_loaded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Letzte erfolgreiche Synchronisation und ggf. der Fehlercode der letzten fehlgeschlagenen.
+    synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    sync_error: Mapped[str | None] = mapped_column(String(64))
+
+    connection: Mapped[CalendarConnection] = relationship(lazy="joined")
+
+
+class CalendarEvent(Base):
+    """Termin eines ausgewählten Kalenders im geladenen Zeitraum.
+
+    Serientermine liegen als einzelne Vorkommen vor. Ganztägige Termine haben `start_date`
+    und `end_date` (exklusiv), alle anderen `start_at` und `end_at`.
+    """
+
+    __tablename__ = "calendar_events"
+    __table_args__ = (
+        UniqueConstraint("calendar_id", "external_id"),
+        CheckConstraint(
+            "(all_day AND start_date IS NOT NULL AND end_date IS NOT NULL)"
+            " OR (NOT all_day AND start_at IS NOT NULL AND end_at IS NOT NULL)",
+            name="times_for_kind",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    calendar_id: Mapped[int] = mapped_column(ForeignKey("calendars.id", ondelete="CASCADE"))
+    external_id: Mapped[str] = mapped_column(String(1024))
+    # Gleicher Termin in mehreren Kalendern (z. B. Einladung an beide Eltern) → eine Anzeige.
+    ical_uid: Mapped[str | None] = mapped_column(String(1024))
+    # Ohne Titel (z. B. nur „beschäftigt“ freigegeben) zeigt das Frontend einen Platzhalter.
+    title: Mapped[str | None] = mapped_column(String(500))
+    all_day: Mapped[bool]
+    start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    start_date: Mapped[dt.date | None] = mapped_column(Date)
+    end_date: Mapped[dt.date | None] = mapped_column(Date)
 
 
 class OAuthState(Base):

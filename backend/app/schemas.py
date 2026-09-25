@@ -12,6 +12,8 @@ PASSWORD_MIN_LENGTH = 10
 # die Farbwerte selbst stehen im Frontend (frontend/src/memberColors.ts).
 MEMBER_ROLES = ("parent", "child")
 MEMBER_COLORS = ("orange", "blue", "purple", "green", "red", "teal", "yellow")
+# Farbe der Familie im Kalender: die Personenfarben und zwei, die nur die Familie bekommt.
+FAMILY_COLORS = (*MEMBER_COLORS, "pink", "slate")
 # Tagesabschnitte in zeitlicher Reihenfolge; weitere Werte lassen sich ergänzen.
 TIMES_OF_DAY = ("morning", "midday", "afternoon", "evening")
 TASK_MAX_POINTS = 1000
@@ -72,6 +74,7 @@ FamilyName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=
 MemberName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
 MemberRole = Annotated[str, _one_of(MEMBER_ROLES)]
 MemberColor = Annotated[str, _one_of(MEMBER_COLORS)]
+FamilyColor = Annotated[str, _one_of(FAMILY_COLORS)]
 TaskTitle = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 TaskDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
 # Iconify-Name "set:icon"; die Auswahl selbst kommt aus dem Icon-Katalog im Frontend.

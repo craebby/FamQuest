@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     # Beliebige lange Zufallszeichenkette; verschlüsselt die OAuth-Tokens in der Datenbank.
     token_encryption_key: str = ""
+    # Abstand der Kalender-Synchronisation im Hintergrund in Minuten; 0 = aus.
+    calendar_sync_minutes: int = 5
 
     @property
     def calendar_configured(self) -> bool:

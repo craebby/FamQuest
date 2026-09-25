@@ -20,6 +20,11 @@ os.environ["POSTGRES_DB"] = TEST_DB
 # Hochgeladene Bilder landen in einem temporären Verzeichnis.
 UPLOAD_DIR = Path(tempfile.mkdtemp(prefix="famquest-test-uploads-"))
 os.environ["UPLOAD_DIR"] = str(UPLOAD_DIR)
+# Keine Kalender-Synchronisation im Hintergrund; Tests rufen sie gezielt auf.
+os.environ["CALENDAR_SYNC_MINUTES"] = "0"
+# Google-Zugangsdaten aus der lokalen .env gelten nicht; Tests schalten sie mit `configured` ein.
+for name in ("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "TOKEN_ENCRYPTION_KEY"):
+    os.environ[name] = ""
 
 # Freitag, 2. Oktober 2026, 23:30 UTC = Samstag, 3. Oktober, 01:30 in Berlin.
 SATURDAY_NIGHT_UTC = dt.datetime(2026, 10, 2, 23, 30, tzinfo=dt.UTC)
@@ -122,3 +127,27 @@ def lena(client, parent) -> int:
     from tests.test_tasks import add_member
 
     return add_member(client, parent)
+
+
+@pytest.fixture
+def configured(monkeypatch):
+    """Google-Zugangsdaten gesetzt, Kalender damit eingeschaltet."""
+    from app.config import get_settings
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "google_client_id", "client-id")
+    monkeypatch.setattr(settings, "google_client_secret", "client-secret")
+    monkeypatch.setattr(settings, "token_encryption_key", "ein-langer-test-schluessel")
+
+
+@pytest.fixture
+def fake_google(configured, monkeypatch):
+    """Nachgebautes Google statt echter Anfragen."""
+    import httpx2 as httpx
+
+    from app import google
+    from tests.fake_google import FakeGoogle
+
+    fake = FakeGoogle()
+    monkeypatch.setattr(google, "transport", httpx.MockTransport(fake.handler))
+    return fake

@@ -8,6 +8,7 @@ import { AppShell } from './components/AppShell'
 import { Button, FullScreenMessage } from './components/ui'
 import { errorMessage } from './errors'
 import { applyFamilyLanguage } from './i18n'
+import { CalendarPage } from './pages/CalendarPage'
 import { FamilyPage } from './pages/FamilyPage'
 import { LoginPage } from './pages/LoginPage'
 import { ParentsPage } from './pages/ParentsPage'
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="/member/:memberId" element={<PersonPage />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/rewards/:memberId" element={<RewardsPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
           </Route>
           <Route path="/parents" element={<ParentsPage />} />
         </Route>

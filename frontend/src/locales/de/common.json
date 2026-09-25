@@ -41,7 +41,8 @@
     "settings": "Einstellungen",
     "rewards": "Belohnungen",
     "pending_one": "{{count}} Aufgabe wartet auf Kontrolle",
-    "pending_other": "{{count}} Aufgaben warten auf Kontrolle"
+    "pending_other": "{{count}} Aufgaben warten auf Kontrolle",
+    "calendar": "Kalender"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -127,7 +128,9 @@
     "green": "Grün",
     "red": "Rot",
     "teal": "Türkis",
-    "yellow": "Gelb"
+    "yellow": "Gelb",
+    "pink": "Rosa",
+    "slate": "Grau"
   },
   "cropper": {
     "title": "Bildausschnitt wählen",
@@ -351,9 +354,12 @@
       "scope_missing": "Der Zugriff auf den Kalender wurde nicht erlaubt. Bitte nochmal verbinden und den Kalender-Zugriff ankreuzen.",
       "reconnect": "Der Zugriff auf das Google-Konto ist abgelaufen. Bitte neu verbinden.",
       "google_unreachable": "Google ist gerade nicht erreichbar. Bitte später nochmal versuchen.",
-      "google_failed": "Google hat die Anmeldung abgelehnt. Bitte nochmal versuchen.",
+      "google_failed": "Google hat die Anfrage abgelehnt. Bitte später nochmal versuchen.",
       "client_invalid": "Google kennt die Zugangsdaten nicht. Bitte GOOGLE_CLIENT_ID und GOOGLE_CLIENT_SECRET prüfen.",
-      "connection_not_found": "Diese Verbindung gibt es nicht mehr"
+      "connection_not_found": "Diese Verbindung gibt es nicht mehr",
+      "rate_limited": "Google bremst gerade die Abrufe. Es geht gleich von selbst weiter.",
+      "calendar_unavailable": "Dieser Kalender ist bei Google nicht mehr verfügbar",
+      "calendar_not_found": "Diesen Kalender gibt es nicht mehr"
     }
   },
   "rewards": {
@@ -453,6 +459,33 @@
     "disconnect_confirm": "{{email}} wirklich trennen? Die Termine dieses Kontos werden dann nicht mehr angezeigt.",
     "disconnected": "{{email}} wurde getrennt",
     "setup_details": "Einrichtung bei Google",
-    "redirect_uri": "Weiterleitungs-URI für die Google Cloud Console:"
+    "redirect_uri": "Weiterleitungs-URI für die Google Cloud Console:",
+    "calendars": "Welche Kalender sollen am Display erscheinen, und wem gehören sie?",
+    "no_calendars": "In diesem Konto gibt es keine Kalender.",
+    "primary": "Hauptkalender",
+    "show": "{{name}} anzeigen",
+    "belongs_to": "Gehört zu",
+    "family": "Familie",
+    "synced_at": "Aktualisiert: {{time}}",
+    "loading": "Termine werden geladen …",
+    "sync_now": "Jetzt aktualisieren",
+    "family_color": "Farbe der Familie",
+    "family_color_hint": "Für Termine, die allen gehören.",
+    "color_taken_by": "{{color}} (gehört {{name}})",
+    "title": "Kalender",
+    "previous_week": "Vorherige Woche",
+    "next_week": "Nächste Woche",
+    "this_week": "Diese Woche",
+    "today": "Heute",
+    "all_day": "Ganztägig",
+    "from": "ab {{time}}",
+    "until": "bis {{time}}",
+    "untitled": "Termin",
+    "no_events": "Keine Termine",
+    "filter": "Termine nach Person filtern",
+    "problem": "Der Kalender wird gerade nicht aktualisiert. Mehr dazu im Elternbereich.",
+    "nothing_selected": "Noch kein Kalender ausgewählt",
+    "nothing_selected_hint": "Im Elternbereich unter „Kalender“ ein Google-Konto verbinden und Kalender auswählen.",
+    "people": "Für {{names}}"
   }
 }

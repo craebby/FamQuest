@@ -2,9 +2,11 @@ import type { ComponentType, SVGProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
+import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 
+import { useCalendarStatus } from '../api/calendar'
 import { useToday } from '../api/today'
 
 interface NavItemProps {
@@ -59,6 +61,8 @@ export function AppShell() {
   const { pathname } = useLocation()
   const onToday = pathname === '/' || pathname.startsWith('/member/')
   const pending = useToday().data?.pending_approvals ?? 0
+  // Den Kalender gibt es erst, wenn im Elternbereich einer ausgewählt ist.
+  const calendarEnabled = useCalendarStatus().data?.enabled ?? false
 
   return (
     <div className="flex min-h-dvh flex-col sm:flex-row">
@@ -73,6 +77,14 @@ export function AppShell() {
           icon={GiftIcon}
           active={pathname.startsWith('/rewards')}
         />
+        {calendarEnabled && (
+          <NavItem
+            to="/calendar"
+            label={t('nav.calendar')}
+            icon={CalendarIcon}
+            active={pathname.startsWith('/calendar')}
+          />
+        )}
         {/* Einstellungen abgesetzt am Ende der Leiste. */}
         <NavItem
           to="/parents"

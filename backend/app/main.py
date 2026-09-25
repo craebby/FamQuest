@@ -1,3 +1,7 @@
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, suppress
+from datetime import timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, FastAPI
@@ -8,6 +12,7 @@ from app.api import (
     approvals,
     auth,
     calendar,
+    calendar_week,
     health,
     members,
     parent,
@@ -17,6 +22,7 @@ from app.api import (
     tasks,
     today,
 )
+from app.calendar_sync import run_periodically
 from app.config import Settings, get_settings
 from app.errors import register_error_handlers
 from app.logs import configure_logging
@@ -27,7 +33,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings.log_level)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
-    app = FastAPI(title="FamQuest", docs_url="/api/docs", openapi_url="/api/openapi.json")
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        task = None
+        if settings.calendar_configured and settings.calendar_sync_minutes > 0:
+            interval = timedelta(minutes=settings.calendar_sync_minutes)
+            task = asyncio.create_task(run_periodically(interval))
+        yield
+        if task is not None:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+    app = FastAPI(
+        title="FamQuest",
+        docs_url="/api/docs",
+        openapi_url="/api/openapi.json",
+        lifespan=lifespan,
+    )
     register_error_handlers(app)
 
     api = APIRouter(prefix="/api")
@@ -43,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         rewards,
         approvals,
         calendar,
+        calendar_week,
     ):
         api.include_router(module.router)
     app.include_router(api)

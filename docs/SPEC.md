@@ -295,8 +295,9 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | PointTransaction | Punktebuchung | Person, Betrag, Grund, Quelle |
 | Reward | Belohnung eines Kindes | Person, Name, Beschreibung, Icon, Kosten, aktiv |
 | RewardRedemption | Einlösung | Reward, Person, Status, Zeitpunkt |
-| CalendarConnection | Phase 2 | OAuth-Verbindung (noch nicht implementieren) |
-| CalendarMapping | Phase 2 | Kalender ↔ Person (noch nicht implementieren) |
+| CalendarConnection | Phase 2 | OAuth-Verbindung: Konto, Tokens verschlüsselt, Status |
+| Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Sync-Stand |
+| CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine), ganztägig oder mit Uhrzeit |
 
 Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen einen klaren Ort haben. Es gibt aber keine Tenant-Logik. (Idee für später, ohne Version: mehrere, z. B. befreundete Familien auf einer Installation, angelegt vom ersten Admin oder über eine versteckte Funktion. Bis dahin nichts einbauen, was das unnötig verbaut.)
 

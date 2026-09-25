@@ -13,6 +13,7 @@ from app.avatars import (
     read_upload,
     store_avatar,
 )
+from app.calendar_sync import unselect_member_calendars
 from app.errors import ApiError
 from app.models import FamilyMember
 from app.schemas import MemberIn, MemberOrderIn, MemberOut
@@ -96,6 +97,7 @@ def update_member(member_id: int, body: MemberIn, _: ParentSession, db: DbSessio
 def delete_member(member_id: int, _: ParentSession, db: DbSession) -> None:
     member = get_member(db, member_id)
     avatar = member.avatar
+    unselect_member_calendars(db, member_id)
     db.delete(member)
     db.commit()
     delete_avatar(avatar)

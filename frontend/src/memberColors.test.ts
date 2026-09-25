@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { COLOR_TOKENS, MEMBER_COLORS } from './memberColors'
+import { COLOR_TOKENS, FAMILY_COLORS, MEMBER_COLORS } from './memberColors'
 
 // Relative Leuchtdichte und Kontrastverhältnis nach WCAG 2.x.
 function luminance(hex: string) {
@@ -25,7 +25,12 @@ describe('Personenfarben', () => {
     expect(new Set(mains).size).toBe(7)
   })
 
-  for (const color of MEMBER_COLORS) {
+  it('Familienfarben umfassen alle Personenfarben und zwei eigene', () => {
+    const mains = FAMILY_COLORS.map((color) => COLOR_TOKENS[color].main)
+    expect(new Set(mains).size).toBe(MEMBER_COLORS.length + 2)
+  })
+
+  for (const color of FAMILY_COLORS) {
     const tokens = COLOR_TOKENS[color]
 
     it(`${color}: Text auf der Farbe erfüllt WCAG AA`, () => {

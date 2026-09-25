@@ -1,6 +1,9 @@
+import type { ComponentType, SVGProps } from 'react'
+
 import { colorTokens } from '../memberColors'
 
 const SIZES = {
+  xs: { box: 'size-9', ring: 'p-0.5', text: 'text-base' },
   sm: { box: 'size-12', ring: 'p-0.5', text: 'text-xl' },
   md: { box: 'size-20', ring: 'p-1', text: 'text-3xl' },
   lg: { box: 'size-32', ring: 'p-1.5', text: 'text-5xl' },
@@ -15,6 +18,8 @@ interface AvatarProps {
   size?: keyof typeof SIZES
   /** Ohne `label` gilt der Avatar als Schmuck (der Name steht daneben). */
   label?: string
+  /** Symbol statt Initiale, z. B. das Haus für die ganze Familie. */
+  icon?: ComponentType<SVGProps<SVGSVGElement>>
 }
 
 function initial(name: string) {
@@ -22,7 +27,7 @@ function initial(name: string) {
 }
 
 /** Rundes Profilbild mit Farbring in der Personenfarbe. */
-export function Avatar({ name, color, src, size = 'md', label }: AvatarProps) {
+export function Avatar({ name, color, src, size = 'md', label, icon: Icon }: AvatarProps) {
   const tokens = colorTokens(color)
   const { box, ring, text } = SIZES[size]
   return (
@@ -37,6 +42,8 @@ export function Avatar({ name, color, src, size = 'md', label }: AvatarProps) {
       >
         {src ? (
           <img src={src} alt="" className="size-full object-cover" draggable={false} />
+        ) : Icon ? (
+          <Icon className="size-3/5" aria-hidden="true" />
         ) : (
           <span className={`font-extrabold ${text}`}>{initial(name)}</span>
         )}

@@ -1,17 +1,19 @@
-"""Google OAuth 2.0 für den Kalender (nur lesend), direkt über die REST-Endpunkte.
+"""Google OAuth 2.0 und Kalender-API (nur lesend), direkt über die REST-Endpunkte.
 
 Ablauf: Eltern starten die Anmeldung (`authorization_url`), Google leitet mit einem Code zurück,
 der Code wird gegen Tokens getauscht (`exchange_code`). Das Refresh-Token bleibt verschlüsselt
-gespeichert; Zugriffstokens holt `access_token` bei Bedarf neu.
+gespeichert; Zugriffstokens holt `access_token` bei Bedarf neu. Die Abrufe der Kalender und
+Termine stehen am Ende; was wann abgerufen wird, entscheidet app.calendar_sync.
 """
 
 import base64
 import hashlib
 import json
 import secrets
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import httpx2 as httpx
 from sqlalchemy.orm import Session
@@ -24,6 +26,7 @@ from app.models import CalendarConnection
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 REVOKE_URL = "https://oauth2.googleapis.com/revoke"
+API_URL = "https://www.googleapis.com/calendar/v3"
 CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly"
 SCOPES = f"openid email {CALENDAR_SCOPE}"
 # Zugriffstoken so rechtzeitig erneuern, dass es während eines Abrufs nicht abläuft.
@@ -211,3 +214,117 @@ def revoke(connection: CalendarConnection) -> None:
             client.post(REVOKE_URL, data={"token": token})
     except (DecryptError, httpx.HTTPError):
         logger.info("Widerruf bei Google für Verbindung %s nicht möglich", connection.id)
+
+
+# --- Kalender-API --------------------------------------------------------------------
+
+# Größte erlaubte Seite; die meisten Abrufe passen damit auf eine Seite.
+PAGE_SIZE = 2500
+# Gründe bei 403/429, nach denen es einfach später nochmal versucht wird.
+_RATE_LIMIT_REASONS = {"rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded"}
+
+
+class SyncTokenExpired(Exception):
+    """Google kennt den Stand der inkrementellen Synchronisation nicht mehr (HTTP 410)."""
+
+
+def _api_get(token: str, path: str, params: dict[str, str]) -> dict:
+    try:
+        with _client() as client:
+            response = client.get(
+                f"{API_URL}{path}", params=params, headers={"Authorization": f"Bearer {token}"}
+            )
+    except httpx.HTTPError as exc:
+        logger.warning("Google Kalender nicht erreichbar: %s", type(exc).__name__)
+        raise GoogleError("calendar.google_unreachable") from exc
+
+    if response.status_code == 200:
+        return response.json()
+    if response.status_code == 410:
+        raise SyncTokenExpired
+    try:
+        errors = response.json().get("error", {}).get("errors", [])
+    except ValueError:
+        errors = []
+    reasons = {error.get("reason") for error in errors if isinstance(error, dict)}
+    logger.warning(
+        "Google-Kalender-Abruf fehlgeschlagen: %s %s", response.status_code, sorted(reasons)
+    )
+    if response.status_code == 429 or reasons & _RATE_LIMIT_REASONS:
+        raise GoogleError("calendar.rate_limited")
+    if response.status_code in (403, 404):
+        # Kalender gelöscht oder nicht mehr freigegeben.
+        raise GoogleError("calendar.calendar_unavailable")
+    raise GoogleError("calendar.google_failed")
+
+
+def _pages(token: str, path: str, params: dict[str, str]) -> Iterator[dict]:
+    params = {**params, "maxResults": str(PAGE_SIZE)}
+    while True:
+        page = _api_get(token, path, params)
+        yield page
+        if not page.get("nextPageToken"):
+            return
+        params = {**params, "pageToken": page["nextPageToken"]}
+
+
+def _events_path(calendar_id: str) -> str:
+    return f"/calendars/{quote(calendar_id, safe='')}/events"
+
+
+@dataclass
+class CalendarInfo:
+    id: str
+    name: str
+    primary: bool
+
+
+def list_calendars(token: str) -> list[CalendarInfo]:
+    """Kalender in der Liste des Kontos (eigene, abonnierte und freigegebene)."""
+    fields = "nextPageToken,items(id,summary,summaryOverride,primary)"
+    return [
+        CalendarInfo(
+            id=item["id"],
+            # Eigener Name, den das Konto dem Kalender gegeben hat, sonst der Originalname.
+            name=(item.get("summaryOverride") or item.get("summary") or item["id"])[:255],
+            primary=bool(item.get("primary")),
+        )
+        for page in _pages(token, "/users/me/calendarList", {"fields": fields})
+        for item in page.get("items", [])
+    ]
+
+
+def initial_sync_token(token: str, calendar_id: str) -> str | None:
+    """Startpunkt für `changes_since`, ohne die Termine selbst zu laden."""
+    sync_token = None
+    for page in _pages(token, _events_path(calendar_id), {"fields": "nextPageToken,nextSyncToken"}):
+        sync_token = page.get("nextSyncToken") or sync_token
+    return sync_token
+
+
+def changes_since(token: str, calendar_id: str, sync_token: str) -> tuple[bool, str]:
+    """Hat sich seit `sync_token` etwas geändert? Liefert zusätzlich den neuen Stand."""
+    changed = False
+    new_token = sync_token
+    params = {"syncToken": sync_token, "fields": "nextPageToken,nextSyncToken,items(id)"}
+    for page in _pages(token, _events_path(calendar_id), params):
+        changed = changed or bool(page.get("items"))
+        new_token = page.get("nextSyncToken") or new_token
+    return changed, new_token
+
+
+def events_between(
+    token: str, calendar_id: str, time_min: datetime, time_max: datetime
+) -> list[dict]:
+    """Termine im Zeitraum; Serientermine als einzelne Vorkommen."""
+    params = {
+        "singleEvents": "true",
+        "timeMin": time_min.isoformat(),
+        "timeMax": time_max.isoformat(),
+        "fields": "nextPageToken,items(id,iCalUID,status,summary,start,end)",
+    }
+    return [
+        item
+        for page in _pages(token, _events_path(calendar_id), params)
+        for item in page.get("items", [])
+    ]

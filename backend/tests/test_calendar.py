@@ -1,10 +1,6 @@
-import base64
-import hashlib
-import json
 from datetime import timedelta
 from urllib.parse import parse_qs, urlsplit
 
-import httpx2 as httpx
 import pytest
 from sqlalchemy import select
 
@@ -14,85 +10,7 @@ from app.config import get_settings
 from app.db import SessionLocal
 from app.models import CalendarConnection
 from tests.conftest import csrf
-
-CALLBACK = "/api/calendar/google/callback"
-REDIRECT_URI = f"http://testserver{CALLBACK}"
-
-
-def id_token(sub="google-123", email="mama@gmail.com") -> str:
-    def part(data: dict) -> str:
-        return base64.urlsafe_b64encode(json.dumps(data).encode()).rstrip(b"=").decode()
-
-    return f"{part({'alg': 'RS256'})}.{part({'sub': sub, 'email': email})}.signatur"
-
-
-class FakeGoogle:
-    """Nachgebauter Token- und Revoke-Endpunkt von Google."""
-
-    def __init__(self) -> None:
-        self.requests: list[tuple[str, dict[str, str]]] = []
-        self.challenges: dict[str, str] = {}
-        self.scope = f"openid email {google.CALENDAR_SCOPE}"
-        self.account = {"sub": "google-123", "email": "mama@gmail.com"}
-        self.refresh_error: str | None = None
-        self.refresh_count = 0
-
-    def handler(self, request: httpx.Request) -> httpx.Response:
-        data = {key: values[0] for key, values in parse_qs(request.content.decode()).items()}
-        self.requests.append((str(request.url), data))
-        if str(request.url) == google.REVOKE_URL:
-            return httpx.Response(200)
-        assert str(request.url) == google.TOKEN_URL
-        assert data["client_id"] == "client-id"
-        assert data["client_secret"] == "client-secret"
-
-        if data["grant_type"] == "authorization_code":
-            if data["code"] != "guter-code":
-                return httpx.Response(400, json={"error": "invalid_grant"})
-            challenge = base64.urlsafe_b64encode(
-                hashlib.sha256(data["code_verifier"].encode()).digest()
-            ).rstrip(b"=")
-            assert challenge.decode() in self.challenges.values(), "PKCE passt nicht"
-            assert data["redirect_uri"] == REDIRECT_URI
-            return httpx.Response(
-                200,
-                json={
-                    "access_token": "access-1",
-                    "expires_in": 3599,
-                    "refresh_token": "refresh-1",
-                    "scope": self.scope,
-                    "id_token": id_token(**self.account),
-                },
-            )
-
-        assert data["grant_type"] == "refresh_token"
-        assert data["refresh_token"] == "refresh-1"
-        if self.refresh_error:
-            return httpx.Response(400, json={"error": self.refresh_error})
-        self.refresh_count += 1
-        return httpx.Response(
-            200,
-            json={
-                "access_token": f"access-refreshed-{self.refresh_count}",
-                "expires_in": 3599,
-                "scope": self.scope,
-            },
-        )
-
-
-@pytest.fixture
-def configured(monkeypatch):
-    settings = get_settings()
-    monkeypatch.setattr(settings, "google_client_id", "client-id")
-    monkeypatch.setattr(settings, "google_client_secret", "client-secret")
-    monkeypatch.setattr(settings, "token_encryption_key", "ein-langer-test-schluessel")
-
-
-@pytest.fixture
-def fake_google(configured, monkeypatch) -> FakeGoogle:
-    fake = FakeGoogle()
-    monkeypatch.setattr(google, "transport", httpx.MockTransport(fake.handler))
-    return fake
+from tests.fake_google import CALLBACK, REDIRECT_URI, FakeGoogle
 
 
 def start(client, me, fake: FakeGoogle | None = None) -> dict[str, str]:
@@ -129,6 +47,7 @@ def test_settings_without_configuration(client, parent):
     assert response.json() == {
         "configured": False,
         "redirect_uri": REDIRECT_URI,
+        "family_color": "pink",
         "connections": [],
     }
 

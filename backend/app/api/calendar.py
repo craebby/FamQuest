@@ -2,17 +2,27 @@ from datetime import datetime, timedelta
 from typing import Literal
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, BackgroundTasks, Request, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-from sqlalchemy import delete, select
+from sqlalchemy import delete, exists, func, select
 
 from app import google
-from app.auth import SESSION_COOKIE, DbSession, ParentSession, unlock_parent_area, utcnow
+from app.auth import (
+    SESSION_COOKIE,
+    CurrentSession,
+    DbSession,
+    ParentSession,
+    get_family,
+    unlock_parent_area,
+    utcnow,
+)
+from app.calendar_sync import clear_events, refresh_calendar_list, sync_all
 from app.config import get_settings
 from app.errors import ApiError
 from app.logs import logger
-from app.models import AuthSession, CalendarConnection, OAuthState
+from app.models import AuthSession, Calendar, CalendarConnection, FamilyMember, OAuthState
+from app.schemas import FamilyColor
 from app.security import new_token, token_hash
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
@@ -23,12 +33,25 @@ STATE_LIFETIME = timedelta(minutes=10)
 PARENTS_PAGE = "/parents"
 
 
+class CalendarOut(BaseModel):
+    id: int
+    name: str
+    primary: bool
+    selected: bool
+    # None = gehört der ganzen Familie (nur relevant, wenn ausgewählt).
+    member_id: int | None
+    synced_at: datetime | None
+    # Fehlercode der letzten Synchronisation, z. B. `calendar.google_unreachable`.
+    sync_error: str | None
+
+
 class ConnectionOut(BaseModel):
     id: int
     provider: str
     account_email: str
     status: Literal["ok", "reconnect"]
     created_at: datetime
+    calendars: list[CalendarOut]
 
 
 class CalendarSettingsOut(BaseModel):
@@ -36,7 +59,23 @@ class CalendarSettingsOut(BaseModel):
     configured: bool
     # Muss in der Google Cloud Console als „Autorisierte Weiterleitungs-URI“ eingetragen sein.
     redirect_uri: str
+    family_color: str
     connections: list[ConnectionOut]
+
+
+class CalendarIn(BaseModel):
+    selected: bool
+    # None = ganze Familie.
+    member_id: int | None = None
+
+
+class FamilyColorIn(BaseModel):
+    color: FamilyColor
+
+
+class CalendarStatusOut(BaseModel):
+    # Mindestens ein Kalender ist ausgewählt; sonst zeigt das Display keinen Kalender an.
+    enabled: bool
 
 
 class ConnectOut(BaseModel):
@@ -48,14 +87,16 @@ def redirect_uri(request: Request) -> str:
     return str(request.url_for("google_callback"))
 
 
-@router.get("/settings")
-def calendar_settings(
-    request: Request, auth_session: ParentSession, db: DbSession
-) -> CalendarSettingsOut:
-    connections = db.scalars(select(CalendarConnection).order_by(CalendarConnection.id))
+def settings_out(request: Request, db: DbSession) -> CalendarSettingsOut:
+    connections = db.scalars(select(CalendarConnection).order_by(CalendarConnection.id)).all()
+    # Hauptkalender zuerst, dann alphabetisch.
+    calendars = db.scalars(
+        select(Calendar).order_by(Calendar.primary.desc(), func.lower(Calendar.name), Calendar.id)
+    ).all()
     return CalendarSettingsOut(
         configured=get_settings().calendar_configured,
         redirect_uri=redirect_uri(request),
+        family_color=get_family(db).calendar_color,
         connections=[
             ConnectionOut(
                 id=c.id,
@@ -63,10 +104,82 @@ def calendar_settings(
                 account_email=c.account_email,
                 status=c.status,
                 created_at=c.created_at,
+                calendars=[
+                    CalendarOut(
+                        id=calendar.id,
+                        name=calendar.name,
+                        primary=calendar.primary,
+                        selected=calendar.selected,
+                        member_id=calendar.member_id,
+                        synced_at=calendar.synced_at,
+                        sync_error=calendar.sync_error,
+                    )
+                    for calendar in calendars
+                    if calendar.connection_id == c.id
+                ],
             )
             for c in connections
         ],
     )
+
+
+@router.get("/settings")
+def calendar_settings(
+    request: Request, auth_session: ParentSession, db: DbSession
+) -> CalendarSettingsOut:
+    return settings_out(request, db)
+
+
+@router.get("/status")
+def calendar_status(_: CurrentSession, db: DbSession) -> CalendarStatusOut:
+    return CalendarStatusOut(enabled=bool(db.scalar(select(exists().where(Calendar.selected)))))
+
+
+@router.put("/calendars/{calendar_id}")
+def update_calendar(
+    calendar_id: int,
+    body: CalendarIn,
+    request: Request,
+    background: BackgroundTasks,
+    auth_session: ParentSession,
+    db: DbSession,
+) -> CalendarSettingsOut:
+    """Kalender anzeigen oder nicht und einer Person oder der Familie zuordnen."""
+    calendar = db.get(Calendar, calendar_id)
+    if calendar is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "calendar.calendar_not_found")
+    if body.member_id is not None and db.get(FamilyMember, body.member_id) is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "member.not_found")
+
+    newly_selected = body.selected and not calendar.selected
+    calendar.selected = body.selected
+    calendar.member_id = body.member_id
+    if not body.selected:
+        clear_events(db, calendar)
+    db.commit()
+    if newly_selected and get_settings().calendar_configured:
+        # Termine gleich laden, nicht erst beim nächsten Durchlauf im Hintergrund.
+        background.add_task(sync_all)
+    return settings_out(request, db)
+
+
+@router.put("/family-color")
+def set_family_color(
+    body: FamilyColorIn, request: Request, auth_session: ParentSession, db: DbSession
+) -> CalendarSettingsOut:
+    get_family(db).calendar_color = body.color
+    db.commit()
+    return settings_out(request, db)
+
+
+@router.post("/sync")
+def sync_now(request: Request, auth_session: ParentSession, db: DbSession) -> CalendarSettingsOut:
+    """„Jetzt aktualisieren“; läuft gerade ein Durchlauf, gilt dessen Ergebnis."""
+    if not get_settings().calendar_configured:
+        raise ApiError(status.HTTP_409_CONFLICT, "calendar.not_configured")
+    sync_all()
+    db.expire_all()
+    return settings_out(request, db)
 
 
 @router.post("/google/connect")
@@ -166,6 +279,12 @@ def google_callback(
     unlock_parent_area(auth_session)
     db.commit()
     logger.info("Google-Kalender verbunden (Verbindung %s)", connection.id)
+    try:
+        # Die Kalender sollen gleich zur Auswahl stehen; sonst kommen sie mit der nächsten
+        # Synchronisation.
+        refresh_calendar_list(db, connection, tokens.access_token)
+    except google.GoogleError:
+        db.rollback()
     return _back_to_parents(calendar="connected")
 
 

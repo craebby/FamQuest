@@ -41,7 +41,8 @@
     "settings": "Settings",
     "rewards": "Rewards",
     "pending_one": "{{count}} task waiting for a check",
-    "pending_other": "{{count}} tasks waiting for a check"
+    "pending_other": "{{count}} tasks waiting for a check",
+    "calendar": "Calendar"
   },
   "family": {
     "no_members": "No family members yet",
@@ -127,7 +128,9 @@
     "green": "Green",
     "red": "Red",
     "teal": "Teal",
-    "yellow": "Yellow"
+    "yellow": "Yellow",
+    "pink": "Pink",
+    "slate": "Grey"
   },
   "cropper": {
     "title": "Choose image area",
@@ -351,9 +354,12 @@
       "scope_missing": "Calendar access was not allowed. Please connect again and tick calendar access.",
       "reconnect": "Access to the Google account has expired. Please reconnect.",
       "google_unreachable": "Google can't be reached right now. Please try again later.",
-      "google_failed": "Google rejected the sign-in. Please try again.",
+      "google_failed": "Google rejected the request. Please try again later.",
       "client_invalid": "Google doesn't recognise the credentials. Please check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.",
-      "connection_not_found": "This connection no longer exists"
+      "connection_not_found": "This connection no longer exists",
+      "rate_limited": "Google is slowing down requests right now. It will continue on its own shortly.",
+      "calendar_unavailable": "This calendar is no longer available at Google",
+      "calendar_not_found": "This calendar no longer exists"
     }
   },
   "rewards": {
@@ -453,6 +459,33 @@
     "disconnect_confirm": "Really disconnect {{email}}? Events from this account will no longer be shown.",
     "disconnected": "{{email}} was disconnected",
     "setup_details": "Google setup",
-    "redirect_uri": "Redirect URI for the Google Cloud Console:"
+    "redirect_uri": "Redirect URI for the Google Cloud Console:",
+    "calendars": "Which calendars should appear on the display, and who do they belong to?",
+    "no_calendars": "There are no calendars in this account.",
+    "primary": "Main calendar",
+    "show": "Show {{name}}",
+    "belongs_to": "Belongs to",
+    "family": "Family",
+    "synced_at": "Updated: {{time}}",
+    "loading": "Loading events …",
+    "sync_now": "Update now",
+    "family_color": "Family colour",
+    "family_color_hint": "For events that belong to everyone.",
+    "color_taken_by": "{{color}} (belongs to {{name}})",
+    "title": "Calendar",
+    "previous_week": "Previous week",
+    "next_week": "Next week",
+    "this_week": "This week",
+    "today": "Today",
+    "all_day": "All day",
+    "from": "from {{time}}",
+    "until": "until {{time}}",
+    "untitled": "Event",
+    "no_events": "No events",
+    "filter": "Filter events by person",
+    "problem": "The calendar isn't updating right now. See the parent area for details.",
+    "nothing_selected": "No calendar selected yet",
+    "nothing_selected_hint": "In the parent area under “Calendar”, connect a Google account and choose calendars.",
+    "people": "For {{names}}"
   }
 }

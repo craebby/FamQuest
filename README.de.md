@@ -12,8 +12,9 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Anmeldung, Elternbereich mit PIN, Familienmitglieder mit Farbe und Foto, Aufgaben und Routinen mit
 > Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
 > Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
-> Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Als Nächstes kommt der Google
-> Kalender (siehe [Roadmap](#roadmap)).
+> Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) läuft:
+> Konten, Kalenderauswahl, Synchronisation im Hintergrund und die Wochenansicht funktionieren
+> (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -25,6 +26,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
+- Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -253,9 +255,36 @@ helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die An
 
 ## Google Kalender
 
-*In Arbeit (Phase 2).* Bisher lassen sich Google-Konten im Elternbereich unter **Kalender**
-verbinden und wieder trennen. Kalender auswählen und die Termine anzeigen folgt in den nächsten
-Schritten (siehe [Roadmap](#roadmap)). FamQuest liest die Kalender nur und ändert nichts daran.
+FamQuest zeigt eure Google-Kalender als Woche am Display: eine Spalte pro Tag (Montag bis
+Sonntag), Termine in der Farbe der Person, der sie gehören, mit ihrem Avatar. FamQuest liest die
+Kalender nur und ändert nichts daran.
+
+**Im Elternbereich unter Kalender:**
+
+- Ein oder mehrere Google-Konten verbinden (Einrichtung siehe unten).
+- Alle Kalender des Kontos erscheinen in einer Liste. Die, die am Display zu sehen sein sollen,
+  einschalten.
+- Je Kalender wählen, wem er **gehört**: einer Person oder der **Familie** (für alles, was alle
+  betrifft, z. B. ein gemeinsamer Familienkalender, Müllabfuhr oder Feiertage).
+- **Farbe der Familie**: „Familie“ bekommt eine eigene Farbe und ein Haus als Avatar. Rosa und Grau
+  sind für die Familie reserviert; Farben, die schon eine Person hat, sind ausgegraut.
+- Jeder Kalender zeigt, wann er zuletzt aktualisiert wurde oder was schiefging. **Jetzt
+  aktualisieren** holt sofort den neuesten Stand.
+
+**Am Display:** Sobald mindestens ein Kalender eingeschaltet ist, zeigt die Navigationsleiste ein
+Kalender-Symbol. Mit den Pfeilen blättert man wochenweise; heute ist hervorgehoben, vergangene
+Termine werden blasser. Ein Tipp auf einen Avatar oben zeigt nur die Termine dieser Person (und die
+der Familie), ein zweiter Tipp wieder alle. Steht derselbe Termin in mehreren Kalendern (z. B. eine
+Einladung an beide Eltern), erscheint er einmal mit allen Avataren. Kann ein Kalender nicht
+aktualisiert werden, erscheint über der Woche ein Hinweis; die zuletzt bekannten Termine bleiben
+sichtbar.
+
+**Synchronisation:** Alle 5 Minuten (`CALENDAR_SYNC_MINUTES`) fragt FamQuest bei Google nach, ob
+sich etwas geändert hat (inkrementell per Sync-Token). Nur dann, beim Wochenwechsel oder zur
+Sicherheit alle 6 Stunden werden die Termine neu geladen, und zwar für einen Zeitraum von 4 Wochen
+vor der aktuellen Woche bis etwa ein halbes Jahr voraus. Serientermine werden als einzelne Termine
+gespeichert; ganztägige und mehrtägige Termine werden unterstützt. Ist Google nicht erreichbar oder
+bremst die Abrufe, versucht es der nächste Durchlauf einfach wieder.
 
 Weil FamQuest selbst gehostet ist, braucht jede Installation einen eigenen Zugang bei Google.
 Das ist einmalig und kostenlos. Voraussetzung ist, dass FamQuest per **HTTPS unter einer Domain**
@@ -316,6 +345,7 @@ Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Al
 | `GOOGLE_CLIENT_ID` | – | OAuth-Client für den [Google Kalender](#google-kalender) |
 | `GOOGLE_CLIENT_SECRET` | – | Clientschlüssel dazu |
 | `TOKEN_ENCRYPTION_KEY` | – | Verschlüsselt die Google-Tokens in der Datenbank |
+| `CALENDAR_SYNC_MINUTES` | `5` | Minuten zwischen zwei Kalender-Synchronisationen im Hintergrund; `0` = aus |
 
 Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
 Wie ihr sie sichert, steht unter [Backup und Restore](#backup-und-restore).
@@ -509,7 +539,8 @@ Ein Test schlägt fehl, wenn Modelle geändert wurden, ohne eine Migration anzul
 Browser ──► Reverse Proxy (optional) ──► app (FastAPI, Port 8000) ──► db (PostgreSQL 16)
                                            ├─ /api/*   JSON-API
                                            ├─ /*       gebautes React-Frontend
-                                           └─ /data/uploads (Volume)
+                                           ├─ /data/uploads (Volume)
+                                           └─ Kalender-Sync im Hintergrund ──► Google Calendar API
 ```
 
 | Ordner | Inhalt |
@@ -542,12 +573,13 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Reihenfolge der Personen, Anzeigegröße je Gerät). Alles Weitere muss sich erst in der Praxis
   zeigen.
 
-**Als Nächstes: Google Kalender (Phase 2)**
+**In Arbeit: Google Kalender (Phase 2)**
 
 - [x] 1. Google-Konto verbinden (OAuth, Tokens verschlüsselt, automatisch erneuert)
-- [ ] 2. Kalender auswählen und Personen oder „Familie“ zuordnen
-- [ ] 3. Synchronisation im Hintergrund, Fehlerbehandlung
-- [ ] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe
+- [x] 2. Kalender auswählen und Personen oder „Familie“ zuordnen (mit eigener Farbe)
+- [x] 3. Synchronisation im Hintergrund (inkrementell), Serien- und ganztägige Termine,
+  Fehlerbehandlung
+- [x] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe und Avataren
 - [ ] 5. Feinschliff
 
 **1.1: Anpassen**
