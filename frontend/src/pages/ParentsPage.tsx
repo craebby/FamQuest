@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
@@ -15,10 +15,13 @@ import {
   useSetPin,
   useUnlockParent,
 } from '../api/auth'
+import { type Member, useMembers } from '../api/members'
 import { PinPad } from '../components/PinPad'
-import { Alert, Button, CenteredCard, TextField } from '../components/ui'
+import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
+import { MemberEditor } from './parents/MemberEditor'
+import { MembersSection } from './parents/MembersSection'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
 export const PARENT_IDLE_TIMEOUT_MS = 2 * 60 * 1000
@@ -167,24 +170,33 @@ function NewPinFlow({
   )
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-extrabold text-slate-800">{title}</h2>
-      {children}
-    </section>
-  )
-}
-
 function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const setPin = useSetPin()
   const disablePin = useDisablePin()
   const logout = useLogout()
+  const members = useMembers()
   const [editingPin, setEditingPin] = useState(false)
+  const [editingMember, setEditingMember] = useState<Member | 'new' | null>(null)
   const [confirmDisable, setConfirmDisable] = useState(false)
   const [notice, setNotice] = useState<string>()
+
+  if (editingMember) {
+    const closeWith = (message: string) => {
+      setEditingMember(null)
+      setNotice(message)
+    }
+    return (
+      <MemberEditor
+        member={editingMember === 'new' ? undefined : editingMember}
+        members={members.data ?? []}
+        onSaved={(name) => closeWith(t('members.saved', { name }))}
+        onDeleted={(name) => closeWith(t('members.deleted', { name }))}
+        onCancel={() => setEditingMember(null)}
+      />
+    )
+  }
 
   if (editingPin) {
     return (
@@ -222,6 +234,19 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         </p>
       )}
       {disablePin.isError && <Alert>{errorMessage(t, disablePin.error)}</Alert>}
+
+      <MembersSection
+        members={members.data}
+        error={members.error}
+        onEdit={(member) => {
+          setNotice(undefined)
+          setEditingMember(member)
+        }}
+        onAdd={() => {
+          setNotice(undefined)
+          setEditingMember('new')
+        }}
+      />
 
       <Section title={t('parents.pin_section')}>
         <p className="flex items-center gap-3 text-lg text-slate-600">

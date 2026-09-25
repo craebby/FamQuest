@@ -66,6 +66,45 @@
     "entered_one": "{{count}} Ziffer eingegeben",
     "entered_other": "{{count}} Ziffern eingegeben"
   },
+  "members": {
+    "section": "Familienmitglieder",
+    "empty": "Noch niemand angelegt. Legt als Erstes alle Personen eurer Familie an.",
+    "add": "Person hinzufügen",
+    "all_colors_taken": "Alle Farben sind vergeben. Weitere Personen sind nicht möglich.",
+    "new_title": "Neue Person",
+    "edit_title": "{{name}} bearbeiten",
+    "name": "Name",
+    "role": "Rolle",
+    "color": "Farbe",
+    "color_taken_by": "{{color}} (schon vergeben an {{name}})",
+    "choose_photo": "Foto wählen",
+    "change_photo": "Anderes Foto",
+    "remove_photo": "Foto entfernen",
+    "save": "Speichern",
+    "saved": "{{name}} ist gespeichert.",
+    "delete": "Person löschen",
+    "delete_confirm": "{{name}} wirklich löschen? Das lässt sich nicht rückgängig machen.",
+    "deleted": "{{name}} ist gelöscht."
+  },
+  "roles": {
+    "parent": "Elternteil",
+    "child": "Kind"
+  },
+  "colors": {
+    "orange": "Orange",
+    "blue": "Blau",
+    "purple": "Lila",
+    "green": "Grün",
+    "red": "Rot",
+    "teal": "Türkis",
+    "yellow": "Gelb"
+  },
+  "cropper": {
+    "title": "Bildausschnitt wählen",
+    "hint": "Verschieben und zoomen, bis das Gesicht im Kreis ist.",
+    "zoom": "Zoom",
+    "confirm": "Übernehmen"
+  },
   "errors": {
     "common": {
       "network": "Keine Verbindung zum Server",
@@ -81,7 +120,8 @@
       "invalid_email": "Bitte eine gültige E-Mail-Adresse eingeben",
       "invalid_timezone": "Unbekannte Zeitzone",
       "invalid": "Ungültige Eingabe",
-      "password_length": "Mindestens {{min}} Zeichen"
+      "password_length": "Mindestens {{min}} Zeichen",
+      "invalid_choice": "Bitte eine der Möglichkeiten wählen"
     },
     "auth": {
       "not_authenticated": "Bitte melde dich an",
@@ -99,6 +139,14 @@
     },
     "parent": {
       "locked": "Der Elternbereich ist gesperrt. Bitte PIN eingeben."
+    },
+    "member": {
+      "not_found": "Diese Person gibt es nicht mehr",
+      "color_taken": "Diese Farbe ist schon vergeben. Bitte eine andere wählen."
+    },
+    "avatar": {
+      "too_large": "Das Bild ist zu groß (höchstens 5 MB)",
+      "invalid_image": "Das Bild konnte nicht gelesen werden. Bitte ein anderes Foto wählen."
     }
   }
 }

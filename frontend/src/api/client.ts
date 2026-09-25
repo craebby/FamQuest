@@ -24,7 +24,10 @@ type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export async function api<T>(method: Method, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {}
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  // Binärdaten (z. B. Bilder) gehen unverändert als Body raus, alles andere als JSON.
+  const isBlob = body instanceof Blob
+  if (isBlob) headers['Content-Type'] = body.type || 'application/octet-stream'
+  else if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (method !== 'GET' && csrfToken) headers['X-CSRF-Token'] = csrfToken
 
   let response: Response
@@ -32,7 +35,7 @@ export async function api<T>(method: Method, path: string, body?: unknown): Prom
     response = await fetch(`/api${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: isBlob ? body : body === undefined ? undefined : JSON.stringify(body),
       credentials: 'same-origin',
     })
   } catch {

@@ -66,6 +66,45 @@
     "entered_one": "{{count}} digit entered",
     "entered_other": "{{count}} digits entered"
   },
+  "members": {
+    "section": "Family members",
+    "empty": "Nobody added yet. Start by adding everyone in your family.",
+    "add": "Add person",
+    "all_colors_taken": "All colours are in use. No more people can be added.",
+    "new_title": "New person",
+    "edit_title": "Edit {{name}}",
+    "name": "Name",
+    "role": "Role",
+    "color": "Colour",
+    "color_taken_by": "{{color}} (already used by {{name}})",
+    "choose_photo": "Choose photo",
+    "change_photo": "Different photo",
+    "remove_photo": "Remove photo",
+    "save": "Save",
+    "saved": "{{name}} has been saved.",
+    "delete": "Delete person",
+    "delete_confirm": "Really delete {{name}}? This cannot be undone.",
+    "deleted": "{{name}} has been deleted."
+  },
+  "roles": {
+    "parent": "Parent",
+    "child": "Child"
+  },
+  "colors": {
+    "orange": "Orange",
+    "blue": "Blue",
+    "purple": "Purple",
+    "green": "Green",
+    "red": "Red",
+    "teal": "Teal",
+    "yellow": "Yellow"
+  },
+  "cropper": {
+    "title": "Choose image area",
+    "hint": "Drag and zoom until the face is inside the circle.",
+    "zoom": "Zoom",
+    "confirm": "Apply"
+  },
   "errors": {
     "common": {
       "network": "No connection to the server",
@@ -81,7 +120,8 @@
       "invalid_email": "Please enter a valid email address",
       "invalid_timezone": "Unknown time zone",
       "invalid": "Invalid input",
-      "password_length": "At least {{min}} characters"
+      "password_length": "At least {{min}} characters",
+      "invalid_choice": "Please pick one of the options"
     },
     "auth": {
       "not_authenticated": "Please sign in",
@@ -99,6 +139,14 @@
     },
     "parent": {
       "locked": "The parent area is locked. Please enter the PIN."
+    },
+    "member": {
+      "not_found": "This person no longer exists",
+      "color_taken": "This colour is already taken. Please pick another one."
+    },
+    "avatar": {
+      "too_large": "The image is too large (5 MB max)",
+      "invalid_image": "The image could not be read. Please choose another photo."
     }
   }
 }

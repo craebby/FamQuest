@@ -53,3 +53,23 @@ class AuthSession(Base):
     parent_unlocked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     user: Mapped[User] = relationship(lazy="joined")
+
+
+class FamilyMember(Base):
+    """Person im Haushalt, mit oder ohne eigenes Login-Konto."""
+
+    __tablename__ = "family_members"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+    # Erweiterbare Werte (siehe schemas.MEMBER_ROLES), bewusst kein Datenbank-Enum.
+    role: Mapped[str] = mapped_column(String(20))
+    # Jede Farbe gehört höchstens einer Person.
+    color: Mapped[str] = mapped_column(String(20), unique=True)
+    # Dateiname im Avatar-Verzeichnis; None = Initiale auf der Personenfarbe.
+    avatar: Mapped[str | None] = mapped_column(String(64))
+    # Optionale Verknüpfung mit einem Login-Konto (z. B. später für Kinder-Konten).
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), unique=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

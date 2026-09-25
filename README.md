@@ -6,9 +6,10 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Phase 1, Etappe 2 ist fertig: Einrichtung beim ersten Start, Anmeldung und
-> Elternbereich mit Eltern-PIN. Die Familienansicht ist noch ein Platzhalter; die eigentlichen
-> Funktionen folgen in den nächsten Etappen (siehe [Roadmap](#roadmap)).
+> **Status:** Phase 1, Etappe 3 ist fertig: Einrichtung beim ersten Start, Anmeldung,
+> Elternbereich mit Eltern-PIN und Familienmitglieder mit Farbe und Profilbild. Die Familienansicht
+> ist noch ein Platzhalter; die eigentlichen Funktionen folgen in den nächsten Etappen (siehe
+> [Roadmap](#roadmap)).
 
 ## Features (Ziel Phase 1)
 
@@ -49,6 +50,19 @@ weitere Konten lassen sich nicht über die Oberfläche registrieren.
 - Die PIN lässt sich im Elternbereich ändern oder abschalten. PIN vergessen: Mit dem Passwort des
   Kontos eine neue PIN festlegen.
 - Nach 5 falschen Versuchen (Passwort oder PIN) sind weitere Versuche 15 Minuten lang gesperrt.
+
+## Familienmitglieder
+
+Im Elternbereich unter „Familienmitglieder“ legt ihr alle Personen des Haushalts an: Name, Rolle
+(Elternteil oder Kind), Farbe und optional ein Foto. Kinder brauchen kein Konto und kein Passwort.
+
+- Jede Person hat eine eigene Farbe (Orange, Blau, Lila, Grün, Rot, Türkis, Gelb). Vergebene
+  Farben sind ausgegraut; es sind daher höchstens sieben Personen möglich.
+- Foto wählen (am Smartphone auch direkt mit der Kamera), im Kreis verschieben und zoomen,
+  übernehmen. Ohne Foto zeigt der Avatar die Initiale auf der Personenfarbe.
+- Das Bild wird im Browser zugeschnitten und vom Server geprüft (nur JPEG, PNG oder WebP, höchstens
+  5 MB), auf 512 × 512 px verkleinert und als WebP neu gespeichert. Metadaten wie GPS-Daten gehen
+  dabei verloren. Die Bilder liegen im Volume `uploads` und sind nur mit Anmeldung abrufbar.
 
 Status prüfen:
 
@@ -201,7 +215,7 @@ Etappen in Phase 1:
 
 - [x] 1. Grundgerüst: Backend, Frontend mit i18n, Docker, Alembic, Healthchecks
 - [x] 2. First-Run-Setup, Login/Logout, Sperre der Registrierung, Eltern-PIN
-- [ ] 3. Familienmitglieder mit Farbe und Profilbild
+- [x] 3. Familienmitglieder mit Farbe und Profilbild
 - [ ] 4. Aufgaben und Routinen im Elternbereich
 - [ ] 5. Familienansicht
 - [ ] 6. Punkte und Tagesfortschritt

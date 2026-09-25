@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -14,6 +16,9 @@ from app.config import Settings
 # Das muss passieren, bevor app.db die Engine anlegt.
 TEST_DB = f"{Settings().postgres_db}_test"
 os.environ["POSTGRES_DB"] = TEST_DB
+# Hochgeladene Bilder landen in einem temporären Verzeichnis.
+UPLOAD_DIR = Path(tempfile.mkdtemp(prefix="famquest-test-uploads-"))
+os.environ["UPLOAD_DIR"] = str(UPLOAD_DIR)
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -59,6 +64,7 @@ def clean_state() -> Iterator[None]:
         conn.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
     login_limiter.clear()
     pin_limiter.clear()
+    shutil.rmtree(UPLOAD_DIR / "avatars", ignore_errors=True)
 
 
 @pytest.fixture
@@ -83,3 +89,13 @@ def csrf(me: dict) -> dict[str, str]:
 def admin(client) -> dict:
     """Setup ausgeführt, Client ist als Admin angemeldet. Liefert die /me-Antwort."""
     return run_setup(client)
+
+
+@pytest.fixture
+def parent(client, admin) -> dict:
+    """Wie `admin`, zusätzlich ist der Elternbereich entsperrt."""
+    response = client.post(
+        "/api/parent/unlock", json={"pin": SETUP_DATA["pin"]}, headers=csrf(admin)
+    )
+    assert response.status_code == 200, response.text
+    return response.json()

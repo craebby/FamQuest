@@ -7,6 +7,10 @@ from pydantic import AfterValidator, BaseModel, Field, StringConstraints
 from pydantic_core import PydanticCustomError
 
 PASSWORD_MIN_LENGTH = 10
+# Rollen und Farben von Familienmitgliedern. Neue Werte lassen sich hier ergänzen;
+# die Farbwerte selbst stehen im Frontend (frontend/src/memberColors.ts).
+MEMBER_ROLES = ("parent", "child")
+MEMBER_COLORS = ("orange", "blue", "purple", "green", "red", "teal", "yellow")
 _EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+$")
 
 
@@ -29,12 +33,24 @@ def _check_timezone(value: str) -> str:
     return value
 
 
+def _one_of(values: tuple[str, ...]) -> AfterValidator:
+    def check(value: str) -> str:
+        if value not in values:
+            raise PydanticCustomError("validation.invalid_choice", "invalid choice")
+        return value
+
+    return AfterValidator(check)
+
+
 Email = Annotated[str, AfterValidator(_normalize_email)]
 Password = Annotated[str, Field(min_length=PASSWORD_MIN_LENGTH, max_length=256)]
 Pin = Annotated[str, Field(pattern=r"^\d{4,8}$")]
 LanguageCode = Annotated[str, Field(pattern=r"^[a-z]{2}$")]
 Timezone = Annotated[str, AfterValidator(_check_timezone)]
 FamilyName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+MemberName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
+MemberRole = Annotated[str, _one_of(MEMBER_ROLES)]
+MemberColor = Annotated[str, _one_of(MEMBER_COLORS)]
 
 
 class UserOut(BaseModel):
@@ -55,3 +71,17 @@ class MeResponse(BaseModel):
     family: FamilyOut
     csrf_token: str
     parent_unlocked: bool
+
+
+class MemberIn(BaseModel):
+    name: MemberName
+    role: MemberRole
+    color: MemberColor
+
+
+class MemberOut(BaseModel):
+    id: int
+    name: str
+    role: str
+    color: str
+    avatar_url: str | None

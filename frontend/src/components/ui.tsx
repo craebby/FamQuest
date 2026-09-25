@@ -81,3 +81,13 @@ export function FullScreenMessage({ children }: { children: ReactNode }) {
     </main>
   )
 }
+
+/** Weiße Karte mit Überschrift, z. B. für die Bereiche im Elternbereich. */
+export function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm">
+      <h2 className="text-2xl font-extrabold text-slate-800">{title}</h2>
+      {children}
+    </section>
+  )
+}

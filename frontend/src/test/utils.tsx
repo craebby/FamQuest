@@ -5,6 +5,7 @@ import { vi } from 'vitest'
 
 import App from '../App'
 import type { Me } from '../api/auth'
+import type { Member } from '../api/members'
 
 type Handler = Response | ((body: unknown) => Response)
 
@@ -14,7 +15,8 @@ export function mockApi(routes: Record<string, Handler>) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), 'http://localhost')
     const key = `${init?.method ?? 'GET'} ${url.pathname}`
-    const body = init?.body ? JSON.parse(String(init.body)) : undefined
+    const raw = init?.body
+    const body = raw instanceof Blob ? raw : raw ? JSON.parse(String(raw)) : undefined
     calls.push({ key, body, headers: (init?.headers ?? {}) as Record<string, string> })
     const handler = routes[key]
     if (!handler) return Response.json({ code: 'common.not_found' }, { status: 404 })
@@ -55,3 +57,7 @@ export function makeMe(overrides: Partial<Me> = {}): Me {
 export const setupDone = Response.json({ setup_required: false })
 export const setupRequired = Response.json({ setup_required: true })
 export const notAuthenticated = Response.json({ code: 'auth.not_authenticated' }, { status: 401 })
+
+export function makeMember(overrides: Partial<Member> = {}): Member {
+  return { id: 1, name: 'Lena', role: 'child', color: 'purple', avatar_url: null, ...overrides }
+}

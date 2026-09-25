@@ -18,7 +18,7 @@ export interface SetupData {
   timezone: string
 }
 
-const ME_KEY = ['me'] as const
+export const ME_KEY = ['me'] as const
 const SETUP_STATUS_KEY = ['setup-status'] as const
 
 export function useSetupStatus() {
