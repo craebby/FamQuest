@@ -11,6 +11,8 @@ Fehler landen als Code am Kalender (`sync_error`); die zuletzt geladenen Termine
 
 import asyncio
 import datetime as dt
+import html
+import re
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import delete, func, select
@@ -18,7 +20,9 @@ from sqlalchemy.orm import Session
 
 from app import google
 from app.auth import utcnow
+from app.config import get_settings
 from app.db import SessionLocal, engine
+from app.holidays import refresh_school_holidays
 from app.logs import logger
 from app.models import Calendar, CalendarConnection, CalendarEvent, Family
 
@@ -30,6 +34,19 @@ FULL_RELOAD_AFTER = dt.timedelta(hours=6)
 # Schützt vor gleichzeitigen Durchläufen (Hintergrund und „Jetzt aktualisieren“).
 _LOCK_KEY = 0x46514341  # "FQCA"
 TITLE_MAX_LENGTH = 500
+DESCRIPTION_MAX_LENGTH = 4000
+_LINE_BREAK_TAGS = re.compile(r"<\s*(br|/p|/div|/li|/h\d)\s*/?>", re.IGNORECASE)
+_TAGS = re.compile(r"<[^>]+>")
+_BLANK_LINES = re.compile(r"\n{3,}")
+
+
+def plain_text(value: str | None, max_length: int) -> str | None:
+    """Beschreibungen aus Google können HTML enthalten; angezeigt wird nur der Text."""
+    if not value:
+        return None
+    text = _TAGS.sub("", _LINE_BREAK_TAGS.sub("\n", value))
+    text = _BLANK_LINES.sub("\n\n", html.unescape(text).replace("\r\n", "\n")).strip()
+    return text[:max_length] or None
 
 
 def window_for(today: dt.date) -> tuple[dt.date, dt.date]:
@@ -52,6 +69,8 @@ def parse_event(item: dict) -> dict | None:
         "external_id": item["id"],
         "ical_uid": item.get("iCalUID"),
         "title": (item.get("summary") or "").strip()[:TITLE_MAX_LENGTH] or None,
+        "location": (item.get("location") or "").strip()[:TITLE_MAX_LENGTH] or None,
+        "description": plain_text(item.get("description"), DESCRIPTION_MAX_LENGTH),
     }
     try:
         if "date" in start:
@@ -190,7 +209,7 @@ def _sync_connection(
 
 
 def sync_all(now: dt.datetime | None = None) -> bool:
-    """Ein Durchlauf über alle Verbindungen. False, wenn gerade schon einer läuft."""
+    """Ein Durchlauf: Schulferien und alle Google-Verbindungen. False, wenn schon einer läuft."""
     now = now or utcnow()
     # Eigene Verbindung ohne offene Transaktion, die die Sperre bis zum Ende hält.
     with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as lock:
@@ -200,6 +219,9 @@ def sync_all(now: dt.datetime | None = None) -> bool:
             with SessionLocal() as db:
                 family = db.scalars(select(Family)).one_or_none()
                 if family is None:
+                    return True
+                refresh_school_holidays(db, family, now)
+                if not get_settings().calendar_configured:
                     return True
                 tz = ZoneInfo(family.timezone)
                 window = window_for(now.astimezone(tz).date())

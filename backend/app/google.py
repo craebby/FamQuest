@@ -321,7 +321,7 @@ def events_between(
         "singleEvents": "true",
         "timeMin": time_min.isoformat(),
         "timeMax": time_max.isoformat(),
-        "fields": "nextPageToken,items(id,iCalUID,status,summary,start,end)",
+        "fields": "nextPageToken,items(id,iCalUID,status,summary,location,description,start,end)",
     }
     return [
         item

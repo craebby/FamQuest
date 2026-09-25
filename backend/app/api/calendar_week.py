@@ -5,7 +5,7 @@ Kalendern (z. B. eine Einladung an beide Eltern), erscheint er einmal mit allen 
 """
 
 import datetime as dt
-from typing import Annotated
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Query
@@ -14,6 +14,7 @@ from sqlalchemy import and_, or_, select
 
 from app.auth import CurrentSession, DbSession, get_family
 from app.calendar_sync import local_midnight
+from app.holidays import holidays_between
 from app.models import Calendar, CalendarConnection, CalendarEvent, FamilyMember
 from app.today import family_now
 
@@ -27,6 +28,10 @@ class WeekEventOut(BaseModel):
     # Stabiler Schlüssel für das Frontend (mehrere Kalender können einen Termin teilen).
     key: str
     title: str | None
+    location: str | None
+    description: str | None
+    # Namen der Kalender, aus denen der Termin stammt.
+    calendars: list[str]
     all_day: bool
     # Ganztägig: Datum (Ende exklusiv); sonst Zeitpunkt mit Zeitzone.
     start: dt.date | dt.datetime
@@ -39,8 +44,15 @@ class WeekEventOut(BaseModel):
     continues_after: bool
 
 
+class HolidayOut(BaseModel):
+    kind: Literal["public", "school"]
+    name: str
+
+
 class WeekDayOut(BaseModel):
     date: dt.date
+    # Feiertage und Schulferien an diesem Tag (falls im Elternbereich eingeschaltet).
+    holidays: list[HolidayOut]
     events: list[WeekEventOut]
 
 
@@ -61,6 +73,7 @@ class _Merged:
         self.event = event
         self.member_ids: set[int] = set()
         self.family = False
+        self.calendars: list[str] = []
 
 
 @router.get("/week")
@@ -68,6 +81,8 @@ def week(
     _: CurrentSession,
     db: DbSession,
     offset: Annotated[int, Query(ge=-MAX_WEEK_OFFSET, le=MAX_WEEK_OFFSET)] = 0,
+    # Sprache des Geräts für die Namen der Feiertage; Standard ist die der Familie.
+    lang: Annotated[str | None, Query(pattern=r"^[a-z]{2}$")] = None,
 ) -> WeekOut:
     family = get_family(db)
     tz = ZoneInfo(family.timezone)
@@ -77,7 +92,7 @@ def week(
     range_start, range_end = local_midnight(start, tz), local_midnight(end, tz)
 
     rows = db.execute(
-        select(CalendarEvent, Calendar.member_id)
+        select(CalendarEvent, Calendar.member_id, Calendar.name)
         .join(Calendar, CalendarEvent.calendar_id == Calendar.id)
         .where(
             Calendar.selected,
@@ -99,7 +114,7 @@ def week(
     ).all()
 
     merged: dict[tuple, _Merged] = {}
-    for event, member_id in rows:
+    for event, member_id, calendar_name in rows:
         times = (
             (event.start_date, event.end_date) if event.all_day else (event.start_at, event.end_at)
         )
@@ -109,7 +124,12 @@ def week(
             entry.family = True
         else:
             entry.member_ids.add(member_id)
-        if entry.event.title is None and event.title:
+        if calendar_name not in entry.calendars:
+            entry.calendars.append(calendar_name)
+        # Aus mehreren Kalendern die ausführlichste Fassung zeigen.
+        if (entry.event.title is None and event.title) or (
+            entry.event.description is None and event.description
+        ):
             entry.event = event
 
     positions = {
@@ -118,6 +138,7 @@ def week(
             db.scalars(select(FamilyMember.id).order_by(FamilyMember.position, FamilyMember.id))
         )
     }
+    holidays = holidays_between(db, family, start, end, lang or family.default_language)
     days = []
     for index in range(7):
         day = start + dt.timedelta(days=index)
@@ -135,7 +156,15 @@ def week(
                 (e.title or "").lower(),
             )
         )
-        days.append(WeekDayOut(date=day, events=events))
+        days.append(
+            WeekDayOut(
+                date=day,
+                holidays=[
+                    HolidayOut(kind=h.kind, name=h.name) for h in holidays if h.start <= day < h.end
+                ],
+                events=events,
+            )
+        )
 
     return WeekOut(
         start=start,
@@ -173,6 +202,9 @@ def _event_on_day(
     return WeekEventOut(
         key=f"{event.id}",
         title=event.title,
+        location=event.location,
+        description=event.description,
+        calendars=entry.calendars,
         all_day=event.all_day,
         start=start,
         end=end,

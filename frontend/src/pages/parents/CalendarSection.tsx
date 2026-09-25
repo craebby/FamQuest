@@ -2,16 +2,21 @@ import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import RefreshIcon from '~icons/fluent-emoji-flat/counterclockwise-arrows-button'
+import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
 
 import {
   type Calendar,
   type CalendarConnection,
+  HOLIDAY_REGIONS,
+  type HolidayRegion,
+  type HolidaySettings,
   useCalendarSettings,
   useConnectGoogle,
   useDisconnectCalendar,
   useSetFamilyColor,
+  useSetHolidays,
   useSyncCalendars,
   useUpdateCalendar,
 } from '../../api/calendar'
@@ -26,7 +31,13 @@ import { COLOR_TOKENS, FAMILY_COLORS, type FamilyColor } from '../../memberColor
  * Google-Konten verbinden und trennen (nur lesender Zugriff), Kalender auswählen und einer
  * Person oder der ganzen Familie zuordnen.
  */
-export function CalendarSection({ onDisconnected }: { onDisconnected: (email: string) => void }) {
+export function CalendarSection({
+  familyLanguage,
+  onDisconnected,
+}: {
+  familyLanguage: string
+  onDisconnected: (email: string) => void
+}) {
   const { t } = useTranslation()
   const settings = useCalendarSettings()
   const members = useMembers().data ?? []
@@ -35,10 +46,13 @@ export function CalendarSection({ onDisconnected }: { onDisconnected: (email: st
   const update = useUpdateCalendar()
   const setFamilyColor = useSetFamilyColor()
   const sync = useSyncCalendars()
+  const setHolidays = useSetHolidays()
+  // Bundesländer gibt es nur für Deutschland; die Einstellung erscheint bei deutscher Familie.
+  const german = familyLanguage === 'de'
 
   const data = settings.data
   const anySelected = data?.connections.some((c) => c.calendars.some((cal) => cal.selected))
-  const errors = [settings, connect, disconnect, update, setFamilyColor, sync].filter(
+  const errors = [settings, connect, disconnect, update, setFamilyColor, sync, setHolidays].filter(
     (request) => request.isError,
   )
   return (
@@ -46,6 +60,13 @@ export function CalendarSection({ onDisconnected }: { onDisconnected: (email: st
       {errors.map((request, index) => (
         <Alert key={index}>{errorMessage(t, request.error)}</Alert>
       ))}
+      {data && german && (
+        <HolidaySettingsForm
+          value={data.holidays}
+          disabled={setHolidays.isPending}
+          onChange={(holidays) => setHolidays.mutate(holidays)}
+        />
+      )}
       {data && !data.configured && (
         <div className="flex flex-col gap-3">
           <p className="flex items-center gap-3 text-lg text-slate-600">
@@ -404,5 +425,69 @@ function FamilyColorPicker({
         })}
       </div>
     </fieldset>
+  )
+}
+
+function HolidaySettingsForm({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: HolidaySettings
+  disabled: boolean
+  onChange: (value: HolidaySettings) => void
+}) {
+  const { t } = useTranslation()
+  const regionId = 'holiday-region'
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl bg-stone-50 p-4" data-testid="holiday-settings">
+      <p className="flex items-center gap-3 text-lg font-bold text-slate-700">
+        <BeachIcon className="size-8 shrink-0" aria-hidden="true" />
+        {t('calendar.holidays_title')}
+      </p>
+      <p className="text-base text-slate-500">{t('calendar.holidays_intro')}</p>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={regionId} className="text-base font-bold text-slate-700">
+          {t('calendar.region')}
+        </label>
+        <select
+          id={regionId}
+          value={value.region ?? ''}
+          disabled={disabled}
+          onChange={(event) =>
+            onChange({ ...value, region: (event.target.value || null) as HolidayRegion | null })
+          }
+          className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 text-lg outline-none focus:border-orange-400"
+        >
+          <option value="">{t('calendar.region_none')}</option>
+          {[...HOLIDAY_REGIONS]
+            .map((code) => ({ code, name: t(`regions.${code}`) }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(({ code, name }) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+        </select>
+      </div>
+      {value.region && (
+        <div className="flex flex-col gap-1">
+          <Switch
+            checked={value.public}
+            disabled={disabled}
+            showLabel
+            label={t('calendar.show_public_holidays')}
+            onChange={(checked) => onChange({ ...value, public: checked })}
+          />
+          <Switch
+            checked={value.school}
+            disabled={disabled}
+            showLabel
+            label={t('calendar.show_school_holidays')}
+            onChange={(checked) => onChange({ ...value, school: checked })}
+          />
+        </div>
+      )}
+    </div>
   )
 }

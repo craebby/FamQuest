@@ -486,6 +486,37 @@
     "problem": "Der Kalender wird gerade nicht aktualisiert. Mehr dazu im Elternbereich.",
     "nothing_selected": "Noch kein Kalender ausgewählt",
     "nothing_selected_hint": "Im Elternbereich unter „Kalender“ ein Google-Konto verbinden und Kalender auswählen.",
-    "people": "Für {{names}}"
+    "people": "Für {{names}}",
+    "holidays_title": "Feiertage und Ferien",
+    "holidays_intro": "Zeigt Feiertage und Schulferien eures Bundeslands im Kalender, auch ohne Google-Konto.",
+    "region": "Bundesland",
+    "region_none": "Keins ausgewählt",
+    "show_public_holidays": "Feiertage anzeigen",
+    "show_school_holidays": "Schulferien anzeigen",
+    "public_holiday": "Feiertag",
+    "school_holiday": "Ferien",
+    "details_close": "Schließen",
+    "location": "Ort",
+    "description": "Beschreibung",
+    "from_calendar_one": "Aus dem Kalender {{names}}",
+    "from_calendar_other": "Aus den Kalendern {{names}}"
+  },
+  "regions": {
+    "BW": "Baden-Württemberg",
+    "BY": "Bayern",
+    "BE": "Berlin",
+    "BB": "Brandenburg",
+    "HB": "Bremen",
+    "HH": "Hamburg",
+    "HE": "Hessen",
+    "MV": "Mecklenburg-Vorpommern",
+    "NI": "Niedersachsen",
+    "NW": "Nordrhein-Westfalen",
+    "RP": "Rheinland-Pfalz",
+    "SL": "Saarland",
+    "SN": "Sachsen",
+    "ST": "Sachsen-Anhalt",
+    "SH": "Schleswig-Holstein",
+    "TH": "Thüringen"
   }
 }

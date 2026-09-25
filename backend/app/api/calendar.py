@@ -20,6 +20,7 @@ from app.auth import (
 from app.calendar_sync import clear_events, refresh_calendar_list, sync_all
 from app.config import get_settings
 from app.errors import ApiError
+from app.holidays import REGIONS
 from app.logs import logger
 from app.models import AuthSession, Calendar, CalendarConnection, FamilyMember, OAuthState
 from app.schemas import FamilyColor
@@ -54,12 +55,20 @@ class ConnectionOut(BaseModel):
     calendars: list[CalendarOut]
 
 
+class HolidaySettings(BaseModel):
+    # Bundesland, z. B. "NW"; None = keins gewählt (dann weder Feiertage noch Ferien).
+    region: Literal[REGIONS] | None = None  # type: ignore[valid-type]
+    public: bool = False
+    school: bool = False
+
+
 class CalendarSettingsOut(BaseModel):
     # False, solange GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET oder TOKEN_ENCRYPTION_KEY fehlen.
     configured: bool
     # Muss in der Google Cloud Console als „Autorisierte Weiterleitungs-URI“ eingetragen sein.
     redirect_uri: str
     family_color: str
+    holidays: HolidaySettings
     connections: list[ConnectionOut]
 
 
@@ -74,7 +83,8 @@ class FamilyColorIn(BaseModel):
 
 
 class CalendarStatusOut(BaseModel):
-    # Mindestens ein Kalender ist ausgewählt; sonst zeigt das Display keinen Kalender an.
+    # Mindestens ein Kalender ist ausgewählt oder Feiertage/Ferien sind eingeschaltet;
+    # sonst zeigt das Display keinen Kalender an.
     enabled: bool
 
 
@@ -83,7 +93,11 @@ class ConnectOut(BaseModel):
 
 
 def redirect_uri(request: Request) -> str:
-    # Hinter einem Reverse Proxy stimmen Schema und Host dank der Proxy-Header.
+    public_url = get_settings().public_url.strip().rstrip("/")
+    if public_url:
+        return f"{public_url}{request.app.url_path_for('google_callback')}"
+    # Sonst aus der Anfrage; hinter einem Reverse Proxy nur richtig, wenn die App seinen
+    # Proxy-Headern vertraut (FORWARDED_ALLOW_IPS).
     return str(request.url_for("google_callback"))
 
 
@@ -93,10 +107,16 @@ def settings_out(request: Request, db: DbSession) -> CalendarSettingsOut:
     calendars = db.scalars(
         select(Calendar).order_by(Calendar.primary.desc(), func.lower(Calendar.name), Calendar.id)
     ).all()
+    family = get_family(db)
     return CalendarSettingsOut(
         configured=get_settings().calendar_configured,
         redirect_uri=redirect_uri(request),
-        family_color=get_family(db).calendar_color,
+        family_color=family.calendar_color,
+        holidays=HolidaySettings(
+            region=family.holiday_region,
+            public=family.show_public_holidays,
+            school=family.show_school_holidays,
+        ),
         connections=[
             ConnectionOut(
                 id=c.id,
@@ -132,7 +152,13 @@ def calendar_settings(
 
 @router.get("/status")
 def calendar_status(_: CurrentSession, db: DbSession) -> CalendarStatusOut:
-    return CalendarStatusOut(enabled=bool(db.scalar(select(exists().where(Calendar.selected)))))
+    family = get_family(db)
+    holidays = family.holiday_region is not None and (
+        family.show_public_holidays or family.show_school_holidays
+    )
+    return CalendarStatusOut(
+        enabled=holidays or bool(db.scalar(select(exists().where(Calendar.selected))))
+    )
 
 
 @router.put("/calendars/{calendar_id}")
@@ -172,6 +198,26 @@ def set_family_color(
     return settings_out(request, db)
 
 
+@router.put("/holidays")
+def set_holidays(
+    body: HolidaySettings,
+    request: Request,
+    background: BackgroundTasks,
+    auth_session: ParentSession,
+    db: DbSession,
+) -> CalendarSettingsOut:
+    """Feiertage und Schulferien eines Bundeslands im Kalender zeigen."""
+    family = get_family(db)
+    family.holiday_region = body.region
+    family.show_public_holidays = body.public
+    family.show_school_holidays = body.school
+    db.commit()
+    if body.region and body.school:
+        # Ferien gleich laden (passiert nur, wenn sie fehlen oder veraltet sind).
+        background.add_task(sync_all)
+    return settings_out(request, db)
+
+
 @router.post("/sync")
 def sync_now(request: Request, auth_session: ParentSession, db: DbSession) -> CalendarSettingsOut:
     """„Jetzt aktualisieren“; läuft gerade ein Durchlauf, gilt dessen Ergebnis."""
@@ -203,6 +249,8 @@ def connect_google(request: Request, auth_session: ParentSession, db: DbSession)
         )
     )
     db.commit()
+    # Hilft bei „redirect_uri_mismatch“: genau diese Adresse muss bei Google eingetragen sein.
+    logger.info("Google-Anmeldung gestartet, Weiterleitungs-URI: %s", uri)
     return ConnectOut(url=google.authorization_url(state, challenge, uri))
 
 

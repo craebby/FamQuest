@@ -4,39 +4,11 @@ import type { WeekEvent } from '../../api/calendar'
 import { Avatar } from '../../components/Avatar'
 import { FamilyAvatar } from '../../components/FamilyAvatar'
 import { colorTokens } from '../../memberColors'
-import { type Owners, isAllDayOnThisDay } from './owners'
+import { type Owners, eventWhen, isAllDayOnThisDay, ownerColors } from './owners'
 
-/**
- * Termin in den Farben seiner Personen. Ganztägige Termine sind kräftig gefärbte Balken,
- * Termine mit Uhrzeit helle Karten mit Farbstreifen, Uhrzeit und Avataren.
- */
-export function EventCard({
-  event,
-  owners,
-  familyColor,
-  timeZone,
-  past,
-}: {
-  event: WeekEvent
-  owners: Owners
-  familyColor: string
-  timeZone: string
-  /** Schon vorbei: blasser, damit das Kommende auffällt. */
-  past: boolean
-}) {
-  const { t, i18n } = useTranslation()
-  const language = i18n.resolvedLanguage ?? i18n.language
-  const colors = [
-    ...owners.members.map((member) => member.color),
-    ...(owners.family ? [familyColor] : []),
-  ]
-  const main = colorTokens(colors[0])
-  const title = event.title ?? t('calendar.untitled')
-  const names = [
-    ...owners.members.map((member) => member.name),
-    ...(owners.family ? [t('calendar.family')] : []),
-  ]
-  const avatars = (
+/** Avatare der Personen (und ggf. der Familie), leicht überlappend. */
+export function OwnerAvatars({ owners, familyColor }: { owners: Owners; familyColor: string }) {
+  return (
     <span className="flex shrink-0 -space-x-2">
       {owners.members.map((member) => (
         <Avatar
@@ -50,65 +22,78 @@ export function EventCard({
       {owners.family && <FamilyAvatar color={familyColor} size="xs" />}
     </span>
   )
-  const people = (
-    <span className="sr-only">{t('calendar.people', { names: names.join(', ') })}</span>
+}
+
+/** Farbstreifen am Rand: eine Farbe je Person. */
+export function ColorStripe({
+  colors,
+  className = 'w-2',
+}: {
+  colors: string[]
+  className?: string
+}) {
+  return (
+    <span aria-hidden="true" className={`flex shrink-0 flex-col self-stretch ${className}`}>
+      {colors.map((color, index) => (
+        <span key={index} className="flex-1" style={{ backgroundColor: colorTokens(color).main }} />
+      ))}
+    </span>
   )
+}
 
-  if (isAllDayOnThisDay(event)) {
-    return (
-      <li
-        className={`flex items-center gap-2 rounded-2xl py-1.5 pr-1.5 pl-3 ${past ? 'opacity-50' : ''}`}
-        style={{ backgroundColor: main.main, color: main.onMain }}
-        data-testid="calendar-event"
-      >
-        <span className="min-w-0 flex-1 text-base leading-tight font-extrabold break-words">
-          {title}
-        </span>
-        {people}
-        {avatars}
-      </li>
-    )
-  }
-
-  const time = new Intl.DateTimeFormat(language, {
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone,
-  })
-  const start = new Date(event.start)
-  const end = new Date(event.end)
-  const when = event.continues_before
-    ? t('calendar.until', { time: time.format(end) })
-    : event.continues_after
-      ? t('calendar.from', { time: time.format(start) })
-      : start.getTime() === end.getTime()
-        ? time.format(start)
-        : time.formatRange(start, end)
+/**
+ * Termin in den Farben seiner Personen: helle Karte mit Farbstreifen, oben Uhrzeit bzw.
+ * „Ganztägig“, darunter Titel und Avatare. Antippen öffnet die Details.
+ */
+export function EventCard({
+  event,
+  owners,
+  familyColor,
+  timeZone,
+  past,
+  onOpen,
+}: {
+  event: WeekEvent
+  owners: Owners
+  familyColor: string
+  timeZone: string
+  /** Schon vorbei: blasser, damit das Kommende auffällt. */
+  past: boolean
+  onOpen: () => void
+}) {
+  const { t, i18n } = useTranslation()
+  const language = i18n.resolvedLanguage ?? i18n.language
+  const colors = ownerColors(owners, familyColor)
+  const main = colorTokens(colors[0])
+  const title = event.title ?? t('calendar.untitled')
+  const names = [
+    ...owners.members.map((member) => member.name),
+    ...(owners.family ? [t('calendar.family')] : []),
+  ]
+  const when = isAllDayOnThisDay(event)
+    ? t('calendar.all_day')
+    : eventWhen(event, language, timeZone, t)
 
   return (
-    <li
-      className={`flex gap-2 overflow-hidden rounded-2xl bg-white shadow-sm ${past ? 'opacity-50' : ''}`}
-      style={{ backgroundColor: main.soft }}
-      data-testid="calendar-event"
-    >
-      {/* Farbstreifen: eine Farbe je Person. */}
-      <span aria-hidden="true" className="flex w-2 shrink-0 flex-col">
-        {colors.map((color, index) => (
-          <span
-            key={index}
-            className="flex-1"
-            style={{ backgroundColor: colorTokens(color).main }}
-          />
-        ))}
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-1 py-2 pr-2">
-        <span className="text-base font-extrabold" style={{ color: main.strong }}>
-          {when}
+    <li className={past ? 'opacity-50' : ''} data-testid="calendar-event">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full gap-2 overflow-hidden rounded-2xl text-left shadow-sm focus-visible:outline-4 focus-visible:outline-orange-400 active:scale-[0.98] motion-reduce:active:scale-100"
+        style={{ backgroundColor: main.soft }}
+      >
+        <ColorStripe colors={colors} />
+        <span className="flex min-w-0 flex-1 flex-col gap-1 py-2 pr-2">
+          <span className="text-base font-extrabold" style={{ color: main.strong }}>
+            {when}
+          </span>
+          <span className="text-lg leading-tight font-bold break-words text-slate-800">
+            {title}
+          </span>
+          <span className="sr-only">{t('calendar.people', { names: names.join(', ') })}</span>
+          <OwnerAvatars owners={owners} familyColor={familyColor} />
         </span>
-        <span className="text-lg leading-tight font-bold break-words text-slate-800">{title}</span>
-        {people}
-        {avatars}
-      </span>
+      </button>
     </li>
   )
 }

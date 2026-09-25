@@ -38,6 +38,10 @@ class Family(Base):
     pin_enabled: Mapped[bool] = mapped_column(default=False, server_default="false")
     # Farbe der Familie im Kalender (Termine, die allen gehören); siehe schemas.FAMILY_COLORS.
     calendar_color: Mapped[str] = mapped_column(String(20), server_default="pink")
+    # Bundesland für Feiertage und Schulferien im Kalender (z. B. "NW"); None = keins gewählt.
+    holiday_region: Mapped[str | None] = mapped_column(String(10))
+    show_public_holidays: Mapped[bool] = mapped_column(default=False, server_default="false")
+    show_school_holidays: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -364,11 +368,29 @@ class CalendarEvent(Base):
     ical_uid: Mapped[str | None] = mapped_column(String(1024))
     # Ohne Titel (z. B. nur „beschäftigt“ freigegeben) zeigt das Frontend einen Platzhalter.
     title: Mapped[str | None] = mapped_column(String(500))
+    location: Mapped[str | None] = mapped_column(String(500))
+    # Als reiner Text (HTML aus Google wird beim Abruf entfernt).
+    description: Mapped[str | None] = mapped_column(Text)
     all_day: Mapped[bool]
     start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     start_date: Mapped[dt.date | None] = mapped_column(Date)
     end_date: Mapped[dt.date | None] = mapped_column(Date)
+
+
+class SchoolHoliday(Base):
+    """Schulferien eines Bundeslands, geladen von OpenHolidays (siehe app.school_holidays)."""
+
+    __tablename__ = "school_holidays"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    region: Mapped[str] = mapped_column(String(10), index=True)
+    start_date: Mapped[dt.date] = mapped_column(Date)
+    # Exklusiv wie bei ganztägigen Terminen.
+    end_date: Mapped[dt.date] = mapped_column(Date)
+    name_de: Mapped[str] = mapped_column(String(200))
+    name_en: Mapped[str] = mapped_column(String(200))
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class OAuthState(Base):

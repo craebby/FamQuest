@@ -269,8 +269,17 @@ reads the calendars and never changes them.
 calendar symbol. The arrows browse weeks; today is highlighted and events that are over fade out.
 Tapping an avatar at the top shows only that person's events (plus family events); tapping again
 shows everyone. If the same event is in several calendars (e.g. an invite to both parents), it
-appears once with all avatars. If a calendar can't be updated, a note appears above the week;
-the last known events stay visible.
+appears once with all avatars. All-day events look like the others, with "All day" instead of a
+time. Tapping an event shows its details: date and time, people, location, description and the
+calendars it comes from. Events are edited in Google Calendar; FamQuest only shows them. If a
+calendar can't be updated, a note appears above the week; the last known events stay visible.
+
+**Public and school holidays (Germany):** if the family language is German, the parents' area
+under **Calendar** has a **State** (Bundesland) setting with two switches, **public holidays** and
+**school holidays**. They appear subtly in grey above each day's events (🎉 public holiday,
+🏖️ school holidays) and work without a Google account too. Public holidays are calculated
+offline; school holidays are loaded once a day from [OpenHolidays](https://www.openholidaysapi.org)
+(only the state is sent, no personal data).
 
 **Sync:** every 5 minutes (`CALENDAR_SYNC_MINUTES`) FamQuest asks Google whether anything has
 changed (incremental, via sync token). Only then, when the week changes, or every 6 hours as a
@@ -336,6 +345,7 @@ described in [`.env.example`](.env.example).
 | `GOOGLE_CLIENT_ID` | – | OAuth client for [Google Calendar](#google-calendar) |
 | `GOOGLE_CLIENT_SECRET` | – | Its client secret |
 | `TOKEN_ENCRYPTION_KEY` | – | Encrypts the Google tokens in the database |
+| `PUBLIC_URL` | – | Public address, e.g. `https://family.example.com`; fixes the Google redirect URI behind a reverse proxy |
 | `CALENDAR_SYNC_MINUTES` | `5` | Minutes between calendar syncs in the background; `0` = off |
 
 Data lives in two Docker volumes: `db-data` (PostgreSQL) and `uploads` (uploaded images). How to
@@ -435,6 +445,14 @@ The app must run on its own (sub)domain, e.g. `family.example.com`. A sub-path s
 password) or `kein Konto mit dieser E-Mail` (no account with this e-mail). With `LOG_LEVEL=debug` in
 `.env` (then `docker compose up -d`) it also logs the e-mail address that was entered. Passwords and
 PINs are never logged. If a reverse proxy doesn't pass on the `Host` header, the log says so too.
+
+**Google shows `redirect_uri_mismatch` when connecting.** The address FamQuest sends to Google
+must match the **Authorized redirect URI** in the Google Cloud Console exactly (scheme, domain,
+path). The parents' area shows it under **Calendar → Google setup**, and the log has it too
+(`Weiterleitungs-URI: …`). Behind a reverse proxy it often starts with `http://` instead of
+`https://` because the app doesn't trust the proxy's headers (`FORWARDED_ALLOW_IPS`, see
+[Behind a reverse proxy](#behind-a-reverse-proxy)). The simplest fix: set `PUBLIC_URL` in `.env`,
+e.g. `PUBLIC_URL=https://family.example.com`, then `docker compose up -d`.
 
 **Forgot the password.** There is no e-mail reset on purpose; reset it on the server instead:
 
@@ -568,7 +586,8 @@ use.
 - [x] 2. Choose calendars and link them to people or "Family" (with its own colour)
 - [x] 3. Background sync (incremental), recurring and all-day events, error handling
 - [x] 4. Calendar view: week with events in the person's colour and avatars
-- [ ] 5. Polish
+- [x] 5. Polish: event details on tap, all-day events in the same style, public and school
+  holidays per German state, `PUBLIC_URL` for the Google redirect URI
 
 **1.1: make it your own**
 
@@ -598,6 +617,7 @@ use.
 
 **Ideas without a version yet**
 
+- Create and edit events from FamQuest (needs write access to Google Calendar instead of read-only)
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 
 - Several families on one installation: e.g. the first admin (or a hidden function) creates

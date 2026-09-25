@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     log_level: str = "info"
     upload_dir: Path = Path("data/uploads")
 
+    # Öffentliche Adresse der App, z. B. "https://familie.example.com". Optional; ohne sie wird die
+    # Adresse aus der Anfrage (bzw. den Proxy-Headern) gebildet. Nötig für die Google-Anmeldung,
+    # wenn der Reverse Proxy Schema oder Host nicht zuverlässig weitergibt.
+    public_url: str = ""
+
     # Google Kalender (Phase 2). Ohne diese drei Werte ist der Kalender abgeschaltet.
     google_client_id: str = ""
     google_client_secret: str = ""

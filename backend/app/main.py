@@ -36,7 +36,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         task = None
-        if settings.calendar_configured and settings.calendar_sync_minutes > 0:
+        # Läuft auch ohne Google: Schulferien für den Kalender kommen ebenfalls von hier.
+        if settings.calendar_sync_minutes > 0:
             interval = timedelta(minutes=settings.calendar_sync_minutes)
             task = asyncio.create_task(run_periodically(interval))
         yield

@@ -48,6 +48,7 @@ def test_settings_without_configuration(client, parent):
         "configured": False,
         "redirect_uri": REDIRECT_URI,
         "family_color": "pink",
+        "holidays": {"region": None, "public": False, "school": False},
         "connections": [],
     }
 
@@ -225,3 +226,13 @@ def test_disconnect_unknown_connection(client, parent):
 
     assert response.status_code == 404
     assert response.json() == {"code": "calendar.connection_not_found"}
+
+
+def test_public_url_sets_redirect_uri(client, parent, configured, monkeypatch):
+    monkeypatch.setattr(get_settings(), "public_url", "https://familie.example.com/")
+
+    params = start(client, parent)
+
+    expected = "https://familie.example.com/api/calendar/google/callback"
+    assert params["redirect_uri"] == expected
+    assert client.get("/api/calendar/settings").json()["redirect_uri"] == expected

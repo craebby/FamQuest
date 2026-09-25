@@ -277,7 +277,17 @@ Termine werden blasser. Ein Tipp auf einen Avatar oben zeigt nur die Termine die
 der Familie), ein zweiter Tipp wieder alle. Steht derselbe Termin in mehreren Kalendern (z. B. eine
 Einladung an beide Eltern), erscheint er einmal mit allen Avataren. Kann ein Kalender nicht
 aktualisiert werden, erscheint über der Woche ein Hinweis; die zuletzt bekannten Termine bleiben
-sichtbar.
+sichtbar. Ganztägige Termine sehen aus wie alle anderen, nur mit „Ganztägig“ statt einer Uhrzeit.
+Ein Tipp auf einen Termin zeigt die Details: Datum und Uhrzeit, Personen, Ort, Beschreibung und die
+Kalender, aus denen er stammt. Bearbeitet werden Termine im Google Kalender; FamQuest zeigt sie nur
+an.
+
+**Feiertage und Ferien:** Ist die Familiensprache Deutsch, gibt es im Elternbereich unter
+**Kalender** die Einstellung **Bundesland** mit zwei Schaltern, **Feiertage** und **Schulferien**.
+Sie erscheinen dezent in Grau über den Terminen des Tages (🎉 Feiertag, 🏖️ Ferien) und
+funktionieren auch ohne Google-Konto. Feiertage werden offline berechnet, Schulferien einmal am Tag
+von [OpenHolidays](https://www.openholidaysapi.org) geladen (übertragen wird nur das Bundesland,
+keine persönlichen Daten).
 
 **Synchronisation:** Alle 5 Minuten (`CALENDAR_SYNC_MINUTES`) fragt FamQuest bei Google nach, ob
 sich etwas geändert hat (inkrementell per Sync-Token). Nur dann, beim Wochenwechsel oder zur
@@ -345,6 +355,7 @@ Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Al
 | `GOOGLE_CLIENT_ID` | – | OAuth-Client für den [Google Kalender](#google-kalender) |
 | `GOOGLE_CLIENT_SECRET` | – | Clientschlüssel dazu |
 | `TOKEN_ENCRYPTION_KEY` | – | Verschlüsselt die Google-Tokens in der Datenbank |
+| `PUBLIC_URL` | – | Öffentliche Adresse, z. B. `https://familie.example.com`; legt die Google-Weiterleitungs-URI hinter einem Reverse Proxy fest |
 | `CALENDAR_SYNC_MINUTES` | `5` | Minuten zwischen zwei Kalender-Synchronisationen im Hintergrund; `0` = aus |
 
 Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
@@ -445,6 +456,15 @@ Passwort für Konto 1` oder `kein Konto mit dieser E-Mail`. Mit `LOG_LEVEL=debug
 (danach `docker compose up -d`) steht dort auch die eingegebene E-Mail-Adresse. Passwörter und PINs
 werden nie protokolliert. Gibt ein Reverse Proxy den `Host`-Header nicht weiter, steht das ebenfalls
 im Log.
+
+**Google meldet `redirect_uri_mismatch` beim Verbinden.** Die Adresse, die FamQuest an Google
+schickt, muss genau der **Autorisierten Weiterleitungs-URI** in der Google Cloud Console
+entsprechen (Schema, Domain, Pfad). Der Elternbereich zeigt sie unter **Kalender → Einrichtung bei
+Google**, außerdem steht sie im Log (`Weiterleitungs-URI: …`). Hinter einem Reverse Proxy beginnt
+sie oft mit `http://` statt `https://`, weil die App den Headern des Proxys nicht vertraut
+(`FORWARDED_ALLOW_IPS`, siehe [Hinter einem Reverse Proxy](#hinter-einem-reverse-proxy)). Am
+einfachsten: in der `.env` `PUBLIC_URL` setzen, z. B. `PUBLIC_URL=https://familie.example.com`,
+danach `docker compose up -d`.
 
 **Passwort vergessen.** Einen Reset per E-Mail gibt es bewusst nicht; stattdessen auf dem Server:
 
@@ -580,7 +600,8 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 - [x] 3. Synchronisation im Hintergrund (inkrementell), Serien- und ganztägige Termine,
   Fehlerbehandlung
 - [x] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe und Avataren
-- [ ] 5. Feinschliff
+- [x] 5. Feinschliff: Termindetails per Tipp, ganztägige Termine im gleichen Stil, Feiertage und
+  Schulferien je Bundesland, `PUBLIC_URL` für die Google-Weiterleitungs-URI
 
 **1.1: Anpassen**
 
@@ -609,6 +630,7 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 
 **Ideen ohne Version**
 
+- Termine in FamQuest anlegen und bearbeiten (braucht Schreibzugriff auf den Google Kalender statt nur lesend)
 - Weitere Kalender: iCal-/ICS-Links und andere Anbieter (z. B. iCloud, Outlook, Nextcloud)
 
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte

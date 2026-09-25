@@ -418,6 +418,7 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
       />
 
       <CalendarSection
+        familyLanguage={me.family.default_language}
         onDisconnected={(email) => {
           setCalendarError(undefined)
           setNotice(t('calendar.disconnected', { email }))

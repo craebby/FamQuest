@@ -5,15 +5,23 @@ import LeftIcon from '~icons/fluent-emoji-flat/left-arrow'
 import RightIcon from '~icons/fluent-emoji-flat/right-arrow'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
+import PartyIcon from '~icons/fluent-emoji-flat/party-popper'
+import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
 
-import { type CalendarWeek, useCalendarStatus, useCalendarWeek } from '../api/calendar'
+import {
+  type CalendarWeek,
+  type WeekEvent,
+  useCalendarStatus,
+  useCalendarWeek,
+} from '../api/calendar'
 import { type Member, useMembers } from '../api/members'
 import { Avatar } from '../components/Avatar'
 import { FamilyAvatar } from '../components/FamilyAvatar'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { EventCard } from './calendar/EventCard'
-import { isAllDayOnThisDay, ownersOf } from './calendar/owners'
+import { EventDialog } from './calendar/EventDialog'
+import { type Owners, isAllDayOnThisDay, ownersOf } from './calendar/owners'
 
 /** Wessen Termine gezeigt werden: alle, nur eine Person (mit Familie) oder nur die Familie. */
 type Focus = number | 'family' | null
@@ -25,11 +33,11 @@ function parseDate(isoDate: string) {
 
 /** Kalender: eine Woche (Montag bis Sonntag), Termine in den Farben der Personen. */
 export function CalendarPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [offset, setOffset] = useState(0)
   const [focus, setFocus] = useState<Focus>(null)
   const status = useCalendarStatus()
-  const week = useCalendarWeek(offset)
+  const week = useCalendarWeek(offset, i18n.resolvedLanguage ?? i18n.language)
   const members = useMembers()
 
   if (status.data && !status.data.enabled) return <NothingSelected />
@@ -174,6 +182,7 @@ function Days({
   now: number
 }) {
   const { t, i18n } = useTranslation()
+  const [open, setOpen] = useState<{ event: WeekEvent; owners: Owners } | null>(null)
   const language = i18n.resolvedLanguage ?? i18n.language
   const weekday = new Intl.DateTimeFormat(language, { weekday: 'short', timeZone: 'UTC' })
   const longDate = new Intl.DateTimeFormat(language, {
@@ -186,6 +195,15 @@ function Days({
   return (
     // Großer Bildschirm: sieben Spalten nebeneinander; schmal: Tage untereinander.
     <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-7">
+      {open && (
+        <EventDialog
+          event={open.event}
+          owners={open.owners}
+          familyColor={week.family_color}
+          timeZone={week.timezone}
+          onClose={() => setOpen(null)}
+        />
+      )}
       {week.days.map((day) => {
         const date = parseDate(day.date)
         const isToday = day.date === week.today
@@ -215,8 +233,17 @@ function Days({
                 <span className="ml-auto text-base font-bold">{t('calendar.today')}</span>
               )}
             </h2>
+            {day.holidays.length > 0 && (
+              <ul className="flex flex-col gap-1">
+                {day.holidays.map((holiday) => (
+                  <HolidayChip key={`${holiday.kind}-${holiday.name}`} {...holiday} />
+                ))}
+              </ul>
+            )}
             {events.length === 0 ? (
-              <p className="px-3 py-2 text-base text-slate-400">{t('calendar.no_events')}</p>
+              day.holidays.length === 0 && (
+                <p className="px-3 py-2 text-base text-slate-400">{t('calendar.no_events')}</p>
+              )
             ) : (
               <ul className="flex flex-col gap-2">
                 {events.map(({ event, owners }) => (
@@ -229,6 +256,7 @@ function Days({
                     past={
                       isToday && !isAllDayOnThisDay(event) && new Date(event.end).getTime() < now
                     }
+                    onOpen={() => setOpen({ event, owners })}
                   />
                 ))}
               </ul>
@@ -237,6 +265,26 @@ function Days({
         )
       })}
     </div>
+  )
+}
+
+/** Feiertag oder Schulferien: dezent in Steingrau, mit Symbol statt Personenfarbe. */
+function HolidayChip({ kind, name }: { kind: 'public' | 'school'; name: string }) {
+  const { t } = useTranslation()
+  const Icon = kind === 'public' ? PartyIcon : BeachIcon
+  return (
+    <li
+      className="flex items-center gap-2 rounded-xl bg-stone-100 px-2 py-1 text-base leading-tight font-semibold text-stone-600"
+      data-testid="holiday"
+    >
+      <Icon className="size-6 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 break-words">
+        <span className="sr-only">
+          {t(kind === 'public' ? 'calendar.public_holiday' : 'calendar.school_holiday')}:{' '}
+        </span>
+        {name}
+      </span>
+    </li>
   )
 }
 

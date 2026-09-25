@@ -25,6 +25,9 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     // 15:00 bis 16:00 in Berlin.
     start: '2026-10-03T13:00:00Z',
     end: '2026-10-03T14:00:00Z',
+    location: null,
+    description: null,
+    calendars: ['Lena'],
     member_ids: [1],
     family: false,
     continues_before: false,
@@ -43,6 +46,7 @@ function makeWeek(saturday: WeekEvent[], overrides: Partial<CalendarWeek> = {}):
     problem: false,
     days: dates.map((date) => ({
       date: `2026-${date}`,
+      holidays: [],
       events: date === '10-03' ? saturday : [],
     })),
     ...overrides,
@@ -189,5 +193,60 @@ describe('Kalender (Woche)', () => {
     const day = within(await screen.findByRole('region', { name: 'Saturday, October 3' }))
     expect(day.getByText('Today')).toBeVisible()
     expect(day.getByTestId('calendar-event')).toHaveTextContent('For Lena')
+  })
+
+  it('öffnet die Details eines Termins und schließt sie wieder', async () => {
+    const user = userEvent.setup()
+    mockCalendar(
+      makeWeek([
+        makeEvent({
+          title: 'Zahnarzt',
+          location: 'Hauptstr. 1',
+          description: 'Karte mitbringen',
+          member_ids: [1, 2],
+          calendars: ['Lena', 'Stefan'],
+        }),
+      ]),
+    )
+    renderApp('/calendar')
+
+    await user.click((await saturday()).getByRole('button', { name: /Zahnarzt/ }))
+
+    const dialog = within(screen.getByRole('dialog', { name: 'Zahnarzt' }))
+    expect(dialog.getByText(/Samstag, 3\. Oktober/)).toHaveTextContent(/15:00\s*–\s*16:00/)
+    expect(dialog.getByText('Hauptstr. 1')).toBeVisible()
+    expect(dialog.getByText('Karte mitbringen')).toBeVisible()
+    expect(dialog.getByText('Papa')).toBeVisible()
+    expect(dialog.getByText('Aus den Kalendern Lena, Stefan')).toBeVisible()
+
+    await user.click(dialog.getByRole('button', { name: 'Schließen' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('zeigt ganztägige Termine wie andere, nur mit „Ganztägig“ statt Uhrzeit', async () => {
+    mockCalendar(
+      makeWeek([
+        makeEvent({ title: 'Ausflug', all_day: true, start: '2026-10-03', end: '2026-10-05' }),
+      ]),
+    )
+    renderApp('/calendar')
+
+    expect((await saturday()).getByTestId('calendar-event')).toHaveTextContent('GanztägigAusflug')
+  })
+
+  it('zeigt Feiertage und Ferien dezent über den Terminen', async () => {
+    const week = makeWeek([])
+    week.days[5]!.holidays = [
+      { kind: 'public', name: 'Tag der Deutschen Einheit' },
+      { kind: 'school', name: 'Herbstferien' },
+    ]
+    mockCalendar(week)
+    renderApp('/calendar')
+
+    const day = await saturday()
+    const [holiday, school] = day.getAllByTestId('holiday')
+    expect(holiday).toHaveTextContent('Feiertag: Tag der Deutschen Einheit')
+    expect(school).toHaveTextContent('Ferien: Herbstferien')
+    expect(day.queryByText('Keine Termine')).toBeNull()
   })
 })

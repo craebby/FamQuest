@@ -486,6 +486,37 @@
     "problem": "The calendar isn't updating right now. See the parent area for details.",
     "nothing_selected": "No calendar selected yet",
     "nothing_selected_hint": "In the parent area under “Calendar”, connect a Google account and choose calendars.",
-    "people": "For {{names}}"
+    "people": "For {{names}}",
+    "holidays_title": "Public and school holidays",
+    "holidays_intro": "Shows public holidays and school holidays of your German state in the calendar, even without a Google account.",
+    "region": "State",
+    "region_none": "None selected",
+    "show_public_holidays": "Show public holidays",
+    "show_school_holidays": "Show school holidays",
+    "public_holiday": "Public holiday",
+    "school_holiday": "School holidays",
+    "details_close": "Close",
+    "location": "Location",
+    "description": "Description",
+    "from_calendar_one": "From the calendar {{names}}",
+    "from_calendar_other": "From the calendars {{names}}"
+  },
+  "regions": {
+    "BW": "Baden-Württemberg",
+    "BY": "Bavaria",
+    "BE": "Berlin",
+    "BB": "Brandenburg",
+    "HB": "Bremen",
+    "HH": "Hamburg",
+    "HE": "Hesse",
+    "MV": "Mecklenburg-Western Pomerania",
+    "NI": "Lower Saxony",
+    "NW": "North Rhine-Westphalia",
+    "RP": "Rhineland-Palatinate",
+    "SL": "Saarland",
+    "SN": "Saxony",
+    "ST": "Saxony-Anhalt",
+    "SH": "Schleswig-Holstein",
+    "TH": "Thuringia"
   }
 }

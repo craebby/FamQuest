@@ -27,12 +27,43 @@ export interface CalendarConnection {
   calendars: Calendar[]
 }
 
+// Muss zu REGIONS im Backend passen (backend/app/holidays.py).
+export const HOLIDAY_REGIONS = [
+  'BW',
+  'BY',
+  'BE',
+  'BB',
+  'HB',
+  'HH',
+  'HE',
+  'MV',
+  'NI',
+  'NW',
+  'RP',
+  'SL',
+  'SN',
+  'ST',
+  'SH',
+  'TH',
+] as const
+export type HolidayRegion = (typeof HOLIDAY_REGIONS)[number]
+
+export interface HolidaySettings {
+  /** Bundesland; `null` = keins gewählt. */
+  region: HolidayRegion | null
+  /** Gesetzliche Feiertage anzeigen. */
+  public: boolean
+  /** Schulferien anzeigen. */
+  school: boolean
+}
+
 export interface CalendarSettings {
   /** False, solange die Google-Zugangsdaten in der Konfiguration fehlen. */
   configured: boolean
   /** In der Google Cloud Console als Weiterleitungs-URI einzutragen. */
   redirect_uri: string
   family_color: FamilyColor
+  holidays: HolidaySettings
   connections: CalendarConnection[]
 }
 
@@ -40,6 +71,11 @@ export interface WeekEvent {
   key: string
   /** `null`: Termin ohne Titel (z. B. nur „beschäftigt“ freigegeben). */
   title: string | null
+  location: string | null
+  /** Reiner Text, ggf. mit Zeilenumbrüchen. */
+  description: string | null
+  /** Namen der Kalender, aus denen der Termin stammt. */
+  calendars: string[]
   all_day: boolean
   /** Ganztägig: `YYYY-MM-DD` (Ende exklusiv); sonst ISO-Zeitpunkt. */
   start: string
@@ -58,7 +94,12 @@ export interface CalendarWeek {
   family_color: FamilyColor
   /** Mindestens ein angezeigter Kalender wird gerade nicht aktualisiert. */
   problem: boolean
-  days: { date: string; events: WeekEvent[] }[]
+  days: {
+    date: string
+    /** Feiertage und Schulferien, falls im Elternbereich eingeschaltet. */
+    holidays: { kind: 'public' | 'school'; name: string }[]
+    events: WeekEvent[]
+  }[]
 }
 
 export const CALENDAR_SETTINGS_KEY = ['calendar-settings'] as const
@@ -92,11 +133,15 @@ export function useCalendarStatus() {
   })
 }
 
-/** Termine der Woche; `offset` 0 = aktuelle Woche. Aktualisiert sich jede Minute. */
-export function useCalendarWeek(offset: number) {
+/**
+ * Termine der Woche; `offset` 0 = aktuelle Woche. `language` bestimmt die Namen der Feiertage.
+ * Aktualisiert sich jede Minute.
+ */
+export function useCalendarWeek(offset: number, language: string) {
   return useQuery({
-    queryKey: [...CALENDAR_WEEK_KEY, offset],
-    queryFn: () => apiGet<CalendarWeek>(`/calendar/week?offset=${offset}`),
+    queryKey: [...CALENDAR_WEEK_KEY, offset, language],
+    queryFn: () =>
+      apiGet<CalendarWeek>(`/calendar/week?offset=${offset}&lang=${language.slice(0, 2)}`),
     refetchInterval: 60 * 1000,
     placeholderData: keepPreviousData,
   })
@@ -148,6 +193,11 @@ export const useUpdateCalendar = () =>
 export const useSetFamilyColor = () =>
   useSettingsMutation((color: FamilyColor) =>
     api<CalendarSettings>('PUT', '/calendar/family-color', { color }),
+  )
+
+export const useSetHolidays = () =>
+  useSettingsMutation((holidays: HolidaySettings) =>
+    api<CalendarSettings>('PUT', '/calendar/holidays', holidays),
   )
 
 export const useSyncCalendars = () =>

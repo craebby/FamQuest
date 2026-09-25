@@ -14,6 +14,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+const NO_HOLIDAYS = { region: null, public: false, school: false }
+
 const REDIRECT_URI = 'https://familie.example.com/api/calendar/google/callback'
 
 function mockParents(settings: CalendarSettings, extra: Parameters<typeof mockApi>[0] = {}) {
@@ -40,6 +42,7 @@ describe('Kalender im Elternbereich', () => {
       configured: false,
       redirect_uri: REDIRECT_URI,
       family_color: 'pink',
+      holidays: NO_HOLIDAYS,
       connections: [],
     })
     renderApp('/parents')
@@ -55,7 +58,13 @@ describe('Kalender im Elternbereich', () => {
     const assign = vi.fn()
     vi.stubGlobal('location', { ...window.location, assign })
     const calls = mockParents(
-      { configured: true, redirect_uri: REDIRECT_URI, family_color: 'pink', connections: [] },
+      {
+        configured: true,
+        redirect_uri: REDIRECT_URI,
+        family_color: 'pink',
+        holidays: NO_HOLIDAYS,
+        connections: [],
+      },
       {
         'POST /api/calendar/google/connect': Response.json({
           url: 'https://accounts.google.com/o/oauth2/v2/auth?state=abc',
@@ -78,6 +87,7 @@ describe('Kalender im Elternbereich', () => {
         configured: true,
         redirect_uri: REDIRECT_URI,
         family_color: 'pink',
+        holidays: NO_HOLIDAYS,
         connections: [
           {
             id: 1,
@@ -120,6 +130,7 @@ describe('Kalender im Elternbereich', () => {
       configured: true,
       redirect_uri: REDIRECT_URI,
       family_color: 'pink',
+      holidays: NO_HOLIDAYS,
       connections: [],
     })
     renderApp('/parents?calendar_error=calendar.scope_missing')
@@ -134,6 +145,7 @@ describe('Kalender im Elternbereich', () => {
       configured: true,
       redirect_uri: REDIRECT_URI,
       family_color: 'pink',
+      holidays: NO_HOLIDAYS,
       connections: [],
     })
     renderApp('/parents?calendar=connected')
@@ -242,6 +254,7 @@ function withCalendars(calendars: Calendar[]): CalendarSettings {
     configured: true,
     redirect_uri: REDIRECT_URI,
     family_color: 'pink',
+    holidays: NO_HOLIDAYS,
     connections: [
       {
         id: 1,
@@ -254,3 +267,59 @@ function withCalendars(calendars: Calendar[]): CalendarSettings {
     ],
   }
 }
+
+describe('Feiertage und Ferien im Elternbereich', () => {
+  it('wählt Bundesland und schaltet Feiertage und Ferien ein, auch ohne Google', async () => {
+    const user = userEvent.setup()
+    const base: CalendarSettings = {
+      configured: false,
+      redirect_uri: REDIRECT_URI,
+      family_color: 'pink',
+      holidays: NO_HOLIDAYS,
+      connections: [],
+    }
+    const withRegion = {
+      ...base,
+      holidays: { region: 'NW' as const, public: false, school: false },
+    }
+    const calls = mockParents(base, {
+      'PUT /api/calendar/holidays': (body) => Response.json({ ...base, holidays: body }),
+    })
+    renderApp('/parents')
+
+    const settings = within(await screen.findByTestId('holiday-settings'))
+    expect(settings.queryByRole('switch')).toBeNull()
+    await user.selectOptions(settings.getByLabelText('Bundesland'), 'Nordrhein-Westfalen')
+    expect(calls.find((call) => call.key === 'PUT /api/calendar/holidays')?.body).toEqual(
+      withRegion.holidays,
+    )
+
+    await user.click(await settings.findByRole('switch', { name: 'Schulferien anzeigen' }))
+    expect(calls.filter((call) => call.key === 'PUT /api/calendar/holidays')[1]?.body).toEqual({
+      region: 'NW',
+      public: false,
+      school: true,
+    })
+  })
+
+  it('gibt es nur bei deutscher Familiensprache', async () => {
+    mockParents(
+      {
+        configured: true,
+        redirect_uri: REDIRECT_URI,
+        family_color: 'pink',
+        holidays: NO_HOLIDAYS,
+        connections: [],
+      },
+      {
+        'GET /api/auth/me': Response.json(
+          makeMe({ parent_unlocked: true, family: { ...makeMe().family, default_language: 'en' } }),
+        ),
+      },
+    )
+    renderApp('/parents')
+
+    await screen.findByRole('heading', { name: 'Calendar', level: 2 })
+    expect(screen.queryByTestId('holiday-settings')).toBeNull()
+  })
+})
