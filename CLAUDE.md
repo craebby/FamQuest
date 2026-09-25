@@ -45,6 +45,7 @@ Bei Widersprüchen gilt `docs/SPEC.md`, beim Stack gilt diese Datei.
 - UX-Test für jede Alltags-Ansicht: Versteht ein Kind, das nicht lesen kann, sie über Symbole, Farben und Avatare? Kommt ein wenig technikaffiner Erwachsener ohne Erklärung zurecht?
 - Keine Secrets committen, `.env` steht in `.gitignore`.
 - Nach jeder Etappe: `docker compose build`, `docker compose up -d`, Tests ausführen, Fehler beheben, README aktualisieren, committen.
+- Die README gibt es zweimal: `README.md` (Englisch, Hauptdatei) und `README.de.md` (Deutsch). Beide immer gemeinsam aktualisieren.
 
 ## Etappen (Phase 1)
 

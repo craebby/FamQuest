@@ -1,448 +1,472 @@
 # FamQuest
 
-Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-Display am Kühlschrank:
-**Routinen → Aufgaben → Erledigung → Punkte → Belohnungen.**
+**English** · [Deutsch](README.de.md)
 
-Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
-ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
+A self-hosted, bilingual (English/German) family app for a touchscreen display on the fridge:
+**routines → tasks → done → points → rewards.**
 
-> **Status:** Phase 1, Etappe 7 ist fertig: Einrichtung beim ersten Start, Anmeldung,
-> Elternbereich mit Eltern-PIN, Familienmitglieder mit Farbe und Profilbild, Aufgaben und Routinen
-> mit Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
-> Eltern, Belohnungen für Kinder und die faire Verteilung unter Erwachsenen. Als Nächstes folgt der
-> Feinschliff (siehe [Roadmap](#roadmap)).
+One installation belongs to exactly one family. Everything runs locally in Docker, without cloud
+services and without external CDNs. The full specification (in German) is in
+[`docs/SPEC.md`](docs/SPEC.md).
 
-## Features (Ziel Phase 1)
+> **Status:** version 0.x (alpha). Phase 1 is feature-complete: first-run setup, sign-in, parents'
+> area with PIN, family members with colour and photo, tasks and routines with templates, the
+> family view for ticking things off, points with daily progress, parent checks, rewards for
+> children, fair sharing between adults and a weekly overview. What's left before 1.0 is the test
+> on a real display (see [Roadmap](#roadmap)).
 
-- Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
-- Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig) und Tagesabschnitte
-- Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften
-- Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
-- Kontrolle durch die Eltern für ausgewählte Aufgaben
-- Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
-- Wochenübersicht mit Fortschrittsringen je Person und Tag
-- Elternbereich mit Eltern-PIN
-- Profilbilder mit Zuschnitt, eine Farbe pro Person
-- Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
+## Features
 
-## Voraussetzungen
+- Family view with one column per person; complete a task with a single tap
+- Routines (daily, specific weekdays, Mon–Fri, once, flexible "about every X days") and times of day
+- "One for all" tasks: done by one adult, done for everyone
+- Points as ledger entries, daily progress, manual credits
+- Rewards per child from a list of suggestions, redeemed on the display
+- Parent checks for selected tasks
+- Fair sharing: each adult's share of the week's tasks
+- Weekly overview with progress rings per person and day
+- Parents' area protected by a PIN
+- Profile photos with cropping, one colour per person
+- English and German; more languages via translation files
 
-- Docker mit Docker Compose v2
+## Quick start on a Docker host
 
-## Installation mit Docker
+You only need Git and Docker with the Compose plugin on the host. The image builds frontend and
+backend itself (multi-stage build), so no Node.js or Python is needed.
 
 ```sh
 git clone https://github.com/craebby/FamQuest.git
 cd FamQuest
 cp .env.example .env
-# In .env mindestens POSTGRES_PASSWORD setzen, z. B. mit: openssl rand -base64 24
-docker compose up -d
+# Generate a random database password and write it into .env
+sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 24)|" .env
+docker compose up -d --build
 ```
 
-Danach ist die App unter `http://<host>:8080` erreichbar. Beim Start des App-Containers laufen
-die Datenbank-Migrationen automatisch.
+The first build takes a few minutes. Afterwards the app is available at `http://<host>:8080`
+(port configurable via `APP_PORT` in `.env`). Database migrations run automatically when the app
+container starts. Keep `.env` safe: it holds the database password and is needed for restores.
 
-Status prüfen:
+Check the status:
 
 ```sh
-docker compose ps                        # beide Dienste sollten "healthy" sein
+docker compose ps                        # both services should be "healthy"
 curl http://localhost:8080/api/health    # {"status":"ok","database":"ok"}
 ```
 
-Aktualisieren:
+Update:
 
 ```sh
 git pull
 docker compose up -d --build
 ```
 
-## Erster Start
+On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
 
-Beim ersten Aufruf erscheint die Einrichtung: Sprache, Familienname, E-Mail, Passwort und die
-Eltern-PIN. Das erste Konto wird Administrator. Danach ist die Einrichtung dauerhaft gesperrt;
-weitere Konten lassen sich nicht über die Oberfläche registrieren.
+## First start
 
-- Das Display bleibt dauerhaft angemeldet (die Anmeldung verlängert sich bei Nutzung, bis zu einem
-  Jahr ohne Nutzung).
-- Der Elternbereich (Zahnrad) ist zusätzlich durch die Eltern-PIN geschützt. Nach 2 Minuten ohne
-  Eingabe kehrt das Display zur Familienansicht zurück und sperrt ihn wieder.
-- Die PIN lässt sich im Elternbereich ändern oder abschalten. PIN vergessen: Mit dem Passwort des
-  Kontos eine neue PIN festlegen.
-- Nach 5 falschen Versuchen (Passwort oder PIN) sind weitere Versuche 15 Minuten lang gesperrt.
-- Familienname, Sprache der Familie und Zeitzone lassen sich im Elternbereich unter „Familie“
-  ändern. Die Zeitzone bestimmt, wann ein neuer Tag beginnt (Standard: Europe/Berlin).
+On first visit the setup appears: language, family name, e-mail, password and the parents' PIN.
+The first account becomes the administrator. After that, setup is locked for good; no further
+accounts can be registered through the interface.
 
-## Familienmitglieder
+- The display stays signed in permanently (the session is extended with every use, up to one year
+  without use).
+- The parents' area (gear icon) is additionally protected by the parents' PIN. After 2 minutes
+  without input the display returns to the family view and locks it again.
+- The PIN can be changed or switched off in the parents' area. Forgot the PIN? Set a new one with
+  the account password.
+- After 5 wrong attempts (password or PIN), further attempts are blocked for 15 minutes.
+- Family name, family language and time zone can be changed under "Family" in the parents' area.
+  The time zone decides when a new day starts (default: Europe/Berlin).
 
-Im Elternbereich unter „Familienmitglieder“ legt ihr alle Personen des Haushalts an: Name, Rolle
-(Elternteil oder Kind), Farbe und optional ein Foto. Kinder brauchen kein Konto und kein Passwort.
+## Family members
 
-- Jede Person hat eine eigene Farbe (Orange, Blau, Lila, Grün, Rot, Türkis, Gelb). Vergebene
-  Farben sind ausgegraut; es sind daher höchstens sieben Personen möglich.
-- Foto wählen (am Smartphone auch direkt mit der Kamera), im Kreis verschieben und zoomen,
-  übernehmen. Ohne Foto zeigt der Avatar die Initiale auf der Personenfarbe.
-- Das Bild wird im Browser zugeschnitten und vom Server geprüft (nur JPEG, PNG oder WebP, höchstens
-  5 MB), auf 512 × 512 px verkleinert und als WebP neu gespeichert. Metadaten wie GPS-Daten gehen
-  dabei verloren. Die Bilder liegen im Volume `uploads` und sind nur mit Anmeldung abrufbar.
+Under "Family members" in the parents' area you add everyone in the household: name, role (parent
+or child), colour and optionally a photo. Children need no account and no password.
 
-## Aufgaben und Routinen
+- Each person has their own colour (orange, blue, purple, green, red, teal, yellow). Taken colours
+  are greyed out, so at most seven people are possible for now.
+- Pick a photo (on a phone also straight from the camera), move and zoom it in the circle, confirm.
+  Without a photo, the avatar shows the initial on the person's colour.
+- The image is cropped in the browser and checked by the server (JPEG, PNG or WebP only, at most
+  5 MB), scaled to 512 × 512 px and re-encoded as WebP. Metadata such as GPS data is dropped. The
+  images live in the `uploads` volume and can only be fetched when signed in.
 
-Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine Aufgabe hat:
+## Tasks and routines
 
-- **Symbol**: aus einem mitgelieferten Katalog von gut 200 farbigen Emoji-Symbolen
-  ([Fluent Emoji](https://github.com/microsoft/fluentui-emoji), MIT-Lizenz), sortiert nach
-  Kategorien wie Körperpflege, Anziehen, Schule oder Haushalt. Die Suche versteht Deutsch und
-  Englisch („Zahn“ und „tooth“ finden dieselbe Zahnbürste). Solange ihr kein Symbol selbst wählt,
-  schlägt die App eins passend zum Titel vor.
-- **Titel** und optional eine Beschreibung
-- **Punkte**: 0 bis 1000
-- **Für wen**: eine oder mehrere Personen; jede Person erledigt die Aufgabe und bekommt die Punkte
-  für sich. Mit **„Einer für alle“** (ab zwei Personen) gilt sie dagegen für alle als erledigt,
-  sobald eine Person sie erledigt hat, etwa „Bad putzen“ bei Mama und Papa. Die anderen Spalten
-  zeigen den Avatar der Person, die es war; Punkte und der Anteil an der Woche zählen für sie.
-- **Wie oft**: jeden Tag, an bestimmten Wochentagen (mit Schnellauswahl Mo–Fr oder Wochenende),
-  einmal an einem Datum oder **flexibel** (siehe unten)
-- **Tageszeit**: morgens, mittags, nachmittags, abends oder jederzeit
-- **Farbe der Karte**: standardmäßig die Farbe der jeweiligen Person
-- **Aktiv**: inaktive Aufgaben bleiben gespeichert, erscheinen aber nicht in der Familienansicht
-- **Eltern prüfen**: Punkte gibt es erst, wenn ihr die Erledigung bestätigt habt (siehe
-  [Kontrolle durch die Eltern](#kontrolle-durch-die-eltern))
+Under "Tasks" in the parents' area you decide who does what and when. A task has:
 
-Beim Anlegen füllt **„Aus Vorlagen wählen“** das Formular mit einem Tipp vor. Es gibt zwei
-Gruppen: „Kinder“ (Zähne putzen, Anziehen, Spielzeug aufräumen, Tisch abräumen …) und „Haushalt“ für
-die Care-Arbeit der Erwachsenen (Kochen, Einkaufen, Wäsche, Kinder bringen und abholen, ins Bett
-bringen, Termine …). Haushaltsvorlagen sind „Einer für alle“; Bad putzen, Staubsaugen, Einkaufen
-und Termine sind flexibel mit etwa einer Woche. Alles bleibt danach änderbar. Die Vorlagen stehen in
-`frontend/src/pools/tasks.ts`, ihre Titel in `frontend/src/locales/<sprache>/pool.json`.
+- **Icon**: from a bundled catalogue of about 200 colourful emoji icons
+  ([Fluent Emoji](https://github.com/microsoft/fluentui-emoji), MIT licence), sorted into
+  categories such as personal care, getting dressed, school or household. Search understands
+  English and German ("tooth" and "Zahn" find the same toothbrush). Until you pick an icon
+  yourself, the app suggests one that matches the title.
+- **Title** and an optional description
+- **Points**: 0 to 1000
+- **For whom**: one or more people; each person completes the task and earns the points for
+  themselves. With **"One for all"** (two or more people) it counts as done for everyone as soon
+  as one person has done it, e.g. "Clean the bathroom" for Mum and Dad. The other columns show the
+  avatar of whoever did it; points and the weekly share count for that person.
+- **How often**: every day, on specific weekdays (with shortcuts Mon–Fri or weekend), once on a
+  date, or **flexible** (see below)
+- **Time of day**: morning, midday, afternoon, evening or anytime
+- **Card colour**: the person's colour by default
+- **Active**: inactive tasks are kept but don't appear in the family view
+- **Parents check**: points are only given once you have confirmed the task (see
+  [Parent checks](#parent-checks))
 
-**Flexible Aufgaben** haben keinen festen Tag, sondern einen Rhythmus: alle X Tage (Schnellwahl
-alle 2 Tage, jede Woche, alle 2 Wochen, jeden Monat) und ein Datum für die erste Fälligkeit. Ab dann
-steht die Aufgabe in der Familienansicht, bis sie erledigt ist; ist sie überfällig, zeigt die Karte
-einen roten Hinweis mit Wecker („seit 3 Tagen fällig“). Danach ist sie X Tage nach der Erledigung
-wieder dran. Vorher steht sie klein unter **„Demnächst“** und kann schon früher erledigt werden,
-der Rhythmus beginnt dann ab diesem Tag neu. „Demnächst“ zählt nicht zum Tagesfortschritt.
+When creating a task, **"Choose from templates"** fills in the form with one tap. There are two
+groups: "Children" (brush teeth, get dressed, tidy up toys, clear the table …) and "Household" for
+the adults' care work (cooking, shopping, laundry, taking the kids and picking them up, bedtime,
+appointments …). Household templates are "One for all"; cleaning the bathroom, vacuuming, shopping
+and appointments are flexible, about once a week. Everything can be changed afterwards. The
+templates live in `frontend/src/pools/tasks.ts`, their titles in
+`frontend/src/locales/<language>/pool.json`.
 
-Die Liste lässt sich mit einem Tipp auf eine Person filtern. Neue Aufgaben sind dann für diese
-Person vorausgewählt. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
-Person gelöscht, bleiben ihre Aufgaben erhalten; Aufgaben ohne Person sind in der Liste markiert.
+**Flexible tasks** have no fixed day but a rhythm: every X days (shortcuts every 2 days, every
+week, every 2 weeks, every month) and a date for the first time it is due. From then on the task
+stays in the family view until it's done; when overdue, the card shows a red note with an alarm
+clock ("due for 3 days"). After that it is due again X days after it was done. Before it is due,
+it appears small under **"Coming up"** and can already be done early; the rhythm then restarts from
+that day. "Coming up" does not count towards the daily progress.
 
-Die Symbole sind beim Build ins Frontend eingebettet (nur die Katalog-Symbole, nicht das ganze Set).
-Katalog erweitern: Namen aus dem Set `fluent-emoji-flat` (z. B. auf
-[icon-sets.iconify.design](https://icon-sets.iconify.design/fluent-emoji-flat/)) in
-`frontend/src/icons/categories.json` eintragen und in `frontend/src/locales/<sprache>/icons.json`
-Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Tests prüfen, dass jedes Symbol
-existiert und in jeder Sprache eindeutig benannt ist.
+The list can be filtered by tapping a person; new tasks are then preselected for that person. The
+switch in each row sets a task active or inactive. When a person is deleted their tasks are kept;
+tasks without anyone assigned are marked in the list.
 
-## Familienansicht
+The icons are embedded into the frontend at build time (only the catalogue icons, not the whole
+set). To extend the catalogue, add names from the `fluent-emoji-flat` set (e.g. from
+[icon-sets.iconify.design](https://icon-sets.iconify.design/fluent-emoji-flat/)) to
+`frontend/src/icons/categories.json` and search terms to
+`frontend/src/locales/<language>/icons.json` (the first term is the label). Tests check that every
+icon exists and has a unique label in every language.
 
-Die Startseite zeigt alle Familienmitglieder nebeneinander, jede Person mit großem Avatar und ihren
-heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe gehört, ergibt sich aus der
-Spalte.
+## Family view
 
-- **Ein Tipp** auf eine Aufgabenkarte erledigt sie für diese Person (Haken, Einfärbung in der
-  Personenfarbe). **Nochmal tippen** macht es rückgängig. Jede Aufgabe kann pro Person und Tag nur
-  einmal erledigt sein, auch bei Doppel-Tipps.
-- Die Aufgaben sind nach **Tageszeit** gruppiert (Sonnenaufgang, Sonne, Sonne mit Wolke, Mond; dazu
-  „Jederzeit“). Der aktuelle Abschnitt ist farbig hervorgehoben. Ist ein Abschnitt komplett
-  erledigt, klappt er zu einer Zeile mit Haken zusammen und lässt sich mit einem Tipp wieder öffnen.
-  Tageszeiten: morgens bis 11 Uhr, mittags bis 14 Uhr, nachmittags bis 18 Uhr, danach abends.
-- Ein Tipp auf den **Avatar** öffnet die Personenansicht mit denselben Aufgaben in groß. Nach einer
-  Minute ohne Eingabe kehrt das Display zur Familienansicht zurück.
-- Bei vielen Personen oder schmalem Bildschirm lassen sich die Spalten seitlich wischen. Am
-  Smartphone steht eine Person pro Seite, oben eine Avatar-Leiste zum Wechseln.
-- Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Stern), zu
-  den Belohnungen (Geschenk) und zu den Einstellungen (Zahnrad, Elternbereich mit PIN). Eine rote
-  Zahl am Zahnrad zeigt, wie viele Erledigungen auf die Kontrolle der Eltern warten.
+The start page shows all family members side by side, each with a large avatar and today's tasks.
+Nobody has to sign in or switch users: whose task it is follows from the column.
 
-„Heute“ rechnet der Server immer in der Zeitzone der Familie. Die Ansicht lädt sich jede Minute neu,
-damit Tageswechsel und Änderungen aus dem Elternbereich ankommen.
+- **One tap** on a task card completes it for that person (tick, card in the person's colour).
+  **Tap again** to undo. Each task can be done only once per person and day, even with double
+  taps.
+- Tasks are grouped by **time of day** (sunrise, sun, sun behind cloud, moon; plus "Anytime"). The
+  current section is highlighted. A section that is completely done collapses into a single line
+  with a tick and can be opened again with a tap. Times of day: morning until 11:00, midday until
+  14:00, afternoon until 18:00, evening after that.
+- A tap on the **avatar** opens the person view with the same tasks in large. After one minute
+  without input the display returns to the family view.
+- With many people or a narrow screen, the columns can be swiped sideways. On a phone there is one
+  person per page, with an avatar bar at the top to switch.
+- The **navigation bar** (left, at the bottom on phones) uses icons for "Today" (star), rewards
+  (gift) and settings (gear, parents' area with PIN). A red number on the gear shows how many
+  completed tasks are waiting for a parent check.
 
-## Punkte
+The server always calculates "today" in the family's time zone. The view reloads every minute so
+day changes and edits from the parents' area show up.
 
-Unter jedem Avatar zeigt eine **Sterne-Reihe** den Tagesfortschritt (ein Stern pro Aufgabe, erledigte
-leuchten; ab 9 Aufgaben ein Balken). Daneben stehen die **heute verdienten Punkte** (Stern) und der
-**Punktestand** (Pokal). Beim Abhaken schwebt kurz „+2 ⭐“ über der Karte. Wer in den
-Systemeinstellungen reduzierte Bewegung eingestellt hat, sieht die Anzeige ohne Animation.
+## Points
 
-Punkte werden nie als Zähler gespeichert, sondern als **Buchungen**; der Punktestand ist ihre Summe.
+Below each avatar, a **row of stars** shows the daily progress (one star per task, done ones light
+up; from 9 tasks on, a bar). Next to it are the **points earned today** (star) and the **points
+balance** (trophy). When ticking off a task, "+2 ⭐" floats briefly above the card. If reduced
+motion is enabled in the system settings, it appears without animation.
 
-- Erledigen bucht den Punktwert der Aufgabe, Rückgängig bucht genau diesen Betrag zurück
-  (Gegenbuchung), auch wenn der Punktwert inzwischen geändert wurde.
-- Pro Aufgabe, Person und Tag gibt es höchstens eine Erledigung (Datenbank-Constraint). Nur die
-  Anfrage, die sie tatsächlich anlegt oder löscht, bucht; Doppel-Tipps bringen also keine doppelten
-  Punkte.
-- Buchungen werden nie geändert oder gelöscht. Wird eine Aufgabe gelöscht, bleiben ihre Buchungen
-  mit dem damaligen Titel erhalten. Nur wenn eine Person gelöscht wird, verschwinden auch ihre
-  Buchungen.
-- Aufgaben mit 0 Punkten erzeugen keine Buchung.
+Points are never stored as a counter but as **ledger entries**; the balance is their sum.
 
-Im Elternbereich zeigt der Abschnitt **„Punkte“** den Stand jeder Person. Ein Tipp auf die Person
-öffnet ihre **Buchungshistorie** (neueste zuerst, ältere per „Ältere Buchungen laden“) und ein
-Formular, um Punkte mit Begründung **gutzuschreiben oder abzuziehen** (1 bis 1000). Ein Abzug darf
-den Punktestand nicht unter 0 drücken.
+- Completing books the task's points, undoing books exactly that amount back (reversal), even if
+  the task's points have changed since.
+- There is at most one completion per task, person and day (database constraint). Only the request
+  that actually creates or deletes it books points, so double taps never give double points.
+- Ledger entries are never changed or deleted. If a task is deleted, its entries stay with the
+  title at the time. Only when a person is deleted do their entries disappear too.
+- Tasks worth 0 points create no entry.
 
-Erwachsene sammeln keine Punkte (siehe [Faire Verteilung](#faire-verteilung)); ihre Karten zeigen
-keine Punktwerte.
+In the parents' area, the **"Points"** section shows each person's balance. Tapping a person opens
+their **history** (newest first, older ones via "Load older transactions") and a form to **credit or
+deduct** points with a reason (1 to 1000). A deduction may not take the balance below 0.
 
-## Kontrolle durch die Eltern
+Adults don't collect points (see [Fair sharing](#fair-sharing)); their cards show no point values.
 
-Für Aufgaben wie „Zimmer aufräumen“ lässt sich im Editor **„Eltern prüfen“** einschalten. Das Kind
-tippt die Karte wie gewohnt an; statt des Hakens erscheint eine **Sanduhr**, und es gibt noch keine
-Punkte. Am Zahnrad der Navigationsleiste steht, wie viele Erledigungen warten.
+## Parent checks
 
-Im Elternbereich (nach PIN) steht dann ganz oben **„Zu prüfen“**:
+For tasks such as "Tidy your room" you can switch on **"Parents check"** in the editor. The child
+taps the card as usual; instead of a tick an **hourglass** appears and no points are given yet.
+The gear in the navigation bar shows how many completions are waiting.
 
-- **Passt** bestätigt die Erledigung und bucht die Punkte, genau einmal und für den Tag der
-  Erledigung. Mehrere Einträge lassen sich mit „Alle bestätigen“ auf einmal bestätigen.
-- **Nochmal** lehnt ab: Die Erledigung wird entfernt, die Aufgabe ist wieder offen.
+In the parents' area (after the PIN), **"To check"** then appears at the top:
 
-Auch Erledigungen früherer Tage bleiben prüfbar. Macht das Kind die Erledigung vor der Kontrolle
-selbst rückgängig, wird nichts gebucht.
+- **All good** confirms the completion and books the points, exactly once and for the day it was
+  done. Several entries can be confirmed at once with "Confirm all".
+- **Try again** rejects it: the completion is removed and the task is open again.
 
-## Belohnungen
+Completions from earlier days stay checkable. If the child undoes the completion before the check,
+nothing is booked.
 
-Belohnungen gibt es **nur für Kinder**, und jedes Kind hat seine eigenen. So passen Auswahl und
-Kosten zum Alter. Im Elternbereich unter „Belohnungen“ wählt ihr ein Kind und dann:
+## Rewards
 
-- **Aus Vorschlägen wählen**: eine Liste mit gut 30 Belohnungen in drei Größen (klein etwa 5–20,
-  mittel 20–50, groß 50–100 Punkte), z. B. Eis, eine Geschichte mehr, 15 Minuten länger
-  aufbleiben, Filmabend mit Popcorn, Zoo oder Freizeitpark. Mehrere lassen sich auf einmal
-  übernehmen, schon vorhandene sind markiert.
-- **Eigene Belohnung**: Name, Symbol (Kategorie „Belohnungen“ im Katalog), Kosten (1 bis 1000),
-  Beschreibung.
+Rewards are **only for children**, and each child has their own, so choice and cost fit their age.
+Under "Rewards" in the parents' area you pick a child and then:
 
-Kosten und Namen lassen sich danach ändern. Inaktive Belohnungen sind am Display nicht zu sehen.
-Darunter steht, was das Kind zuletzt eingelöst hat.
+- **Choose from suggestions**: a list of about 30 rewards in three sizes (small about 5–20, medium
+  20–50, big 50–100 points), e.g. an ice cream, one more bedtime story, staying up 15 minutes
+  longer, movie night with popcorn, zoo or theme park. Several can be added at once; ones the child
+  already has are marked.
+- **Custom reward**: name, icon ("Rewards" category in the catalogue), cost (1 to 1000),
+  description.
 
-Am Display führt das **Geschenk** in der Navigationsleiste zur Auswahl der Kinder, ein Tipp auf den
-Avatar zu ihren Belohnungskarten (die Personenansicht eines Kindes zeigt sie ebenfalls):
+Cost and name can be changed afterwards. Inactive rewards are hidden on the display. Below the list
+you see what the child redeemed recently.
 
-- Mit genug Punkten zeigt die Karte **„Einlösen“**, sonst **„Noch 8 Punkte nötig“** mit einem Balken.
-- Nach „Einlösen“ fragt eine große Karte mit ✓ und ✗ nach. Bestätigt, bucht der Server die Kosten ab.
-  Er prüft Punktestand und Kosten dabei in einer Transaktion, der Stand kann nie negativ werden.
-  Danach gibt es eine kurze Feier.
+On the display, the **gift** in the navigation bar leads to the list of children, and a tap on an
+avatar to their reward cards (a child's person view shows them too):
 
-Die Einlösung speichert Name, Symbol und Kosten. Die Historie stimmt also auch, wenn die Belohnung
-später geändert oder gelöscht wird. Die Vorschläge stehen in `frontend/src/pools/rewards.ts`.
+- With enough points the card shows **"Redeem"**, otherwise **"8 more points needed"** with a
+  progress bar.
+- After "Redeem", a large card asks for confirmation with ✓ and ✗. Once confirmed, the server
+  deducts the cost. It checks balance and cost in one transaction, so the balance can never go
+  negative. A short celebration follows.
 
-## Faire Verteilung
+The redemption stores name, icon and cost, so the history stays correct even if the reward is later
+changed or deleted. The suggestions live in `frontend/src/pools/rewards.ts`.
 
-Erwachsene bekommen keine Belohnungen. Ihre Spalte zeigt stattdessen, welchen **Anteil** der in
-dieser Woche (Montag bis Sonntag, Zeitzone der Familie) von Erwachsenen erledigten Aufgaben sie
-übernommen haben, z. B. 40 % und 60 %, als geteilten Balken in den Personenfarben. Die
-Personenansicht zeigt zusätzlich alle Anteile mit der Zahl der Aufgaben. Gezählt wird die Anzahl
-erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbewerb, sondern soll
-helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
+## Fair sharing
 
-## Wochenübersicht
+Adults don't get rewards. Instead, their column shows their **share** of the tasks that adults
+completed this week (Monday to Sunday, family time zone), e.g. 40 % and 60 %, as a split bar in the
+people's colours. The person view additionally shows all shares with the number of tasks. What
+counts is the number of completed tasks; point values don't matter. This is deliberately not a
+competition but a way to share the work fairly. With only one adult, the display is hidden.
 
-Im Elternbereich zeigt der Abschnitt **„Woche“** für jede Person und jeden Tag (Montag bis Sonntag)
-einen Ring in der Personenfarbe: wie viele der anstehenden Aufgaben erledigt sind, mit Haken, wenn
-alles geschafft ist. Heute ist hervorgehoben, kommende Tage sind blass, rechts steht die
-Wochensumme. Mit ◀ ▶ blättert ihr in andere Wochen.
+## Weekly overview
 
-Grundlage sind die aktuellen Aufgaben (ab ihrem Anlegedatum) und die tatsächlichen Erledigungen.
-Flexible Aufgaben zählen am Tag ihrer Erledigung bzw. an ihrem Fälligkeitstag, „Einer für alle“
-gilt als erledigt für alle Zugeordneten.
+In the parents' area, the **"Week"** section shows a ring in the person's colour for every person
+and every day (Monday to Sunday): how many of the scheduled tasks are done, with a tick when
+everything is. Today is highlighted, upcoming days are faded, and the weekly total is on the right.
+Use ◀ ▶ to browse other weeks.
 
-## Konfiguration
+It is based on the current tasks (from the day they were created) and the actual completions.
+Flexible tasks count on the day they were done or on their due date; "One for all" counts as done
+for everyone assigned.
 
-Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
-[`.env.example`](.env.example) beschrieben.
+## Configuration
 
-| Variable | Standard | Bedeutung |
+Configuration is done exclusively through environment variables in `.env`. All variables are
+described in [`.env.example`](.env.example).
+
+| Variable | Default | Meaning |
 | --- | --- | --- |
-| `POSTGRES_USER` | `famquest` | Datenbank-Benutzer |
-| `POSTGRES_PASSWORD` | – (Pflicht) | Datenbank-Passwort |
-| `POSTGRES_DB` | `famquest` | Name der Datenbank |
-| `APP_PORT` | `8080` | Port auf dem Host |
+| `POSTGRES_USER` | `famquest` | Database user |
+| `POSTGRES_PASSWORD` | – (required) | Database password |
+| `POSTGRES_DB` | `famquest` | Database name |
+| `APP_PORT` | `8080` | Port on the host |
 | `LOG_LEVEL` | `info` | `critical`, `error`, `warning`, `info`, `debug` |
-| `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Vertrauenswürdige Reverse Proxies |
+| `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Trusted reverse proxies |
 
-Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
-Wie ihr sie sichert, steht unter [Backup und Restore](#backup-und-restore).
+Data lives in two Docker volumes: `db-data` (PostgreSQL) and `uploads` (uploaded images). How to
+back them up is described under [Backup and restore](#backup-and-restore).
 
-## Backup und Restore
+## Backup and restore
 
-Zu sichern sind die **Datenbank** und die **hochgeladenen Bilder**. Beides geht im laufenden
-Betrieb, im Projektordner (dort, wo `docker-compose.yml` liegt):
+Back up the **database** and the **uploaded images**. Both work while the app is running, from the
+project folder (where `docker-compose.yml` is):
 
 ```sh
 mkdir -p backup
-# Datenbank (PostgreSQL-Dump im Custom-Format)
+# Database (PostgreSQL dump in custom format)
 docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom' \
   > backup/famquest-$(date +%F).dump
-# Bilder
+# Images
 docker compose exec -T app tar czf - -C /data uploads > backup/uploads-$(date +%F).tar.gz
 ```
 
-Legt die Dateien zusätzlich außerhalb des Rechners ab (NAS, externe Platte). Die `.env` gehört
-ebenfalls dazu, sie liegt aber nicht im Repository.
+Also store the files somewhere off the machine (NAS, external drive). `.env` belongs in the backup
+too, but it is not part of the repository.
 
-**Wiederherstellen**, z. B. auf einem neuen Rechner nach `git clone` und `cp .env.example .env`
-(mit denselben `POSTGRES_*`-Werten):
+**Restore**, e.g. on a new machine after `git clone` and `cp .env.example .env` (with the same
+`POSTGRES_*` values):
 
 ```sh
 docker compose up -d db
-# Datenbank einspielen (vorhandene Tabellen werden ersetzt)
+# Restore the database (existing tables are replaced)
 docker compose exec -T db sh -c \
   'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner' \
   < backup/famquest-2026-10-03.dump
-# Bilder einspielen
+# Restore the images
 docker compose run --rm -T --no-deps --entrypoint tar app xzf - -C /data \
   < backup/uploads-2026-10-03.tar.gz
 docker compose up -d
 ```
 
-Beim Start bringt die App die Datenbank per Migration auf den neuesten Stand. Ein Backup einer
-älteren Version lässt sich also in eine neuere einspielen, nicht umgekehrt.
+On start, the app migrates the database to the latest version. A backup of an older version can
+therefore be restored into a newer one, but not the other way round.
 
-Beides zusammen erledigt `scripts/backup.sh [ZIELORDNER] [TAGE]` (Standard: `backup/`, Backups
-älter als 30 Tage werden gelöscht). Für ein nächtliches Backup per Cronjob:
+`scripts/backup.sh [TARGET_DIR] [DAYS]` does both in one go (default: `backup/`, backups older than
+30 days are deleted). For a nightly backup via cron:
 
 ```
-0 3 * * * /pfad/zu/famquest/scripts/backup.sh /mnt/nas/famquest 30
+0 3 * * * /path/to/famquest/scripts/backup.sh /mnt/nas/famquest 30
 ```
 
-Der Benutzer des Cronjobs braucht Zugriff auf Docker (Gruppe `docker`).
+The cron user needs access to Docker (group `docker`).
 
-## Hinter einem Reverse Proxy
+## Behind a reverse proxy
 
-Die App wertet `X-Forwarded-For` und `X-Forwarded-Proto` aus, aber nur von den Adressen in
-`FORWARDED_ALLOW_IPS`. Das ist wichtig: Nur wenn die App erkennt, dass sie per HTTPS aufgerufen
-wird, bekommt das Session-Cookie das `Secure`-Flag.
+The app evaluates `X-Forwarded-For` and `X-Forwarded-Proto`, but only from the addresses in
+`FORWARDED_ALLOW_IPS`. This matters: only if the app knows it is served over HTTPS does the session
+cookie get the `Secure` flag.
 
-Empfohlene Einrichtung, wenn der Proxy auf demselben Host läuft:
+Recommended setup when the proxy runs on the same host:
 
 ```sh
 # .env
-APP_PORT=127.0.0.1:8080       # App nur für den lokalen Proxy erreichbar
-FORWARDED_ALLOW_IPS=*         # vertretbar, weil niemand sonst direkt zugreifen kann
+APP_PORT=127.0.0.1:8080       # app only reachable for the local proxy
+FORWARDED_ALLOW_IPS=*         # acceptable because nobody else can reach it directly
 ```
 
-Läuft der Proxy auf einem anderen Rechner, dessen IP-Adresse in `FORWARDED_ALLOW_IPS` eintragen.
-Hinweis: Durch das Docker-Port-Mapping sieht die App als Absender die Adresse des Docker-Netzwerks
-(z. B. `172.18.0.1`), nicht `127.0.0.1`. Der Standardwert `127.0.0.1` gilt daher nur ohne Proxy.
+If the proxy runs on another machine, put its IP address into `FORWARDED_ALLOW_IPS`. Note: because
+of Docker's port mapping, the app sees the address of the Docker network (e.g. `172.18.0.1`) as the
+sender, not `127.0.0.1`. The default `127.0.0.1` therefore only applies without a proxy.
 
-Der Proxy muss den ursprünglichen `Host`-Header weitergeben (Caddy und Traefik tun das
-automatisch, bei nginx `proxy_set_header Host $host;`). Setup und Login prüfen damit, dass die
-Anfrage von der eigenen Seite kommt.
+The proxy must pass on the original `Host` header (Caddy and Traefik do this automatically; for
+nginx use `proxy_set_header Host $host;`). Setup and sign-in use it to check that requests come from
+the app's own page.
 
-Die App muss auf einer eigenen (Sub-)Domain laufen, z. B. `familie.example.com`. Ein Unterpfad wie
-`example.com/familie` wird nicht unterstützt.
+The app must run on its own (sub)domain, e.g. `family.example.com`. A sub-path such as
+`example.com/family` is not supported.
 
-## Sprachen
+## Languages
 
-Deutsch ist die Standardsprache. Ohne gespeicherte Auswahl richtet sich die App nach der
-Browsersprache.
+German is the default language. Without a saved choice, the app follows the browser language; the
+family language set in the parents' area applies on every device where nobody has picked a
+language.
 
-Übersetzungen liegen in `frontend/src/locales/<sprache>/<bereich>.json` (`common.json` für die
-Oberfläche, `icons.json` für die Suchbegriffe der Symbole, `pool.json` für die Vorschläge von
-Aufgaben und Belohnungen). So kommt eine neue Sprache hinzu:
+Translations live in `frontend/src/locales/<language>/<area>.json` (`common.json` for the
+interface, `icons.json` for icon search terms, `pool.json` for task and reward suggestions). To add
+a new language:
 
-1. Den Ordner `frontend/src/locales/de` kopieren, z. B. nach `frontend/src/locales/fr`
-2. Alle Texte übersetzen
-3. Den Sprachcode in `SUPPORTED_LANGUAGES` in `frontend/src/i18n.ts` ergänzen
+1. Copy the folder `frontend/src/locales/en`, e.g. to `frontend/src/locales/fr`
+2. Translate all texts
+3. Add the language code to `SUPPORTED_LANGUAGES` in `frontend/src/i18n.ts`
 
-Ein Test (`npm test`) prüft, dass jede Sprache genau dieselben Schlüssel hat und kein Text leer ist.
-Fehler liefert die API als Codes (z. B. `common.not_found`), das Frontend übersetzt sie unter
+A test (`npm test`) checks that every language has exactly the same keys and no empty texts. The
+API returns errors as codes (e.g. `common.not_found`), which the frontend translates under
 `errors.*`.
 
-## Entwicklung
+## Development
 
-Für die lokale Entwicklung laufen Backend und Frontend direkt auf dem Rechner, nur PostgreSQL läuft in
-Docker. Voraussetzungen: [uv](https://docs.astral.sh/uv/), Node.js ≥ 24, Docker.
+For local development, backend and frontend run directly on your machine; only PostgreSQL runs in
+Docker. Requirements: [uv](https://docs.astral.sh/uv/), Node.js ≥ 24, Docker.
 
-Einmalig:
+Once:
 
 ```sh
 cp .env.example .env
-# In .env: POSTGRES_PASSWORD setzen und die Zeilen COMPOSE_FILE und DB_PORT einkommentieren
+# In .env: set POSTGRES_PASSWORD and uncomment the COMPOSE_FILE and DB_PORT lines
 cd backend && uv sync && cd ..
 cd frontend && npm install && cd ..
 ```
 
-Starten (drei Terminals):
+Run (three terminals):
 
 ```sh
-docker compose up -d db                              # PostgreSQL auf 127.0.0.1:5432
+docker compose up -d db                              # PostgreSQL on 127.0.0.1:5432
 cd backend && uv run alembic upgrade head && uv run uvicorn app.main:app --reload
 cd frontend && npm run dev                           # http://localhost:5173
 ```
 
-Vite leitet `/api` an das Backend auf Port 8000 weiter. Die API-Dokumentation steht unter
+Vite forwards `/api` to the backend on port 8000. The API documentation is at
 `http://localhost:8000/api/docs`.
 
-Tests und Lint:
+Tests and lint:
 
 ```sh
-cd backend && uv run pytest                          # braucht die laufende Datenbank
+cd backend && uv run pytest                          # needs the running database
 cd backend && uv run ruff check . && uv run ruff format --check .
 cd frontend && npm test && npm run lint && npm run typecheck
-cd frontend && npm run format                      # Formatierung (Prettier)
-docker compose --profile test run --rm --build tests # Backend-Tests im Container
+cd frontend && npm run format                        # formatting (Prettier)
+docker compose --profile test run --rm --build tests # backend tests in the container
 ```
 
-End-to-End-Tests der Familienansicht (Playwright, Chromium):
+End-to-end tests (Playwright, Chromium):
 
 ```sh
-cd frontend && npx playwright install chromium       # einmalig
-cd frontend && npm run e2e                           # braucht die laufende Datenbank
+cd frontend && npx playwright install chromium       # once
+cd frontend && npm run e2e                           # needs the running database
 ```
 
-`npm run e2e` baut das Frontend, legt eine frische Datenbank `<POSTGRES_DB>_e2e` an und startet die
-App auf Port 8001. Getestet wird der erste Meilenstein im Browser: Setup, Kind und Aufgabe anlegen,
-Aufgabe antippen und wieder zurücknehmen, dazu die Personenansicht am Smartphone.
+`npm run e2e` builds the frontend, creates a fresh database `<POSTGRES_DB>_e2e` and starts the app
+on port 8001. The tests cover the main flows in the browser: setup, adding a child and tasks,
+ticking off and undoing, the person view on a phone, points, rewards, parent checks, flexible tasks
+and the weekly overview.
 
-Die Backend-Tests legen eine eigene Datenbank `<POSTGRES_DB>_test` an und setzen sie bei jedem Lauf
-neu auf.
+The backend tests create their own database `<POSTGRES_DB>_test` and reset it on every run.
 
-Migrationen:
+Migrations:
 
 ```sh
 cd backend
-uv run alembic revision --autogenerate -m "beschreibung"   # neue Migration aus den Modellen
-uv run alembic upgrade head                                 # anwenden
+uv run alembic revision --autogenerate -m "description"    # new migration from the models
+uv run alembic upgrade head                                 # apply
 ```
 
-Ein Test schlägt fehl, wenn Modelle geändert wurden, ohne eine Migration anzulegen.
+A test fails if models were changed without creating a migration.
 
-## Architektur
+## Architecture
 
 ```
-Browser ──► Reverse Proxy (optional) ──► app (FastAPI, Port 8000) ──► db (PostgreSQL 16)
-                                           ├─ /api/*   JSON-API
-                                           ├─ /*       gebautes React-Frontend
-                                           └─ /data/uploads (Volume)
+Browser ──► reverse proxy (optional) ──► app (FastAPI, port 8000) ──► db (PostgreSQL 16)
+                                           ├─ /api/*   JSON API
+                                           ├─ /*       built React frontend
+                                           └─ /data/uploads (volume)
 ```
 
-| Ordner | Inhalt |
+| Folder | Contents |
 | --- | --- |
-| `backend/` | FastAPI, SQLAlchemy 2, Alembic, pytest; Pakete mit uv |
+| `backend/` | FastAPI, SQLAlchemy 2, Alembic, pytest; packages with uv |
 | `frontend/` | React, Vite, TypeScript, Tailwind CSS, react-i18next, TanStack Query, Vitest, Playwright |
-| `docs/` | Spezifikation |
+| `docs/` | Specification, display test checklist |
+| `scripts/` | Backup script |
 
-Das `Dockerfile` baut zuerst das Frontend und kopiert es dann in das Python-Image. Es entsteht ein
-einziges App-Image, das als unprivilegierter Benutzer läuft.
+The `Dockerfile` first builds the frontend and then copies it into the Python image. The result is
+a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-| Phase | Inhalt |
+Current state: **0.x alpha**. Versions after 1.0 are a first plan and may still change.
+
+**1.0: task system (phase 1).** Everything listed under [Features](#features). Still open: the
+test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
+
+- [x] 1. Foundation: backend, frontend with i18n, Docker, Alembic, health checks
+- [x] 2. First-run setup, sign-in/out, registration lock, parents' PIN
+- [x] 3. Family members with colour and photo
+- [x] 4. Tasks and routines in the parents' area
+- [x] 5. Family view
+- [x] 6. Points and daily progress
+- [x] 7. Rewards, task templates, parent checks, fair sharing
+- [ ] 8. Polish: flexible tasks and "One for all" ✓, weekly overview ✓, backup/restore ✓, family
+  settings ✓, test on a real display
+
+**1.1: make it your own**
+
+- Editable templates: families can change, add and remove task templates and reward suggestions
+  (stored in the database instead of the code); reworked example templates
+- Teen style: a less childlike look per person for older children
+- Icon picker: "Popular" based on what the family actually uses; popular icons also shown in their
+  category
+- More than seven people (more colours)
+
+**1.2: on the go**
+
+- Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
+  anywhere
+- Adults can quickly add tasks right from the family view, without the parents' area
+
+**Later (phases 2–5 of the specification)**
+
+| Phase | Contents |
 | --- | --- |
-| 1 | Aufgabensystem (in Arbeit, siehe unten) |
-| 2 | Google Kalender |
-| 3 | Familien-Dashboard |
-| 4 | Essensplanung |
-| 5 | Einkaufsliste |
-
-Etappen in Phase 1:
-
-- [x] 1. Grundgerüst: Backend, Frontend mit i18n, Docker, Alembic, Healthchecks
-- [x] 2. First-Run-Setup, Login/Logout, Sperre der Registrierung, Eltern-PIN
-- [x] 3. Familienmitglieder mit Farbe und Profilbild
-- [x] 4. Aufgaben und Routinen im Elternbereich
-- [x] 5. Familienansicht
-- [x] 6. Punkte und Tagesfortschritt
-- [x] 7. Belohnungen, Aufgaben-Vorlagen, Kontrolle durch die Eltern, faire Verteilung
-- [ ] 8. Feinschliff: flexible Aufgaben und „Einer für alle“ ✓, Wochenübersicht ✓, Backup/Restore ✓,
-  Test am echten Display ([Checkliste](docs/DISPLAY-TEST.md))
+| 2 | Google Calendar: link calendars to people, events in the person's colour |
+| 3 | Family dashboard: day overview with tasks, events and progress |
+| 4 | Meal planning |
+| 5 | Shopping lists |
