@@ -58,6 +58,17 @@ Bei Widersprüchen gilt `docs/SPEC.md`, beim Stack gilt diese Datei.
 7. Belohnungen: Verwaltung, Einlösen, Historie
 8. Feinschliff: Wochenübersicht, Test auf echtem Display, Backup/Restore im README
 
+## Etappen (Phase 2: Google Kalender)
+
+Entschieden: Anbindung per Google-OAuth (nur lesend, `calendar.readonly`); iCal/ICS und andere
+Anbieter erst später. Hauptansicht am Display: Woche.
+
+1. Google-Konto verbinden: OAuth mit state + PKCE, Tokens verschlüsselt, Refresh, Trennen, Abschnitt im Elternbereich
+2. Kalender abrufen, auswählen und einer Person oder „Familie“ zuordnen
+3. Synchronisation im Hintergrund (inkrementell), Serientermine, ganztägige Termine, Fehlerbehandlung
+4. Kalenderansicht (Woche) in der Navigationsleiste, Termine in Personenfarbe mit Avatar
+5. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

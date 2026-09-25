@@ -11,8 +11,9 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > **Status:** Version 0.x (Alpha). Phase 1 ist funktional komplett: Einrichtung beim ersten Start,
 > Anmeldung, Elternbereich mit PIN, Familienmitglieder mit Farbe und Foto, Aufgaben und Routinen mit
 > Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
-> Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Vor
-> 1.0 fehlt noch der Test am echten Display (siehe [Roadmap](#roadmap)).
+> Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
+> Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Als Nächstes kommt der Google
+> Kalender (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -475,8 +476,8 @@ einziges App-Image, das als unprivilegierter Benutzer läuft.
 Aktueller Stand: **0.x Alpha**. Die Versionen nach 1.0 sind ein erster Plan und können sich noch
 ändern.
 
-**1.0: Aufgabensystem (Phase 1).** Alles unter [Features](#features). Offen: der Test am echten
-Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
+**1.0: Aufgabensystem (Phase 1).** Alles unter [Features](#features). Abgeschlossen; was der
+Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im Alltag erprobt.
 
 - [x] 1. Grundgerüst: Backend, Frontend mit i18n, Docker, Alembic, Healthchecks
 - [x] 2. First-Run-Setup, Login/Logout, Sperre der Registrierung, Eltern-PIN
@@ -485,9 +486,18 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
 - [x] 5. Familienansicht
 - [x] 6. Punkte und Tagesfortschritt
 - [x] 7. Belohnungen, Aufgaben-Vorlagen, Kontrolle durch die Eltern, faire Verteilung
-- [ ] 8. Feinschliff: flexible Aufgaben und „Einer für alle“ ✓, Backup/Restore ✓,
-  Familien-Einstellungen ✓, Anmeldung abgesichert ✓, Korrekturen aus dem ersten Display-Test
-  (kompakter, Reihenfolge der Personen) ✓, abschließender Display-Test
+- [x] 8. Feinschliff: flexible Aufgaben und „Einer für alle“, Backup/Restore,
+  Familien-Einstellungen, Anmeldung abgesichert, Korrekturen aus dem Display-Test (kompakter,
+  Reihenfolge der Personen, Anzeigegröße je Gerät). Alles Weitere muss sich erst in der Praxis
+  zeigen.
+
+**Als Nächstes: Google Kalender (Phase 2)**
+
+- [ ] 1. Google-Konto verbinden (OAuth, Tokens verschlüsselt, automatisch erneuert)
+- [ ] 2. Kalender auswählen und Personen oder „Familie“ zuordnen
+- [ ] 3. Synchronisation im Hintergrund, Fehlerbehandlung
+- [ ] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe
+- [ ] 5. Feinschliff
 
 **1.1: Anpassen**
 
@@ -506,16 +516,17 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
   Aufgaben anlegen von unterwegs
 - Erwachsene legen Aufgaben schnell direkt in der Familienansicht an, ohne Elternbereich
 
-**Später (Phasen 2–5 der Spezifikation)**
+**Später (Phasen 3–5 der Spezifikation)**
 
 | Phase | Inhalt |
 | --- | --- |
-| 2 | Google Kalender: Kalender Personen zuordnen, Termine in Personenfarbe |
 | 3 | „Heute“ wird die Startseite: ein echtes Tages-Dashboard mit etwas Kalender, Aufgaben, Essensplan, Einkaufsliste und Wetter. Die Aufgaben bekommen einen eigenen Bereich, optional mit Wochenansicht zum Blättern (was kommt noch, was ist erledigt); dazu ein Wochen-Widget fürs Dashboard |
 | 4 | Essensplanung |
 | 5 | Einkaufslisten |
 
 **Ideen ohne Version**
+
+- Weitere Kalender: iCal-/ICS-Links und andere Anbieter (z. B. iCloud, Outlook, Nextcloud)
 
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst

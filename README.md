@@ -12,8 +12,8 @@ services and without external CDNs. The full specification (in German) is in
 > **Status:** version 0.x (alpha). Phase 1 is feature-complete: first-run setup, sign-in, parents'
 > area with PIN, family members with colour and photo, tasks and routines with templates, the
 > family view for ticking things off, points with daily progress, parent checks, rewards for
-> children, fair sharing between adults and family settings. What's left before 1.0 is the test
-> on a real display (see [Roadmap](#roadmap)).
+> children, fair sharing between adults and family settings. The display test is done; the rest
+> will show in everyday use. Next up is Google Calendar (see [Roadmap](#roadmap)).
 
 ## Features
 
@@ -469,8 +469,9 @@ a single app image that runs as an unprivileged user.
 
 Current state: **0.x alpha**. Versions after 1.0 are a first plan and may still change.
 
-**1.0: task system (phase 1).** Everything listed under [Features](#features). Still open: the
-test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
+**1.0: task system (phase 1).** Everything listed under [Features](#features). Done; whatever
+the display test ([checklist](docs/DISPLAY-TEST.md)) doesn't cover is now being tried in everyday
+use.
 
 - [x] 1. Foundation: backend, frontend with i18n, Docker, Alembic, health checks
 - [x] 2. First-run setup, sign-in/out, registration lock, parents' PIN
@@ -479,8 +480,17 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 - [x] 5. Family view
 - [x] 6. Points and daily progress
 - [x] 7. Rewards, task templates, parent checks, fair sharing
-- [ ] 8. Polish: flexible tasks and "One for all" ✓, backup/restore ✓, family settings ✓, sign-in
-  hardening ✓, first display test fixes (compact layout, order of people) ✓, final display test
+- [x] 8. Polish: flexible tasks and "One for all", backup/restore, family settings, sign-in
+  hardening, display test fixes (compact layout, order of people, display size per device).
+  Everything else has to prove itself in practice first.
+
+**Next: Google Calendar (phase 2)**
+
+- [ ] 1. Connect a Google account (OAuth, encrypted tokens, refreshed automatically)
+- [ ] 2. Choose calendars and link them to people or "Family"
+- [ ] 3. Background sync, error handling
+- [ ] 4. Calendar view: week with events in the person's colour
+- [ ] 5. Polish
 
 **1.1: make it your own**
 
@@ -500,16 +510,17 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
   anywhere
 - Adults can quickly add tasks right from the family view, without the parents' area
 
-**Later (phases 2–5 of the specification)**
+**Later (phases 3–5 of the specification)**
 
 | Phase | Contents |
 | --- | --- |
-| 2 | Google Calendar: link calendars to people, events in the person's colour |
 | 3 | "Today" becomes the start page: a real day dashboard with a bit of calendar, tasks, meal plan, shopping list and weather. Tasks move to their own area, optionally with a week view to browse what's coming up and what's done; a week widget for the dashboard |
 | 4 | Meal planning |
 | 5 | Shopping lists |
 
 **Ideas without a version yet**
+
+- More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
