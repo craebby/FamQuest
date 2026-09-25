@@ -10,6 +10,7 @@ import { Avatar } from '../components/Avatar'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { formatLongDate } from '../weekdays'
+import { type CareSegment, careShares } from '../care'
 import { DayProgress } from './family/DayProgress'
 import { TaskGroups } from './family/TaskGroups'
 import { tasksFor, useFamilyToday } from './family/useFamilyToday'
@@ -53,6 +54,7 @@ function Columns({ members, today }: { members: Member[]; today: Today }) {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   // Am Smartphone ist genau eine Person sichtbar; Standard ist die erste.
   const selected = members.find((member) => member.id === selectedId) ?? members[0]
+  const care = careShares(members, today)
 
   return (
     <>
@@ -85,6 +87,7 @@ function Columns({ members, today }: { members: Member[]; today: Today }) {
             key={member.id}
             member={member}
             today={today}
+            care={care}
             className={member.id === selected?.id ? 'flex' : 'hidden sm:flex'}
           />
         ))}
@@ -96,10 +99,12 @@ function Columns({ members, today }: { members: Member[]; today: Today }) {
 function MemberColumn({
   member,
   today,
+  care,
   className,
 }: {
   member: Member
   today: Today
+  care: CareSegment[] | null
   className: string
 }) {
   const { t } = useTranslation()
@@ -117,7 +122,13 @@ function MemberColumn({
         <Avatar name={member.name} color={member.color} src={member.avatar_url} size="lg" />
         <span className="text-2xl font-extrabold break-words text-slate-800">{member.name}</span>
       </Link>
-      <DayProgress member={member} tasks={tasks} points={pointsFor(today, member.id)} size="md" />
+      <DayProgress
+        member={member}
+        tasks={tasks}
+        points={pointsFor(today, member.id)}
+        care={care}
+        size="md"
+      />
       <TaskGroups
         member={member}
         tasks={tasks}

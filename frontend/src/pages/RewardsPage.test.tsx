@@ -33,9 +33,9 @@ const tomsReward = makeReward({ id: 4, member_id: 2, name: 'Zoo', cost: 5 })
 function routes(extra: Record<string, Response | ((body: unknown) => Response)> = {}) {
   let today: Today = makeToday({
     points: [
-      { member_id: 1, today: 0, total: 10 },
-      { member_id: 2, today: 0, total: 3 },
-      { member_id: 3, today: 0, total: 0 },
+      { member_id: 1, today: 0, total: 10, week_done: 0 },
+      { member_id: 2, today: 0, total: 3, week_done: 0 },
+      { member_id: 3, today: 0, total: 0, week_done: 0 },
     ],
   })
   return {

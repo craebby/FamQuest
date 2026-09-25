@@ -79,7 +79,14 @@ export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {
 }
 
 export function makeToday(overrides: Partial<Today> = {}): Today {
-  return { date: '2026-10-03', time_of_day: 'morning', tasks: [], points: [], ...overrides }
+  return {
+    date: '2026-10-03',
+    week_start: '2026-09-28',
+    time_of_day: 'morning',
+    tasks: [],
+    points: [],
+    ...overrides,
+  }
 }
 
 export function makeReward(overrides: Partial<Reward> = {}): Reward {

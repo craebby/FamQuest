@@ -44,8 +44,8 @@ const anytime = makeTodayTask({
 
 /** API wie der Server: Erledigungen verändern, was GET /api/today danach liefert. */
 const initialPoints = [
-  { member_id: 1, today: 0, total: 10 },
-  { member_id: 2, today: 0, total: 0 },
+  { member_id: 1, today: 0, total: 10, week_done: 0 },
+  { member_id: 2, today: 0, total: 0, week_done: 0 },
 ]
 
 function familyRoutes(
@@ -165,8 +165,8 @@ describe('Familienansicht', () => {
         makeToday({
           tasks: [{ ...teeth, done_member_ids: [1] }, bed, homework, anytime],
           points: [
-            { member_id: 1, today: 2, total: 12 },
-            { member_id: 2, today: 0, total: 1 },
+            { member_id: 1, today: 2, total: 12, week_done: 0 },
+            { member_id: 2, today: 0, total: 1, week_done: 0 },
           ],
         }),
       ),
@@ -309,6 +309,39 @@ describe('Familienansicht', () => {
       'href',
       '/parents',
     )
+  })
+
+  it('zeigt Erwachsenen ihren Anteil an der Woche statt Punkten', async () => {
+    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
+    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'orange' })
+    const cook = makeTodayTask({ id: 20, title: 'Kochen', points: 1, member_ids: [3] })
+    mockApi({
+      ...familyRoutes(
+        makeToday({
+          tasks: [cook],
+          points: [
+            { member_id: 1, today: 0, total: 10, week_done: 3 },
+            { member_id: 3, today: 0, total: 0, week_done: 6 },
+            { member_id: 4, today: 0, total: 0, week_done: 9 },
+          ],
+        }),
+      ),
+      'GET /api/members': Response.json([lena, mama, papa]),
+    })
+    renderApp('/')
+
+    const mamaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Mama' }))
+    expect(
+      mamaColumn.getByRole('img', {
+        name: 'Diese Woche 40 % der Aufgaben der Erwachsenen (6 erledigt)',
+      }),
+    ).toBeVisible()
+    expect(mamaColumn.queryByText(/Insgesamt/)).toBeNull()
+    // Aufgabenkarten von Erwachsenen zeigen keine Punkte.
+    expect(mamaColumn.getByRole('button', { name: 'Kochen' })).toBeVisible()
+    expect(within(column('Papa')).getByText('60 %')).toBeInTheDocument()
+    // Kinder behalten ihre Punkte.
+    expect(within(column('Lena')).getByText('Insgesamt 10 Punkte')).toBeInTheDocument()
   })
 
   it('hat eine Navigationsleiste mit Heute und Einstellungen', async () => {

@@ -6,6 +6,7 @@ import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 import { pointsFor } from '../api/today'
 import { Avatar } from '../components/Avatar'
 import { Alert, Button } from '../components/ui'
+import { careShares } from '../care'
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { DayProgress } from './family/DayProgress'
@@ -60,7 +61,13 @@ export function PersonPage() {
           {member.name}
         </h1>
       </header>
-      <DayProgress member={member} tasks={tasks} points={points} size="lg" />
+      <DayProgress
+        member={member}
+        tasks={tasks}
+        points={points}
+        care={careShares(members, today)}
+        size="lg"
+      />
       <TaskGroups
         member={member}
         tasks={tasks}

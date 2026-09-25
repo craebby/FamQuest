@@ -6,7 +6,9 @@ import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 
 import type { Member } from '../../api/members'
 import type { MemberPoints, TodayTask } from '../../api/today'
+import type { CareSegment } from '../../care'
 import { colorTokens } from '../../memberColors'
+import { CareShare } from './CareShare'
 
 /** Bis zu so vielen Aufgaben zeigt der Fortschritt Sterne, darüber einen Balken. */
 export const MAX_STARS = 8
@@ -21,11 +23,16 @@ interface DayProgressProps {
   /** Heutige Aufgaben dieser Person. */
   tasks: TodayTask[]
   points: MemberPoints
+  /** Anteile der Erwachsenen an dieser Woche; null bei weniger als zwei Erwachsenen. */
+  care: CareSegment[] | null
   size: 'md' | 'lg'
 }
 
-/** Tagesfortschritt als Sterne-Reihe, heute verdiente Punkte und Punktestand einer Person. */
-export function DayProgress({ member, tasks, points, size }: DayProgressProps) {
+/**
+ * Tagesfortschritt als Sterne-Reihe, darunter bei Kindern heute verdiente Punkte und
+ * Punktestand, bei Erwachsenen statt Punkten ihr Anteil an der Woche.
+ */
+export function DayProgress({ member, tasks, points, care, size }: DayProgressProps) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
   const sizes = SIZES[size]
@@ -61,24 +68,28 @@ export function DayProgress({ member, tasks, points, size }: DayProgressProps) {
           )}
         </div>
       )}
-      <div className="flex flex-wrap justify-center gap-2">
-        <PointsBadge
-          icon={<GlowingStarIcon className={sizes.icon} aria-hidden="true" />}
-          value={points.today}
-          caption={t('points.today')}
-          label={t('points.today_label', { count: points.today })}
-          background={tokens.soft}
-          sizes={sizes}
-        />
-        <PointsBadge
-          icon={<TrophyIcon className={sizes.icon} aria-hidden="true" />}
-          value={points.total}
-          caption={t('points.total')}
-          label={t('points.total_label', { count: points.total })}
-          background="#ffffff"
-          sizes={sizes}
-        />
-      </div>
+      {member.role === 'parent' ? (
+        care && <CareShare member={member} shares={care} size={size} />
+      ) : (
+        <div className="flex flex-wrap justify-center gap-2">
+          <PointsBadge
+            icon={<GlowingStarIcon className={sizes.icon} aria-hidden="true" />}
+            value={points.today}
+            caption={t('points.today')}
+            label={t('points.today_label', { count: points.today })}
+            background={tokens.soft}
+            sizes={sizes}
+          />
+          <PointsBadge
+            icon={<TrophyIcon className={sizes.icon} aria-hidden="true" />}
+            value={points.total}
+            caption={t('points.total')}
+            label={t('points.total_label', { count: points.total })}
+            background="#ffffff"
+            sizes={sizes}
+          />
+        </div>
+      )}
     </div>
   )
 }

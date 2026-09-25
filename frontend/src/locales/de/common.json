@@ -346,5 +346,13 @@
     "pool_add_other": "{{count}} Belohnungen hinzufügen",
     "pool_added_one": "{{name}} hat {{count}} neue Belohnung.",
     "pool_added_other": "{{name}} hat {{count}} neue Belohnungen."
+  },
+  "care": {
+    "label_one": "Diese Woche {{percent}} % der Aufgaben der Erwachsenen ({{count}} erledigt)",
+    "label_other": "Diese Woche {{percent}} % der Aufgaben der Erwachsenen ({{count}} erledigt)",
+    "this_week": "diese Woche",
+    "legend_one": "{{name}}: {{percent}} % ({{count}} Aufgabe)",
+    "legend_other": "{{name}}: {{percent}} % ({{count}} Aufgaben)",
+    "percent": "{{percent}} %"
   }
 }

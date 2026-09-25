@@ -48,8 +48,8 @@ function api(extra: Record<string, Response | ((body: unknown) => Response)> = {
     'GET /api/today': Response.json(
       makeToday({
         points: [
-          { member_id: 1, today: 2, total: 7 },
-          { member_id: 2, today: 0, total: 0 },
+          { member_id: 1, today: 2, total: 7, week_done: 0 },
+          { member_id: 2, today: 0, total: 0, week_done: 0 },
         ],
       }),
     ),

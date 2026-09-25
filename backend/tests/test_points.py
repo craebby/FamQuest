@@ -31,8 +31,8 @@ def test_today_lists_points_for_every_member(client, parent, lena, now):
     tom = add_member(client, parent, "Tom", "green")
 
     assert today(client)["points"] == [
-        {"member_id": lena, "today": 0, "total": 0},
-        {"member_id": tom, "today": 0, "total": 0},
+        {"member_id": lena, "today": 0, "total": 0, "week_done": 0},
+        {"member_id": tom, "today": 0, "total": 0, "week_done": 0},
     ]
 
 

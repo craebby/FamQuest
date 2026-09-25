@@ -23,11 +23,15 @@ export interface MemberPoints {
   today: number
   /** Punktestand (Summe aller Buchungen). */
   total: number
+  /** Seit Montag erledigte Aufgaben; Grundlage der fairen Verteilung unter Erwachsenen. */
+  week_done: number
 }
 
 export interface Today {
   /** Heutiges Datum (`YYYY-MM-DD`) in der Zeitzone der Familie. */
   date: string
+  /** Montag der laufenden Woche (`YYYY-MM-DD`). */
+  week_start: string
   /** Aktueller Tagesabschnitt in der Zeitzone der Familie. */
   time_of_day: TimeOfDay
   tasks: TodayTask[]
@@ -65,7 +69,12 @@ function withDone(today: Today, { taskId, memberId, done }: SetDoneVariables): T
   if (!task || task.done_member_ids.includes(memberId) === done) return today
   const delta = done ? task.points : -task.points
   const before = pointsFor(today, memberId)
-  const after = { ...before, today: before.today + delta, total: before.total + delta }
+  const after = {
+    ...before,
+    today: before.today + delta,
+    total: before.total + delta,
+    week_done: before.week_done + (done ? 1 : -1),
+  }
   return {
     ...today,
     tasks: today.tasks.map((candidate) => {
@@ -83,6 +92,7 @@ export function pointsFor(today: Today, memberId: number): MemberPoints {
       member_id: memberId,
       today: 0,
       total: 0,
+      week_done: 0,
     }
   )
 }

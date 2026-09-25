@@ -54,6 +54,8 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
     return () => window.clearTimeout(timer)
   }, [feedback])
   const done = task.done_member_ids.includes(member.id)
+  // Erwachsene sammeln keine Punkte; bei ihnen zählt nur, dass es erledigt ist.
+  const showPoints = member.role !== 'parent'
   const tokens = colorTokens(task.color ?? member.color)
   const sizes = SIZES[size]
   // Ein Tageswechsel wird still behoben: die Ansicht lädt den neuen Tag.
@@ -67,13 +69,17 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
       <button
         type="button"
         aria-pressed={done}
-        aria-label={t('family.task_label', {
-          title: task.title,
-          points: t('tasks.points_count', { count: task.points }),
-        })}
+        aria-label={
+          showPoints
+            ? t('family.task_label', {
+                title: task.title,
+                points: t('tasks.points_count', { count: task.points }),
+              })
+            : task.title
+        }
         onClick={() => {
           setTapped(true)
-          if (!done && task.points > 0) setFeedback((count) => count + 1)
+          if (!done && showPoints && task.points > 0) setFeedback((count) => count + 1)
           setDone.mutate({ date, taskId: task.id, memberId: member.id, done: !done })
         }}
         className={`relative flex w-full items-center rounded-3xl border-4 text-left shadow-sm transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${sizes.card}`}
@@ -91,10 +97,12 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
           >
             {task.title}
           </span>
-          <span className="flex items-center gap-1 text-lg font-bold text-slate-600">
-            <StarIcon className="size-6" aria-hidden="true" />
-            {task.points}
-          </span>
+          {showPoints && (
+            <span className="flex items-center gap-1 text-lg font-bold text-slate-600">
+              <StarIcon className="size-6" aria-hidden="true" />
+              {task.points}
+            </span>
+          )}
         </span>
         {done && (
           <span

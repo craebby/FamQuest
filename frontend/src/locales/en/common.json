@@ -346,5 +346,13 @@
     "pool_add_other": "Add {{count}} rewards",
     "pool_added_one": "{{name}} has {{count}} new reward.",
     "pool_added_other": "{{name}} has {{count}} new rewards."
+  },
+  "care": {
+    "label_one": "This week {{percent}}% of the adults' tasks ({{count}} done)",
+    "label_other": "This week {{percent}}% of the adults' tasks ({{count}} done)",
+    "this_week": "this week",
+    "legend_one": "{{name}}: {{percent}}% ({{count}} task)",
+    "legend_other": "{{name}}: {{percent}}% ({{count}} tasks)",
+    "percent": "{{percent}}%"
   }
 }
