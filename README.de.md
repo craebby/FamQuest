@@ -268,6 +268,13 @@ Weiterleitung an eine IP-Adresse oder an `http://`, nur an `http://localhost` zu
 3. Unter **Google Auth Platform** die App einrichten: Name (z. B. FamQuest) und Support-E-Mail,
    Zielgruppe **Extern**. Unter **Datenzugriff** den Bereich
    `https://www.googleapis.com/auth/calendar.readonly` hinzufügen.
+
+   Startseite, Datenschutzerklärung und Nutzungsbedingungen sind für den eigenen Gebrauch
+   optional (Pflicht erst für eine Überprüfung durch Google). Wer sie angeben möchte, kann die
+   Projektseiten verwenden: `https://craebby.github.io/FamQuest/`,
+   `https://craebby.github.io/FamQuest/privacy-policy.html` und
+   `https://craebby.github.io/FamQuest/terms-of-service.html`. Sie beschreiben die Software;
+   für eigene Angaben die Dateien aus `docs/` anpassen und selbst veröffentlichen.
 4. Unter **Clients** einen neuen OAuth-Client vom Typ **Webanwendung** anlegen. Als
    **Autorisierte Weiterleitungs-URI** eintragen:
    `https://familie.example.com/api/calendar/google/callback` (mit eurer Domain). Die genaue
@@ -509,7 +516,7 @@ Browser ──► Reverse Proxy (optional) ──► app (FastAPI, Port 8000) �
 | --- | --- |
 | `backend/` | FastAPI, SQLAlchemy 2, Alembic, pytest; Pakete mit uv |
 | `frontend/` | React, Vite, TypeScript, Tailwind CSS, react-i18next, TanStack Query, Vitest, Playwright |
-| `docs/` | Spezifikation, Checkliste für den Display-Test |
+| `docs/` | Spezifikation, Checkliste für den Display-Test, Projektseiten (GitHub Pages aus `main` → `/docs`) |
 | `scripts/` | Backup-Skript |
 
 Das `Dockerfile` baut zuerst das Frontend und kopiert es dann in das Python-Image. Es entsteht ein
