@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { MemberColor } from '../memberColors'
 import { api, apiGet } from './client'
@@ -46,4 +46,24 @@ export function useMembersMutation<TVariables, TResult>(
   request: (variables: TVariables) => Promise<TResult>,
 ) {
   return useParentMutation(request, [MEMBERS_KEY, TASKS_KEY, TODAY_KEY])
+}
+
+export const reorderMembers = (memberIds: number[]) =>
+  api<Member[]>('PUT', '/members/order', { member_ids: memberIds })
+
+/** Neue Reihenfolge; die Liste ändert sich sofort, der Server bestätigt sie. */
+export function useReorderMembers() {
+  const queryClient = useQueryClient()
+  const mutation = useMembersMutation(reorderMembers)
+  return {
+    ...mutation,
+    move: (members: Member[], from: number, to: number) => {
+      if (to < 0 || to >= members.length || from === to) return
+      const next = [...members]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      queryClient.setQueryData(MEMBERS_KEY, next)
+      mutation.mutate(next.map((member) => member.id))
+    },
+  }
 }

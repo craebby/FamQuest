@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import FileResponse
-from sqlalchemy import exists, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.auth import CurrentSession, DbSession, ParentSession
@@ -15,7 +15,7 @@ from app.avatars import (
 )
 from app.errors import ApiError
 from app.models import FamilyMember
-from app.schemas import MemberIn, MemberOut
+from app.schemas import MemberIn, MemberOrderIn, MemberOut
 
 router = APIRouter(tags=["members"])
 
@@ -56,17 +56,31 @@ def commit_member(db: DbSession) -> None:
 
 @router.get("/members")
 def list_members(_: CurrentSession, db: DbSession) -> list[MemberOut]:
-    members = db.scalars(select(FamilyMember).order_by(FamilyMember.id))
+    members = db.scalars(select(FamilyMember).order_by(FamilyMember.position, FamilyMember.id))
     return [member_out(member) for member in members]
 
 
 @router.post("/members", status_code=status.HTTP_201_CREATED)
 def create_member(body: MemberIn, _: ParentSession, db: DbSession) -> MemberOut:
     check_color_free(db, body.color)
-    member = FamilyMember(name=body.name, role=body.role, color=body.color)
+    # Neue Personen kommen ans Ende.
+    last = db.scalar(select(func.max(FamilyMember.position))) or 0
+    member = FamilyMember(name=body.name, role=body.role, color=body.color, position=last + 1)
     db.add(member)
     commit_member(db)
     return member_out(member)
+
+
+@router.put("/members/order")
+def reorder_members(body: MemberOrderIn, _: ParentSession, db: DbSession) -> list[MemberOut]:
+    """Legt die Reihenfolge fest; die Liste muss jede Person genau einmal enthalten."""
+    members = {member.id: member for member in db.scalars(select(FamilyMember))}
+    if sorted(body.member_ids) != sorted(members):
+        raise ApiError(status.HTTP_422_UNPROCESSABLE_CONTENT, "member.order_invalid")
+    for position, member_id in enumerate(body.member_ids, start=1):
+        members[member_id].position = position
+    db.commit()
+    return list_members(_, db)
 
 
 @router.put("/members/{member_id}")

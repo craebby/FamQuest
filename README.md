@@ -86,6 +86,8 @@ or child), colour and optionally a photo. Children need no account and no passwo
 
 - Each person has their own colour (orange, blue, purple, green, red, teal, yellow). Taken colours
   are greyed out, so at most seven people are possible for now.
+- **Change order** sets the order in which people appear everywhere (columns, filters, rewards):
+  with arrow buttons, or by dragging with the mouse.
 - Pick a photo (on a phone also straight from the camera), move and zoom it in the circle, confirm.
   Without a photo, the avatar shows the initial on the person's colour.
 - The image is cropped in the browser and checked by the server (JPEG, PNG or WebP only, at most
@@ -160,6 +162,10 @@ Nobody has to sign in or switch users: whose task it is follows from the column.
 - The **navigation bar** (left, at the bottom on phones) uses icons for "Today" (star), rewards
   (gift) and settings (gear, parents' area with PIN). A red number on the gear shows how many
   completed tasks are waiting for a parent check.
+
+The layout scales with the window height from tablet width upwards: full size at 1080 px (wall
+display), proportionally smaller on laptops with display scaling (e.g. a 14" screen), never below
+75 %. On phones it stays at full size.
 
 The server always calculates "today" in the family's time zone. The view reloads every minute so
 day changes and edits from the parents' area show up.
@@ -470,8 +476,8 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 - [x] 5. Family view
 - [x] 6. Points and daily progress
 - [x] 7. Rewards, task templates, parent checks, fair sharing
-- [ ] 8. Polish: flexible tasks and "One for all" ✓, backup/restore ✓, family settings ✓, test on a
-  real display
+- [ ] 8. Polish: flexible tasks and "One for all" ✓, backup/restore ✓, family settings ✓, sign-in
+  hardening ✓, first display test fixes (compact layout, order of people) ✓, final display test
 
 **1.1: make it your own**
 

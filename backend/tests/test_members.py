@@ -5,6 +5,7 @@ from PIL import Image
 
 from app.avatars import MAX_UPLOAD_BYTES
 from tests.conftest import UPLOAD_DIR, csrf
+from tests.test_tasks import add_member
 
 LENA = {"name": "Lena", "role": "child", "color": "purple"}
 
@@ -258,3 +259,33 @@ def test_avatars_need_login(client, parent):
 @pytest.mark.parametrize("filename", ["..%2F..%2Fetc%2Fpasswd", "abc.webp", "x" * 32 + ".webp"])
 def test_unknown_avatar_names(client, parent, filename):
     assert client.get(f"/api/avatars/{filename}").status_code == 404
+
+
+def test_members_can_be_reordered(client, parent):
+    lena = add_member(client, parent, "Lena", "purple")
+    tom = add_member(client, parent, "Tom", "green")
+    mia = add_member(client, parent, "Mia", "red")
+
+    def names() -> list[str]:
+        return [m["name"] for m in client.get("/api/members").json()]
+
+    assert names() == ["Lena", "Tom", "Mia"]
+
+    response = client.put(
+        "/api/members/order", json={"member_ids": [mia, lena, tom]}, headers=csrf(parent)
+    )
+    assert response.status_code == 200, response.text
+    assert [m["name"] for m in response.json()] == ["Mia", "Lena", "Tom"]
+    # Neue Personen kommen ans Ende.
+    add_member(client, parent, "Ole", "teal")
+    assert names() == ["Mia", "Lena", "Tom", "Ole"]
+
+
+def test_reorder_needs_every_member_once(client, parent):
+    lena = add_member(client, parent, "Lena", "purple")
+    add_member(client, parent, "Tom", "green")
+
+    response = client.put("/api/members/order", json={"member_ids": [lena]}, headers=csrf(parent))
+
+    assert response.status_code == 422
+    assert response.json() == {"code": "member.order_invalid"}

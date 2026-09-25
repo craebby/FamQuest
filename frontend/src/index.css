@@ -9,6 +9,17 @@
   body {
     @apply bg-orange-50 text-slate-800 antialiased;
   }
+
+  /*
+   * Alle Größen sind in rem angegeben. Ab Tablet-Breite richtet sich die Grundgröße nach der
+   * Fensterhöhe: 16 px bei 1080 px Höhe (Wanddisplay), kleiner auf Laptops mit Skalierung
+   * (z. B. 13 px bei 864 px), nie unter 12 px. Am Smartphone bleibt es bei 16 px.
+   */
+  @media (min-width: 640px) {
+    html {
+      font-size: clamp(12px, 1.5vh, 16px);
+    }
+  }
 }
 
 @theme {

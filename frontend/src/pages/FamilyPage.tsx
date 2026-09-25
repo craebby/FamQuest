@@ -117,10 +117,12 @@ function MemberColumn({
       <Link
         to={`/member/${member.id}`}
         aria-label={t('family.open_person', { name: member.name })}
-        className="flex flex-col items-center gap-2 rounded-3xl p-2 focus-visible:outline-4 focus-visible:outline-orange-400"
+        className="flex flex-col items-center gap-1 rounded-3xl p-1 focus-visible:outline-4 focus-visible:outline-orange-400"
       >
-        <Avatar name={member.name} color={member.color} src={member.avatar_url} size="lg" />
-        <span className="text-2xl font-extrabold break-words text-slate-800">{member.name}</span>
+        <Avatar name={member.name} color={member.color} src={member.avatar_url} size="md" />
+        <span className="w-full truncate text-center text-xl font-extrabold text-slate-800">
+          {member.name}
+        </span>
       </Link>
       <DayProgress
         member={member}

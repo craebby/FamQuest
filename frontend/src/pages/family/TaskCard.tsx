@@ -26,13 +26,15 @@ const SIZES = {
     title: 'text-lg',
     badge: 'size-8',
     feedback: 'text-xl',
+    points: 'text-base',
   },
   md: {
-    card: 'min-h-24 gap-3 p-3',
-    icon: 'size-16',
-    title: 'text-xl',
+    card: 'min-h-18 gap-3 px-3 py-2',
+    icon: 'size-12',
+    title: 'text-lg',
     badge: 'size-9',
     feedback: 'text-2xl',
+    points: 'text-base',
   },
   lg: {
     card: 'min-h-32 gap-5 p-5',
@@ -40,6 +42,7 @@ const SIZES = {
     title: 'text-3xl',
     badge: 'size-12',
     feedback: 'text-4xl',
+    points: 'text-lg',
   },
 } as const
 
@@ -124,8 +127,8 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
             {task.title}
           </span>
           {showPoints && (
-            <span className="flex items-center gap-1 text-lg font-bold text-slate-600">
-              <StarIcon className="size-6" aria-hidden="true" />
+            <span className={`flex items-center gap-1 font-bold text-slate-600 ${sizes.points}`}>
+              <StarIcon className="size-[1.25em]" aria-hidden="true" />
               {task.points}
             </span>
           )}

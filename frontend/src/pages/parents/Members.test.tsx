@@ -157,4 +157,32 @@ describe('Familienmitglieder im Elternbereich', () => {
     expect(await screen.findByRole('heading', { name: 'Family members' })).toBeVisible()
     expect(await screen.findByRole('button', { name: 'Edit Lena' })).toHaveTextContent('Child')
   })
+
+  it('ändert die Reihenfolge der Personen', async () => {
+    const user = userEvent.setup()
+    const lena = makeMember({ id: 1, name: 'Lena' })
+    const tom = makeMember({ id: 2, name: 'Tom', color: 'green' })
+    let members = [lena, tom]
+    const calls = mockApi({
+      ...unlocked,
+      'GET /api/auth/me': me(),
+      'GET /api/members': () => Response.json(members),
+      'PUT /api/members/order': () => {
+        members = [tom, lena]
+        return Response.json(members)
+      },
+    })
+    renderApp('/parents')
+
+    await user.click(await screen.findByRole('button', { name: 'Reihenfolge ändern' }))
+    expect(screen.getByRole('button', { name: 'Lena nach vorne' })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Tom nach vorne' }))
+
+    expect(calls.find((call) => call.key === 'PUT /api/members/order')?.body).toEqual({
+      member_ids: [2, 1],
+    })
+    expect(screen.getByRole('button', { name: 'Tom nach vorne' })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Fertig' }))
+    expect(screen.getByRole('button', { name: 'Tom bearbeiten' })).toBeVisible()
+  })
 })

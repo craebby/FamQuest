@@ -123,7 +123,7 @@ export function Alert({ children }: { children: ReactNode }) {
 export function CenteredCard({ children }: { children: ReactNode }) {
   return (
     <main className="flex min-h-dvh items-center justify-center p-4">
-      <div className="flex w-full max-w-lg flex-col gap-6 rounded-3xl bg-white p-6 text-center shadow-xl shadow-orange-900/5 sm:p-10">
+      <div className="flex w-full max-w-lg flex-col gap-5 rounded-3xl bg-white p-6 text-center shadow-xl shadow-orange-900/5 sm:p-8">
         {children}
       </div>
     </main>

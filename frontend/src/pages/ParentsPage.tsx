@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
@@ -78,7 +78,7 @@ function ParentGate({ onLeave }: { onLeave: () => void }) {
   return (
     <CenteredCard>
       <BackButton onClick={onLeave} />
-      <LockedIcon className="mx-auto size-16" aria-hidden="true" />
+      <LockedIcon className="mx-auto size-12" aria-hidden="true" />
       <PinPad
         title={t('parents.pin_prompt')}
         onSubmit={(pin) => unlock.mutate(pin)}
@@ -202,6 +202,25 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
     null,
   )
   const [poolMember, setPoolMember] = useState<Member | null>(null)
+
+  // Jede Unteransicht (Editor, Vorschläge, Punkte, PIN) beginnt oben, nicht an der Stelle,
+  // an der man in der Übersicht gerade war.
+  const view = editingMember
+    ? 'member'
+    : editingTask
+      ? 'task'
+      : editingReward
+        ? 'reward'
+        : poolMember
+          ? 'pool'
+          : pointsMember
+            ? 'points'
+            : editingPin
+              ? 'pin'
+              : 'overview'
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [view])
   const [confirmDisable, setConfirmDisable] = useState(false)
   const [notice, setNotice] = useState<string>()
 

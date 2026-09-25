@@ -108,6 +108,12 @@ class MemberIn(BaseModel):
     color: MemberColor
 
 
+class MemberOrderIn(BaseModel):
+    """Alle Personen in der gewünschten Reihenfolge."""
+
+    member_ids: list[int]
+
+
 class MemberOut(BaseModel):
     id: int
     name: str

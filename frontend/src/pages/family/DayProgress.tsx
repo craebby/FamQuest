@@ -13,9 +13,25 @@ import { CareShare } from './CareShare'
 /** Bis zu so vielen Aufgaben zeigt der Fortschritt Sterne, darüber einen Balken. */
 export const MAX_STARS = 8
 
+// Feste Zeilenhöhen (rows), damit die Aufgabenlisten aller Spalten auf gleicher Höhe beginnen,
+// egal ob Sterne oder Balken, Punkte oder Anteil der Woche darunter stehen.
 const SIZES = {
-  md: { star: 'size-7', icon: 'size-8', number: 'text-2xl', label: 'text-sm', bar: 'h-4' },
-  lg: { star: 'size-10', icon: 'size-11', number: 'text-4xl', label: 'text-base', bar: 'h-6' },
+  md: {
+    star: 'size-6',
+    icon: 'size-7',
+    number: 'text-xl',
+    label: 'text-xs',
+    bar: 'h-4',
+    rows: 'grid-rows-[1.75rem_3.25rem]',
+  },
+  lg: {
+    star: 'size-10',
+    icon: 'size-11',
+    number: 'text-4xl',
+    label: 'text-base',
+    bar: 'h-6',
+    rows: '',
+  },
 } as const
 
 interface DayProgressProps {
@@ -40,8 +56,10 @@ export function DayProgress({ member, tasks, points, care, size }: DayProgressPr
   const done = tasks.filter((task) => isDoneFor(task, member.id)).length
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      {total > 0 && (
+    <div className={`grid w-full justify-items-center gap-2 ${sizes.rows}`}>
+      {total === 0 ? (
+        <span aria-hidden="true" />
+      ) : (
         <div
           role="img"
           aria-label={t('points.progress', { done, total })}
@@ -69,7 +87,11 @@ export function DayProgress({ member, tasks, points, care, size }: DayProgressPr
         </div>
       )}
       {member.role === 'parent' ? (
-        care && <CareShare member={member} shares={care} size={size} />
+        care ? (
+          <CareShare member={member} shares={care} size={size} />
+        ) : (
+          <span aria-hidden="true" />
+        )
       ) : (
         <div className="flex flex-wrap justify-center gap-2">
           <PointsBadge

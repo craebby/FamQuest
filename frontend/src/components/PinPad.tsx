@@ -41,10 +41,10 @@ export function PinPad({ title, onSubmit, error, busy = false }: PinPadProps) {
   })
 
   const key =
-    'flex aspect-square items-center justify-center rounded-3xl text-4xl font-bold transition-colors focus-visible:outline-4 focus-visible:outline-orange-400 disabled:opacity-40'
+    'flex aspect-square items-center justify-center rounded-3xl text-3xl font-bold transition-colors focus-visible:outline-4 focus-visible:outline-orange-400 disabled:opacity-40'
 
   return (
-    <div className="flex flex-col items-center gap-5">
+    <div className="flex flex-col items-center gap-4">
       <h2 className="text-2xl font-extrabold text-slate-800">{title}</h2>
       <div
         className="flex h-8 items-center gap-3"
@@ -63,7 +63,8 @@ export function PinPad({ title, onSubmit, error, busy = false }: PinPadProps) {
           {error}
         </p>
       )}
-      <div className="grid w-full max-w-xs grid-cols-3 gap-3">
+      {/* Tasten richten sich auch nach der Höhe, damit alles ohne Scrollen passt. */}
+      <div className="grid w-full max-w-[min(18rem,38dvh)] grid-cols-3 gap-2">
         {DIGITS.map((digit) => (
           <button
             key={digit}

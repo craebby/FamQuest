@@ -109,7 +109,12 @@
     "saved": "{{name}} ist gespeichert.",
     "delete": "Person löschen",
     "delete_confirm": "{{name}} wirklich löschen? Das lässt sich nicht rückgängig machen.",
-    "deleted": "{{name}} ist gelöscht."
+    "deleted": "{{name}} ist gelöscht.",
+    "order": "Reihenfolge ändern",
+    "order_hint": "Mit den Pfeilen (oder per Ziehen mit der Maus) festlegen, in welcher Reihenfolge die Personen überall erscheinen.",
+    "order_done": "Fertig",
+    "move_left": "{{name}} nach vorne",
+    "move_right": "{{name}} nach hinten"
   },
   "roles": {
     "parent": "Elternteil",
@@ -313,7 +318,8 @@
     },
     "member": {
       "not_found": "Diese Person gibt es nicht mehr",
-      "color_taken": "Diese Farbe ist schon vergeben. Bitte eine andere wählen."
+      "color_taken": "Diese Farbe ist schon vergeben. Bitte eine andere wählen.",
+      "order_invalid": "Die Reihenfolge passt nicht zu den Personen. Bitte neu laden."
     },
     "avatar": {
       "too_large": "Das Bild ist zu groß (höchstens 5 MB)",

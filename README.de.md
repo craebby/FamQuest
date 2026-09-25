@@ -86,6 +86,8 @@ Im Elternbereich unter „Familienmitglieder“ legt ihr alle Personen des Haush
 
 - Jede Person hat eine eigene Farbe (Orange, Blau, Lila, Grün, Rot, Türkis, Gelb). Vergebene
   Farben sind ausgegraut; es sind daher höchstens sieben Personen möglich.
+- **Reihenfolge ändern** legt fest, in welcher Reihenfolge die Personen überall erscheinen
+  (Spalten, Filter, Belohnungen): mit Pfeiltasten oder per Ziehen mit der Maus.
 - Foto wählen (am Smartphone auch direkt mit der Kamera), im Kreis verschieben und zoomen,
   übernehmen. Ohne Foto zeigt der Avatar die Initiale auf der Personenfarbe.
 - Das Bild wird im Browser zugeschnitten und vom Server geprüft (nur JPEG, PNG oder WebP, höchstens
@@ -160,6 +162,10 @@ Spalte.
 - Die **Navigationsleiste** (links, am Smartphone unten) führt mit Symbolen zu „Heute“ (Stern), zu
   den Belohnungen (Geschenk) und zu den Einstellungen (Zahnrad, Elternbereich mit PIN). Eine rote
   Zahl am Zahnrad zeigt, wie viele Erledigungen auf die Kontrolle der Eltern warten.
+
+Die Oberfläche skaliert ab Tablet-Breite mit der Fensterhöhe: volle Größe bei 1080 px
+(Wanddisplay), proportional kleiner auf Laptops mit Skalierung (z. B. 14"-Bildschirm), nie unter
+75 %. Am Smartphone bleibt sie in voller Größe.
 
 „Heute“ rechnet der Server immer in der Zeitzone der Familie. Die Ansicht lädt sich jede Minute neu,
 damit Tageswechsel und Änderungen aus dem Elternbereich ankommen.
@@ -477,7 +483,8 @@ Display ([Checkliste](docs/DISPLAY-TEST.md)) und die Korrekturen daraus.
 - [x] 6. Punkte und Tagesfortschritt
 - [x] 7. Belohnungen, Aufgaben-Vorlagen, Kontrolle durch die Eltern, faire Verteilung
 - [ ] 8. Feinschliff: flexible Aufgaben und „Einer für alle“ ✓, Backup/Restore ✓,
-  Familien-Einstellungen ✓, Test am echten Display
+  Familien-Einstellungen ✓, Anmeldung abgesichert ✓, Korrekturen aus dem ersten Display-Test
+  (kompakter, Reihenfolge der Personen) ✓, abschließender Display-Test
 
 **1.1: Anpassen**
 

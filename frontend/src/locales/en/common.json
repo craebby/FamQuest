@@ -109,7 +109,12 @@
     "saved": "{{name}} has been saved.",
     "delete": "Delete person",
     "delete_confirm": "Really delete {{name}}? This cannot be undone.",
-    "deleted": "{{name}} has been deleted."
+    "deleted": "{{name}} has been deleted.",
+    "order": "Change order",
+    "order_hint": "Use the arrows (or drag with the mouse) to set the order in which people appear everywhere.",
+    "order_done": "Done",
+    "move_left": "Move {{name}} forward",
+    "move_right": "Move {{name}} back"
   },
   "roles": {
     "parent": "Parent",
@@ -313,7 +318,8 @@
     },
     "member": {
       "not_found": "This person no longer exists",
-      "color_taken": "This colour is already taken. Please pick another one."
+      "color_taken": "This colour is already taken. Please pick another one.",
+      "order_invalid": "The order doesn't match the family members. Please reload."
     },
     "avatar": {
       "too_large": "The image is too large (5 MB max)",

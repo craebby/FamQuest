@@ -43,7 +43,7 @@ export function TaskGroups({ member, tasks, date, currentTimeOfDay, size }: Task
     .filter((group) => group.tasks.length > 0)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col ${size === 'lg' ? 'gap-3' : 'gap-2'}`}>
       {current.length === 0 && (
         <p className="flex flex-col items-center gap-3 py-8 text-center text-2xl font-bold text-slate-600">
           <BeachIcon className="size-24" aria-hidden="true" />
@@ -117,7 +117,7 @@ function TaskGroup({ member, timeOfDay, tasks, date, current, size }: TaskGroupP
         type="button"
         aria-expanded={false}
         onClick={() => setExpanded(true)}
-        className="flex min-h-14 items-center gap-3 rounded-3xl bg-white/60 px-4 py-2 text-left text-lg font-bold text-slate-600 focus-visible:outline-4 focus-visible:outline-orange-400"
+        className="flex min-h-12 items-center gap-3 rounded-3xl bg-white/60 px-4 py-1 text-left text-lg font-bold text-slate-600 focus-visible:outline-4 focus-visible:outline-orange-400"
       >
         <Icon className={`${iconSize} shrink-0 opacity-70`} aria-hidden="true" />
         <span className="sr-only">{t('family.section_done', { section: label })}</span>
@@ -132,7 +132,7 @@ function TaskGroup({ member, timeOfDay, tasks, date, current, size }: TaskGroupP
   return (
     <section
       aria-label={label}
-      className={`flex flex-col gap-3 rounded-3xl ${current ? 'p-3 ring-4' : 'px-1'}`}
+      className={`flex flex-col rounded-3xl ${size === 'lg' ? 'gap-3' : 'gap-2'} ${current ? 'p-2 ring-4' : 'px-1'}`}
       style={
         current
           ? { backgroundColor: tokens.soft, ['--tw-ring-color' as string]: tokens.main }

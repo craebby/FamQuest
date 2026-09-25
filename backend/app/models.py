@@ -81,6 +81,8 @@ class FamilyMember(Base):
     color: Mapped[str] = mapped_column(String(20), unique=True)
     # Dateiname im Avatar-Verzeichnis; None = Initiale auf der Personenfarbe.
     avatar: Mapped[str | None] = mapped_column(String(64))
+    # Reihenfolge in Familienansicht und Listen (aufsteigend), festgelegt im Elternbereich.
+    position: Mapped[int] = mapped_column(server_default="0")
     # Optionale Verknüpfung mit einem Login-Konto (z. B. später für Kinder-Konten).
     user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), unique=True
