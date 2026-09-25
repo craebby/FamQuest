@@ -414,5 +414,15 @@
     "day_label_other": "{{day}}: {{done}} of {{count}} tasks done",
     "total_label_one": "This week {{done}} of {{count}} task done",
     "total_label_other": "This week {{done}} of {{count}} tasks done"
+  },
+  "family_settings": {
+    "section": "Family",
+    "name": "Family name",
+    "language": "Family language",
+    "language_hint": "Applies on every device where nobody has picked a language.",
+    "timezone": "Time zone",
+    "timezone_hint": "Decides when a new day starts.",
+    "save": "Save",
+    "saved": "The family settings have been saved."
   }
 }

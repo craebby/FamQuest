@@ -133,3 +133,39 @@ def test_pin_reset_with_wrong_password(client, admin):
     assert response.status_code == 403
     assert response.json() == {"code": "auth.invalid_credentials"}
     assert unlock(client, admin, pin="1234").status_code == 200
+
+
+def test_update_family_settings(client, parent):
+    response = client.put(
+        "/api/parent/family",
+        json={"name": "  Familie Mond ", "default_language": "en", "timezone": "Europe/London"},
+        headers=csrf(parent),
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["family"] == {
+        "name": "Familie Mond",
+        "default_language": "en",
+        "timezone": "Europe/London",
+        "pin_enabled": True,
+    }
+
+
+def test_update_family_validates_and_needs_pin(client, parent):
+    bad = client.put(
+        "/api/parent/family",
+        json={"name": "", "default_language": "de", "timezone": "Mars/Base"},
+        headers=csrf(parent),
+    )
+    assert bad.json()["fields"] == {
+        "name": "validation.too_short",
+        "timezone": "validation.invalid_timezone",
+    }
+
+    client.post("/api/parent/lock", headers=csrf(parent))
+    locked = client.put(
+        "/api/parent/family",
+        json={"name": "X", "default_language": "de", "timezone": "Europe/Berlin"},
+        headers=csrf(parent),
+    )
+    assert locked.status_code == 403

@@ -55,7 +55,8 @@ function useMeMutation<TVariables>(
       afterSuccess?.(queryClient)
     },
     onError: (error) => {
-      if (error instanceof ApiError && error.status === 401) {
+      // Abgemeldet oder Elternbereich wieder gesperrt: /auth/me neu laden.
+      if (error instanceof ApiError && (error.status === 401 || error.code === 'parent.locked')) {
         void queryClient.invalidateQueries({ queryKey: ME_KEY })
       }
     },
@@ -89,6 +90,19 @@ export const useLockParent = () => useMeMutation(() => api<Me>('POST', '/parent/
 
 export const useSetPin = () =>
   useMeMutation((pin: string) => api<Me>('PUT', '/parent/pin', { pin }))
+
+export interface FamilySettings {
+  name: string
+  default_language: string
+  timezone: string
+}
+
+/** Familienname, Sprache und Zeitzone; „heute“ und die Familienansicht laden danach neu. */
+export const useUpdateFamily = () =>
+  useMeMutation(
+    (settings: FamilySettings) => api<Me>('PUT', '/parent/family', settings),
+    (queryClient) => void queryClient.invalidateQueries({ queryKey: ['today'] }),
+  )
 
 export const useDisablePin = () => useMeMutation(() => api<Me>('DELETE', '/parent/pin'))
 

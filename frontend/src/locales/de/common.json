@@ -414,5 +414,15 @@
     "day_label_other": "{{day}}: {{done}} von {{count}} Aufgaben erledigt",
     "total_label_one": "Diese Woche {{done}} von {{count}} Aufgabe erledigt",
     "total_label_other": "Diese Woche {{done}} von {{count}} Aufgaben erledigt"
+  },
+  "family_settings": {
+    "section": "Familie",
+    "name": "Familienname",
+    "language": "Sprache der Familie",
+    "language_hint": "Gilt auf allen Geräten, auf denen niemand selbst eine Sprache gewählt hat.",
+    "timezone": "Zeitzone",
+    "timezone_hint": "Danach richtet sich, wann ein neuer Tag beginnt.",
+    "save": "Speichern",
+    "saved": "Die Einstellungen der Familie sind gespeichert."
   }
 }

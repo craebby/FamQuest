@@ -24,6 +24,7 @@ import { Alert, Button, CenteredCard, Section, TextField } from '../components/u
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { ApprovalsSection } from './parents/ApprovalsSection'
+import { FamilySection } from './parents/FamilySection'
 import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
 import { PointsEditor } from './parents/PointsEditor'
@@ -385,6 +386,8 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         }}
         timeZone={me.family.timezone}
       />
+
+      <FamilySection me={me} onSaved={setNotice} />
 
       <Section title={t('parents.pin_section')}>
         <p className="flex items-center gap-3 text-lg text-slate-600">

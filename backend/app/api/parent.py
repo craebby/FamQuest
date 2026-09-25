@@ -10,7 +10,7 @@ from app.auth import (
     unlock_parent_area,
 )
 from app.errors import ApiError
-from app.schemas import MeResponse, Pin
+from app.schemas import FamilyName, LanguageCode, MeResponse, Pin, Timezone
 from app.security import hash_secret, login_limiter, pin_limiter, verify_secret
 
 router = APIRouter(prefix="/parent", tags=["parent"])
@@ -22,6 +22,12 @@ class UnlockRequest(BaseModel):
 
 class PinRequest(BaseModel):
     pin: Pin
+
+
+class FamilySettings(BaseModel):
+    name: FamilyName
+    default_language: LanguageCode
+    timezone: Timezone
 
 
 class PinResetRequest(BaseModel):
@@ -58,6 +64,16 @@ def set_pin(body: PinRequest, auth_session: ParentSession, db: DbSession) -> MeR
     family = get_family(db)
     family.parent_pin_hash = hash_secret(body.pin)
     family.pin_enabled = True
+    db.commit()
+    return me_response(db, auth_session)
+
+
+@router.put("/family")
+def update_family(body: FamilySettings, auth_session: ParentSession, db: DbSession) -> MeResponse:
+    """Familienname, Standardsprache und Zeitzone („heute“ rechnet danach in der neuen Zone)."""
+    family = get_family(db)
+    family.name, family.default_language = body.name, body.default_language
+    family.timezone = body.timezone
     db.commit()
     return me_response(db, auth_session)
 

@@ -69,6 +69,8 @@ weitere Konten lassen sich nicht über die Oberfläche registrieren.
 - Die PIN lässt sich im Elternbereich ändern oder abschalten. PIN vergessen: Mit dem Passwort des
   Kontos eine neue PIN festlegen.
 - Nach 5 falschen Versuchen (Passwort oder PIN) sind weitere Versuche 15 Minuten lang gesperrt.
+- Familienname, Sprache der Familie und Zeitzone lassen sich im Elternbereich unter „Familie“
+  ändern. Die Zeitzone bestimmt, wann ein neuer Tag beginnt (Standard: Europe/Berlin).
 
 ## Familienmitglieder
 
