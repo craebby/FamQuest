@@ -1,33 +1,87 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router'
 
-import { useHealth } from './api/health'
+import { useMe, useSetupStatus } from './api/auth'
+import { ApiError } from './api/client'
+import { Button, FullScreenMessage } from './components/ui'
+import { errorMessage } from './errors'
+import { applyFamilyLanguage } from './i18n'
+import { HomePage } from './pages/HomePage'
+import { LoginPage } from './pages/LoginPage'
+import { ParentsPage } from './pages/ParentsPage'
+import { SetupPage } from './pages/SetupPage'
 
-const STATUS_STYLES = {
-  checking: 'bg-slate-100 text-slate-600',
-  ok: 'bg-emerald-100 text-emerald-800',
-  error: 'bg-red-100 text-red-800',
-} as const
+function Loading() {
+  const { t } = useTranslation()
+  return (
+    <FullScreenMessage>
+      <p role="status">{t('common.loading')}</p>
+    </FullScreenMessage>
+  )
+}
+
+function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
+  const { t } = useTranslation()
+  return (
+    <FullScreenMessage>
+      <p role="alert">{errorMessage(t, error)}</p>
+      <Button onClick={onRetry}>{t('actions.retry')}</Button>
+    </FullScreenMessage>
+  )
+}
+
+/** Vor dem ersten Setup führt jeder Weg zur Setup-Seite, danach nie wieder. */
+function SetupGate() {
+  const status = useSetupStatus()
+  const { pathname } = useLocation()
+
+  if (status.isPending) return <Loading />
+  if (status.isError)
+    return <LoadError error={status.error} onRetry={() => void status.refetch()} />
+
+  const required = status.data.setup_required
+  if (required && pathname !== '/setup') return <Navigate to="/setup" replace />
+  if (!required && pathname === '/setup') return <Navigate to="/" replace />
+  return <Outlet />
+}
+
+/** Seiten, die eine Anmeldung brauchen. Setzt außerdem die Sprache der Familie. */
+function RequireAuth() {
+  const me = useMe()
+  const familyLanguage = me.data?.family.default_language
+
+  useEffect(() => {
+    if (familyLanguage) applyFamilyLanguage(familyLanguage)
+  }, [familyLanguage])
+
+  if (me.isPending) return <Loading />
+  if (me.isError) {
+    if (me.error instanceof ApiError && me.error.status === 401)
+      return <Navigate to="/login" replace />
+    return <LoadError error={me.error} onRetry={() => void me.refetch()} />
+  }
+  return <Outlet />
+}
+
+function LoginRoute() {
+  const me = useMe()
+  if (me.isPending) return <Loading />
+  return me.isSuccess ? <Navigate to="/" replace /> : <LoginPage />
+}
 
 export default function App() {
-  const { t } = useTranslation()
-  const health = useHealth()
-
-  const state = health.isPending ? 'checking' : health.data?.status === 'ok' ? 'ok' : 'error'
-
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-4 text-center">
-      <span className="text-8xl" aria-hidden="true">
-        ⭐
-      </span>
-      <h1 className="text-5xl font-extrabold tracking-tight text-orange-600">{t('app.name')}</h1>
-      <p className="max-w-xl text-xl text-slate-600">{t('app.tagline')}</p>
-      <p
-        role="status"
-        className={`flex items-center gap-3 rounded-full px-6 py-3 text-lg font-semibold ${STATUS_STYLES[state]}`}
-      >
-        <span className="size-3 rounded-full bg-current" aria-hidden="true" />
-        {t(`health.${state}`)}
-      </p>
-    </main>
+    <Routes>
+      <Route element={<SetupGate />}>
+        <Route path="/setup" element={<SetupPage />} />
+        <Route path="/login" element={<LoginRoute />} />
+        <Route element={<RequireAuth />}>
+          <Route index element={<HomePage />} />
+          <Route path="/parents" element={<ParentsPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   )
 }

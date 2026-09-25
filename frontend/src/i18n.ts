@@ -44,3 +44,16 @@ void i18n
   })
 
 export default i18n
+
+/** Familiensprache anwenden, sofern auf diesem Gerät keine eigene Sprache gewählt wurde. */
+export function applyFamilyLanguage(language: string) {
+  let deviceLanguage: string | null = null
+  try {
+    deviceLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY)
+  } catch {
+    // Kein Zugriff auf localStorage (z. B. privater Modus): Familiensprache verwenden.
+  }
+  if (!deviceLanguage && i18n.resolvedLanguage !== language) {
+    void i18n.changeLanguage(language)
+  }
+}

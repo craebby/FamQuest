@@ -4,8 +4,9 @@ from fastapi import APIRouter, FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import health
+from app.api import auth, health, parent, setup
 from app.config import Settings, get_settings
+from app.errors import register_error_handlers
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -13,9 +14,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
     app = FastAPI(title="FamQuest", docs_url="/api/docs", openapi_url="/api/openapi.json")
+    register_error_handlers(app)
 
     api = APIRouter(prefix="/api")
-    api.include_router(health.router)
+    for module in (health, setup, auth, parent):
+        api.include_router(module.router)
     app.include_router(api)
 
     @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])

@@ -1,18 +1,104 @@
 {
   "app": {
-    "name": "FamQuest",
-    "tagline": "Routines, tasks, points and rewards for the whole family"
+    "name": "FamQuest"
   },
-  "health": {
-    "checking": "Checking connection …",
-    "ok": "All set",
-    "error": "Server unreachable"
+  "common": {
+    "loading": "Loading …"
+  },
+  "actions": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "logout": "Sign out",
+    "next": "Next",
+    "retry": "Try again"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "setup": {
+    "title": "Welcome to FamQuest",
+    "intro": "Set up your family in two quick steps.",
+    "language": "Language",
+    "family_name": "Family name",
+    "email": "Email",
+    "password": "Password",
+    "password_hint": "At least {{min}} characters",
+    "pin_intro": "The parent PIN protects the parent area so children don't change anything by accident.",
+    "pin_title": "Choose a parent PIN",
+    "pin_repeat_title": "Repeat the parent PIN"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in"
+  },
+  "home": {
+    "placeholder_title": "Family view",
+    "placeholder_text": "Everyone's tasks will show up here soon."
+  },
+  "parents": {
+    "title": "Parent area",
+    "back": "Back to family view",
+    "pin_prompt": "Enter parent PIN",
+    "forgot_pin": "Forgot PIN?",
+    "reset_title": "Choose a new PIN",
+    "reset_intro": "Enter your account password, then choose a new PIN.",
+    "password": "Password",
+    "new_pin": "Enter new PIN",
+    "repeat_pin": "Repeat new PIN",
+    "pin_section": "Parent PIN",
+    "pin_on": "The PIN protects the parent area.",
+    "pin_off": "The parent area is not protected. Anyone can open it.",
+    "change_pin": "Change PIN",
+    "enable_pin": "Set PIN",
+    "disable_pin": "Turn off PIN",
+    "disable_confirm": "Really turn off the PIN? Anyone will be able to open the parent area.",
+    "pin_saved": "The new PIN has been saved.",
+    "pin_disabled": "The PIN is turned off.",
+    "account_section": "Account",
+    "signed_in_as": "Signed in as {{email}}"
+  },
+  "pinpad": {
+    "delete": "Delete digit",
+    "confirm": "Confirm",
+    "entered_one": "{{count}} digit entered",
+    "entered_other": "{{count}} digits entered"
   },
   "errors": {
     "common": {
       "network": "No connection to the server",
       "not_found": "Not found",
-      "unknown": "Something went wrong"
+      "unknown": "Something went wrong",
+      "validation": "Please check your input"
+    },
+    "validation": {
+      "required": "Please fill in",
+      "too_short": "Too short",
+      "too_long": "Too long",
+      "invalid_format": "Invalid format",
+      "invalid_email": "Please enter a valid email address",
+      "invalid_timezone": "Unknown time zone",
+      "invalid": "Invalid input",
+      "password_length": "At least {{min}} characters"
+    },
+    "auth": {
+      "not_authenticated": "Please sign in",
+      "invalid_credentials": "Email or password is incorrect",
+      "rate_limited": "Too many attempts. Please wait a few minutes.",
+      "csrf_failed": "Security check failed. Please reload the page."
+    },
+    "setup": {
+      "already_done": "Setup has already been completed",
+      "required": "The app has not been set up yet"
+    },
+    "pin": {
+      "wrong": "Wrong PIN",
+      "mismatch": "The PINs don't match. Please try again."
+    },
+    "parent": {
+      "locked": "The parent area is locked. Please enter the PIN."
     }
   }
 }

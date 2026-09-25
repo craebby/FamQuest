@@ -17,6 +17,15 @@ os.environ["POSTGRES_DB"] = TEST_DB
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
+SETUP_DATA = {
+    "language": "de",
+    "family_name": "Familie Test",
+    "email": "Mama@Example.org",
+    "password": "sehr-geheim-123",
+    "pin": "1234",
+    "timezone": "Europe/Berlin",
+}
+
 
 def alembic_config() -> Config:
     config = Config(BACKEND_DIR / "alembic.ini")
@@ -38,9 +47,39 @@ def database() -> None:
     command.upgrade(alembic_config(), "head")
 
 
+@pytest.fixture(autouse=True)
+def clean_state() -> Iterator[None]:
+    """Jeder Test startet mit leerer Datenbank und zurückgesetzten Rate-Limits."""
+    yield
+    from app.db import Base, engine
+    from app.security import login_limiter, pin_limiter
+
+    tables = ", ".join(f'"{table.name}"' for table in Base.metadata.sorted_tables)
+    with engine.begin() as conn:
+        conn.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
+    login_limiter.clear()
+    pin_limiter.clear()
+
+
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     from app.main import app
 
     with TestClient(app) as test_client:
         yield test_client
+
+
+def run_setup(client: TestClient, **overrides) -> dict:
+    response = client.post("/api/setup", json={**SETUP_DATA, **overrides})
+    assert response.status_code == 201, response.text
+    return response.json()
+
+
+def csrf(me: dict) -> dict[str, str]:
+    return {"X-CSRF-Token": me["csrf_token"]}
+
+
+@pytest.fixture
+def admin(client) -> dict:
+    """Setup ausgeführt, Client ist als Admin angemeldet. Liefert die /me-Antwort."""
+    return run_setup(client)

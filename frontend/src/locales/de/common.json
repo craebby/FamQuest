@@ -1,18 +1,104 @@
 {
   "app": {
-    "name": "FamQuest",
-    "tagline": "Routinen, Aufgaben, Punkte und Belohnungen für die ganze Familie"
+    "name": "FamQuest"
   },
-  "health": {
-    "checking": "Verbindung wird geprüft …",
-    "ok": "Alles bereit",
-    "error": "Server nicht erreichbar"
+  "common": {
+    "loading": "Wird geladen …"
+  },
+  "actions": {
+    "back": "Zurück",
+    "cancel": "Abbrechen",
+    "logout": "Abmelden",
+    "next": "Weiter",
+    "retry": "Nochmal versuchen"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "setup": {
+    "title": "Willkommen bei FamQuest",
+    "intro": "Richtet eure Familie in zwei kurzen Schritten ein.",
+    "language": "Sprache",
+    "family_name": "Familienname",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "password_hint": "Mindestens {{min}} Zeichen",
+    "pin_intro": "Die Eltern-PIN schützt den Elternbereich, damit Kinder nichts versehentlich ändern.",
+    "pin_title": "Eltern-PIN festlegen",
+    "pin_repeat_title": "Eltern-PIN wiederholen"
+  },
+  "login": {
+    "title": "Anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Anmelden"
+  },
+  "home": {
+    "placeholder_title": "Familienansicht",
+    "placeholder_text": "Hier erscheinen bald die Aufgaben aller Familienmitglieder."
+  },
+  "parents": {
+    "title": "Elternbereich",
+    "back": "Zur Familienansicht",
+    "pin_prompt": "Eltern-PIN eingeben",
+    "forgot_pin": "PIN vergessen?",
+    "reset_title": "Neue PIN festlegen",
+    "reset_intro": "Gib das Passwort deines Kontos ein und wähle danach eine neue PIN.",
+    "password": "Passwort",
+    "new_pin": "Neue PIN eingeben",
+    "repeat_pin": "Neue PIN wiederholen",
+    "pin_section": "Eltern-PIN",
+    "pin_on": "Die PIN schützt den Elternbereich.",
+    "pin_off": "Der Elternbereich ist nicht geschützt. Jeder kann ihn öffnen.",
+    "change_pin": "PIN ändern",
+    "enable_pin": "PIN festlegen",
+    "disable_pin": "PIN abschalten",
+    "disable_confirm": "PIN wirklich abschalten? Dann kann jeder den Elternbereich öffnen.",
+    "pin_saved": "Die neue PIN ist gespeichert.",
+    "pin_disabled": "Die PIN ist abgeschaltet.",
+    "account_section": "Konto",
+    "signed_in_as": "Angemeldet als {{email}}"
+  },
+  "pinpad": {
+    "delete": "Ziffer löschen",
+    "confirm": "Bestätigen",
+    "entered_one": "{{count}} Ziffer eingegeben",
+    "entered_other": "{{count}} Ziffern eingegeben"
   },
   "errors": {
     "common": {
       "network": "Keine Verbindung zum Server",
       "not_found": "Nicht gefunden",
-      "unknown": "Etwas ist schiefgelaufen"
+      "unknown": "Etwas ist schiefgelaufen",
+      "validation": "Bitte prüfe deine Eingaben"
+    },
+    "validation": {
+      "required": "Bitte ausfüllen",
+      "too_short": "Zu kurz",
+      "too_long": "Zu lang",
+      "invalid_format": "Ungültiges Format",
+      "invalid_email": "Bitte eine gültige E-Mail-Adresse eingeben",
+      "invalid_timezone": "Unbekannte Zeitzone",
+      "invalid": "Ungültige Eingabe",
+      "password_length": "Mindestens {{min}} Zeichen"
+    },
+    "auth": {
+      "not_authenticated": "Bitte melde dich an",
+      "invalid_credentials": "E-Mail oder Passwort ist falsch",
+      "rate_limited": "Zu viele Versuche. Bitte warte ein paar Minuten.",
+      "csrf_failed": "Sicherheitsprüfung fehlgeschlagen. Bitte lade die Seite neu."
+    },
+    "setup": {
+      "already_done": "Die Einrichtung ist bereits abgeschlossen",
+      "required": "Die App ist noch nicht eingerichtet"
+    },
+    "pin": {
+      "wrong": "Falsche PIN",
+      "mismatch": "Die PINs stimmen nicht überein. Bitte nochmal."
+    },
+    "parent": {
+      "locked": "Der Elternbereich ist gesperrt. Bitte PIN eingeben."
     }
   }
 }

@@ -70,6 +70,7 @@ Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker;
 - Backend-Tests: `cd backend && uv run pytest` (legt DB `<POSTGRES_DB>_test` neu an)
 - Backend-Lint: `cd backend && uv run ruff check . && uv run ruff format --check .`
 - Frontend-Tests/Lint: `cd frontend && npm test && npm run lint && npm run typecheck`
+  (Lint prüft auch Prettier; formatieren mit `npm run format`)
 - Gesamtes Image: `docker compose up -d --build`, Tests im Container:
   `docker compose --profile test run --rm --build tests`
 

@@ -1,0 +1,57 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
+import { vi } from 'vitest'
+
+import App from '../App'
+import type { Me } from '../api/auth'
+
+type Handler = Response | ((body: unknown) => Response)
+
+/** Ersetzt fetch durch feste Antworten je "METHODE /pfad". */
+export function mockApi(routes: Record<string, Handler>) {
+  const calls: { key: string; body: unknown; headers: Record<string, string> }[] = []
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input), 'http://localhost')
+    const key = `${init?.method ?? 'GET'} ${url.pathname}`
+    const body = init?.body ? JSON.parse(String(init.body)) : undefined
+    calls.push({ key, body, headers: (init?.headers ?? {}) as Record<string, string> })
+    const handler = routes[key]
+    if (!handler) return Response.json({ code: 'common.not_found' }, { status: 404 })
+    return typeof handler === 'function' ? handler(body) : handler.clone()
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return calls
+}
+
+export function renderApp(path = '/') {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+export function makeMe(overrides: Partial<Me> = {}): Me {
+  return {
+    user: { email: 'mama@example.org', role: 'admin', language: null },
+    family: {
+      name: 'Familie Sonnenschein',
+      default_language: 'de',
+      timezone: 'Europe/Berlin',
+      pin_enabled: true,
+    },
+    csrf_token: 'csrf-123',
+    parent_unlocked: false,
+    ...overrides,
+  }
+}
+
+export const setupDone = Response.json({ setup_required: false })
+export const setupRequired = Response.json({ setup_required: true })
+export const notAuthenticated = Response.json({ code: 'auth.not_authenticated' }, { status: 401 })

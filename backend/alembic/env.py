@@ -3,6 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine
 
+import app.models  # noqa: F401  (registriert alle Tabellen)
 from app.config import get_settings
 from app.db import Base
 
