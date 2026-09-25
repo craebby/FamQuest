@@ -17,6 +17,8 @@ export interface TaskTemplate {
   points: number
   time_of_day: TimeOfDay | null
   recurrence: Recurrence
+  /** Punkte erst nach Kontrolle durch die Eltern. */
+  needs_approval?: boolean
 }
 
 /** Vorlagen für neue Aufgaben; sie füllen den Editor nur vor, alles bleibt änderbar. */
@@ -60,6 +62,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 3,
     time_of_day: 'afternoon',
     recurrence: { kind: 'daily' },
+    needs_approval: true,
   },
   {
     id: 'clear_table',
@@ -116,6 +119,7 @@ export const TASK_POOL: readonly TaskTemplate[] = [
     points: 5,
     time_of_day: null,
     recurrence: { kind: 'weekly', weekdays: [6] },
+    needs_approval: true,
   },
   {
     id: 'lunchbox',

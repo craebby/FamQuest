@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import ReviewIcon from '~icons/fluent-emoji-flat/magnifying-glass-tilted-left'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
 import PlusIcon from '~icons/lucide/plus'
@@ -167,6 +168,12 @@ function TaskRow({
               <span className="inline-flex items-center gap-1">
                 <TimeIcon className="size-6" aria-hidden="true" />
                 {t(`times_of_day.${task.time_of_day}`)}
+              </span>
+            )}
+            {task.needs_approval && (
+              <span className="inline-flex items-center gap-1">
+                <ReviewIcon className="size-6" aria-hidden="true" />
+                {t('tasks.needs_approval')}
               </span>
             )}
             <span className="inline-flex items-center gap-1 font-bold text-slate-700">

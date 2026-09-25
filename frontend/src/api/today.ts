@@ -13,8 +13,11 @@ export interface TodayTask {
   /** null = Farbe der jeweiligen Person */
   color: MemberColor | null
   member_ids: number[]
-  /** Personen, die die Aufgabe heute schon erledigt haben. */
+  needs_approval: boolean
+  /** Personen, die die Aufgabe heute schon erledigt haben (auch ungeprüft). */
   done_member_ids: number[]
+  /** Davon: Erledigungen, die noch auf die Kontrolle der Eltern warten. */
+  pending_member_ids: number[]
 }
 
 export interface MemberPoints {
@@ -36,6 +39,8 @@ export interface Today {
   time_of_day: TimeOfDay
   tasks: TodayTask[]
   points: MemberPoints[]
+  /** Erledigungen aller Tage, die auf die Kontrolle der Eltern warten. */
+  pending_approvals: number
 }
 
 export const TODAY_KEY = ['today'] as const
@@ -67,22 +72,32 @@ function setDone({ date, taskId, memberId, done }: SetDoneVariables) {
 function withDone(today: Today, { taskId, memberId, done }: SetDoneVariables): Today {
   const task = today.tasks.find((candidate) => candidate.id === taskId)
   if (!task || task.done_member_ids.includes(memberId) === done) return today
-  const delta = done ? task.points : -task.points
+  // Ungeprüfte Erledigungen bringen noch keine Punkte und zählen noch nicht für die Woche.
+  const wasPending = task.pending_member_ids.includes(memberId)
+  const counts = done ? !task.needs_approval : !wasPending
+  const delta = counts ? (done ? task.points : -task.points) : 0
   const before = pointsFor(today, memberId)
   const after = {
     ...before,
     today: before.today + delta,
     total: before.total + delta,
-    week_done: before.week_done + (done ? 1 : -1),
+    week_done: before.week_done + (counts ? (done ? 1 : -1) : 0),
   }
+  const pendingNow = done && task.needs_approval
   return {
     ...today,
     tasks: today.tasks.map((candidate) => {
       if (candidate !== task) return candidate
       const others = task.done_member_ids.filter((id) => id !== memberId)
-      return { ...task, done_member_ids: done ? [...others, memberId] : others }
+      const otherPending = task.pending_member_ids.filter((id) => id !== memberId)
+      return {
+        ...task,
+        done_member_ids: done ? [...others, memberId] : others,
+        pending_member_ids: pendingNow ? [...otherPending, memberId] : otherPending,
+      }
     }),
     points: [...today.points.filter((entry) => entry.member_id !== memberId), after],
+    pending_approvals: today.pending_approvals + (pendingNow ? 1 : wasPending && !done ? -1 : 0),
   }
 }
 

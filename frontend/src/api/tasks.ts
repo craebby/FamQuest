@@ -24,6 +24,8 @@ export interface TaskData {
   /** null = Farbe der jeweiligen Person */
   color: MemberColor | null
   active: boolean
+  /** Punkte erst nach Kontrolle durch die Eltern. */
+  needs_approval: boolean
   recurrence: Recurrence
   member_ids: number[]
 }

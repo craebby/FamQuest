@@ -76,7 +76,9 @@ def test_today_lists_only_due_active_assigned_tasks(client, parent, lena, now):
         "time_of_day": "morning",
         "color": None,
         "member_ids": [lena],
+        "needs_approval": False,
         "done_member_ids": [],
+        "pending_member_ids": [],
     }
 
 

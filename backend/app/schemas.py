@@ -144,6 +144,7 @@ class TaskIn(BaseModel):
     time_of_day: TimeOfDay | None = None
     color: MemberColor | None = None
     active: bool = True
+    needs_approval: bool = False
     recurrence: Recurrence
     member_ids: Annotated[list[int], Field(min_length=1), AfterValidator(_unique_sorted)]
 
@@ -157,6 +158,7 @@ class TaskOut(BaseModel):
     time_of_day: str | None
     color: str | None
     active: bool
+    needs_approval: bool
     recurrence: Recurrence
     member_ids: list[int]
 
@@ -169,8 +171,11 @@ class TodayTaskOut(BaseModel):
     time_of_day: str | None
     color: str | None
     member_ids: list[int]
-    # Personen, die die Aufgabe heute schon erledigt haben.
+    needs_approval: bool
+    # Personen, die die Aufgabe heute schon erledigt haben (auch ungeprüft).
     done_member_ids: list[int]
+    # Davon: Erledigungen, die noch auf die Kontrolle der Eltern warten.
+    pending_member_ids: list[int]
 
 
 class MemberPointsOut(BaseModel):
@@ -189,6 +194,8 @@ class TodayOut(BaseModel):
     time_of_day: str
     tasks: list[TodayTaskOut]
     points: list[MemberPointsOut]
+    # Erledigungen aller Tage, die auf die Kontrolle der Eltern warten.
+    pending_approvals: int
 
 
 class PointBookingIn(BaseModel):
@@ -254,3 +261,16 @@ class RedemptionHistoryOut(BaseModel):
     redemptions: list[RedemptionOut]
     # Es gibt ältere Einlösungen; abrufbar mit `before=<id der letzten Einlösung>`.
     has_more: bool
+
+
+class ApprovalOut(BaseModel):
+    """Erledigung, die auf die Kontrolle der Eltern wartet."""
+
+    id: int
+    task_id: int
+    title: str
+    icon: str
+    points: int
+    member_id: int
+    date: dt.date
+    completed_at: dt.datetime

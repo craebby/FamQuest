@@ -22,6 +22,10 @@ def is_due(task: Task, day: dt.date) -> bool:
     return task.active and occurs_on(task.recurrence, day)
 
 
+def assigned_only(task: Task, member_ids: list[int]) -> list[int]:
+    return [m for m in member_ids if any(a.member_id == m for a in task.assignments)]
+
+
 @router.get("/today")
 def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
     now = family_now(get_family(db))
@@ -32,19 +36,26 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
         if is_due(task, day) and task.assignments
     ]
     done: dict[int, list[int]] = {}
-    for task_id, member_id in db.execute(
-        select(TaskCompletion.task_id, TaskCompletion.member_id)
+    pending: dict[int, list[int]] = {}
+    for task_id, member_id, approved_at in db.execute(
+        select(TaskCompletion.task_id, TaskCompletion.member_id, TaskCompletion.approved_at)
         .where(TaskCompletion.date == day)
         .order_by(TaskCompletion.member_id)
     ):
         done.setdefault(task_id, []).append(member_id)
+        if approved_at is None:
+            pending.setdefault(task_id, []).append(member_id)
     earned, total = earned_on(db, day), totals(db)
     week_start = day - dt.timedelta(days=day.weekday())
     week_done = {
         member_id: count
         for member_id, count in db.execute(
             select(TaskCompletion.member_id, func.count())
-            .where(TaskCompletion.date >= week_start, TaskCompletion.date <= day)
+            .where(
+                TaskCompletion.date >= week_start,
+                TaskCompletion.date <= day,
+                TaskCompletion.approved_at.is_not(None),
+            )
             .group_by(TaskCompletion.member_id)
         )
     }
@@ -62,12 +73,10 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
                 time_of_day=task.time_of_day,
                 color=task.color,
                 member_ids=[a.member_id for a in task.assignments],
+                needs_approval=task.needs_approval,
                 # Nur Personen, denen die Aufgabe (noch) zugeordnet ist.
-                done_member_ids=[
-                    member_id
-                    for member_id in done.get(task.id, [])
-                    if any(a.member_id == member_id for a in task.assignments)
-                ],
+                done_member_ids=assigned_only(task, done.get(task.id, [])),
+                pending_member_ids=assigned_only(task, pending.get(task.id, [])),
             )
             for task in tasks
         ],
@@ -80,6 +89,10 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
             )
             for member_id in db.scalars(select(FamilyMember.id).order_by(FamilyMember.id))
         ],
+        pending_approvals=db.scalar(
+            select(func.count()).where(TaskCompletion.approved_at.is_(None))
+        )
+        or 0,
     )
 
 
@@ -105,16 +118,23 @@ def complete_task(
     """Markiert die Aufgabe als erledigt und bucht die Punkte.
 
     Ist sie schon erledigt (Doppel-Tipp), passiert nichts: Der Unique-Constraint lässt nur eine
-    Erledigung je Tag zu, und nur wer sie tatsächlich anlegt, bucht Punkte.
+    Erledigung je Tag zu, und nur wer sie tatsächlich anlegt, bucht Punkte. Aufgaben mit
+    Elternkontrolle warten ungeprüft; ihre Punkte bucht erst die Bestätigung (api/approvals).
     """
     task, today = check_completable(db, task_id, member_id, date)
     created = db.scalar(
         insert(TaskCompletion)
-        .values(task_id=task_id, member_id=member_id, date=today, points=task.points)
+        .values(
+            task_id=task_id,
+            member_id=member_id,
+            date=today,
+            points=task.points,
+            approved_at=None if task.needs_approval else func.now(),
+        )
         .on_conflict_do_nothing(index_elements=["task_id", "member_id", "date"])
         .returning(TaskCompletion.id)
     )
-    if created is not None:
+    if created is not None and not task.needs_approval:
         book(
             db,
             member_id,
@@ -133,23 +153,23 @@ def undo_task(
 ) -> None:
     """Macht die heutige Erledigung rückgängig und bucht ihre Punkte zurück (Gegenbuchung).
 
-    War sie nicht erledigt, passiert nichts.
+    War sie nicht erledigt, passiert nichts; war sie noch ungeprüft, gibt es nichts zurückzubuchen.
     """
     task, today = check_completable(db, task_id, member_id, date)
-    points = db.scalar(
+    removed = db.execute(
         delete(TaskCompletion)
         .where(
             TaskCompletion.task_id == task_id,
             TaskCompletion.member_id == member_id,
             TaskCompletion.date == today,
         )
-        .returning(TaskCompletion.points)
-    )
-    if points is not None:
+        .returning(TaskCompletion.points, TaskCompletion.approved_at)
+    ).first()
+    if removed is not None and removed.approved_at is not None:
         book(
             db,
             member_id,
-            -points,
+            -removed.points,
             "task_undone",
             reason=task.title,
             task_id=task_id,

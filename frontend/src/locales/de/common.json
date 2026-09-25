@@ -38,7 +38,9 @@
     "label": "Hauptnavigation",
     "today": "Heute",
     "settings": "Einstellungen",
-    "rewards": "Belohnungen"
+    "rewards": "Belohnungen",
+    "pending_one": "{{count}} Aufgabe wartet auf Kontrolle",
+    "pending_other": "{{count}} Aufgaben warten auf Kontrolle"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -51,7 +53,8 @@
     "free_today": "Heute frei!",
     "now": "Jetzt",
     "section_done": "{{section}}: alles erledigt",
-    "task_label": "{{title}}, {{points}}"
+    "task_label": "{{title}}, {{points}}",
+    "pending": "wartet auf Kontrolle"
   },
   "parents": {
     "title": "Elternbereich",
@@ -170,7 +173,9 @@
     "templates": "Vorlage wählen",
     "template_groups": "Vorlagen-Gruppen",
     "template_group_kids": "Kinder",
-    "template_group_household": "Haushalt"
+    "template_group_household": "Haushalt",
+    "needs_approval": "Eltern prüfen",
+    "needs_approval_hint": "Punkte gibt es erst, wenn ihr die Erledigung im Elternbereich bestätigt habt."
   },
   "times_of_day": {
     "morning": "Morgens",
@@ -298,6 +303,9 @@
       "inactive": "Diese Belohnung ist gerade nicht verfügbar",
       "insufficient_points": "Dafür reichen die Punkte noch nicht",
       "child_only": "Belohnungen gibt es nur für Kinder"
+    },
+    "approval": {
+      "not_found": "Diese Erledigung wurde schon geprüft oder zurückgenommen."
     }
   },
   "rewards": {
@@ -354,5 +362,15 @@
     "legend_one": "{{name}}: {{percent}} % ({{count}} Aufgabe)",
     "legend_other": "{{name}}: {{percent}} % ({{count}} Aufgaben)",
     "percent": "{{percent}} %"
+  },
+  "approvals": {
+    "section": "Zu prüfen",
+    "intro": "Diese Aufgaben wurden als erledigt angetippt. Passt es, gibt es die Punkte.",
+    "approve": "Passt",
+    "reject": "Nochmal",
+    "approve_label": "{{title}} von {{name}} bestätigen",
+    "reject_label": "{{title}} von {{name}} ablehnen",
+    "approve_all_one": "{{count}} bestätigen",
+    "approve_all_other": "Alle {{count}} bestätigen"
   }
 }

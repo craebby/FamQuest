@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import HourglassIcon from '~icons/fluent-emoji-flat/hourglass-not-done'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import CheckIcon from '~icons/lucide/check'
 
@@ -54,6 +55,8 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
     return () => window.clearTimeout(timer)
   }, [feedback])
   const done = task.done_member_ids.includes(member.id)
+  // Erledigt, aber die Eltern müssen noch prüfen: Sanduhr statt Haken, noch keine Punkte.
+  const pending = done && task.pending_member_ids.includes(member.id)
   // Erwachsene sammeln keine Punkte; bei ihnen zählt nur, dass es erledigt ist.
   const showPoints = member.role !== 'parent'
   const tokens = colorTokens(task.color ?? member.color)
@@ -69,14 +72,15 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
       <button
         type="button"
         aria-pressed={done}
-        aria-label={
+        aria-label={[
           showPoints
             ? t('family.task_label', {
                 title: task.title,
                 points: t('tasks.points_count', { count: task.points }),
               })
-            : task.title
-        }
+            : task.title,
+          ...(pending ? [t('family.pending')] : []),
+        ].join(', ')}
         onClick={() => {
           setTapped(true)
           if (!done && showPoints && task.points > 0) setFeedback((count) => count + 1)
@@ -104,14 +108,24 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
             </span>
           )}
         </span>
-        {done && (
+        {pending ? (
           <span
-            className={`flex shrink-0 items-center justify-center rounded-full ${tapped ? 'motion-safe:animate-pop' : ''} ${sizes.badge}`}
-            style={{ backgroundColor: tokens.main, color: tokens.onMain }}
+            data-testid="pending-badge"
+            className={`flex shrink-0 items-center justify-center rounded-full bg-white shadow-sm ${tapped ? 'motion-safe:animate-pop' : ''} ${sizes.badge}`}
             aria-hidden="true"
           >
-            <CheckIcon className="size-2/3" strokeWidth={4} />
+            <HourglassIcon className="size-3/4" />
           </span>
+        ) : (
+          done && (
+            <span
+              className={`flex shrink-0 items-center justify-center rounded-full ${tapped ? 'motion-safe:animate-pop' : ''} ${sizes.badge}`}
+              style={{ backgroundColor: tokens.main, color: tokens.onMain }}
+              aria-hidden="true"
+            >
+              <CheckIcon className="size-2/3" strokeWidth={4} />
+            </span>
+          )
         )}
         {feedback > 0 && (
           <span
@@ -119,9 +133,14 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
             data-testid="points-feedback"
             aria-hidden="true"
             className={`pointer-events-none absolute -top-4 right-3 flex items-center gap-1 rounded-full px-3 py-1 font-extrabold shadow-md motion-safe:animate-float-up ${sizes.feedback}`}
-            style={{ backgroundColor: tokens.main, color: tokens.onMain }}
+            style={
+              task.needs_approval
+                ? { backgroundColor: '#ffffff', color: '#475569' }
+                : { backgroundColor: tokens.main, color: tokens.onMain }
+            }
           >
-            +{task.points}
+            {task.needs_approval && <HourglassIcon className="size-[1.2em]" aria-hidden="true" />}+
+            {task.points}
             <StarIcon className="size-[1.2em]" aria-hidden="true" />
           </span>
         )}

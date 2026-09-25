@@ -19,6 +19,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     time_of_day: 'morning',
     color: null,
     active: true,
+    needs_approval: false,
     recurrence: { kind: 'daily' },
     member_ids: [1],
     ...overrides,
@@ -127,6 +128,7 @@ describe('Aufgaben im Elternbereich', () => {
       time_of_day: 'evening',
       color: null,
       active: true,
+      needs_approval: false,
       recurrence: { kind: 'weekly', weekdays: [1, 6, 7] },
       member_ids: [1],
     })

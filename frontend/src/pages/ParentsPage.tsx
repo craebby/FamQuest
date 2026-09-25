@@ -23,6 +23,7 @@ import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
+import { ApprovalsSection } from './parents/ApprovalsSection'
 import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
 import { PointsEditor } from './parents/PointsEditor'
@@ -317,6 +318,8 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
         </p>
       )}
       {disablePin.isError && <Alert>{errorMessage(t, disablePin.error)}</Alert>}
+
+      <ApprovalsSection members={members.data ?? []} today={today.data?.date} />
 
       <MembersSection
         members={members.data}

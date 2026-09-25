@@ -105,6 +105,8 @@ class Task(Base):
     # None = Farbe der jeweiligen Person.
     color: Mapped[str | None] = mapped_column(String(20))
     active: Mapped[bool] = mapped_column(default=True, server_default="true")
+    # Punkte erst, nachdem Eltern die Erledigung geprüft haben (z. B. „Zimmer aufgeräumt“).
+    needs_approval: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     recurrence: Mapped["TaskRecurrence"] = relationship(cascade="all, delete-orphan", lazy="joined")
@@ -155,7 +157,8 @@ class TaskCompletion(Base):
 
     Rückgängig machen löscht die Zeile; der Unique-Constraint verhindert doppelte Erledigungen
     am selben Tag, auch bei gleichzeitigen Doppel-Tipps. Die Punkte stehen als Buchungen in
-    PointTransaction.
+    PointTransaction. Bei Aufgaben mit Elternkontrolle ist `approved_at` leer, bis Eltern die
+    Erledigung bestätigen; erst dann werden die Punkte gebucht.
     """
 
     __tablename__ = "task_completions"
@@ -174,6 +177,13 @@ class TaskCompletion(Base):
     # Gutgeschriebene Punkte; Rückgängig bucht genau diesen Betrag zurück, auch wenn sich
     # der Punktwert der Aufgabe inzwischen geändert hat.
     points: Mapped[int] = mapped_column(server_default="0")
+    # None = wartet auf Kontrolle durch die Eltern.
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    approved_by_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
+
+    task: Mapped[Task] = relationship(lazy="joined")
 
 
 class PointTransaction(Base):

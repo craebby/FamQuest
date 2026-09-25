@@ -38,7 +38,9 @@
     "label": "Main navigation",
     "today": "Today",
     "settings": "Settings",
-    "rewards": "Rewards"
+    "rewards": "Rewards",
+    "pending_one": "{{count}} task waiting for a check",
+    "pending_other": "{{count}} tasks waiting for a check"
   },
   "family": {
     "no_members": "No family members yet",
@@ -51,7 +53,8 @@
     "free_today": "Nothing to do today!",
     "now": "Now",
     "section_done": "{{section}}: all done",
-    "task_label": "{{title}}, {{points}}"
+    "task_label": "{{title}}, {{points}}",
+    "pending": "waiting for a check"
   },
   "parents": {
     "title": "Parent area",
@@ -170,7 +173,9 @@
     "templates": "Choose a template",
     "template_groups": "Template groups",
     "template_group_kids": "Children",
-    "template_group_household": "Household"
+    "template_group_household": "Household",
+    "needs_approval": "Parents check",
+    "needs_approval_hint": "Points are only given once you confirm it in the parents' area."
   },
   "times_of_day": {
     "morning": "Morning",
@@ -298,6 +303,9 @@
       "inactive": "This reward is not available right now",
       "insufficient_points": "Not enough points yet",
       "child_only": "Rewards are only for children"
+    },
+    "approval": {
+      "not_found": "This has already been checked or undone."
     }
   },
   "rewards": {
@@ -354,5 +362,15 @@
     "legend_one": "{{name}}: {{percent}}% ({{count}} task)",
     "legend_other": "{{name}}: {{percent}}% ({{count}} tasks)",
     "percent": "{{percent}}%"
+  },
+  "approvals": {
+    "section": "To check",
+    "intro": "These tasks were tapped as done. If it's all good, the points are added.",
+    "approve": "All good",
+    "reject": "Try again",
+    "approve_label": "Confirm {{title}} by {{name}}",
+    "reject_label": "Reject {{title}} by {{name}}",
+    "approve_all_one": "Confirm {{count}}",
+    "approve_all_other": "Confirm all {{count}}"
   }
 }

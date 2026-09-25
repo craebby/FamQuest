@@ -50,6 +50,7 @@ def test_create_and_list_task(client, parent, lena):
         "time_of_day": "morning",
         "color": None,
         "active": True,
+        "needs_approval": False,
         "recurrence": {"kind": "daily"},
         "member_ids": [lena],
     }
@@ -148,6 +149,7 @@ def test_update_task(client, parent, lena):
         "time_of_day": None,
         "color": "teal",
         "active": False,
+        "needs_approval": False,
         "recurrence": {"kind": "weekly", "weekdays": [1, 2, 3, 4, 5]},
         "member_ids": [tom],
     }

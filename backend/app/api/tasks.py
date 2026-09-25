@@ -21,6 +21,7 @@ def task_out(task: Task) -> TaskOut:
         time_of_day=task.time_of_day,
         color=task.color,
         active=task.active,
+        needs_approval=task.needs_approval,
         recurrence={
             "kind": recurrence.kind,
             "weekdays": recurrence.weekdays,
@@ -44,6 +45,7 @@ def apply_task(db: DbSession, task: Task, body: TaskIn) -> None:
     task.title, task.icon, task.points = body.title, body.icon, body.points
     task.description = body.description or None
     task.time_of_day, task.color, task.active = body.time_of_day, body.color, body.active
+    task.needs_approval = body.needs_approval
 
     rule = body.recurrence
     if task.recurrence is None:

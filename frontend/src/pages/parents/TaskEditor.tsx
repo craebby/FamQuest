@@ -87,6 +87,7 @@ export function TaskEditor({
   const [color, setColor] = useState<MemberColor | null>(task?.color ?? null)
   const [description, setDescription] = useState(task?.description ?? '')
   const [active, setActive] = useState(task?.active ?? true)
+  const [needsApproval, setNeedsApproval] = useState(task?.needs_approval ?? false)
   const [pickingIcon, setPickingIcon] = useState(false)
   const [pickingTemplate, setPickingTemplate] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -127,6 +128,7 @@ export function TaskEditor({
         time_of_day: timeOfDay,
         color,
         active,
+        needs_approval: needsApproval,
         recurrence:
           kind === 'weekly'
             ? { kind, weekdays: [...weekdays].sort() }
@@ -148,6 +150,7 @@ export function TaskEditor({
     setChosenIcon(taskTemplateIcon(template))
     setPoints(template.points)
     setTimeOfDay(template.time_of_day)
+    setNeedsApproval(template.needs_approval ?? false)
     setKind(template.recurrence.kind)
     if (template.recurrence.kind === 'weekly') setWeekdays(template.recurrence.weekdays)
     setPickingTemplate(false)
@@ -225,6 +228,16 @@ export function TaskEditor({
             icon={<StarIcon className="size-8 shrink-0" aria-hidden="true" />}
           />
         </Field>
+
+        <div className="flex flex-col gap-1">
+          <Switch
+            checked={needsApproval}
+            onChange={setNeedsApproval}
+            label={t('tasks.needs_approval')}
+            showLabel
+          />
+          <p className="text-base text-slate-500">{t('tasks.needs_approval_hint')}</p>
+        </div>
 
         <Field label={t('tasks.members')} error={membersError}>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-3">

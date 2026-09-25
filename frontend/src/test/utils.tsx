@@ -73,7 +73,9 @@ export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {
     time_of_day: 'morning',
     color: null,
     member_ids: [1],
+    needs_approval: false,
     done_member_ids: [],
+    pending_member_ids: [],
     ...overrides,
   }
 }
@@ -85,6 +87,7 @@ export function makeToday(overrides: Partial<Today> = {}): Today {
     time_of_day: 'morning',
     tasks: [],
     points: [],
+    pending_approvals: 0,
     ...overrides,
   }
 }

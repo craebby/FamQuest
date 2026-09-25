@@ -179,3 +179,41 @@ test('Eltern wählen Belohnungen aus, das Kind löst am Display ein', async ({ p
   await expect(page.getByRole('heading', { name: 'Eingelöst von Lena' })).toBeVisible()
   await expect(page.getByText('−4', { exact: true })).toBeVisible()
 })
+
+test('Aufgabe mit Elternkontrolle: erst nach Bestätigung gibt es Punkte', async ({ page }) => {
+  await login(page)
+  const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
+  await nav.getByRole('link', { name: 'Einstellungen' }).click()
+  await enterPin(page, PIN)
+
+  // Vorlage „Spielzeug aufräumen“ bringt „Eltern prüfen“ gleich mit.
+  await page.getByRole('button', { name: 'Aufgabe hinzufügen' }).click()
+  await page.getByRole('button', { name: 'Aus Vorlagen wählen' }).click()
+  await page.getByRole('button', { name: /Spielzeug aufräumen/ }).click()
+  await expect(page.getByRole('switch', { name: 'Eltern prüfen' })).toBeChecked()
+  await choose(page, 'checkbox', /Lena/)
+  await choose(page, 'radio', 'Jederzeit')
+  await page.getByRole('button', { name: 'Speichern' }).click()
+  await expect(page.getByRole('status')).toHaveText('„Spielzeug aufräumen“ ist gespeichert.')
+  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+
+  const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
+  await column.getByRole('button', { name: /^Spielzeug aufräumen/ }).tap()
+  await expect(
+    column.getByRole('button', { name: 'Spielzeug aufräumen, 3 Punkte, wartet auf Kontrolle' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(column.getByText('Insgesamt 0 Punkte')).toBeAttached()
+
+  // Das Zahnrad zeigt die wartende Kontrolle; die Eltern bestätigen.
+  await nav.getByRole('link', { name: 'Einstellungen, 1 Aufgabe wartet auf Kontrolle' }).click()
+  await enterPin(page, PIN)
+  await page.getByRole('button', { name: 'Spielzeug aufräumen von Lena bestätigen' }).click()
+  await expect(page.getByRole('heading', { name: 'Zu prüfen' })).toBeHidden()
+  await page.getByRole('button', { name: 'Zur Familienansicht' }).click()
+
+  await expect(column.getByText('Insgesamt 3 Punkte')).toBeAttached()
+  // Alles erledigt und geprüft: Der Abschnitt ist zugeklappt, nichts wartet mehr.
+  await expect(column.getByRole('button', { name: 'Jederzeit: alles erledigt' })).toBeVisible()
+  await expect(column.getByRole('button', { name: /wartet auf Kontrolle/ })).toHaveCount(0)
+  await expect(nav.getByRole('link', { name: 'Einstellungen', exact: true })).toBeVisible()
+})
