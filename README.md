@@ -465,3 +465,17 @@ test on a real display ([checklist](docs/DISPLAY-TEST.md)) and fixes from it.
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
   family per installation.
+
+## License
+
+Copyright © 2026 Craebby
+
+FamQuest is free software: you can redistribute it and/or modify it under the terms of the
+[GNU Affero General Public License](LICENSE) as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version. In short: you may use, change and
+share it freely, also commercially; if you distribute a modified version or run one for others over
+a network, you must publish its source code under the same licence.
+
+FamQuest is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; see the
+licence for details. The bundled [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) icons
+are © Microsoft, MIT licence.
