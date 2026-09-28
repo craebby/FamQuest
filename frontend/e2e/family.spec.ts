@@ -30,6 +30,14 @@ async function toTasks(page: Page) {
     .click()
 }
 
+/** Wechselt im Elternbereich über das Menü in einen Bereich. */
+async function openArea(page: Page, name: string) {
+  await page
+    .getByRole('navigation', { name: 'Bereiche des Elternbereichs' })
+    .getByRole('link', { name, exact: true })
+    .click()
+}
+
 async function login(page: Page) {
   await page.goto('/login')
   await page.getByLabel('E-Mail').fill(EMAIL)
@@ -63,6 +71,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
     .getByRole('link', { name: 'Einstellungen' })
     .click()
   await enterPin(page, PIN)
+  await openArea(page, 'Familie')
   await page.getByRole('button', { name: 'Person hinzufügen' }).click()
   await page.getByLabel('Name').fill('Lena')
   await choose(page, 'radio', 'Kind')
@@ -71,6 +80,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
   await expect(page.getByRole('status')).toHaveText('Lena ist gespeichert.')
 
   // Aufgabe anlegen: täglich, morgens, 2 Punkte
+  await openArea(page, 'Aufgaben')
   await page.getByRole('button', { name: 'Aufgabe hinzufügen' }).click()
   await page.getByLabel('Titel').fill('Zähne putzen')
   await page.getByRole('button', { name: 'Mehr Punkte' }).click()
@@ -161,6 +171,7 @@ test('Eltern wählen Belohnungen aus, das Kind löst am Display ein', async ({ p
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
   await nav.getByRole('link', { name: 'Einstellungen' }).click()
   await enterPin(page, PIN)
+  await openArea(page, 'Belohnungen')
 
   // Aus dem Pool zwei Belohnungen für Lena übernehmen, eine davon günstiger machen.
   await page.getByRole('button', { name: 'Aus Vorschlägen wählen' }).click()
@@ -191,6 +202,7 @@ test('Eltern wählen Belohnungen aus, das Kind löst am Display ein', async ({ p
   // Die Einlösung steht in der Historie im Elternbereich.
   await nav.getByRole('link', { name: 'Einstellungen' }).click()
   await enterPin(page, PIN)
+  await openArea(page, 'Belohnungen')
   await expect(page.getByRole('heading', { name: 'Eingelöst von Lena' })).toBeVisible()
   await expect(page.getByText('−4', { exact: true })).toBeVisible()
 })
@@ -200,6 +212,7 @@ test('Aufgabe mit Elternkontrolle: erst nach Bestätigung gibt es Punkte', async
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
   await nav.getByRole('link', { name: 'Einstellungen' }).click()
   await enterPin(page, PIN)
+  await openArea(page, 'Aufgaben')
 
   // Vorlage „Spielzeug aufräumen“ bringt „Eltern prüfen“ gleich mit.
   await page.getByRole('button', { name: 'Aufgabe hinzufügen' }).click()
@@ -238,6 +251,7 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' })
   await nav.getByRole('link', { name: 'Einstellungen' }).click()
   await enterPin(page, PIN)
+  await openArea(page, 'Aufgaben')
 
   // Erstmals fällig in drei Tagen, danach etwa jede Woche.
   const inThreeDays = new Date(Date.now() + 3 * 86_400_000).toLocaleDateString('sv-SE', {
@@ -336,6 +350,7 @@ test('Routinen: Schritt hinzufügen und sortieren, die Familienansicht folgt', a
     .getByRole('link', { name: 'Einstellungen' })
     .click()
   await enterPin(page, PIN)
+  await openArea(page, 'Routinen')
 
   const morning = page
     .getByRole('region', { name: 'Routinen' })

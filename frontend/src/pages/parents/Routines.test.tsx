@@ -69,9 +69,20 @@ afterEach(() => {
 describe('Routinen im Elternbereich', () => {
   it('bittet zuerst um ein Kind', async () => {
     api([], {}, [mama])
-    renderApp('/parents')
+    renderApp('/parents/routines')
 
     expect((await routines()).getByText(/Legt zuerst ein Kind an/)).toBeVisible()
+  })
+
+  it('zeigt das gewählte Kind auch, wenn es nur eines gibt', async () => {
+    api([makeTask()], {}, [lena, mama])
+    renderApp('/parents/routines')
+
+    const children = (await routines()).getByRole('group', { name: 'Kind wählen' })
+    expect(within(children).getByRole('button', { name: /Lena/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 
   it('zeigt je Kind die Tagesabschnitte als nummerierte Blöcke', async () => {
@@ -83,7 +94,7 @@ describe('Routinen im Elternbereich', () => {
       makeTask({ id: 4, title: 'Tisch abräumen', time_of_day: null, extra: true }),
       makeTask({ id: 5, title: 'Kochen', member_ids: [3] }),
     ])
-    renderApp('/parents')
+    renderApp('/parents/routines')
 
     const section = await routines()
     await section.findByRole('button', { name: 'Anziehen bearbeiten' })
@@ -128,7 +139,7 @@ describe('Routinen im Elternbereich', () => {
         positions: [{ member_id: 1, position: 2 }],
       }),
     ])
-    renderApp('/parents')
+    renderApp('/parents/routines')
 
     const section = await routines()
     const days = section.getByRole('group', { name: 'Tag wählen' })
@@ -175,7 +186,7 @@ describe('Routinen im Elternbereich', () => {
         return new Response(null, { status: 204 })
       },
     })
-    renderApp('/parents')
+    renderApp('/parents/routines')
 
     const section = await routines()
     const morning = section.getByRole('region', { name: 'Morgens' })
@@ -196,7 +207,7 @@ describe('Routinen im Elternbereich', () => {
       'POST /api/tasks': (body) =>
         Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/routines')
 
     const section = await routines()
     await user.click(

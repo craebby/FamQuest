@@ -30,7 +30,7 @@ afterEach(() => {
 describe('Familienmitglieder im Elternbereich', () => {
   it('zeigt einen Hinweis, solange niemand angelegt ist', async () => {
     mockApi({ ...unlocked, 'GET /api/auth/me': me(), 'GET /api/members': Response.json([]) })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     expect(await screen.findByText(/Noch niemand angelegt/)).toBeVisible()
   })
@@ -45,7 +45,7 @@ describe('Familienmitglieder im Elternbereich', () => {
         makeMember({ id: 2, name: 'Papa', role: 'parent', color: 'blue' }),
       ]),
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     await user.click(await screen.findByRole('button', { name: 'Papa bearbeiten' }))
 
@@ -68,7 +68,7 @@ describe('Familienmitglieder im Elternbereich', () => {
         makeMember({ id: 2, name: 'Tom', color: 'green' }),
       ),
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     await user.click(await screen.findByRole('button', { name: 'Person hinzufügen' }))
     await user.type(screen.getByLabelText('Name'), '  Tom ')
@@ -98,7 +98,7 @@ describe('Familienmitglieder im Elternbereich', () => {
       'GET /api/auth/me': me(),
       'GET /api/members': Response.json([]),
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     await user.click(await screen.findByRole('button', { name: 'Person hinzufügen' }))
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
@@ -115,7 +115,7 @@ describe('Familienmitglieder im Elternbereich', () => {
       'GET /api/members': Response.json([]),
       'POST /api/members': Response.json({ code: 'member.color_taken' }, { status: 409 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     await user.click(await screen.findByRole('button', { name: 'Person hinzufügen' }))
     await user.type(screen.getByLabelText('Name'), 'Tom')
@@ -132,7 +132,7 @@ describe('Familienmitglieder im Elternbereich', () => {
       'GET /api/members': Response.json([makeMember()]),
       'DELETE /api/members/1': new Response(null, { status: 204 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     await user.click(await screen.findByRole('button', { name: 'Lena bearbeiten' }))
     await user.click(screen.getByRole('button', { name: 'Person löschen' }))
@@ -152,7 +152,7 @@ describe('Familienmitglieder im Elternbereich', () => {
       'GET /api/auth/me': Response.json(english),
       'GET /api/members': Response.json([makeMember()]),
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     expect(await screen.findByRole('heading', { name: 'Family members' })).toBeVisible()
     expect(await screen.findByRole('button', { name: 'Edit Lena' })).toHaveTextContent('Child')
@@ -172,7 +172,7 @@ describe('Familienmitglieder im Elternbereich', () => {
         return Response.json(members)
       },
     })
-    renderApp('/parents')
+    renderApp('/parents/family')
 
     await user.click(await screen.findByRole('button', { name: 'Reihenfolge ändern' }))
     expect(screen.getByRole('button', { name: 'Lena nach vorne' })).toBeDisabled()

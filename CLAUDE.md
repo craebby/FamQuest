@@ -82,7 +82,13 @@ in einen eigenen Bereich. Wetter von Open-Meteo über den Server (ohne API-Schl�
    gilt für die ganze Familie; Wochen-Widget als optionale Kachel
 6. Routinenverwaltung: eigener Abschnitt „Routinen“ im Elternbereich, je Kind die Tagesabschnitte
    (morgens/nachmittags/abends) als Blöcke mit Reihenfolge; geht später im Abschnitt „Aufgaben“ auf
-7. Feinschliff
+7. Elternbereich mit Menü: 7 Bereiche (Zu prüfen & Punkte, Familie, Aufgaben, Routinen,
+   Belohnungen, Kalender & Wetter, Einstellungen), Tablet Leiste links, Handy unten 4 + „Mehr“,
+   eigene Adresse je Bereich
+8. Routinen als eigene Blöcke: je Kind, Tagesabschnitt und Wochentagen (z. B. Morgen Mo–Fr,
+   Abend Sa–So abgespeckt), nummerierte Schritte, optionale Schritte, Kopieren auf ein anderes Kind;
+   bestehende Aufgaben werden automatisch übernommen
+9. Feinschliff
 
 ## Befehle
 

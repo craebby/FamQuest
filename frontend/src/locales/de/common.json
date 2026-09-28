@@ -89,6 +89,18 @@
     "account_section": "Konto",
     "signed_in_as": "Angemeldet als {{email}}"
   },
+  "parents_nav": {
+    "label": "Bereiche des Elternbereichs",
+    "review": "Prüfen & Punkte",
+    "review_short": "Prüfen",
+    "family": "Familie",
+    "tasks": "Aufgaben",
+    "routines": "Routinen",
+    "rewards": "Belohnungen",
+    "connections": "Kalender & Wetter",
+    "settings": "Einstellungen",
+    "more": "Mehr"
+  },
   "pinpad": {
     "delete": "Ziffer löschen",
     "confirm": "Bestätigen",

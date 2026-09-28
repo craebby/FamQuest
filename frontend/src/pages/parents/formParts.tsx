@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import MinusIcon from '~icons/lucide/minus'
 import PlusIcon from '~icons/lucide/plus'
 
+import type { Member } from '../../api/members'
+import { Avatar } from '../../components/Avatar'
 import { Button } from '../../components/ui'
 
 /** Beschriftete Gruppe von Eingaben im Elternbereich. */
@@ -127,5 +129,36 @@ export function FilterChip({
     >
       {children}
     </button>
+  )
+}
+
+/**
+ * Auswahl eines Kindes als große Chips mit Avatar. Steht auch bei nur einem Kind da, damit immer
+ * sichtbar ist, für wen man gerade etwas einstellt.
+ */
+export function ChildPicker({
+  label,
+  childMembers,
+  selected,
+  onSelect,
+}: {
+  label: string
+  childMembers: Member[]
+  selected: Member
+  onSelect: (memberId: number) => void
+}) {
+  return (
+    <div role="group" aria-label={label} className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1">
+      {childMembers.map((child) => (
+        <FilterChip
+          key={child.id}
+          pressed={child.id === selected.id}
+          onClick={() => onSelect(child.id)}
+        >
+          <Avatar name={child.name} color={child.color} src={child.avatar_url} size="sm" />
+          {child.name}
+        </FilterChip>
+      ))}
+    </div>
   )
 }

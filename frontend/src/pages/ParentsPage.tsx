@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 import LockedIcon from '~icons/fluent-emoji-flat/locked'
 import UnlockedIcon from '~icons/fluent-emoji-flat/unlocked'
@@ -38,6 +38,8 @@ import { RoutinesSection } from './parents/RoutinesSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
 import { WeatherSection } from './parents/WeatherSection'
+import { ParentsNav } from './parents/ParentsNav'
+import { DEFAULT_AREA, type ParentArea, isParentArea } from './parents/areas'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
 export const PARENT_IDLE_TIMEOUT_MS = 2 * 60 * 1000
@@ -53,9 +55,11 @@ export function ParentsPage() {
   }
   useIdleTimeout(PARENT_IDLE_TIMEOUT_MS, leave)
 
+  const { area } = useParams()
+  if (area !== undefined && !isParentArea(area)) return <Navigate to="/parents" replace />
   if (!me) return null
   return me.parent_unlocked ? (
-    <ParentSettings me={me} onLeave={leave} />
+    <ParentSettings me={me} area={area ?? DEFAULT_AREA} onLeave={leave} />
   ) : (
     <ParentGate onLeave={leave} />
   )
@@ -186,7 +190,7 @@ function NewPinFlow({
   )
 }
 
-function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
+function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLeave: () => void }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const setPin = useSetPin()
@@ -227,13 +231,19 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
               : 'overview'
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
-  }, [view])
+  }, [view, area])
   const [confirmDisable, setConfirmDisable] = useState(false)
   // Rückkehr von der Google-Anmeldung: Ergebnis anzeigen und danach die Adresse aufräumen.
   const [searchParams, setSearchParams] = useSearchParams()
-  const [notice, setNotice] = useState<string | undefined>(() =>
-    searchParams.get('calendar') === 'connected' ? t('calendar.connected') : undefined,
+  // Hinweise („… ist gespeichert“) gehören zu dem Bereich, in dem sie entstanden sind.
+  const [noticeState, setNoticeState] = useState<{ area: ParentArea; text: string } | null>(() =>
+    searchParams.get('calendar') === 'connected'
+      ? { area: 'connections', text: t('calendar.connected') }
+      : null,
   )
+  const notice = noticeState?.area === area ? noticeState.text : undefined
+  const setNotice = (text: string | undefined) =>
+    setNoticeState(text === undefined ? null : { area, text })
   const [calendarError, setCalendarError] = useState(
     () => searchParams.get('calendar_error') ?? undefined,
   )
@@ -352,171 +362,193 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const PinStatusIcon = pinEnabled ? LockedIcon : UnlockedIcon
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 p-4 sm:p-6">
-      <BackButton onClick={onLeave} />
-      <h1 className="text-3xl font-extrabold text-orange-600">{t('parents.title')}</h1>
-      {notice && (
-        <p
-          role="status"
-          className="rounded-2xl bg-emerald-100 px-4 py-3 text-lg font-semibold text-emerald-800"
-        >
-          {notice}
-        </p>
-      )}
-      {disablePin.isError && <Alert>{errorMessage(t, disablePin.error)}</Alert>}
-      {calendarError && <Alert>{errorMessage(t, calendarError)}</Alert>}
-
-      <ApprovalsSection members={members.data ?? []} today={today.data?.date} />
-
-      <MembersSection
-        members={members.data}
-        error={members.error}
-        onEdit={(member) => {
-          setNotice(undefined)
-          setEditingMember(member)
-        }}
-        onAdd={() => {
-          setNotice(undefined)
-          setEditingMember('new')
-        }}
-      />
-
-      <TasksSection
-        tasks={tasks.data}
-        members={members.data ?? []}
-        error={tasks.error}
-        filter={taskFilter}
-        onFilter={setTaskFilter}
-        onEdit={(task) => {
-          setNotice(undefined)
-          setEditingTask(task)
-        }}
-        onAdd={() => {
-          setNotice(undefined)
-          setEditingTask('new')
-        }}
-      />
-
-      <RoutinesSection
-        childMembers={childMembers}
-        tasks={tasks.data}
-        error={tasks.error}
-        member={routinesChild}
-        onSelect={setRoutinesChildId}
-        onEdit={(task) => {
-          setNotice(undefined)
-          setEditingTask(task)
-        }}
-        onAdd={(member, time) => {
-          setNotice(undefined)
-          setTaskPreset({ memberId: member.id, time })
-          setEditingTask('new')
-        }}
-        timeZone={me.family.timezone}
-      />
-
-      <PointsSection
-        members={members.data ?? []}
-        today={today.data}
-        error={today.error}
-        onOpen={(member) => {
-          setNotice(undefined)
-          setPointsMember(member)
-        }}
-      />
-
-      <RewardsSection
-        childMembers={childMembers}
-        rewards={rewards.data}
-        error={rewards.error}
-        member={rewardsChild}
-        onSelect={setRewardsChildId}
-        onEdit={(reward) => {
-          const member = childMembers.find((child) => child.id === reward.member_id)
-          if (!member) return
-          setNotice(undefined)
-          setEditingReward({ reward, member })
-        }}
-        onAdd={(member) => {
-          setNotice(undefined)
-          setEditingReward({ member })
-        }}
-        onPickFromPool={(member) => {
-          setNotice(undefined)
-          setPoolMember(member)
-        }}
-        timeZone={me.family.timezone}
-      />
-
-      <CalendarSection
-        familyLanguage={me.family.default_language}
-        onDisconnected={(email) => {
-          setCalendarError(undefined)
-          setNotice(t('calendar.disconnected', { email }))
-        }}
-      />
-
-      <WeatherSection onSaved={setNotice} />
-
-      <FamilySection me={me} onSaved={setNotice} />
-
-      <Section title={t('parents.pin_section')}>
-        <p className="flex items-center gap-3 text-lg text-slate-600">
-          <PinStatusIcon className="size-10 shrink-0" aria-hidden="true" />
-          {t(pinEnabled ? 'parents.pin_on' : 'parents.pin_off')}
-        </p>
-        {confirmDisable ? (
-          <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
-            <p className="text-lg font-semibold text-red-800">{t('parents.disable_confirm')}</p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                variant="danger"
-                disabled={disablePin.isPending}
-                onClick={() =>
-                  disablePin.mutate(undefined, {
-                    onSuccess: () => {
-                      setConfirmDisable(false)
-                      setNotice(t('parents.pin_disabled'))
-                    },
-                  })
-                }
-              >
-                {t('parents.disable_pin')}
-              </Button>
-              <Button variant="secondary" onClick={() => setConfirmDisable(false)}>
-                {t('actions.cancel')}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={() => setEditingPin(true)}>
-              {t(pinEnabled ? 'parents.change_pin' : 'parents.enable_pin')}
-            </Button>
-            {pinEnabled && (
-              <Button variant="danger" onClick={() => setConfirmDisable(true)}>
-                {t('parents.disable_pin')}
-              </Button>
-            )}
-          </div>
+    <div className="flex min-h-dvh">
+      <ParentsNav area={area} pending={today.data?.pending_approvals ?? 0} />
+      <main className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-6 p-4 pb-32 sm:p-6 md:pb-6">
+        <BackButton onClick={onLeave} />
+        <h1 className="text-3xl font-extrabold text-orange-600">{t('parents.title')}</h1>
+        {notice && (
+          <p
+            role="status"
+            className="rounded-2xl bg-emerald-100 px-4 py-3 text-lg font-semibold text-emerald-800"
+          >
+            {notice}
+          </p>
         )}
-      </Section>
+        {disablePin.isError && <Alert>{errorMessage(t, disablePin.error)}</Alert>}
+        {calendarError && <Alert>{errorMessage(t, calendarError)}</Alert>}
 
-      <DeviceSection />
-
-      <Section title={t('parents.account_section')}>
-        <p className="text-lg text-slate-600">
-          {t('parents.signed_in_as', { email: me.user.email })}
-        </p>
-        <Button
-          variant="secondary"
-          className="self-start"
-          disabled={logout.isPending}
-          onClick={() => logout.mutate(undefined, { onSuccess: () => navigate('/login') })}
-        >
-          {t('actions.logout')}
-        </Button>
-      </Section>
-    </main>
+        {area === 'review' && (
+          <>
+            <ApprovalsSection members={members.data ?? []} today={today.data?.date} />
+            <PointsSection
+              members={members.data ?? []}
+              today={today.data}
+              error={today.error}
+              onOpen={(member) => {
+                setNotice(undefined)
+                setPointsMember(member)
+              }}
+            />
+          </>
+        )}
+        {area === 'family' && (
+          <>
+            <MembersSection
+              members={members.data}
+              error={members.error}
+              onEdit={(member) => {
+                setNotice(undefined)
+                setEditingMember(member)
+              }}
+              onAdd={() => {
+                setNotice(undefined)
+                setEditingMember('new')
+              }}
+            />
+          </>
+        )}
+        {area === 'tasks' && (
+          <>
+            <TasksSection
+              tasks={tasks.data}
+              members={members.data ?? []}
+              error={tasks.error}
+              filter={taskFilter}
+              onFilter={setTaskFilter}
+              onEdit={(task) => {
+                setNotice(undefined)
+                setEditingTask(task)
+              }}
+              onAdd={() => {
+                setNotice(undefined)
+                setEditingTask('new')
+              }}
+            />
+          </>
+        )}
+        {area === 'routines' && (
+          <>
+            <RoutinesSection
+              childMembers={childMembers}
+              tasks={tasks.data}
+              error={tasks.error}
+              member={routinesChild}
+              onSelect={setRoutinesChildId}
+              onEdit={(task) => {
+                setNotice(undefined)
+                setEditingTask(task)
+              }}
+              onAdd={(member, time) => {
+                setNotice(undefined)
+                setTaskPreset({ memberId: member.id, time })
+                setEditingTask('new')
+              }}
+              timeZone={me.family.timezone}
+            />
+          </>
+        )}
+        {area === 'rewards' && (
+          <>
+            <RewardsSection
+              childMembers={childMembers}
+              rewards={rewards.data}
+              error={rewards.error}
+              member={rewardsChild}
+              onSelect={setRewardsChildId}
+              onEdit={(reward) => {
+                const member = childMembers.find((child) => child.id === reward.member_id)
+                if (!member) return
+                setNotice(undefined)
+                setEditingReward({ reward, member })
+              }}
+              onAdd={(member) => {
+                setNotice(undefined)
+                setEditingReward({ member })
+              }}
+              onPickFromPool={(member) => {
+                setNotice(undefined)
+                setPoolMember(member)
+              }}
+              timeZone={me.family.timezone}
+            />
+          </>
+        )}
+        {area === 'connections' && (
+          <>
+            <CalendarSection
+              familyLanguage={me.family.default_language}
+              onDisconnected={(email) => {
+                setCalendarError(undefined)
+                setNotice(t('calendar.disconnected', { email }))
+              }}
+            />
+            <WeatherSection onSaved={setNotice} />
+          </>
+        )}
+        {area === 'settings' && (
+          <>
+            <FamilySection me={me} onSaved={setNotice} />
+            <Section title={t('parents.pin_section')}>
+              <p className="flex items-center gap-3 text-lg text-slate-600">
+                <PinStatusIcon className="size-10 shrink-0" aria-hidden="true" />
+                {t(pinEnabled ? 'parents.pin_on' : 'parents.pin_off')}
+              </p>
+              {confirmDisable ? (
+                <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
+                  <p className="text-lg font-semibold text-red-800">
+                    {t('parents.disable_confirm')}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      variant="danger"
+                      disabled={disablePin.isPending}
+                      onClick={() =>
+                        disablePin.mutate(undefined, {
+                          onSuccess: () => {
+                            setConfirmDisable(false)
+                            setNotice(t('parents.pin_disabled'))
+                          },
+                        })
+                      }
+                    >
+                      {t('parents.disable_pin')}
+                    </Button>
+                    <Button variant="secondary" onClick={() => setConfirmDisable(false)}>
+                      {t('actions.cancel')}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  <Button onClick={() => setEditingPin(true)}>
+                    {t(pinEnabled ? 'parents.change_pin' : 'parents.enable_pin')}
+                  </Button>
+                  {pinEnabled && (
+                    <Button variant="danger" onClick={() => setConfirmDisable(true)}>
+                      {t('parents.disable_pin')}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Section>
+            <DeviceSection />
+            <Section title={t('parents.account_section')}>
+              <p className="text-lg text-slate-600">
+                {t('parents.signed_in_as', { email: me.user.email })}
+              </p>
+              <Button
+                variant="secondary"
+                className="self-start"
+                disabled={logout.isPending}
+                onClick={() => logout.mutate(undefined, { onSuccess: () => navigate('/login') })}
+              >
+                {t('actions.logout')}
+              </Button>
+            </Section>
+          </>
+        )}
+      </main>
+    </div>
   )
 }

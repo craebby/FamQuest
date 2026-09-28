@@ -41,7 +41,7 @@ export function TasksWidget({ className }: { className?: string }) {
       ) : !members || !today ? (
         <p className="text-lg text-slate-600">{errorMessage(t, error)}</p>
       ) : members.length === 0 ? (
-        <SetupHint text={t('family.no_members_hint')} />
+        <SetupHint text={t('family.no_members_hint')} to="/parents/family" />
       ) : (
         <ul className="flex flex-col gap-3">
           {members.map((member) => (

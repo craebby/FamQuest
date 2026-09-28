@@ -31,7 +31,7 @@ router = APIRouter(prefix="/calendar", tags=["calendar"])
 # So lange darf die Anmeldung bei Google dauern.
 STATE_LIFETIME = timedelta(minutes=10)
 # Nach der Rückkehr von Google landen die Eltern wieder hier.
-PARENTS_PAGE = "/parents"
+PARENTS_PAGE = "/parents/connections"
 
 
 class CalendarOut(BaseModel):

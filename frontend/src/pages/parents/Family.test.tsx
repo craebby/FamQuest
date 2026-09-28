@@ -31,7 +31,7 @@ describe('Einstellungen der Familie', () => {
           family: { ...me.family, ...(body as object), name: 'Familie Mond' },
         }),
     })
-    renderApp('/parents')
+    renderApp('/parents/settings')
 
     const section = within(
       (await screen.findByRole('heading', { name: 'Familie', level: 2 })).parentElement!,

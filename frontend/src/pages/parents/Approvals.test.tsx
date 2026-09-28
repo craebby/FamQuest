@@ -88,7 +88,7 @@ describe('Kontrolle durch die Eltern', () => {
     parentsApi([])
     renderApp('/parents')
 
-    await screen.findByRole('heading', { name: 'Aufgaben' })
+    await screen.findByRole('heading', { name: 'Punkte' })
     expect(screen.queryByRole('heading', { name: 'Zu prüfen' })).toBeNull()
   })
 
@@ -97,7 +97,7 @@ describe('Kontrolle durch die Eltern', () => {
     const calls = parentsApi([], {
       'POST /api/tasks': Response.json({}, { status: 201 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))

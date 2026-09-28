@@ -79,15 +79,20 @@ accounts can be registered through the interface.
   without use).
 - The parents' area (gear icon) is additionally protected by the parents' PIN. After 2 minutes
   without input the display returns to the start page and locks it again.
+- The parents' area has a menu with seven areas: **Checks & points** (with a red number when
+  something is waiting), **Family**, **Tasks**, **Routines**, **Rewards**, **Calendar & weather**
+  and **Settings** (family, PIN, device, account). On tablets and the display the menu is on the
+  left; on phones the four most used areas are at the bottom and the rest is under **More**. Each
+  area has its own address (e.g. `/parents/routines`), so reloading keeps you where you are.
 - The PIN can be changed or switched off in the parents' area. Forgot the PIN? Set a new one with
   the account password.
 - After 5 wrong attempts (password or PIN), further attempts are blocked for 15 minutes.
-- Family name, family language and time zone can be changed under "Family" in the parents' area.
+- Family name, family language and time zone can be changed under "Settings" in the parents' area.
   The time zone decides when a new day starts (default: Europe/Berlin).
 
 ## Family members
 
-Under "Family members" in the parents' area you add everyone in the household: name, role (parent
+Under "Family" in the parents' area you add everyone in the household: name, role (parent
 or child), colour and optionally a photo. Children need no account and no password.
 
 - Each person has their own colour (orange, blue, purple, green, red, teal, yellow). Taken colours
@@ -178,7 +183,7 @@ top, below it three columns (stacked on narrow screens):
 
 - **Weather** now (icon, temperature, description), today's high/low and chance of rain (with an
   umbrella from 50 %), plus the next two days. Parents choose the town in the parents' area under
-  **Weather** (search by name or postcode, then pick from the list).
+  **Calendar & weather** (search by name or postcode, then pick from the list).
 - **Events**: the next 5 events from the calendar (ongoing and upcoming, up to two weeks ahead),
   each with "Today", "Tomorrow" or the date, in the person's colour with avatars. Today's public
   or school holiday is shown above. A tap opens the details, the arrow opens the week view.
@@ -674,7 +679,11 @@ use.
   off and change their order, for the whole family; week widget as an optional tile
 - [x] 6. Routine management: a "Routines" section in the parents' area showing each child's
   morning, afternoon and evening as blocks in a fixed order; later merged into the "Tasks" section
-- [ ] 7. Polish on the real display; rework the week widget on the start page (layout and
+- [x] 7. Parents' area with a menu: seven areas, sidebar on tablets, bottom bar with "More" on
+  phones
+- [ ] 8. Routines as their own blocks: per child, time of day and weekdays (e.g. a lighter
+  weekend evening), numbered and optional steps, copy to another child
+- [ ] 9. Polish on the real display; rework the week widget on the start page (layout and
   readability)
 
 **1.1: make it your own**
@@ -706,6 +715,7 @@ use.
 
 - Create and edit events from FamQuest (needs write access to Google Calendar instead of read-only)
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
+- Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one

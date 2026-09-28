@@ -32,7 +32,7 @@ export function WeatherWidget({ className }: { className?: string }) {
       ) : !data ? (
         <p className="text-lg text-slate-600">{errorMessage(t, weather.error)}</p>
       ) : !data.place || !data.current ? (
-        <SetupHint text={t('home.setup_weather')} />
+        <SetupHint text={t('home.setup_weather')} to="/parents/connections" />
       ) : (
         <>
           <div className="flex items-center gap-4">

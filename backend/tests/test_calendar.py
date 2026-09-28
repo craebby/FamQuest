@@ -12,6 +12,9 @@ from app.models import CalendarConnection
 from tests.conftest import csrf
 from tests.fake_google import CALLBACK, REDIRECT_URI, FakeGoogle
 
+# Nach der Google-Anmeldung geht es zurück in den Elternbereich, Abschnitt „Kalender & Wetter“.
+BACK = "/parents/connections"
+
 
 def start(client, me, fake: FakeGoogle | None = None) -> dict[str, str]:
     """Startet die Anmeldung; liefert die Parameter der Google-Adresse."""
@@ -32,7 +35,7 @@ def callback(client, **params):
 def connect(client, me, fake) -> None:
     params = start(client, me, fake)
     response = callback(client, state=params["state"], code="guter-code")
-    assert response.headers["location"] == "/parents?calendar=connected"
+    assert response.headers["location"] == f"{BACK}?calendar=connected"
 
 
 def connections():
@@ -110,7 +113,7 @@ def test_callback_rejects_unknown_state(client, parent, fake_google):
 
     response = callback(client, state="geraten", code="guter-code")
 
-    assert response.headers["location"] == "/parents?calendar_error=calendar.state_invalid"
+    assert response.headers["location"] == f"{BACK}?calendar_error=calendar.state_invalid"
     assert connections() == []
 
 
@@ -120,7 +123,7 @@ def test_state_can_only_be_used_once(client, parent, fake_google):
 
     response = callback(client, state=params["state"], code="guter-code")
 
-    assert response.headers["location"] == "/parents?calendar_error=calendar.state_invalid"
+    assert response.headers["location"] == f"{BACK}?calendar_error=calendar.state_invalid"
 
 
 def test_state_belongs_to_the_starting_session(client, parent, fake_google):
@@ -129,7 +132,7 @@ def test_state_belongs_to_the_starting_session(client, parent, fake_google):
 
     response = callback(client, state=params["state"], code="guter-code")
 
-    assert response.headers["location"] == "/parents?calendar_error=calendar.state_invalid"
+    assert response.headers["location"] == f"{BACK}?calendar_error=calendar.state_invalid"
     assert connections() == []
 
 
@@ -142,7 +145,7 @@ def test_state_expires(client, parent, fake_google, monkeypatch):
 
     response = callback(client, state=params["state"], code="guter-code")
 
-    assert response.headers["location"] == "/parents?calendar_error=calendar.state_invalid"
+    assert response.headers["location"] == f"{BACK}?calendar_error=calendar.state_invalid"
 
 
 def test_cancelled_consent(client, parent, fake_google):
@@ -150,7 +153,7 @@ def test_cancelled_consent(client, parent, fake_google):
 
     response = callback(client, state=params["state"], error="access_denied")
 
-    assert response.headers["location"] == "/parents?calendar_error=calendar.access_denied"
+    assert response.headers["location"] == f"{BACK}?calendar_error=calendar.access_denied"
 
 
 def test_calendar_access_not_granted(client, parent, fake_google):
@@ -159,7 +162,7 @@ def test_calendar_access_not_granted(client, parent, fake_google):
 
     response = callback(client, state=params["state"], code="guter-code")
 
-    assert response.headers["location"] == "/parents?calendar_error=calendar.scope_missing"
+    assert response.headers["location"] == f"{BACK}?calendar_error=calendar.scope_missing"
     assert connections() == []
 
 

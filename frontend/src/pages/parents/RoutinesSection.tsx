@@ -13,14 +13,13 @@ import {
   sortForMember,
   useSetTaskOrder,
 } from '../../api/tasks'
-import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { Alert, Button, Section } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { occursOn, recurrenceSummary } from '../../recurrence'
 import { addDays, isoWeekday, todayIn, weekdayName, weekdayOrder } from '../../weekdays'
-import { FilterChip } from './formParts'
+import { ChildPicker } from './formParts'
 
 /** Diese Routinen stehen immer da, „Mittags“ nur, wenn das Kind dort etwas hat. */
 const ALWAYS_SHOWN: readonly TimeOfDay[] = ['morning', 'afternoon', 'evening']
@@ -100,24 +99,12 @@ export function RoutinesSection({
       {setOrder.isError && <Alert>{errorMessage(t, setOrder.error)}</Alert>}
       <p className="text-lg text-slate-600">{t('routines.intro')}</p>
 
-      {childMembers.length > 1 && (
-        <div
-          role="group"
-          aria-label={t('routines.choose_child')}
-          className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1"
-        >
-          {childMembers.map((child) => (
-            <FilterChip
-              key={child.id}
-              pressed={child.id === member.id}
-              onClick={() => onSelect(child.id)}
-            >
-              <Avatar name={child.name} color={child.color} src={child.avatar_url} size="sm" />
-              {child.name}
-            </FilterChip>
-          ))}
-        </div>
-      )}
+      <ChildPicker
+        label={t('routines.choose_child')}
+        childMembers={childMembers}
+        selected={member}
+        onSelect={onSelect}
+      />
 
       <div role="group" aria-label={t('routines.choose_day')} className="grid grid-cols-7 gap-1">
         {days.map((date) => {

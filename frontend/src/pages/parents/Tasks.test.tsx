@@ -55,7 +55,7 @@ describe('Aufgaben im Elternbereich', () => {
       'GET /api/members': Response.json([]),
       'GET /api/tasks': Response.json([]),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     expect(await screen.findByText(/Legt zuerst Familienmitglieder an/)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Aufgabe hinzufügen' })).not.toBeInTheDocument()
@@ -75,7 +75,7 @@ describe('Aufgaben im Elternbereich', () => {
       }),
       makeTask({ id: 3, title: 'Müll', time_of_day: null, member_ids: [], active: false }),
     ])
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     const section = within(await screen.findByRole('region', { name: 'Aufgaben' }))
     await section.findByRole('button', { name: 'Bett machen bearbeiten' })
@@ -108,7 +108,7 @@ describe('Aufgaben im Elternbereich', () => {
       'POST /api/tasks': (body) =>
         Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.type(screen.getByLabelText('Titel'), 'Zähne putzen')
@@ -145,7 +145,7 @@ describe('Aufgaben im Elternbereich', () => {
       'POST /api/tasks': (body) =>
         Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))
@@ -174,7 +174,7 @@ describe('Aufgaben im Elternbereich', () => {
     api([], {
       'GET /api/members': Response.json([makeMember({ id: 3, name: 'Mama', role: 'parent' })]),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('checkbox', { name: /Mama/ }))
@@ -190,7 +190,7 @@ describe('Aufgaben im Elternbereich', () => {
       'POST /api/tasks': (body) =>
         Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.type(screen.getByLabelText('Titel'), 'Bad putzen')
@@ -216,7 +216,7 @@ describe('Aufgaben im Elternbereich', () => {
   it('verlangt Titel und mindestens eine Person', async () => {
     const user = userEvent.setup()
     const calls = api([])
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
@@ -229,7 +229,7 @@ describe('Aufgaben im Elternbereich', () => {
   it('übernimmt die gefilterte Person als Vorauswahl', async () => {
     const user = userEvent.setup()
     api([makeTask()])
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     const filter = await screen.findByRole('group', { name: 'Nach Person filtern' })
     await user.click(within(filter).getByRole('button', { name: /Tom/ }))
@@ -244,7 +244,7 @@ describe('Aufgaben im Elternbereich', () => {
     api([makeTask()], {
       'PUT /api/tasks/1': (body) => Response.json({ ...makeTask(), ...(body as object) }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     const section = within(await screen.findByRole('region', { name: 'Aufgaben' }))
     await user.click(await section.findByRole('button', { name: 'Zähne putzen bearbeiten' }))
@@ -269,7 +269,7 @@ describe('Aufgaben im Elternbereich', () => {
   it('zeigt einen Hinweis, wenn die Suche nichts findet', async () => {
     const user = userEvent.setup()
     api([makeTask()])
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('button', { name: /^Symbol ändern/ }))
@@ -285,7 +285,7 @@ describe('Aufgaben im Elternbereich', () => {
     const calls = api([makeTask()], {
       'PUT /api/tasks/1': (body) => Response.json({ ...makeTask(), ...(body as object) }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('switch', { name: 'Zähne putzen aktiv' }))
 
@@ -300,7 +300,7 @@ describe('Aufgaben im Elternbereich', () => {
       [makeTask({ recurrence: { kind: 'once', date: '2026-10-03' }, color: 'teal' })],
       { 'DELETE /api/tasks/1': new Response(null, { status: 204 }) },
     )
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Zähne putzen bearbeiten' }))
     expect(screen.getByRole('radio', { name: 'Einmal' })).toBeChecked()
@@ -321,7 +321,7 @@ describe('Aufgaben im Elternbereich', () => {
       makeTask({ id: 1, title: 'Zähne putzen' }),
       makeTask({ id: 3, title: 'Tisch abräumen', time_of_day: null, extra: true }),
     ])
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     const section = within(await screen.findByRole('region', { name: 'Aufgaben' }))
     const filter = await section.findByRole('group', { name: 'Nach Person filtern' })
@@ -340,7 +340,7 @@ describe('Aufgaben im Elternbereich', () => {
     const calls = api([], {
       'POST /api/tasks': (body) => Response.json({ ...(body as object), id: 5, positions: [] }),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.type(screen.getByLabelText('Titel'), 'Tisch abräumen')
@@ -368,7 +368,7 @@ describe('Aufgaben im Elternbereich', () => {
         makeTask({ recurrence: { kind: 'weekly', weekdays: [6, 7] } }),
       ]),
     })
-    renderApp('/parents')
+    renderApp('/parents/tasks')
 
     const row = await screen.findByRole('button', { name: 'Edit Zähne putzen' })
     expect(within(row).getByText('At the weekend')).toBeVisible()

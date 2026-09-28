@@ -64,7 +64,7 @@ describe('Belohnungen im Elternbereich', () => {
   it('zeigt die Belohnungen je Kind und die eingelösten', async () => {
     const user = userEvent.setup()
     api()
-    renderApp('/parents')
+    renderApp('/parents/rewards')
 
     await screen.findByRole('button', { name: 'Ein Eis bearbeiten' })
     const section = rewardsSection()
@@ -85,7 +85,7 @@ describe('Belohnungen im Elternbereich', () => {
   it('übernimmt mehrere Vorschläge auf einmal', async () => {
     const user = userEvent.setup()
     const calls = api()
-    renderApp('/parents')
+    renderApp('/parents/rewards')
 
     await user.click(await screen.findByRole('button', { name: 'Aus Vorschlägen wählen' }))
     expect(
@@ -123,7 +123,7 @@ describe('Belohnungen im Elternbereich', () => {
   it('legt eine eigene Belohnung an', async () => {
     const user = userEvent.setup()
     const calls = api()
-    renderApp('/parents')
+    renderApp('/parents/rewards')
 
     await user.click(await screen.findByRole('button', { name: 'Eigene Belohnung' }))
     await user.type(screen.getByLabelText('Name'), 'Popcorn essen')
@@ -145,7 +145,7 @@ describe('Belohnungen im Elternbereich', () => {
   it('verlangt einen Namen', async () => {
     const user = userEvent.setup()
     const calls = api()
-    renderApp('/parents')
+    renderApp('/parents/rewards')
 
     await user.click(await screen.findByRole('button', { name: 'Eigene Belohnung' }))
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
@@ -157,7 +157,7 @@ describe('Belohnungen im Elternbereich', () => {
   it('schaltet eine Belohnung inaktiv', async () => {
     const user = userEvent.setup()
     const calls = api({ 'PUT /api/rewards/1': Response.json({ ...iceCream, active: false }) })
-    renderApp('/parents')
+    renderApp('/parents/rewards')
 
     await user.click(await screen.findByRole('switch', { name: 'Ein Eis aktiv' }))
 
@@ -168,7 +168,7 @@ describe('Belohnungen im Elternbereich', () => {
 
   it('verweist ohne Kinder darauf, erst eines anzulegen', async () => {
     api({ 'GET /api/members': Response.json([mama]) })
-    renderApp('/parents')
+    renderApp('/parents/rewards')
 
     expect(
       await screen.findByText('Belohnungen gibt es nur für Kinder. Legt zuerst ein Kind an.'),

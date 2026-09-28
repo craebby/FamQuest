@@ -12,11 +12,10 @@ import {
   useRedemptions,
   useRewardsMutation,
 } from '../../api/rewards'
-import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
 import { Alert, Button, Section, Switch } from '../../components/ui'
 import { errorMessage } from '../../errors'
-import { FilterChip } from './formParts'
+import { ChildPicker } from './formParts'
 
 interface RewardsSectionProps {
   /** Nur Kinder; Erwachsene bekommen keine Belohnungen. */
@@ -66,24 +65,12 @@ export function RewardsSection({
     <Section title={t('rewards.section')}>
       {error ? <Alert>{errorMessage(t, error)}</Alert> : null}
       {toggleActive.isError && <Alert>{errorMessage(t, toggleActive.error)}</Alert>}
-      {childMembers.length > 1 && (
-        <div
-          role="group"
-          aria-label={t('rewards.choose_child')}
-          className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1"
-        >
-          {childMembers.map((child) => (
-            <FilterChip
-              key={child.id}
-              pressed={child.id === member.id}
-              onClick={() => onSelect(child.id)}
-            >
-              <Avatar name={child.name} color={child.color} src={child.avatar_url} size="sm" />
-              {child.name}
-            </FilterChip>
-          ))}
-        </div>
-      )}
+      <ChildPicker
+        label={t('rewards.choose_child')}
+        childMembers={childMembers}
+        selected={member}
+        onSelect={onSelect}
+      />
 
       {rewards && own.length === 0 && (
         <p className="text-lg text-slate-600">{t('rewards.empty', { name: member.name })}</p>

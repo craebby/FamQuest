@@ -172,7 +172,7 @@ describe('Startseite „Heute“', () => {
     const weather = await region('Wetter')
     expect(await weather.findByRole('link', { name: 'Einrichten' })).toHaveAttribute(
       'href',
-      '/parents',
+      '/parents/connections',
     )
   })
 

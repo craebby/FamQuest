@@ -154,7 +154,7 @@ function NoMembers() {
       <h2 className="text-3xl font-extrabold text-slate-800">{t('family.no_members')}</h2>
       <p className="max-w-xl text-xl text-slate-600">{t('family.no_members_hint')}</p>
       <Link
-        to="/parents"
+        to="/parents/family"
         className="inline-flex min-h-14 items-center rounded-2xl bg-orange-500 px-6 py-3 text-lg font-bold text-white hover:bg-orange-600 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400"
       >
         {t('family.open_parents')}

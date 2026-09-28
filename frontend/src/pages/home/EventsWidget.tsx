@@ -57,7 +57,7 @@ export function EventsWidget({ className }: { className?: string }) {
           {t('common.loading')}
         </p>
       ) : !enabled ? (
-        <SetupHint text={t('home.setup_calendar')} />
+        <SetupHint text={t('home.setup_calendar')} to="/parents/connections" />
       ) : !data ? (
         <p className="text-lg text-slate-600">{errorMessage(t, upcoming.error)}</p>
       ) : (

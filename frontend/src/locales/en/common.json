@@ -89,6 +89,18 @@
     "account_section": "Account",
     "signed_in_as": "Signed in as {{email}}"
   },
+  "parents_nav": {
+    "label": "Parents' area sections",
+    "review": "Checks & points",
+    "review_short": "Checks",
+    "family": "Family",
+    "tasks": "Tasks",
+    "routines": "Routines",
+    "rewards": "Rewards",
+    "connections": "Calendar & weather",
+    "settings": "Settings",
+    "more": "More"
+  },
   "pinpad": {
     "delete": "Delete digit",
     "confirm": "Confirm",

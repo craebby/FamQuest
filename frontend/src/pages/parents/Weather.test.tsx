@@ -48,7 +48,7 @@ describe('Wetter im Elternbereich', () => {
         return Response.json({ place })
       },
     })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await weatherSection()
     expect(await section.findByText('Noch kein Ort festgelegt')).toBeVisible()
@@ -78,7 +78,7 @@ describe('Wetter im Elternbereich', () => {
         return Response.json({ place })
       },
     })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await weatherSection()
     await user.type(await section.findByLabelText('Anderen Ort suchen'), 'Xyz')

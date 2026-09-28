@@ -92,7 +92,7 @@ export default function App() {
             <Route path="/rewards/:memberId" element={<RewardsPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
           </Route>
-          <Route path="/parents" element={<ParentsPage />} />
+          <Route path="/parents/:area?" element={<ParentsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

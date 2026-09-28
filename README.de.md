@@ -79,15 +79,20 @@ weitere Konten lassen sich nicht über die Oberfläche registrieren.
   Jahr ohne Nutzung).
 - Der Elternbereich (Zahnrad) ist zusätzlich durch die Eltern-PIN geschützt. Nach 2 Minuten ohne
   Eingabe kehrt das Display zur Startseite zurück und sperrt ihn wieder.
+- Der Elternbereich hat ein Menü mit sieben Bereichen: **Prüfen & Punkte** (mit roter Zahl, wenn
+  etwas wartet), **Familie**, **Aufgaben**, **Routinen**, **Belohnungen**, **Kalender & Wetter** und
+  **Einstellungen** (Familie, PIN, Gerät, Konto). Am Tablet und am Display steht das Menü links, am
+  Handy stehen die vier wichtigsten Bereiche unten, der Rest unter **Mehr**. Jeder Bereich hat eine
+  eigene Adresse (z. B. `/parents/routines`), beim Neuladen bleibt man also, wo man war.
 - Die PIN lässt sich im Elternbereich ändern oder abschalten. PIN vergessen: Mit dem Passwort des
   Kontos eine neue PIN festlegen.
 - Nach 5 falschen Versuchen (Passwort oder PIN) sind weitere Versuche 15 Minuten lang gesperrt.
-- Familienname, Sprache der Familie und Zeitzone lassen sich im Elternbereich unter „Familie“
-  ändern. Die Zeitzone bestimmt, wann ein neuer Tag beginnt (Standard: Europe/Berlin).
+- Familienname, Sprache der Familie und Zeitzone lassen sich im Elternbereich unter
+  „Einstellungen“ ändern. Die Zeitzone bestimmt, wann ein neuer Tag beginnt (Standard: Europe/Berlin).
 
 ## Familienmitglieder
 
-Im Elternbereich unter „Familienmitglieder“ legt ihr alle Personen des Haushalts an: Name, Rolle
+Im Elternbereich unter „Familie“ legt ihr alle Personen des Haushalts an: Name, Rolle
 (Elternteil oder Kind), Farbe und optional ein Foto. Kinder brauchen kein Konto und kein Passwort.
 
 - Jede Person hat eine eigene Farbe (Orange, Blau, Lila, Grün, Rot, Türkis, Gelb). Vergebene
@@ -177,8 +182,8 @@ darunter drei Spalten (auf schmalen Bildschirmen untereinander):
 
 - **Wetter** jetzt (Symbol, Temperatur, Beschreibung), heute Höchst-/Tiefstwert und
   Regenwahrscheinlichkeit (ab 50 % mit Regenschirm), dazu die nächsten zwei Tage. Den Ort legen die
-  Eltern im Elternbereich unter **Wetter** fest (Name oder Postleitzahl suchen, dann aus der Liste
-  wählen).
+  Eltern im Elternbereich unter **Kalender & Wetter** fest (Name oder Postleitzahl suchen, dann aus
+  der Liste wählen).
 - **Termine**: die nächsten 5 Termine aus dem Kalender (laufende und kommende, bis zwei Wochen im
   Voraus), jeweils mit „Heute“, „Morgen“ oder Datum, in der Personenfarbe mit Avataren. Darüber ein
   Feiertag oder Ferien von heute. Ein Tipp öffnet die Details, der Pfeil die Wochenansicht.
@@ -694,7 +699,11 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Reihenfolge, gilt für die ganze Familie; Wochen-Widget als optionale Kachel
 - [x] 6. Routinenverwaltung: eigener Abschnitt „Routinen“ im Elternbereich, je Kind morgens,
   nachmittags und abends als Blöcke in fester Reihenfolge; geht später im Abschnitt „Aufgaben“ auf
-- [ ] 7. Feinschliff am echten Display; Wochen-Widget der Startseite überarbeiten (Aufbau und
+- [x] 7. Elternbereich mit Menü: sieben Bereiche, am Tablet Leiste links, am Handy unten mit
+  „Mehr“
+- [ ] 8. Routinen als eigene Blöcke: je Kind, Tagesabschnitt und Wochentagen (z. B. abgespeckter
+  Abend am Wochenende), nummerierte und optionale Schritte, auf ein anderes Kind kopieren
+- [ ] 9. Feinschliff am echten Display; Wochen-Widget der Startseite überarbeiten (Aufbau und
   Lesbarkeit)
 
 **1.1: Anpassen**
@@ -725,6 +734,8 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 
 - Termine in FamQuest anlegen und bearbeiten (braucht Schreibzugriff auf den Google Kalender statt nur lesend)
 - Weitere Kalender: iCal-/ICS-Links und andere Anbieter (z. B. iCloud, Outlook, Nextcloud)
+- Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
+  umschalten
 
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst

@@ -49,13 +49,13 @@ export function Widget({
 }
 
 /** Noch nicht eingerichtet: kurzer Hinweis mit Weg in den Elternbereich. */
-export function SetupHint({ text }: { text: string }) {
+export function SetupHint({ text, to }: { text: string; to: string }) {
   const { t } = useTranslation()
   return (
     <div className="flex flex-1 flex-col items-start gap-3">
       <p className="text-lg text-slate-600">{text}</p>
       <Link
-        to="/parents"
+        to={to}
         className="inline-flex min-h-14 items-center gap-2 rounded-2xl bg-orange-100 px-4 py-2 text-lg font-bold text-orange-800 hover:bg-orange-200 focus-visible:outline-4 focus-visible:outline-orange-400"
       >
         <GearIcon className="size-7" aria-hidden="true" />

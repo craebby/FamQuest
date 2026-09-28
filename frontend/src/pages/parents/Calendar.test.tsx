@@ -45,7 +45,7 @@ describe('Kalender im Elternbereich', () => {
       holidays: NO_HOLIDAYS,
       connections: [],
     })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await calendarSection()
     expect(await section.findByText(/noch nicht eingerichtet/)).toBeVisible()
@@ -71,7 +71,7 @@ describe('Kalender im Elternbereich', () => {
         }),
       },
     )
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await calendarSection()
     await user.click(await section.findByRole('button', { name: 'Google-Konto verbinden' }))
@@ -109,7 +109,7 @@ describe('Kalender im Elternbereich', () => {
       },
       { 'DELETE /api/calendar/connections/1': new Response(null, { status: 204 }) },
     )
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await calendarSection()
     const [mama, papa] = await section.findAllByTestId('calendar-connection')
@@ -133,7 +133,7 @@ describe('Kalender im Elternbereich', () => {
       holidays: NO_HOLIDAYS,
       connections: [],
     })
-    renderApp('/parents?calendar_error=calendar.scope_missing')
+    renderApp('/parents/connections?calendar_error=calendar.scope_missing')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Der Zugriff auf den Kalender wurde nicht erlaubt',
@@ -148,7 +148,7 @@ describe('Kalender im Elternbereich', () => {
       holidays: NO_HOLIDAYS,
       connections: [],
     })
-    renderApp('/parents?calendar=connected')
+    renderApp('/parents/connections?calendar=connected')
 
     expect(await screen.findByText('Google-Konto verbunden')).toBeVisible()
   })
@@ -167,7 +167,7 @@ describe('Kalender im Elternbereich', () => {
       'PUT /api/calendar/calendars/2': Response.json(settings),
       'PUT /api/calendar/calendars/1': Response.json(settings),
     })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await calendarSection()
     const [lena, general] = await section.findAllByTestId('calendar')
@@ -195,7 +195,7 @@ describe('Kalender im Elternbereich', () => {
         makeCalendar({ selected: true, member_id: null, sync_error: 'calendar.rate_limited' }),
       ]),
     )
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const [calendar] = await (await calendarSection()).findAllByTestId('calendar')
     expect(within(calendar!).getByText(/Google bremst gerade/)).toBeVisible()
@@ -208,7 +208,7 @@ describe('Kalender im Elternbereich', () => {
       'GET /api/members': Response.json([makeMember()]),
       'PUT /api/calendar/family-color': Response.json({ ...settings, family_color: 'slate' }),
     })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const section = await calendarSection()
     expect(await section.findByRole('radio', { name: 'Lila (gehört Lena)' })).toBeDisabled()
@@ -226,7 +226,7 @@ describe('Kalender im Elternbereich', () => {
     const user = userEvent.setup()
     const settings = withCalendars([makeCalendar({ selected: true })])
     const calls = mockParents(settings, { 'POST /api/calendar/sync': Response.json(settings) })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     await user.click(
       await (await calendarSection()).findByRole('button', { name: 'Jetzt aktualisieren' }),
@@ -285,7 +285,7 @@ describe('Feiertage und Ferien im Elternbereich', () => {
     const calls = mockParents(base, {
       'PUT /api/calendar/holidays': (body) => Response.json({ ...base, holidays: body }),
     })
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     const settings = within(await screen.findByTestId('holiday-settings'))
     expect(settings.queryByRole('switch')).toBeNull()
@@ -317,7 +317,7 @@ describe('Feiertage und Ferien im Elternbereich', () => {
         ),
       },
     )
-    renderApp('/parents')
+    renderApp('/parents/connections')
 
     await screen.findByRole('heading', { name: 'Calendar', level: 2 })
     expect(screen.queryByTestId('holiday-settings')).toBeNull()

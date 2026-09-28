@@ -30,7 +30,7 @@ describe('Einstellungen für dieses Gerät', () => {
       'GET /api/approvals': Response.json([]),
       'GET /api/today': Response.json(makeToday()),
     })
-    renderApp('/parents')
+    renderApp('/parents/settings')
 
     expect(await screen.findByRole('radio', { name: 'Normal' })).toBeChecked()
     expect(screen.getByTestId('display-info')).toHaveTextContent(/^Anzeige: \d+ × \d+ px/)

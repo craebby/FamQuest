@@ -307,7 +307,7 @@ describe('Familienansicht', () => {
     ).toBeVisible()
     expect(screen.getByRole('link', { name: 'Zum Elternbereich' })).toHaveAttribute(
       'href',
-      '/parents',
+      '/parents/family',
     )
   })
 
