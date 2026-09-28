@@ -14,10 +14,10 @@ services and without external CDNs. The full specification (in German) is in
 > family view for ticking things off, points with daily progress, parent checks, rewards for
 > children, fair sharing between adults and family settings. The display test is done; the rest
 > will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
-> is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 has
-> started: the display becomes a picture frame, started from an icon or after being idle, with
-> clock, weather, next event and open tasks as overlays, and a night mode (see
-> [Roadmap](#roadmap)).
+> is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 turns
+> the display into a picture frame, started from an icon or after being idle, with clock, weather,
+> next event and open tasks as overlays, and a night mode. Phase 5 has started: a weekly meal plan,
+> right on the display (see [Roadmap](#roadmap)).
 
 ## Features
 
@@ -35,6 +35,7 @@ services and without external CDNs. The full specification (in German) is in
 - Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
   with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
   clock)
+- Meal plan: type the week's dishes right on the display, with suggestions and icons
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -216,7 +217,9 @@ top, below it three columns (stacked on narrow screens):
   Adults see their share of the week instead of a progress bar. **One tap** completes a task, just like in the family view
   (with "+2", hourglass for parent checks, avatar for "One for all"); tap again to undo. The
   avatar opens the person view, the arrow opens the family view.
-- **Meals** and **Shopping** are placeholders, clearly marked "Coming soon" (phases 5 and 6).
+- **Meals**: what's for today, with a large icon; if nothing is planned yet, a tap opens the meal
+  plan (see [Meal plan](#meal-plan)).
+- **Shopping** is a placeholder, clearly marked "Coming soon" (phase 6).
 
 Without a town or calendar the widgets show a short hint with a button to the parents' area.
 
@@ -428,6 +431,26 @@ several Google accounts, e.g. one per parent.
 Back up `TOKEN_ENCRYPTION_KEY` together with `.env`. If it's lost or changed, the parents' area
 shows "Reconnect" for every account; nothing else is lost. Disconnecting an account also revokes
 access at Google.
+
+## Meal plan
+
+**Meals** (plate with cutlery) in the navigation bar shows the week's meal plan, Monday to Sunday,
+with today highlighted. The arrows browse to other weeks.
+
+- **No parents' PIN needed**, right on the display or on a phone: tap a day's **+**, then tap a
+  suggested dish or type its name and "Save".
+- **Suggestions:** your own dishes first (most recently planned first), then about 50 common ones
+  such as pasta with tomato sauce, schnitzel, dumplings or bread and cold cuts. Typing filters them.
+- **Icon:** picked automatically from the name (e.g. "Schnitzel with rice" → meat, otherwise a
+  plate) and changeable with a tap on it. The icon belongs to the dish and applies wherever it's
+  planned.
+- FamQuest remembers a typed dish and suggests it again. The same name in different case is the
+  same dish.
+- Tap a planned dish to change it; "Remove from plan" clears the day again.
+
+By default only **dinner** is planned. In the parents' area under **Settings → Meal plan** you can
+switch on breakfast, lunch and snack (for the whole family); every day then shows each meal with its
+icon. Meals you switch off stay stored.
 
 ## Photos (picture frame)
 
@@ -790,7 +813,7 @@ use.
 - [ ] 9. Polish on the real display; everyday task templates and reward suggestions (done); the
   week widget on the start page stays as it is for now (unclear whether it's needed)
 
-**Next: picture frame (phase 4)**
+**Picture frame (phase 4)**
 
 When idle, the display turns into a digital picture frame.
 
@@ -822,11 +845,23 @@ When idle, the display turns into a digital picture frame.
   anywhere
 - Adults can quickly add tasks right from the family view, without the parents' area
 
-**Later (phases 5–6 of the specification)**
+**Next: meal planning (phase 5)**
+
+Plan the week's meals right on the display; children can wish for a dish.
+
+- [x] 1. Weekly plan: a "Meals" icon in the navigation bar, browse weeks, type the dish for each day
+  (suggestions from earlier dishes and about 40 common ones, icon picked automatically and
+  changeable); only dinner by default, breakfast, lunch and snack can be switched on in the
+  settings; the "Meals" tile on "Today" shows today's food
+- [ ] 2. Manage dishes: rename, change the icon, upload a photo, delete
+- [ ] 3. Children's wishes: tap your avatar and a dish on the display; parents add it to the plan
+  or decline
+- [ ] 4. Polish
+
+**Later (phase 6 of the specification)**
 
 | Phase | Contents |
 | --- | --- |
-| 5 | Meal planning |
 | 6 | Shopping lists |
 
 **Ideas without a version yet**
@@ -835,6 +870,7 @@ When idle, the display turns into a digital picture frame.
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
+- Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
 
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one

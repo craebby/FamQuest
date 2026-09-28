@@ -14,9 +14,10 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
 > Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) ist
 > fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
-> Aufgaben aller und dem Wetter. Phase 4 hat begonnen: Das Display wird zum Bilderrahmen, per
+> Aufgaben aller und dem Wetter. Phase 4 macht das Display zum Bilderrahmen, per
 > Symbol oder nach Leerlauf, mit Uhr, Wetter, nächstem Termin und offenen Aufgaben als
-> Einblendungen und mit Nachtmodus (siehe [Roadmap](#roadmap)).
+> Einblendungen und mit Nachtmodus. Phase 5 hat begonnen: ein Essensplan für die Woche, direkt am
+> Display (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -35,6 +36,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
   auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
   oder gedimmte Uhr)
+- Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -223,8 +225,9 @@ darunter drei Spalten (auf schmalen Bildschirmen untereinander):
   der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern, Avatar bei „Einer für
   alle“); nochmal tippen macht es rückgängig. Der Avatar öffnet die Personenansicht, der Pfeil die
   Familienansicht.
-- **Essen** und **Einkauf** sind Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phasen 5
-  und 6).
+- **Essen**: was es heute gibt, mit großem Symbol; ist noch nichts geplant, führt ein Tipp zum
+  Essensplan (siehe [Essensplan](#essensplan)).
+- **Einkauf** ist ein Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phase 6).
 
 Ohne Ort oder Kalender zeigen die Kacheln einen kurzen Hinweis mit Knopf zum Elternbereich.
 
@@ -448,6 +451,27 @@ Kalenderzugriff ankreuzen. Mehrere Google-Konten sind möglich, z. B. eins je El
 Den `TOKEN_ENCRYPTION_KEY` zusammen mit der `.env` sichern. Geht er verloren oder wird er geändert,
 zeigt der Elternbereich bei jedem Konto „Neu verbinden“; sonst geht nichts verloren. Ein Konto zu
 trennen widerruft den Zugriff auch bei Google.
+
+## Essensplan
+
+Unter **Essen** (Teller mit Besteck) in der Navigationsleiste steht der Essensplan der Woche,
+Montag bis Sonntag, heute hervorgehoben. Die Pfeile blättern zu anderen Wochen.
+
+- **Eintragen geht ohne Eltern-PIN**, direkt am Display oder am Handy: auf das **+** eines Tages
+  tippen, dann ein Gericht aus den Vorschlägen antippen oder den Namen eintippen und „Speichern“.
+- **Vorschläge:** zuerst eure eigenen Gerichte (zuletzt geplante vorne), dann rund 50 gängige
+  Gerichte wie Nudeln mit Tomatensoße, Schnitzel, Maultaschen oder Abendbrot. Beim Tippen werden
+  sie gefiltert.
+- **Symbol:** kommt automatisch zum Namen (z. B. „Schnitzel mit Reis“ → Fleisch, sonst ein Teller)
+  und lässt sich per Tipp darauf ändern. Das Symbol gehört zum Gericht und gilt überall, wo es
+  geplant ist.
+- Ein eingetipptes Gericht merkt sich FamQuest und schlägt es danach wieder vor. Gleiche Namen in
+  anderer Schreibweise sind dasselbe Gericht.
+- Ein Tipp auf ein geplantes Gericht ändert es; „Aus dem Plan nehmen“ leert den Tag wieder.
+
+Standardmäßig wird nur das **Abendessen** geplant. Im Elternbereich unter **Einstellungen →
+Essensplan** lassen sich Frühstück, Mittagessen und Snack zuschalten (für die ganze Familie); dann
+steht an jedem Tag jede Mahlzeit mit ihrem Symbol. Ausgeschaltete Mahlzeiten bleiben gespeichert.
 
 ## Fotos (Bilderrahmen)
 
@@ -819,7 +843,7 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   (erledigt); das Wochen-Widget der Startseite bleibt vorerst, wie es ist (noch offen, ob es gebraucht
   wird)
 
-**Als Nächstes: Bilderrahmen (Phase 4)**
+**Bilderrahmen (Phase 4)**
 
 Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 
@@ -850,11 +874,23 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
   Aufgaben anlegen von unterwegs
 - Erwachsene legen Aufgaben schnell direkt in der Familienansicht an, ohne Elternbereich
 
-**Später (Phasen 5–6 der Spezifikation)**
+**Als Nächstes: Essensplanung (Phase 5)**
+
+Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte wünschen.
+
+- [x] 1. Wochenplan: Symbol „Essen“ in der Navigationsleiste, Wochen blättern, das Gericht je Tag
+  eintippen (Vorschläge aus bisherigen und rund 40 gängigen Gerichten, Symbol wird automatisch
+  gewählt und lässt sich ändern); standardmäßig nur Abendessen, Frühstück, Mittag und Snack lassen
+  sich in den Einstellungen zuschalten; die Kachel „Essen“ auf „Heute“ zeigt das heutige Essen
+- [ ] 2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen
+- [ ] 3. Wünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
+  in den Plan oder lehnen ab
+- [ ] 4. Feinschliff
+
+**Später (Phase 6 der Spezifikation)**
 
 | Phase | Inhalt |
 | --- | --- |
-| 5 | Essensplanung |
 | 6 | Einkaufslisten |
 
 **Ideen ohne Version**
@@ -864,6 +900,7 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 - Bilderrahmen: Fotos aus Immich (oder Nextcloud) statt nur hochgeladener Fotos, Alben
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
+- Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
 
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst

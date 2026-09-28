@@ -69,6 +69,14 @@ Im Leerlauf wird das Display zum digitalen Bilderrahmen.
 - Start: per Symbol in der Navigationsleiste oder nach einstellbarer Leerlaufzeit. Ob und wann ein Gerät nach Leerlauf startet, gilt je Gerät (wie die Anzeigegröße), damit z. B. das Eltern-Handy keinen Bilderrahmen zeigt. Ein Tipp beendet den Bilderrahmen und führt zu „Heute“, ohne dabei etwas auszulösen.
 - Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben; jeweils ein- und ausschaltbar, dazu die Anzeigedauer je Foto. Diese Einstellungen gelten für die ganze Familie.
 - Nachtmodus: Zeitfenster in der Zeitzone der Familie, dunkler Bildschirm oder gedimmte Uhr. Ein Browser kann die Hintergrundbeleuchtung nicht abschalten; echtes Abschalten braucht einen Befehl auf dem Display-Rechner (README).
+**Essensplanung** *(Phase 5, entschieden am 2026-09-28)*
+
+Einfach anfangen: festlegen, was es in der Woche gibt.
+
+- Mahlzeiten: Standard nur Abendessen; Frühstück, Mittagessen und Snack lassen die Eltern für die ganze Familie zuschalten.
+- Gerichte werden eingetippt, nicht vorher verwaltet. Vorschläge kommen aus den bisherigen Gerichten der Familie (zuletzt geplante zuerst) und aus rund 50 gängigen Standardgerichten; das Symbol wird zum Namen gewählt und ist änderbar. Gleicher Name in anderer Schreibweise ist dasselbe Gericht.
+- Geplant wird direkt in der Ansicht „Essen“ (Navigationsleiste), bewusst **ohne Eltern-PIN** – eine Ausnahme vom Grundsatz „keine Verwaltung im Alltagsbereich“, weil jeder Erwachsene am Kühlschrank schnell eintragen können soll. Eine PIN lässt sich später nachrüsten.
+- Später: Gerichte verwalten (umbenennen, Symbol, Foto, löschen), Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
 
 ## 3. Setup, Anmeldung und Familienmitglieder
 
@@ -304,7 +312,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Entität | Zweck | Wichtige Felder |
 | --- | --- | --- |
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
-| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten); Phase 4: Einstellungen des Bilderrahmens (Einblendungen, Anzeigedauer, Nachtmodus) |
+| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten); Phase 4: Einstellungen des Bilderrahmens (Einblendungen, Anzeigedauer, Nachtmodus); Phase 5: geplante Mahlzeiten |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
 | Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle, Extra |
 | TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember, Position (Reihenfolge je Person außerhalb von Routinen) |
@@ -319,6 +327,8 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Sync-Stand |
 | CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine), ganztägig oder mit Uhrzeit |
 | Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
+| Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol |
+| MealPlanEntry | Phase 5 | Gericht an einem Tag zu einer Mahlzeit (Frühstück, Mittag, Abend, Snack); höchstens eins je Tag und Mahlzeit |
 
 Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen einen klaren Ort haben. Es gibt aber keine Tenant-Logik. (Idee für später, ohne Version: mehrere, z. B. befreundete Familien auf einer Installation, angelegt vom ersten Admin oder über eine versteckte Funktion. Bis dahin nichts einbauen, was das unnötig verbaut.)
 

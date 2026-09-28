@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { CalendarUpcoming, UpcomingEvent } from '../api/calendar'
+import type { MealWeek } from '../api/meals'
 import { DEFAULT_TILES, type Tile, layoutColumns } from '../api/home'
 import type { TaskWeek } from '../api/taskWeek'
 import type { Weather } from '../api/weather'
@@ -97,6 +98,28 @@ const UPCOMING: CalendarUpcoming = {
   ],
 }
 
+const MEAL_WEEK: MealWeek = {
+  start: '2026-09-28',
+  today: '2026-10-03',
+  meals: ['dinner'],
+  entries: [
+    {
+      date: '2026-10-02',
+      meal: 'dinner',
+      dish_id: 1,
+      name: 'Fischstäbchen',
+      icon: 'fluent-emoji-flat:fish',
+    },
+    {
+      date: '2026-10-03',
+      meal: 'dinner',
+      dish_id: 2,
+      name: 'Pizza',
+      icon: 'fluent-emoji-flat:pizza',
+    },
+  ],
+}
+
 function mockHome({
   weather = WEATHER,
   upcoming = UPCOMING,
@@ -129,6 +152,7 @@ function mockHome({
     'GET /api/weather': Response.json(weather),
     'GET /api/calendar/status': Response.json({ enabled: calendarEnabled }),
     'GET /api/calendar/upcoming': Response.json(upcoming),
+    'GET /api/meals/week': Response.json(MEAL_WEEK),
     'PUT /api/today/tasks/10/members/1': () => {
       teethDone = true
       return new Response(null, { status: 204 })
@@ -242,13 +266,25 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByRole('link', { name: 'Alle Aufgaben öffnen' })).toBeVisible()
   })
 
-  it('hält Platz für Essen und Einkauf frei, als „kommt bald“ gekennzeichnet', async () => {
+  it('zeigt das heutige Essen; der Einkauf ist als „kommt bald“ gekennzeichnet', async () => {
     mockHome()
     renderApp('/')
 
-    for (const name of ['Essen', 'Einkauf']) {
-      expect((await region(name)).getByText('Kommt bald')).toBeVisible()
-    }
+    const meals = await region('Essen')
+    expect(await meals.findByText('Pizza')).toBeVisible()
+    expect(meals.queryByText('Fischstäbchen')).not.toBeInTheDocument()
+    expect(meals.getByRole('link', { name: 'Essensplan öffnen' })).toHaveAttribute('href', '/meals')
+    expect((await region('Einkauf')).getByText('Kommt bald')).toBeVisible()
+  })
+
+  it('lädt zum Planen ein, wenn heute noch nichts geplant ist', async () => {
+    mockHome({ extra: { 'GET /api/meals/week': Response.json({ ...MEAL_WEEK, entries: [] }) } })
+    renderApp('/')
+
+    const meals = await region('Essen')
+    expect(
+      await meals.findByRole('link', { name: 'Heute ist noch nichts geplant' }),
+    ).toHaveAttribute('href', '/meals')
   })
 
   it('funktioniert auch auf Englisch', async () => {
@@ -261,7 +297,8 @@ describe('Startseite „Heute“', () => {
     const cards = await events.findAllByTestId('calendar-event')
     expect(cards[1]).toHaveTextContent('Tomorrow')
     expect(await screen.findByRole('listitem', { name: "Lena's tasks" })).toBeVisible()
-    expect((await region('Meals')).getByText('Coming soon')).toBeVisible()
+    expect(await (await region('Meals')).findByText('Pizza')).toBeVisible()
+    expect((await region('Shopping')).getByText('Coming soon')).toBeVisible()
   })
 
   it('zählt „Einer für alle“ nur für den, der es erledigt hat', async () => {

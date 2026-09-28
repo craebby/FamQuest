@@ -301,15 +301,38 @@ test('Startseite: Aufgaben mit einem Tipp, Hinweise und Platz für später', asy
   await page.reload()
   await expect(teeth).not.toHaveAttribute('aria-pressed', pressed!)
 
-  // Ohne Ort und Kalender: Hinweise auf den Elternbereich; Essen und Einkauf kommen später.
+  // Ohne Ort und Kalender: Hinweise auf den Elternbereich; der Einkauf kommt später.
   await expect(
     page.getByRole('region', { name: 'Wetter' }).getByRole('link', { name: 'Einrichten' }),
   ).toBeVisible()
   await expect(
     page.getByRole('region', { name: 'Termine' }).getByRole('link', { name: 'Einrichten' }),
   ).toBeVisible()
-  await expect(page.getByRole('region', { name: 'Essen' })).toContainText('Kommt bald')
   await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Kommt bald')
+})
+
+test('Essensplan: am Display ohne PIN eintragen, Startseite zeigt das heutige Essen', async ({
+  page,
+}) => {
+  await login(page)
+
+  const meals = page.getByRole('region', { name: 'Essen' })
+  await meals.getByRole('link', { name: 'Heute ist noch nichts geplant' }).tap()
+  const today = page.locator('section[aria-current="date"]')
+  await today.getByRole('button', { name: 'Abendessen eintragen' }).tap()
+  await page
+    .getByRole('list', { name: 'Vorschläge' })
+    .getByRole('button', { name: 'Nudeln mit Tomatensoße' })
+    .tap()
+  await expect(
+    today.getByRole('button', { name: 'Abendessen: Nudeln mit Tomatensoße, ändern' }),
+  ).toBeVisible()
+
+  await page
+    .getByRole('navigation', { name: 'Hauptnavigation' })
+    .getByRole('link', { name: 'Heute' })
+    .tap()
+  await expect(meals).toContainText('Nudeln mit Tomatensoße')
 })
 
 test('Wochenansicht im Aufgabenbereich', async ({ page }) => {

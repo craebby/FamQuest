@@ -103,6 +103,20 @@ und nach Leerlauf; Einblendungen konfigurierbar; Einstellungen für die Familie,
 4. Nachtmodus: Zeitfenster, schwarz oder gedimmte Uhr
 5. Feinschliff
 
+## Etappen (Phase 5: Essensplanung)
+
+Entschieden: Standard nur Abendessen, Frühstück/Mittag/Snack in den Einstellungen zuschaltbar;
+Gerichte einfach eintippen (Vorschläge aus bisherigen und ca. 40 Standardgerichten mit Symbol);
+geplant wird direkt in der Ansicht „Essen“ ohne Eltern-PIN; Kinder dürfen sich Gerichte wünschen;
+keine Rezepte (Mealie/Rezepte später).
+
+1. Wochenplan: Ansicht „Essen“ in der Navigationsleiste, Woche blättern, Gericht je Tag und Mahlzeit
+   eintippen (Vorschläge, Symbol automatisch, änderbar); Mahlzeiten in den Einstellungen;
+   Kachel „Essen“ auf „Heute“ mit dem heutigen Essen
+2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen
+3. Wünsche der Kinder: am Display Avatar + Gericht antippen, Eltern übernehmen in den Plan oder lehnen ab
+4. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

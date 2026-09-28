@@ -7,6 +7,7 @@ import PhotoIcon from '~icons/fluent-emoji-flat/framed-picture'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
+import MealIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 
 import { useCalendarStatus } from '../api/calendar'
 import { usePhotos } from '../api/photos'
@@ -101,6 +102,12 @@ export function AppShell() {
             active={pathname.startsWith('/calendar')}
           />
         )}
+        <NavItem
+          to="/meals"
+          label={t('nav.meals')}
+          icon={MealIcon}
+          active={pathname.startsWith('/meals')}
+        />
         {hasPhotos && (
           <NavItem to="/frame" label={t('nav.frame')} icon={PhotoIcon} active={false} />
         )}

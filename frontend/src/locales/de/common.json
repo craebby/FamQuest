@@ -45,7 +45,8 @@
     "pending_other": "{{count}} Aufgaben warten auf Kontrolle",
     "calendar": "Kalender",
     "tasks": "Aufgaben",
-    "frame": "Fotos"
+    "frame": "Fotos",
+    "meals": "Essen"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -290,6 +291,7 @@
     "school": "Schule & Lernen",
     "music": "Musik",
     "food": "Essen & Trinken",
+    "dishes": "Gerichte",
     "household": "Haushalt",
     "pets": "Tiere & Pflanzen",
     "activities": "Sport & Freizeit",
@@ -607,7 +609,6 @@
     "setup_weather": "Für das Wetter im Elternbereich euren Ort festlegen.",
     "setup_calendar": "Für Termine im Elternbereich einen Kalender verbinden oder Feiertage einschalten.",
     "meals": "Essen",
-    "meals_hint": "Hier steht bald, was es heute zu essen gibt.",
     "shopping": "Einkauf",
     "shopping_hint": "Hier steht bald eure Einkaufsliste.",
     "coming_soon": "Kommt bald",
@@ -621,7 +622,9 @@
     "open_week": "Wochenansicht öffnen",
     "week_empty": "Diese Woche stehen keine Aufgaben an.",
     "week_free": "keine Aufgaben",
-    "person": "Person"
+    "person": "Person",
+    "open_meals": "Essensplan öffnen",
+    "meals_empty": "Heute ist noch nichts geplant"
   },
   "weather": {
     "now": "Jetzt",
@@ -711,5 +714,25 @@
       "dark": "Schwarz",
       "clock": "Gedimmte Uhr"
     }
+  },
+  "meals": {
+    "title": "Essensplan",
+    "meal": {
+      "breakfast": "Frühstück",
+      "lunch": "Mittagessen",
+      "dinner": "Abendessen",
+      "snack": "Snack"
+    },
+    "add_label": "{{meal}} eintragen",
+    "edit_label": "{{meal}}: {{dish}}, ändern",
+    "dish_name": "Gericht",
+    "dish_placeholder": "Gericht eintippen, z. B. Nudeln",
+    "change_icon": "Symbol ändern",
+    "suggestions": "Vorschläge",
+    "no_suggestions": "Kein Vorschlag passt. „Speichern“ legt „{{name}}“ als neues Gericht an.",
+    "remove": "Aus dem Plan nehmen",
+    "close": "Schließen",
+    "settings": "Essensplan",
+    "settings_hint": "Welche Mahlzeiten ihr plant. Gilt für die ganze Familie."
   }
 }

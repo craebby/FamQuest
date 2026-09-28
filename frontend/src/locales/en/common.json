@@ -45,7 +45,8 @@
     "pending_other": "{{count}} tasks waiting for a check",
     "calendar": "Calendar",
     "tasks": "Tasks",
-    "frame": "Photos"
+    "frame": "Photos",
+    "meals": "Meals"
   },
   "family": {
     "no_members": "No family members yet",
@@ -290,6 +291,7 @@
     "school": "School & learning",
     "music": "Music",
     "food": "Food & drink",
+    "dishes": "Dishes",
     "household": "Household",
     "pets": "Animals & plants",
     "activities": "Sports & free time",
@@ -607,7 +609,6 @@
     "setup_weather": "To see the weather, choose your town in the parents' area.",
     "setup_calendar": "To see events, connect a calendar or turn on public holidays in the parents' area.",
     "meals": "Meals",
-    "meals_hint": "Soon you'll see what's for dinner here.",
     "shopping": "Shopping",
     "shopping_hint": "Soon your shopping list will be here.",
     "coming_soon": "Coming soon",
@@ -621,7 +622,9 @@
     "open_week": "Open week view",
     "week_empty": "No tasks this week.",
     "week_free": "no tasks",
-    "person": "Person"
+    "person": "Person",
+    "open_meals": "Open meal plan",
+    "meals_empty": "Nothing planned for today yet"
   },
   "weather": {
     "now": "Now",
@@ -711,5 +714,25 @@
       "dark": "Black",
       "clock": "Dimmed clock"
     }
+  },
+  "meals": {
+    "title": "Meal plan",
+    "meal": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "add_label": "Add {{meal}}",
+    "edit_label": "{{meal}}: {{dish}}, change",
+    "dish_name": "Dish",
+    "dish_placeholder": "Type a dish, e.g. pasta",
+    "change_icon": "Change icon",
+    "suggestions": "Suggestions",
+    "no_suggestions": "No suggestion fits. \"Save\" adds \"{{name}}\" as a new dish.",
+    "remove": "Remove from plan",
+    "close": "Close",
+    "settings": "Meal plan",
+    "settings_hint": "Which meals you plan. Applies to the whole family."
   }
 }

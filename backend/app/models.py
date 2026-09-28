@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     SmallInteger,
     String,
     Text,
@@ -52,6 +53,8 @@ class Family(Base):
     home_layout: Mapped[list[dict] | None] = mapped_column(JSONB)
     # Bilderrahmen: Einblendungen und Anzeigedauer; None = Standard (siehe api/frame.py).
     frame_settings: Mapped[dict | None] = mapped_column(JSONB)
+    # Essensplan: welche Mahlzeiten geplant werden; None = Standard (siehe api/meals.py).
+    meal_settings: Mapped[dict | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -478,3 +481,35 @@ class Photo(Base):
     # Ausgeblendete Fotos bleiben erhalten, erscheinen aber nicht im Bilderrahmen.
     visible: Mapped[bool] = mapped_column(default=True, server_default=true())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Dish(Base):
+    """Gericht für den Essensplan. Entsteht beim Eintippen im Plan und wird danach vorgeschlagen."""
+
+    __tablename__ = "dishes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    # Iconify-Name wie bei Aufgaben.
+    icon: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# Gleicher Name in anderer Schreibweise ist dasselbe Gericht („nudeln“ = „Nudeln“).
+Index("uq_dishes_name_lower", func.lower(Dish.name), unique=True)
+
+
+class MealPlanEntry(Base):
+    """Ein Gericht im Essensplan: an einem Tag zu einer Mahlzeit (siehe schemas.MEALS)."""
+
+    __tablename__ = "meal_plan_entries"
+    # Der Unique-Constraint (date, meal) dient zugleich als Index für date.
+    __table_args__ = (UniqueConstraint("date", "meal"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    date: Mapped[dt.date] = mapped_column(Date)
+    meal: Mapped[str] = mapped_column(String(20))
+    dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    dish: Mapped[Dish] = relationship(lazy="joined")

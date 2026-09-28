@@ -16,6 +16,7 @@ from app.api import (
     frame,
     health,
     home,
+    meals,
     members,
     parent,
     photos,
@@ -80,6 +81,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         routines,
         photos,
         frame,
+        meals,
     ):
         api.include_router(module.router)
     app.include_router(api)

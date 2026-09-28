@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
-import MealIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 
 import type { TileId } from '../../api/home'
 import { EventsWidget } from './EventsWidget'
+import { MealsWidget } from './MealsWidget'
 import { TasksWidget } from './TasksWidget'
 import { WeatherWidget } from './WeatherWidget'
 import { WeekWidget } from './WeekWidget'
@@ -21,7 +21,7 @@ export function TileView({ id }: { id: TileId }) {
     case 'week':
       return <WeekWidget />
     case 'meals':
-      return <ComingSoon title={t('home.meals')} icon={MealIcon} text={t('home.meals_hint')} />
+      return <MealsWidget />
     case 'shopping':
       return (
         <ComingSoon title={t('home.shopping')} icon={CartIcon} text={t('home.shopping_hint')} />

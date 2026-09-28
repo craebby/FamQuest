@@ -24,6 +24,8 @@ MANUAL_MAX_POINTS = 1000
 REWARD_MAX_COST = 1000
 # Status von Einlösungen; ein Freigabeprozess (requested, approved, rejected) kann folgen.
 REDEMPTION_STATUSES = ("redeemed",)
+# Mahlzeiten des Essensplans in zeitlicher Reihenfolge.
+MEALS = ("breakfast", "lunch", "dinner", "snack")
 _EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+$")
 
 

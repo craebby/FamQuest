@@ -140,6 +140,40 @@
     ]
   },
   {
+    "id": "dishes",
+    "icons": [
+      "spaghetti",
+      "hamburger",
+      "cut-of-meat",
+      "poultry-leg",
+      "meat-on-bone",
+      "hot-dog",
+      "french-fries",
+      "potato",
+      "roasted-sweet-potato",
+      "pot-of-food",
+      "steaming-bowl",
+      "curry-rice",
+      "cooked-rice",
+      "dumpling",
+      "fried-shrimp",
+      "taco",
+      "burrito",
+      "stuffed-flatbread",
+      "falafel",
+      "flatbread",
+      "sushi",
+      "fondue",
+      "cheese-wedge",
+      "waffle",
+      "tomato",
+      "leafy-green",
+      "bell-pepper",
+      "hot-pepper",
+      "takeout-box"
+    ]
+  },
+  {
     "id": "household",
     "icons": [
       "bucket",
