@@ -15,7 +15,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) ist
 > fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
 > Aufgaben aller und dem Wetter. Phase 4 hat begonnen: Das Display wird zum Bilderrahmen, per
-> Symbol oder nach Leerlauf; Einblendungen und Nachtmodus folgen (siehe [Roadmap](#roadmap)).
+> Symbol oder nach Leerlauf, mit Uhr, Wetter, nächstem Termin und offenen Aufgaben als
+> Einblendungen; der Nachtmodus folgt (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -31,7 +32,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
-- Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf
+- Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
+  auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -469,15 +471,29 @@ werden vom [Backup](#backup-und-restore) mit erfasst.
 
 - Sobald mindestens ein Foto gezeigt wird, erscheint in der Navigationsleiste das Symbol **Fotos**
   (gerahmtes Bild). Es startet den Bilderrahmen.
-- Die Fotos erscheinen im Vollbild in zufälliger Reihenfolge mit weicher Überblendung, vorerst alle
-  15 Sekunden (einstellbar ab der nächsten Etappe). Jedes Foto kommt einmal dran, bevor sich eines
-  wiederholt.
+- Die Fotos erscheinen im Vollbild in zufälliger Reihenfolge mit weicher Überblendung,
+  standardmäßig eines pro Minute. Jedes Foto kommt einmal dran, bevor sich eines wiederholt.
 - Fotos, die ungefähr zum Bildschirm passen, füllen ihn aus. Hochformat und stark abweichende
   Formate erscheinen ganz, dahinter dasselbe Foto unscharf statt schwarzer Balken.
 - Ein Tipp irgendwohin beendet den Bilderrahmen und führt zu „Heute“. Dieser Tipp hakt nichts ab.
 - **Start nach Leerlauf** stellt ihr je Gerät ein: **Einstellungen → Dieses Gerät → Bilderrahmen
   nach Leerlauf** (aus, 1, 5, 10 oder 30 Minuten; standardmäßig aus). Am Küchendisplay einschalten,
   auf den Eltern-Handys aus lassen. Er startet nur aus den Alltagsansichten, nicht im Elternbereich.
+
+**Einblendungen und Anzeigedauer**
+
+Im Elternbereich unter **Fotos** legt die Karte **Bilderrahmen** fest, was unten über den Fotos
+erscheint. Die Einstellungen gelten für die ganze Familie und wirken sofort.
+
+- **Uhr und Datum** (unten links, groß), **Wetter** (unten rechts, Symbol und Temperatur) und
+  **Nächster Termin** (unter der Uhr, mit dem Avatar der Person, der er gehört) sind standardmäßig an.
+- **Offene Aufgaben** ist standardmäßig aus. Eingeschaltet erscheint jede Person, die heute noch
+  etwas offen hat, mit ihrem Avatar und den Symbolen dieser Aufgaben (bis zu vier, dann „+n“). So
+  sehen auch Kinder auf einen Blick, was noch fehlt. Extras und optionale Routinenschritte zählen
+  nicht. Die Einblendungen lassen sich nicht antippen: Ein Tipp führt weiterhin nur zu „Heute“.
+- **Jedes Foto zeigen für**: 15 oder 30 Sekunden, 1, 2 oder 5 Minuten (Standard 1 Minute, eher
+  ruhig als hektisch).
+- Wetter und Termine erscheinen erst, wenn ein Ort bzw. ein Kalender eingerichtet ist.
 
 ## Konfiguration
 
@@ -778,7 +794,7 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 - [x] 2. Bilderrahmen: Vollbild mit Überblendung, zufällige Reihenfolge ohne Wiederholung,
   Hochformat mit unscharfem Hintergrund; Start per Symbol in der Navigationsleiste oder nach
   Leerlauf (je Gerät einstellbar), ein Tipp führt zurück zu „Heute“
-- [ ] 3. Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben, jeweils ein- und
+- [x] 3. Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben, jeweils ein- und
   ausschaltbar; Anzeigedauer je Foto (gilt für die Familie)
 - [ ] 4. Nachtmodus: Zeitfenster, dunkler Bildschirm oder gedimmte Uhr
 - [ ] 5. Feinschliff am echten Display

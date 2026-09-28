@@ -1,5 +1,3 @@
-/** Anzeigedauer je Foto; einstellbar wird sie mit den Einblendungen (Phase 4, Etappe 3). */
-export const PHOTO_DURATION_MS = 15 * 1000
 /** Dauer der Überblendung, passend zu `animate-fade-in` in index.css. */
 export const FADE_MS = 1500
 

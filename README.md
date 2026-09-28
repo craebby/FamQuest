@@ -15,8 +15,9 @@ services and without external CDNs. The full specification (in German) is in
 > children, fair sharing between adults and family settings. The display test is done; the rest
 > will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
 > is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 has
-> started: the display becomes a picture frame, started from an icon or after being idle; overlays
-> and night mode follow (see [Roadmap](#roadmap)).
+> started: the display becomes a picture frame, started from an icon or after being idle, with
+> clock, weather, next event and open tasks as overlays; night mode follows (see
+> [Roadmap](#roadmap)).
 
 ## Features
 
@@ -31,7 +32,8 @@ services and without external CDNs. The full specification (in German) is in
 - Fair sharing: each adult's share of the week's tasks
 - Google Calendar (read-only): week view on the display, events in each person's colour
 - Weather for your town (Open-Meteo, no API key needed)
-- Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle
+- Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
+  with optional clock, weather, next event and open tasks on top
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -448,8 +450,8 @@ and are included in the [backup](#backup-and-restore).
 
 - As soon as at least one photo is shown, a **Photos** icon (framed picture) appears in the
   navigation bar. It starts the picture frame.
-- The photos appear full screen in random order with a soft cross-fade, currently every 15 seconds
-  (adjustable in the next stage). Every photo is shown once before any photo comes again.
+- The photos appear full screen in random order with a soft cross-fade, by default one per minute.
+  Every photo is shown once before any photo comes again.
 - Photos that roughly match the screen fill it. Portrait photos and very different shapes are shown
   in full, with a blurred copy of the same photo behind them instead of black bars.
 - A tap anywhere ends the picture frame and goes to "Today". That tap doesn't tick off anything.
@@ -457,6 +459,21 @@ and are included in the [backup](#backup-and-restore).
   idle** (off, 1, 5, 10 or 30 minutes; off by default). Switch it on for the kitchen display and
   leave it off on parents' phones. It only starts from the everyday views, not in the parents'
   area.
+
+**Overlays and duration**
+
+In the parents' area under **Photos**, the **Picture frame** card sets what appears at the bottom of
+the photos. These settings apply to the whole family and take effect straight away.
+
+- **Clock and date** (bottom left, large), **Weather** (bottom right, symbol and temperature) and
+  **Next event** (below the clock, with the avatar of the person it belongs to) are on by default.
+- **Open tasks** is off by default. When switched on, each person with tasks still open today shows
+  up with their avatar and the symbols of those tasks (up to four, then "+n"), so children can see
+  at a glance what is left. Extras and optional routine steps don't count. The overlays can't be
+  tapped: a tap still just goes back to "Today".
+- **Show each photo for**: 15 or 30 seconds, 1, 2 or 5 minutes (default 1 minute, calm rather than
+  hectic).
+- Weather and events only appear once a place or a calendar is set up.
 
 ## Configuration
 
@@ -751,7 +768,7 @@ When idle, the display turns into a digital picture frame.
 - [x] 2. Picture frame: full screen with cross-fades, random order without repeats, portrait
   photos on a blurred background; started from an icon in the navigation bar or after being idle
   (set per device), one tap goes back to "Today"
-- [ ] 3. Overlays: clock and date, weather, next event, open tasks, each on or off; how long each
+- [x] 3. Overlays: clock and date, weather, next event, open tasks, each on or off; how long each
   photo is shown (for the whole family)
 - [ ] 4. Night mode: time window, dark screen or dimmed clock
 - [ ] 5. Polish on the real display

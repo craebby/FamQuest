@@ -50,6 +50,8 @@ class Family(Base):
     # Kacheln der Startseite in Reihenfolge, [{"id": "weather", "visible": true}, …];
     # None = Standardaufbau (siehe api/home.py).
     home_layout: Mapped[list[dict] | None] = mapped_column(JSONB)
+    # Bilderrahmen: Einblendungen und Anzeigedauer; None = Standard (siehe api/frame.py).
+    frame_settings: Mapped[dict | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

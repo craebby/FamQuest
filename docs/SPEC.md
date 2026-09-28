@@ -304,7 +304,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Entität | Zweck | Wichtige Felder |
 | --- | --- | --- |
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
-| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten) |
+| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten); Phase 4: Einstellungen des Bilderrahmens (Einblendungen, Anzeigedauer) |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
 | Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle, Extra |
 | TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember, Position (Reihenfolge je Person außerhalb von Routinen) |

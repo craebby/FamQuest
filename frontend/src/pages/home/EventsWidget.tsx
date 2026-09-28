@@ -9,20 +9,13 @@ import { errorMessage } from '../../errors'
 import { EventCard } from '../calendar/EventCard'
 import { EventDialog } from '../calendar/EventDialog'
 import { HolidayChip } from '../calendar/HolidayChip'
-import { type Owners, ownersOf } from '../calendar/owners'
+import { type Owners, ownersOf, upcomingDayLabel } from '../calendar/owners'
 import { SetupHint, Widget } from './Widget'
 
 /** So viele Termine zeigt die Startseite. */
 export const UPCOMING_LIMIT = 5
 
-function parseDate(isoDate: string) {
-  const [year, month, day] = isoDate.split('-').map(Number)
-  return new Date(Date.UTC(year, month - 1, day))
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000
-
-/** Die nächsten Termine: laufende und kommende, jeweils mit Tag („Heute“, „Morgen“, „Sa., 10.10.“). */
+/** Die nächsten Termine: laufende und kommende, jeweils mit Tag (siehe upcomingDayLabel). */
 export function EventsWidget({ className }: { className?: string }) {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
@@ -33,17 +26,8 @@ export function EventsWidget({ className }: { className?: string }) {
   const [open, setOpen] = useState<{ event: UpcomingEvent; owners: Owners } | null>(null)
   const data = upcoming.data
 
-  const dayLabel = (day: string) => {
-    if (!data || day === data.today) return t('calendar.today')
-    const date = parseDate(day)
-    if (date.getTime() - parseDate(data.today).getTime() === DAY_MS) return t('home.tomorrow')
-    return new Intl.DateTimeFormat(language, {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'numeric',
-      timeZone: 'UTC',
-    }).format(date)
-  }
+  const dayLabel = (day: string) =>
+    data ? upcomingDayLabel(day, data.today, language, t) : t('calendar.today')
 
   return (
     <Widget

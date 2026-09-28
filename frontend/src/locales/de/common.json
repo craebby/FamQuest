@@ -687,6 +687,20 @@
   },
   "frame": {
     "exit": "Bilderrahmen beenden, zurück zu „Heute“",
-    "empty": "Noch keine Fotos. Im Elternbereich unter „Fotos“ kannst du welche hochladen."
+    "empty": "Noch keine Fotos. Im Elternbereich unter „Fotos“ kannst du welche hochladen.",
+    "settings": "Bilderrahmen",
+    "settings_hint": "Gilt für die ganze Familie. Die Einblendungen erscheinen unten über den Fotos.",
+    "overlays": "Einblendungen",
+    "show_clock": "Uhr und Datum",
+    "show_weather": "Wetter",
+    "show_event": "Nächster Termin",
+    "show_tasks": "Offene Aufgaben",
+    "duration": "Jedes Foto zeigen für",
+    "seconds_one": "{{count}} Sekunde",
+    "seconds_other": "{{count}} Sekunden",
+    "minutes_one": "{{count}} Minute",
+    "minutes_other": "{{count}} Minuten",
+    "open_tasks_of_one": "{{name}}: 1 Aufgabe offen",
+    "open_tasks_of_other": "{{name}}: {{count}} Aufgaben offen"
   }
 }

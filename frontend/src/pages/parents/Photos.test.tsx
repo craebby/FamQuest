@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { DEFAULT_FRAME_SETTINGS, type FrameSettings } from '../../api/frame'
 import type { Photo } from '../../api/photos'
 import i18n from '../../i18n'
 import { makeMe, makePhoto, makeToday, mockApi, renderApp, setupDone } from '../../test/utils'
@@ -23,6 +24,7 @@ function mockParents(photos: () => Photo[], extra = {}) {
     'GET /api/rewards': Response.json([]),
     'GET /api/today': Response.json(makeToday()),
     'GET /api/photos': () => Response.json(photos()),
+    'GET /api/frame/settings': Response.json(DEFAULT_FRAME_SETTINGS),
     ...extra,
   })
 }
@@ -98,5 +100,36 @@ describe('Fotos im Elternbereich', () => {
     await user.click(within(tile).getByRole('button', { name: 'Löschen' }))
     expect(await screen.findByText('Das Foto ist gelöscht.')).toBeVisible()
     expect(await screen.findByText(/Noch keine Fotos/)).toBeVisible()
+  })
+})
+
+describe('Einstellungen des Bilderrahmens', () => {
+  it('speichert Einblendungen und Anzeigedauer sofort', async () => {
+    const user = userEvent.setup()
+    // Wie der Server: GET liefert danach, was zuletzt gespeichert wurde.
+    let saved: FrameSettings = DEFAULT_FRAME_SETTINGS
+    const calls = mockParents(() => [], {
+      'GET /api/frame/settings': () => Response.json(saved),
+      'PUT /api/frame/settings': (body: unknown) => {
+        saved = body as FrameSettings
+        return Response.json(saved)
+      },
+    })
+    renderApp('/parents/photos')
+
+    const section = within(await screen.findByRole('region', { name: 'Bilderrahmen' }))
+    // Standard: eine Minute, offene Aufgaben aus.
+    expect(await section.findByRole('radio', { name: '1 Minute' })).toBeChecked()
+    expect(section.getByRole('switch', { name: 'Offene Aufgaben' })).not.toBeChecked()
+
+    await user.click(section.getByRole('switch', { name: 'Offene Aufgaben' }))
+    expect(section.getByRole('switch', { name: 'Offene Aufgaben' })).toBeChecked()
+    await user.click(section.getByRole('radio', { name: '30 Sekunden' }))
+
+    const puts = calls.filter((call) => call.key === 'PUT /api/frame/settings')
+    expect(puts.map((call) => call.body)).toEqual([
+      { ...DEFAULT_FRAME_SETTINGS, show_tasks: true },
+      { ...DEFAULT_FRAME_SETTINGS, show_tasks: true, photo_seconds: 30 },
+    ])
   })
 })

@@ -687,6 +687,20 @@
   },
   "frame": {
     "exit": "Close the picture frame and go back to “Today”",
-    "empty": "No photos yet. You can upload some in the parent area under “Photos”."
+    "empty": "No photos yet. You can upload some in the parent area under “Photos”.",
+    "settings": "Picture frame",
+    "settings_hint": "Applies to the whole family. The overlays appear at the bottom of the photos.",
+    "overlays": "Overlays",
+    "show_clock": "Clock and date",
+    "show_weather": "Weather",
+    "show_event": "Next event",
+    "show_tasks": "Open tasks",
+    "duration": "Show each photo for",
+    "seconds_one": "{{count}} second",
+    "seconds_other": "{{count}} seconds",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes",
+    "open_tasks_of_one": "{{name}}: 1 task left",
+    "open_tasks_of_other": "{{name}}: {{count}} tasks left"
   }
 }

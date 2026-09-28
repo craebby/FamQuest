@@ -39,3 +39,28 @@ export function eventWhen(
   if (event.continues_after) return t('calendar.from', { time: time.format(start) })
   return start.getTime() === end.getTime() ? time.format(start) : time.formatRange(start, end)
 }
+
+function parseDate(isoDate: string) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** Tag eines kommenden Termins: „Heute“, „Morgen“ oder z. B. „Sa., 10.10.“. */
+export function upcomingDayLabel(
+  day: string,
+  today: string,
+  language: string,
+  t: (key: string) => string,
+) {
+  if (day === today) return t('calendar.today')
+  const date = parseDate(day)
+  if (date.getTime() - parseDate(today).getTime() === DAY_MS) return t('home.tomorrow')
+  return new Intl.DateTimeFormat(language, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'numeric',
+    timeZone: 'UTC',
+  }).format(date)
+}

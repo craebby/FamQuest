@@ -13,6 +13,7 @@ from app.api import (
     auth,
     calendar,
     calendar_week,
+    frame,
     health,
     home,
     members,
@@ -78,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         home,
         routines,
         photos,
+        frame,
     ):
         api.include_router(module.router)
     app.include_router(api)

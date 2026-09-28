@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import PhotoIcon from '~icons/fluent-emoji-flat/framed-picture'
 
+import { DEFAULT_FRAME_SETTINGS, useFrameSettings } from '../api/frame'
 import { type Photo, usePhotos } from '../api/photos'
 import { errorMessage } from '../errors'
-import { FADE_MS, PHOTO_DURATION_MS, drawNext, fillsScreen } from './frame/slideshow'
+import { Overlays } from './frame/Overlays'
+import { FADE_MS, drawNext, fillsScreen } from './frame/slideshow'
 
 /** Neue oder ausgeblendete Fotos kommen ohne Neuladen der Seite an. */
 const PHOTOS_REFETCH_MS = 10 * 60 * 1000
@@ -74,6 +76,9 @@ export function FramePage() {
   const photos = usePhotos({ refetchInterval: PHOTOS_REFETCH_MS })
   const visible = useMemo(() => (photos.data ?? []).filter((photo) => photo.visible), [photos.data])
   const screen = useScreenSize()
+  // Bis die Einstellungen da sind (oder falls sie fehlen), gilt der Standard.
+  const settings = useFrameSettings().data ?? DEFAULT_FRAME_SETTINGS
+  const durationMs = settings.photo_seconds * 1000
 
   // Die neueste Ebene blendet über der vorigen ein; danach bleibt nur sie übrig.
   const [layers, setLayers] = useState<Layer[]>([])
@@ -115,14 +120,13 @@ export function FramePage() {
       }
     }
     const trim = window.setTimeout(() => setLayers((old) => old.slice(-1)), FADE_MS)
-    const timer =
-      visible.length > 1 ? window.setTimeout(() => void show(), PHOTO_DURATION_MS) : undefined
+    const timer = visible.length > 1 ? window.setTimeout(() => void show(), durationMs) : undefined
     return () => {
       cancelled = true
       window.clearTimeout(trim)
       window.clearTimeout(timer)
     }
-  }, [current, hasPhotos, visible.length])
+  }, [current, hasPhotos, visible.length, durationMs])
 
   useEffect(() => {
     const leave = () => navigate('/')
@@ -132,20 +136,23 @@ export function FramePage() {
 
   const empty = photos.isSuccess && !hasPhotos
   return (
-    <button
-      type="button"
-      aria-label={t('frame.exit')}
-      onClick={() => navigate('/')}
-      className="fixed inset-0 cursor-none overflow-hidden bg-black focus:outline-none"
-    >
-      {hasPhotos &&
-        layers.map((layer) => <PhotoLayer key={layer.key} photo={layer.photo} screen={screen} />)}
-      {(empty || photos.isError) && (
-        <span className="flex h-full flex-col items-center justify-center gap-6 p-6 text-center text-2xl text-slate-200">
-          <PhotoIcon className="size-24" aria-hidden="true" />
-          {photos.isError ? errorMessage(t, photos.error) : t('frame.empty')}
-        </span>
-      )}
-    </button>
+    <>
+      <button
+        type="button"
+        aria-label={t('frame.exit')}
+        onClick={() => navigate('/')}
+        className="fixed inset-0 cursor-none overflow-hidden bg-black focus:outline-none"
+      >
+        {hasPhotos &&
+          layers.map((layer) => <PhotoLayer key={layer.key} photo={layer.photo} screen={screen} />)}
+        {(empty || photos.isError) && (
+          <span className="flex h-full flex-col items-center justify-center gap-6 p-6 text-center text-2xl text-slate-200">
+            <PhotoIcon className="size-24" aria-hidden="true" />
+            {photos.isError ? errorMessage(t, photos.error) : t('frame.empty')}
+          </span>
+        )}
+      </button>
+      <Overlays settings={settings} />
+    </>
   )
 }
