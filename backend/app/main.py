@@ -17,6 +17,7 @@ from app.api import (
     home,
     members,
     parent,
+    photos,
     points,
     rewards,
     routines,
@@ -76,6 +77,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         weather,
         home,
         routines,
+        photos,
     ):
         api.include_router(module.router)
     app.include_router(api)

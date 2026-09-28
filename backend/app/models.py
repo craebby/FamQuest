@@ -459,3 +459,20 @@ class OAuthState(Base):
     code_verifier: Mapped[str] = mapped_column(String(128))
     redirect_uri: Mapped[str] = mapped_column(String(500))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class Photo(Base):
+    """Foto für den Bilderrahmen; die Dateien liegen im Upload-Verzeichnis (siehe photos.py)."""
+
+    __tablename__ = "photos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # Zufälliger Schlüssel der Dateien `<key>.webp` (Anzeige) und `<key>-thumb.webp` (Vorschau).
+    file_key: Mapped[str] = mapped_column(String(32), unique=True)
+    width: Mapped[int]
+    height: Mapped[int]
+    # Aufnahmezeit laut Kamera (Ortszeit ohne Zeitzone, wie in den EXIF-Daten); None = unbekannt.
+    taken_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
+    # Ausgeblendete Fotos bleiben erhalten, erscheinen aber nicht im Bilderrahmen.
+    visible: Mapped[bool] = mapped_column(default=True, server_default=true())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

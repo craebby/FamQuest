@@ -98,6 +98,7 @@
     "tasks": "Tasks",
     "routines": "Routines",
     "rewards": "Rewards",
+    "photos": "Photos",
     "connections": "Calendar & weather",
     "settings": "Settings",
     "more": "More"
@@ -423,6 +424,11 @@
     },
     "home": {
       "invalid_layout": "This start page layout is invalid"
+    },
+    "photo": {
+      "too_large": "The photo is too large (25 MB max).",
+      "invalid_image": "The photo could not be read. JPEG, PNG and WebP are supported.",
+      "not_found": "This photo no longer exists."
     }
   },
   "rewards": {
@@ -651,5 +657,26 @@
     "done": "done",
     "open": "still to do",
     "missed": "not done"
+  },
+  "photos": {
+    "section": "Photos for the picture frame",
+    "hint": "The picture frame on the display shows these photos. Hidden photos stay saved but are not shown. Photos are scaled down when uploaded; location and other metadata are removed.",
+    "add": "Add photos",
+    "progress": "{{done}} of {{total}} photos uploaded …",
+    "uploaded_one": "1 photo uploaded",
+    "uploaded_other": "{{count}} photos uploaded",
+    "failed_one": "1 photo could not be uploaded:",
+    "failed_other": "{{count}} photos could not be uploaded:",
+    "empty": "No photos yet. Tap “Add photos”; on a phone you can pick them straight from the gallery.",
+    "count_one": "1 photo",
+    "count_other": "{{count}} photos",
+    "hidden_count": "{{count}} hidden",
+    "hidden": "Hidden",
+    "show": "Show",
+    "alt": "Photo",
+    "alt_taken": "Photo from {{date}}",
+    "delete": "Delete",
+    "delete_confirm": "Really delete this photo?",
+    "deleted": "The photo has been deleted."
   }
 }

@@ -15,7 +15,8 @@ services and without external CDNs. The full specification (in German) is in
 > children, fair sharing between adults and family settings. The display test is done; the rest
 > will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
 > is now a day dashboard with the next events, everyone's tasks and the weather (see
-> [Roadmap](#roadmap)).
+> Phase 4 has started: a picture frame for the display; photos can already be uploaded in the
+> parents' area (see [Roadmap](#roadmap)).
 
 ## Features
 
@@ -30,6 +31,7 @@ services and without external CDNs. The full specification (in German) is in
 - Fair sharing: each adult's share of the week's tasks
 - Google Calendar (read-only): week view on the display, events in each person's colour
 - Weather for your town (Open-Meteo, no API key needed)
+- Upload photos for the picture frame (the picture frame itself follows in phase 4)
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -79,9 +81,9 @@ accounts can be registered through the interface.
   without use).
 - The parents' area (gear icon) is additionally protected by the parents' PIN. After 2 minutes
   without input the display returns to the start page and locks it again.
-- The parents' area has a menu with seven areas: **Checks & points** (with a red number when
-  something is waiting), **Family**, **Tasks**, **Routines**, **Rewards**, **Calendar & weather**
-  and **Settings** (family, PIN, device, account). On tablets and the display the menu is on the
+- The parents' area has a menu with eight areas: **Checks & points** (with a red number when
+  something is waiting), **Family**, **Tasks**, **Routines**, **Rewards**, **Photos**, **Calendar &
+  weather** and **Settings** (family, PIN, device, account). On tablets and the display the menu is on the
   left; on phones the four most used areas are at the bottom and the rest is under **More**. Each
   area has its own address (e.g. `/parents/routines`), so reloading keeps you where you are.
 - The PIN can be changed or switched off in the parents' area. Forgot the PIN? Set a new one with
@@ -211,7 +213,7 @@ top, below it three columns (stacked on narrow screens):
   Adults see their share of the week instead of a progress bar. **One tap** completes a task, just like in the family view
   (with "+2", hourglass for parent checks, avatar for "One for all"); tap again to undo. The
   avatar opens the person view, the arrow opens the family view.
-- **Meals** and **Shopping** are placeholders, clearly marked "Coming soon" (phases 4 and 5).
+- **Meals** and **Shopping** are placeholders, clearly marked "Coming soon" (phases 5 and 6).
 
 Without a town or calendar the widgets show a short hint with a button to the parents' area.
 
@@ -424,6 +426,24 @@ Back up `TOKEN_ENCRYPTION_KEY` together with `.env`. If it's lost or changed, th
 shows "Reconnect" for every account; nothing else is lost. Disconnecting an account also revokes
 access at Google.
 
+## Photos (picture frame)
+
+Upload the photos for the picture frame in the parents' area under **Photos** (framed picture
+icon). The picture frame that shows them on the display follows in the next stages of phase 4.
+
+- **Add photos** picks several photos at once, on a phone straight from the gallery. They are
+  uploaded one after another with a progress bar. If a photo fails, it is listed with the reason;
+  the others still arrive.
+- JPEG, PNG and WebP up to 25 MB are supported. iPhones usually convert HEIC photos to JPEG
+  themselves when uploading.
+- The server checks every photo, turns it the right way up, scales it down to at most 2560 pixels
+  on the long edge and re-encodes it as WebP. Location (GPS) and other metadata are removed; only
+  the capture date is kept and shown below the photo.
+- **Show** hides a photo or shows it again without deleting it. **Delete** (wastebasket) asks first.
+
+Photos are stored in the `uploads` volume (subfolder `photos`), can only be fetched when signed in
+and are included in the [backup](#backup-and-restore).
+
 ## Configuration
 
 Configuration is done exclusively through environment variables in `.env`. All variables are
@@ -530,6 +550,9 @@ sender, not `127.0.0.1`. The default `127.0.0.1` therefore only applies without 
 The proxy must pass on the original `Host` header (Caddy and Traefik do this automatically; for
 nginx use `proxy_set_header Host $host;`). Setup and sign-in use it to check that requests come from
 the app's own page.
+
+Photos for the picture frame may be up to 25 MB. nginx only allows 1 MB per request by default, so
+set `client_max_body_size 30m;` there (in Nginx Proxy Manager under "Advanced").
 
 The app must run on its own (sub)domain, e.g. `family.example.com`. A sub-path such as
 `example.com/family` is not supported.
@@ -705,6 +728,20 @@ use.
 - [ ] 9. Polish on the real display; everyday task templates and reward suggestions (done); the
   week widget on the start page stays as it is for now (unclear whether it's needed)
 
+**Next: picture frame (phase 4)**
+
+When idle, the display turns into a digital picture frame.
+
+- [x] 1. Manage photos: upload several photos at once in the parents' area (from the gallery on a
+  phone), stored scaled down and without metadata, hide and show, delete
+- [ ] 2. Picture frame: full screen with cross-fades, random order without repeats, portrait
+  photos on a blurred background; started from an icon in the navigation bar or after being idle
+  (set per device), one tap goes back to "Today"
+- [ ] 3. Overlays: clock and date, weather, next event, open tasks, each on or off; how long each
+  photo is shown (for the whole family)
+- [ ] 4. Night mode: time window, dark screen or dimmed clock
+- [ ] 5. Polish on the real display
+
 **1.1: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
@@ -723,17 +760,18 @@ use.
   anywhere
 - Adults can quickly add tasks right from the family view, without the parents' area
 
-**Later (phases 4–5 of the specification)**
+**Later (phases 5–6 of the specification)**
 
 | Phase | Contents |
 | --- | --- |
-| 4 | Meal planning |
-| 5 | Shopping lists |
+| 5 | Meal planning |
+| 6 | Shopping lists |
 
 **Ideas without a version yet**
 
 - Create and edit events from FamQuest (needs write access to Google Calendar instead of read-only)
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
+- Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 
 - Several families on one installation: e.g. the first admin (or a hidden function) creates

@@ -40,6 +40,7 @@ import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
 import { WeatherSection } from './parents/WeatherSection'
 import { ParentsNav } from './parents/ParentsNav'
+import { PhotosSection } from './parents/PhotosSection'
 import { DEFAULT_AREA, type ParentArea, isParentArea } from './parents/areas'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
@@ -484,6 +485,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
             />
           </>
         )}
+        {area === 'photos' && <PhotosSection onMessage={setNotice} />}
         {area === 'connections' && (
           <>
             <CalendarSection

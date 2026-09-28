@@ -90,6 +90,19 @@ in einen eigenen Bereich. Wetter von Open-Meteo über den Server (ohne API-Schl�
    bestehende Aufgaben werden automatisch übernommen
 9. Feinschliff
 
+## Etappen (Phase 4: Bilderrahmen)
+
+Entschieden: Fotos werden im Elternbereich hochgeladen (Immich/Nextcloud später); Start per Symbol
+und nach Leerlauf; Einblendungen konfigurierbar; Einstellungen für die Familie, Leerlauf-Start je Gerät.
+
+1. Fotos verwalten: eigener Bereich „Fotos“ im Elternbereich, mehrere hochladen, verkleinern,
+   Metadaten entfernen, ein-/ausblenden, löschen
+2. Bilderrahmen-Ansicht: Vollbild, Überblendung, zufällige Reihenfolge ohne Wiederholung,
+   Hochformat mit unscharfem Hintergrund, Start per Symbol und nach Leerlauf (je Gerät), Tipp → „Heute“
+3. Einblendungen konfigurierbar (Uhr/Datum, Wetter, nächster Termin, offene Aufgaben), Anzeigedauer
+4. Nachtmodus: Zeitfenster, schwarz oder gedimmte Uhr
+5. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

@@ -14,7 +14,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
 > Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) ist
 > fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
-> Aufgaben aller und dem Wetter (siehe [Roadmap](#roadmap)).
+> Aufgaben aller und dem Wetter. Phase 4 hat begonnen: ein Bilderrahmen für das Display; Fotos
+> lassen sich schon im Elternbereich hochladen (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -30,6 +31,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
+- Fotos für den Bilderrahmen hochladen (der Bilderrahmen selbst folgt in Phase 4)
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -79,8 +81,9 @@ weitere Konten lassen sich nicht über die Oberfläche registrieren.
   Jahr ohne Nutzung).
 - Der Elternbereich (Zahnrad) ist zusätzlich durch die Eltern-PIN geschützt. Nach 2 Minuten ohne
   Eingabe kehrt das Display zur Startseite zurück und sperrt ihn wieder.
-- Der Elternbereich hat ein Menü mit sieben Bereichen: **Prüfen & Punkte** (mit roter Zahl, wenn
-  etwas wartet), **Familie**, **Aufgaben**, **Routinen**, **Belohnungen**, **Kalender & Wetter** und
+- Der Elternbereich hat ein Menü mit acht Bereichen: **Prüfen & Punkte** (mit roter Zahl, wenn
+  etwas wartet), **Familie**, **Aufgaben**, **Routinen**, **Belohnungen**, **Fotos**, **Kalender &
+  Wetter** und
   **Einstellungen** (Familie, PIN, Gerät, Konto). Am Tablet und am Display steht das Menü links, am
   Handy stehen die vier wichtigsten Bereiche unten, der Rest unter **Mehr**. Jeder Bereich hat eine
   eigene Adresse (z. B. `/parents/routines`), beim Neuladen bleibt man also, wo man war.
@@ -217,8 +220,8 @@ darunter drei Spalten (auf schmalen Bildschirmen untereinander):
   der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern, Avatar bei „Einer für
   alle“); nochmal tippen macht es rückgängig. Der Avatar öffnet die Personenansicht, der Pfeil die
   Familienansicht.
-- **Essen** und **Einkauf** sind Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phasen 4
-  und 5).
+- **Essen** und **Einkauf** sind Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phasen 5
+  und 6).
 
 Ohne Ort oder Kalender zeigen die Kacheln einen kurzen Hinweis mit Knopf zum Elternbereich.
 
@@ -443,6 +446,25 @@ Den `TOKEN_ENCRYPTION_KEY` zusammen mit der `.env` sichern. Geht er verloren ode
 zeigt der Elternbereich bei jedem Konto „Neu verbinden“; sonst geht nichts verloren. Ein Konto zu
 trennen widerruft den Zugriff auch bei Google.
 
+## Fotos (Bilderrahmen)
+
+Im Elternbereich unter **Fotos** (Symbol Bilderrahmen) ladet ihr die Fotos für den Bilderrahmen
+hoch. Der Bilderrahmen selbst, der sie am Display zeigt, folgt in den nächsten Etappen von Phase 4.
+
+- **Fotos hinzufügen** wählt mehrere Fotos auf einmal, am Handy direkt aus der Galerie. Sie gehen
+  nacheinander hoch; ein Balken zeigt den Fortschritt. Scheitert ein Foto, steht es mit Grund in
+  einer Liste, die anderen kommen trotzdem an.
+- Möglich sind JPEG, PNG und WebP bis 25 MB. iPhones wandeln HEIC-Fotos beim Hochladen meist selbst
+  in JPEG um.
+- Der Server prüft jedes Foto, dreht es richtig herum, verkleinert es auf höchstens 2560 Pixel an
+  der langen Kante und speichert es neu als WebP. Dabei fallen Ortsangaben (GPS) und andere
+  Metadaten weg; nur das Aufnahmedatum wird vorher übernommen und unter dem Foto angezeigt.
+- Mit **Zeigen** blendet ihr ein Foto aus oder wieder ein, ohne es zu löschen. **Löschen** (Mülleimer)
+  fragt vorher nach.
+
+Die Fotos liegen im Volume `uploads` (Unterordner `photos`), sind nur mit Anmeldung abrufbar und
+werden vom [Backup](#backup-und-restore) mit erfasst.
+
 ## Konfiguration
 
 Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
@@ -549,6 +571,9 @@ Hinweis: Durch das Docker-Port-Mapping sieht die App als Absender die Adresse de
 Der Proxy muss den ursprünglichen `Host`-Header weitergeben (Caddy und Traefik tun das
 automatisch, bei nginx `proxy_set_header Host $host;`). Setup und Login prüfen damit, dass die
 Anfrage von der eigenen Seite kommt.
+
+Fotos für den Bilderrahmen dürfen bis zu 25 MB groß sein. nginx erlaubt standardmäßig nur 1 MB pro
+Anfrage; dort daher `client_max_body_size 30m;` setzen (im Nginx Proxy Manager unter „Advanced“).
 
 Die App muss auf einer eigenen (Sub-)Domain laufen, z. B. `familie.example.com`. Ein Unterpfad wie
 `example.com/familie` wird nicht unterstützt.
@@ -730,6 +755,20 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   (erledigt); das Wochen-Widget der Startseite bleibt vorerst, wie es ist (noch offen, ob es gebraucht
   wird)
 
+**Als Nächstes: Bilderrahmen (Phase 4)**
+
+Das Display wird im Leerlauf zum digitalen Bilderrahmen.
+
+- [x] 1. Fotos verwalten: im Elternbereich mehrere Fotos auf einmal hochladen (am Handy aus der
+  Galerie), verkleinert und ohne Metadaten gespeichert, ein- und ausblenden, löschen
+- [ ] 2. Bilderrahmen: Vollbild mit Überblendung, zufällige Reihenfolge ohne Wiederholung,
+  Hochformat mit unscharfem Hintergrund; Start per Symbol in der Navigationsleiste oder nach
+  Leerlauf (je Gerät einstellbar), ein Tipp führt zurück zu „Heute“
+- [ ] 3. Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben, jeweils ein- und
+  ausschaltbar; Anzeigedauer je Foto (gilt für die Familie)
+- [ ] 4. Nachtmodus: Zeitfenster, dunkler Bildschirm oder gedimmte Uhr
+- [ ] 5. Feinschliff am echten Display
+
 **1.1: Anpassen**
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
@@ -747,17 +786,18 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Aufgaben anlegen von unterwegs
 - Erwachsene legen Aufgaben schnell direkt in der Familienansicht an, ohne Elternbereich
 
-**Später (Phasen 4–5 der Spezifikation)**
+**Später (Phasen 5–6 der Spezifikation)**
 
 | Phase | Inhalt |
 | --- | --- |
-| 4 | Essensplanung |
-| 5 | Einkaufslisten |
+| 5 | Essensplanung |
+| 6 | Einkaufslisten |
 
 **Ideen ohne Version**
 
 - Termine in FamQuest anlegen und bearbeiten (braucht Schreibzugriff auf den Google Kalender statt nur lesend)
 - Weitere Kalender: iCal-/ICS-Links und andere Anbieter (z. B. iCloud, Outlook, Nextcloud)
+- Bilderrahmen: Fotos aus Immich (oder Nextcloud) statt nur hochgeladener Fotos, Alben
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
 

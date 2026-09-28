@@ -75,6 +75,7 @@ def clean_state() -> Iterator[None]:
     login_limiter.clear()
     pin_limiter.clear()
     shutil.rmtree(UPLOAD_DIR / "avatars", ignore_errors=True)
+    shutil.rmtree(UPLOAD_DIR / "photos", ignore_errors=True)
 
 
 @pytest.fixture

@@ -61,6 +61,15 @@ Ob die endgültige Startseite ein Dashboard, ein Kalender oder eine Kombination 
 
 *Umsetzung (Phase 3):* „Heute“ (Symbol Haus) zeigt Uhr und Datum, das Wetter, die nächsten 5 Termine, die heutigen Aufgaben aller Personen als antippbare Symbole (ein Tipp erledigt, wie in der Familienansicht) und klar gekennzeichnete Plätze für Essen und Einkauf. Die Familienansicht heißt jetzt „Aufgaben“ und behält den Stern, damit Kinder ihren gewohnten Weg nicht neu lernen müssen.
 
+**Bilderrahmen** *(Phase 4, entschieden am 2026-09-28)*
+
+Im Leerlauf wird das Display zum digitalen Bilderrahmen.
+
+- Fotoquelle: Eltern laden Fotos im Elternbereich hoch (eigener Bereich „Fotos“, mehrere auf einmal, am Handy aus der Galerie). Der Server verkleinert sie auf höchstens 2560 px an der langen Kante, kodiert sie als WebP neu und entfernt dabei Metadaten; das Aufnahmedatum wird vorher gelesen. Fotos lassen sich ausblenden, ohne sie zu löschen. Alle sichtbaren Fotos gehören der ganzen Familie; Alben und Immich/Nextcloud als Quelle sind Ideen für später (die Fotoquelle nicht so bauen, dass das verbaut wird).
+- Start: per Symbol in der Navigationsleiste oder nach einstellbarer Leerlaufzeit. Ob und wann ein Gerät nach Leerlauf startet, gilt je Gerät (wie die Anzeigegröße), damit z. B. das Eltern-Handy keinen Bilderrahmen zeigt. Ein Tipp beendet den Bilderrahmen und führt zu „Heute“, ohne dabei etwas auszulösen.
+- Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben; jeweils ein- und ausschaltbar, dazu die Anzeigedauer je Foto. Diese Einstellungen gelten für die ganze Familie.
+- Nachtmodus: Zeitfenster in der Zeitzone der Familie, dunkler Bildschirm oder gedimmte Uhr. Ein Browser kann die Hintergrundbeleuchtung nicht abschalten; echtes Abschalten braucht einen Befehl auf dem Display-Rechner (README).
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -309,6 +318,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | CalendarConnection | Phase 2 | OAuth-Verbindung: Konto, Tokens verschlüsselt, Status |
 | Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Sync-Stand |
 | CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine), ganztägig oder mit Uhrzeit |
+| Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
 
 Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen einen klaren Ort haben. Es gibt aber keine Tenant-Logik. (Idee für später, ohne Version: mehrere, z. B. befreundete Familien auf einer Installation, angelegt vom ersten Admin oder über eine versteckte Funktion. Bis dahin nichts einbauen, was das unnötig verbaut.)
 
@@ -331,6 +341,7 @@ Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen ein
 - Uploads: Größenlimit, nur JPEG/PNG/WebP, Inhalt prüfen statt Endung, serverseitig neu kodieren, zufällige Dateinamen
 - Keine Secrets im Repository, keine sensiblen Daten in Logs
 - Phase 2: OAuth-Tokens verschlüsselt speichern
+- Phase 4: Fotos bis 25 MB, nur JPEG/PNG/WebP, serverseitig verkleinert und ohne Metadaten (GPS) neu kodiert; Abruf nur mit Anmeldung
 - Phase 3: Externe Dienste (Wetter) fragt nur der Server an, mit so wenig Daten wie möglich (nur Koordinaten und Zeitzone)
 
 **Git**
@@ -351,10 +362,11 @@ Keine riesige Suite, aber die Geschäftslogik wird getestet: Setup/Auth und Sper
 | 1 | Aufgabensystem: Docker, PostgreSQL, Setup/Admin, Familie, Mitglieder, Farben, Profilbilder mit Cropper, Aufgaben, Icons, Zuordnung, Routinen, Tagesabschnitte, Erledigen, Punkte als Buchungen, Belohnungen und Einlösen, Familienansicht, Elternbereich, Deutsch/Englisch |
 | 2 | Google Kalender: OAuth, Kalender abrufen und auswählen, Kalender Personen oder „Familie“ zuordnen, Termine in Personenfarbe anzeigen, Synchronisation, Fehlerbehandlung, Refresh-Tokens |
 | 3 | Familien-Dashboard „Heute“ als Startseite: Kalender, Aufgaben, Essensplan, Einkaufsliste, Wetter, Wochen-Widget; Aufgaben in eigenem Bereich mit optionaler Wochenansicht |
-| 4 | Essensplanung: Wochenplan, Mahlzeiten, Rezepte optional |
-| 5 | Einkaufsliste: mehrere Listen, Einträge abhaken, später Verbindung zum Essensplan |
+| 4 | Bilderrahmen: Fotos hochladen und verwalten, Bilderrahmen im Leerlauf oder per Symbol, Einblendungen (Uhr, Wetter, Termin, Aufgaben), Nachtmodus |
+| 5 | Essensplanung: Wochenplan, Mahlzeiten, Rezepte optional |
+| 6 | Einkaufsliste: mehrere Listen, Einträge abhaken, später Verbindung zum Essensplan |
 
-Phasen 2–5 werden in Phase 1 nicht implementiert. Die Struktur soll ihre spätere Integration aber nicht verbauen.
+Phasen 2–6 werden in Phase 1 nicht implementiert. Die Struktur soll ihre spätere Integration aber nicht verbauen.
 
 **Erster Meilenstein**
 

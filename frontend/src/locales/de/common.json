@@ -98,6 +98,7 @@
     "tasks": "Aufgaben",
     "routines": "Routinen",
     "rewards": "Belohnungen",
+    "photos": "Fotos",
     "connections": "Kalender & Wetter",
     "settings": "Einstellungen",
     "more": "Mehr"
@@ -423,6 +424,11 @@
     },
     "home": {
       "invalid_layout": "Dieser Aufbau der Startseite ist ungültig"
+    },
+    "photo": {
+      "too_large": "Das Foto ist zu groß (höchstens 25 MB).",
+      "invalid_image": "Das Foto konnte nicht gelesen werden. Möglich sind JPEG, PNG und WebP.",
+      "not_found": "Das Foto gibt es nicht mehr."
     }
   },
   "rewards": {
@@ -651,5 +657,26 @@
     "done": "erledigt",
     "open": "kommt noch",
     "missed": "nicht erledigt"
+  },
+  "photos": {
+    "section": "Fotos für den Bilderrahmen",
+    "hint": "Diese Fotos zeigt der Bilderrahmen am Display. Ausgeblendete Fotos bleiben gespeichert, erscheinen aber nicht. Beim Hochladen werden die Fotos verkleinert, Ortsangaben und andere Metadaten fallen weg.",
+    "add": "Fotos hinzufügen",
+    "progress": "{{done}} von {{total}} Fotos hochgeladen …",
+    "uploaded_one": "1 Foto hochgeladen",
+    "uploaded_other": "{{count}} Fotos hochgeladen",
+    "failed_one": "1 Foto konnte nicht hochgeladen werden:",
+    "failed_other": "{{count}} Fotos konnten nicht hochgeladen werden:",
+    "empty": "Noch keine Fotos. Tippe auf „Fotos hinzufügen“, am Handy auch direkt aus der Galerie.",
+    "count_one": "1 Foto",
+    "count_other": "{{count}} Fotos",
+    "hidden_count": "{{count}} ausgeblendet",
+    "hidden": "Ausgeblendet",
+    "show": "Zeigen",
+    "alt": "Foto",
+    "alt_taken": "Foto vom {{date}}",
+    "delete": "Löschen",
+    "delete_confirm": "Foto wirklich löschen?",
+    "deleted": "Das Foto ist gelöscht."
   }
 }

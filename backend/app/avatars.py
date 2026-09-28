@@ -21,21 +21,26 @@ def avatar_dir() -> Path:
     return get_settings().upload_dir / "avatars"
 
 
-async def read_upload(request: Request) -> bytes:
-    """Request-Body lesen, aber höchstens MAX_UPLOAD_BYTES."""
+async def read_body(request: Request, max_bytes: int, too_large: str) -> bytes:
+    """Request-Body lesen, aber höchstens `max_bytes`; sonst Fehler mit dem Code `too_large`."""
     try:
         declared = int(request.headers.get("content-length") or 0)
     except ValueError:
         declared = 0
-    if declared > MAX_UPLOAD_BYTES:
-        raise ApiError(status.HTTP_413_CONTENT_TOO_LARGE, "avatar.too_large")
+    if declared > max_bytes:
+        raise ApiError(status.HTTP_413_CONTENT_TOO_LARGE, too_large)
 
     data = bytearray()
     async for chunk in request.stream():
         data += chunk
-        if len(data) > MAX_UPLOAD_BYTES:
-            raise ApiError(status.HTTP_413_CONTENT_TOO_LARGE, "avatar.too_large")
+        if len(data) > max_bytes:
+            raise ApiError(status.HTTP_413_CONTENT_TOO_LARGE, too_large)
     return bytes(data)
+
+
+async def read_upload(request: Request) -> bytes:
+    """Request-Body eines Avatarbilds, höchstens MAX_UPLOAD_BYTES."""
+    return await read_body(request, MAX_UPLOAD_BYTES, "avatar.too_large")
 
 
 def process_avatar(data: bytes) -> bytes:
