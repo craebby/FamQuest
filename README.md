@@ -145,7 +145,9 @@ brush teeth, off to bed) plus optional extras (set the table, help with cooking 
 for the adults' care work, including the mental load (cooking, dishwasher, laundry, shopping,
 cleaning, bills and filing, tech, tax return …). Household templates are "One for all" and mostly
 flexible with realistic intervals (rubbish every 2 days, bathroom weekly, bed linen every 2 weeks,
-windows every 3 months, tax return yearly). Everything can be changed afterwards. The templates live
+windows every 3 months, tax return yearly). Everything can be changed afterwards.
+**"Household: pick several"** adds many household tasks at once: tick them, choose the adults
+(default: all), done; tasks you already have are marked. The templates live
 in `frontend/src/pools/tasks.ts`, their titles in `frontend/src/locales/<language>/pool.json`.
 
 The reward suggestions (`frontend/src/pools/rewards.ts`) only contain things a child doesn't get

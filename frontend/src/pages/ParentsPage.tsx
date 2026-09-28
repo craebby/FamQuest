@@ -35,6 +35,7 @@ import { PointsEditor } from './parents/PointsEditor'
 import { PointsSection } from './parents/PointsSection'
 import { RewardEditor } from './parents/RewardEditor'
 import { RewardPoolPicker } from './parents/RewardPoolPicker'
+import { TaskPoolPicker } from './parents/TaskPoolPicker'
 import { RewardsSection } from './parents/RewardsSection'
 import { RoutinesSection } from './parents/RoutinesSection'
 import { TaskEditor } from './parents/TaskEditor'
@@ -218,6 +219,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
     null,
   )
   const [poolMember, setPoolMember] = useState<Member | null>(null)
+  const [pickingHousehold, setPickingHousehold] = useState(false)
 
   // Jede Unteransicht (Editor, Vorschläge, Punkte, PIN) beginnt oben, nicht an der Stelle,
   // an der man in der Übersicht gerade war.
@@ -227,7 +229,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
       ? 'task'
       : editingReward
         ? 'reward'
-        : poolMember
+        : poolMember || pickingHousehold
           ? 'pool'
           : pointsMember
             ? 'points'
@@ -341,6 +343,21 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
     )
   }
 
+  if (pickingHousehold) {
+    return (
+      <TaskPoolPicker
+        adults={(members.data ?? []).filter((member) => member.role === 'parent')}
+        existing={tasks.data ?? []}
+        timeZone={me.family.timezone}
+        onDone={(count) => {
+          setPickingHousehold(false)
+          setNotice(t('tasks.pool_added', { count }))
+        }}
+        onCancel={() => setPickingHousehold(false)}
+      />
+    )
+  }
+
   if (pointsMember) {
     return (
       <PointsEditor
@@ -432,6 +449,10 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
               onEdit={(task) => {
                 setNotice(undefined)
                 setEditingTask(task)
+              }}
+              onPickHousehold={() => {
+                setNotice(undefined)
+                setPickingHousehold(true)
               }}
               onAdd={() => {
                 setNotice(undefined)

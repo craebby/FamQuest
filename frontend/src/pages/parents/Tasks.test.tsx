@@ -373,4 +373,92 @@ describe('Aufgaben im Elternbereich', () => {
     expect(within(row).getByText('At the weekend')).toBeVisible()
     expect(within(row).getByText('Morning')).toBeVisible()
   })
+
+  it('übernimmt mehrere Haushaltsaufgaben auf einmal für die Erwachsenen', async () => {
+    const user = userEvent.setup()
+    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
+    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'red' })
+    let nextId = 10
+    const calls = mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
+      'GET /api/members': Response.json([lena, mama, papa]),
+      'GET /api/tasks': Response.json([
+        makeTask({ title: 'Brotdose packen', member_ids: [3], time_of_day: 'morning' }),
+      ]),
+      'POST /api/tasks': (body) =>
+        Response.json({ ...makeTask(), ...(body as object), id: nextId++ }),
+    })
+    renderApp('/parents/tasks')
+
+    await user.click(await screen.findByRole('button', { name: 'Haushalt: mehrere auswählen' }))
+    expect(screen.getByRole('heading', { name: 'Haushaltsaufgaben auswählen' })).toBeVisible()
+    // Vorhandenes ist schon abgehakt und nicht wählbar; Kinder stehen nicht zur Wahl.
+    const lunchbox = screen.getByRole('checkbox', { name: /^Brotdose packen/ })
+    expect(lunchbox).toBeChecked()
+    expect(lunchbox).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Lena' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mama' })).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('checkbox', { name: /^Kochen/ }))
+    await user.click(screen.getByRole('checkbox', { name: /^Müll rausbringen/ }))
+    await user.click(screen.getByRole('button', { name: '2 Aufgaben hinzufügen' }))
+
+    expect(await screen.findByText('2 Aufgaben hinzugefügt.')).toBeVisible()
+    const created = calls.filter((call) => call.key === 'POST /api/tasks').map((call) => call.body)
+    expect(created).toEqual([
+      expect.objectContaining({
+        title: 'Kochen',
+        icon: 'fluent-emoji-flat:cooking',
+        time_of_day: 'evening',
+        recurrence: { kind: 'daily' },
+        shared: true,
+        member_ids: [3, 4],
+      }),
+      expect.objectContaining({
+        title: 'Müll rausbringen',
+        recurrence: {
+          kind: 'flexible',
+          interval_days: 2,
+          date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        },
+        member_ids: [3, 4],
+      }),
+    ])
+  })
+
+  it('ohne „Einer für alle“, wenn nur eine Person gewählt ist', async () => {
+    const user = userEvent.setup()
+    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
+    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'red' })
+    const calls = mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
+      'GET /api/members': Response.json([mama, papa]),
+      'GET /api/tasks': Response.json([]),
+      'POST /api/tasks': (body) => Response.json({ ...makeTask(), ...(body as object) }),
+    })
+    renderApp('/parents/tasks')
+
+    await user.click(await screen.findByRole('button', { name: 'Haushalt: mehrere auswählen' }))
+    await user.click(screen.getByRole('button', { name: 'Papa' }))
+    await user.click(screen.getByRole('checkbox', { name: /^Kochen/ }))
+    await user.click(screen.getByRole('button', { name: '1 Aufgabe hinzufügen' }))
+
+    await screen.findByText('1 Aufgabe hinzugefügt.')
+    expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
+      shared: false,
+      member_ids: [3],
+    })
+  })
+
+  it('zeigt die Mehrfachauswahl nur, wenn es Erwachsene gibt', async () => {
+    api([])
+    renderApp('/parents/tasks')
+
+    expect(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' })).toBeVisible()
+    expect(
+      screen.queryByRole('button', { name: 'Haushalt: mehrere auswählen' }),
+    ).not.toBeInTheDocument()
+  })
 })

@@ -238,7 +238,16 @@
     "routine_hint": "The tasks of one time of day form a routine. You set their order in the \"Routines\" section.",
     "order_hint": "This is how {{name}} sees the tasks on the display. You set the order of the routines in the \"Routines\" section.",
     "move_up": "Move {{title}} up",
-    "move_down": "Move {{title}} down"
+    "move_down": "Move {{title}} down",
+    "from_pool": "Household: pick several",
+    "pool_title": "Choose household tasks",
+    "pool_intro": "Tap every task that comes up in your home. You can still change points, repeats and people for each task afterwards.",
+    "pool_for": "For",
+    "pool_need_member": "Choose at least one person.",
+    "pool_add_one": "Add {{count}} task",
+    "pool_add_other": "Add {{count}} tasks",
+    "pool_added_one": "{{count}} task added.",
+    "pool_added_other": "{{count}} tasks added."
   },
   "routines": {
     "section": "Routines",

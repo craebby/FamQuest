@@ -40,11 +40,15 @@ describe('Symbol zum Namen', () => {
   it('nimmt das Symbol eines Standardgerichts', () => {
     expect(iconForName(t, 'Nudeln mit Tomatensoße', [])).toBe('fluent-emoji-flat:spaghetti')
     expect(iconForName(t, 'Käsespätzle', [])).toBe('fluent-emoji-flat:cheese-wedge')
+    expect(iconForName(t, 'Backcamembert', [])).toBe('fluent-emoji-flat:cheese-wedge')
   })
 
   it('findet sonst ein passendes Essens-Symbol über einzelne Wörter', () => {
     expect(iconForName(t, 'Schnitzel mit Reis', [])).toBe('fluent-emoji-flat:cut-of-meat')
     expect(iconForName(t, 'Burger vom Grill', [])).toBe('fluent-emoji-flat:hamburger')
+    expect(iconForName(t, 'Ofencamembert mit Preiselbeeren', [])).toBe(
+      'fluent-emoji-flat:cheese-wedge',
+    )
   })
 
   it('findet auch englische Namen', async () => {

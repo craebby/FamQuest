@@ -147,7 +147,9 @@ Zähne putzen, ab ins Bett) plus freiwilligen Extras (Tisch decken, beim Kochen 
 „Haushalt“ für die Care-Arbeit der Erwachsenen samt Mental Load (Kochen, Spülmaschine, Wäsche,
 Einkaufen, Putzen, Post und Rechnungen, Ablage, Technik, Steuererklärung …). Haushaltsvorlagen sind
 „Einer für alle“ und meist flexibel mit alltagsnahen Abständen (Müll alle 2 Tage, Bad wöchentlich,
-Bettwäsche alle 2 Wochen, Fenster alle 3 Monate, Steuer jährlich). Alles bleibt danach änderbar. Die
+Bettwäsche alle 2 Wochen, Fenster alle 3 Monate, Steuer jährlich). Alles bleibt danach änderbar.
+Mit **„Haushalt: mehrere auswählen“** übernehmt ihr viele Haushaltsaufgaben auf einmal: abhaken,
+Erwachsene wählen (Standard: alle), fertig; schon vorhandene Aufgaben sind markiert. Die
 Vorlagen stehen in `frontend/src/pools/tasks.ts`, ihre Titel in
 `frontend/src/locales/<sprache>/pool.json`.
 

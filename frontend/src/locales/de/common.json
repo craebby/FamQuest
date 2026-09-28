@@ -238,7 +238,16 @@
     "routine_hint": "Aufgaben eines Tagesabschnitts bilden zusammen eine Routine. Die Reihenfolge legt ihr im Abschnitt „Routinen“ fest.",
     "order_hint": "So sieht {{name}} die Aufgaben am Display. Die Reihenfolge der Routinen legt ihr im Abschnitt „Routinen“ fest.",
     "move_up": "{{title}} nach oben",
-    "move_down": "{{title}} nach unten"
+    "move_down": "{{title}} nach unten",
+    "from_pool": "Haushalt: mehrere auswählen",
+    "pool_title": "Haushaltsaufgaben auswählen",
+    "pool_intro": "Tippt alle Aufgaben an, die bei euch anfallen. Punkte, Wiederholung und Personen könnt ihr danach je Aufgabe noch ändern.",
+    "pool_for": "Für",
+    "pool_need_member": "Mindestens eine Person wählen.",
+    "pool_add_one": "{{count}} Aufgabe hinzufügen",
+    "pool_add_other": "{{count}} Aufgaben hinzufügen",
+    "pool_added_one": "{{count}} Aufgabe hinzugefügt.",
+    "pool_added_other": "{{count}} Aufgaben hinzugefügt."
   },
   "routines": {
     "section": "Routinen",

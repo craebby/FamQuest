@@ -20,6 +20,7 @@ export const DISH_POOL: readonly DishTemplate[] = [
   { id: 'lasagne', icon: 'shallow-pan-of-food' },
   { id: 'bake', icon: 'shallow-pan-of-food' },
   { id: 'cheese_spaetzle', icon: 'cheese-wedge' },
+  { id: 'baked_camembert', icon: 'cheese-wedge' },
   { id: 'pizza', icon: 'pizza' },
   { id: 'burger', icon: 'hamburger' },
   { id: 'schnitzel', icon: 'cut-of-meat' },
