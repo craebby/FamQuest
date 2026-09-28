@@ -30,6 +30,7 @@ def member_out(member: FamilyMember) -> MemberOut:
         role=member.role,
         color=member.color,
         avatar_url=f"/api/avatars/{member.avatar}" if member.avatar else None,
+        event_symbols=member.event_symbols,
     )
 
 
@@ -66,7 +67,14 @@ def create_member(body: MemberIn, _: ParentSession, db: DbSession) -> MemberOut:
     check_color_free(db, body.color)
     # Neue Personen kommen ans Ende.
     last = db.scalar(select(func.max(FamilyMember.position))) or 0
-    member = FamilyMember(name=body.name, role=body.role, color=body.color, position=last + 1)
+    event_symbols = body.role == "child" if body.event_symbols is None else body.event_symbols
+    member = FamilyMember(
+        name=body.name,
+        role=body.role,
+        color=body.color,
+        position=last + 1,
+        event_symbols=event_symbols,
+    )
     db.add(member)
     commit_member(db)
     return member_out(member)
@@ -89,6 +97,8 @@ def update_member(member_id: int, body: MemberIn, _: ParentSession, db: DbSessio
     member = get_member(db, member_id)
     check_color_free(db, body.color, member_id)
     member.name, member.role, member.color = body.name, body.role, body.color
+    if body.event_symbols is not None:
+        member.event_symbols = body.event_symbols
     commit_member(db)
     return member_out(member)
 

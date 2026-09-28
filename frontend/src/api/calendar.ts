@@ -83,6 +83,8 @@ export interface WeekEvent {
   member_ids: number[]
   /** Gehört (auch) der ganzen Familie. */
   family: boolean
+  /** Symbol zum Titel (Symbole für Termine), sonst `null`. */
+  icon: string | null
   continues_before: boolean
   continues_after: boolean
 }
@@ -238,3 +240,38 @@ export const useSetHolidays = () =>
 
 export const useSyncCalendars = () =>
   useSettingsMutation(() => api<CalendarSettings>('POST', '/calendar/sync'))
+
+/** Begriffe im Titel eines Termins, die ein Symbol bekommen (z. B. „Judo“). */
+export interface EventSymbol {
+  icon: string
+  terms: string[]
+}
+
+export const EVENT_SYMBOLS_KEY = ['event-symbols'] as const
+
+export function useEventSymbols() {
+  return useQuery({
+    queryKey: EVENT_SYMBOLS_KEY,
+    queryFn: () => apiGet<{ symbols: EventSymbol[] }>('/calendar/symbols'),
+  })
+}
+
+/** Ersetzt die ganze Liste; die Antwort wird direkt übernommen. */
+export function useSetEventSymbols() {
+  const queryClient = useQueryClient()
+  const mutation = useParentMutation(
+    (symbols: EventSymbol[]) =>
+      api<{ symbols: EventSymbol[] }>('PUT', '/calendar/symbols', { symbols }),
+    [CALENDAR_WEEK_KEY, CALENDAR_UPCOMING_KEY],
+  )
+  return {
+    ...mutation,
+    mutate: (symbols: EventSymbol[], options?: { onSuccess?: () => void }) =>
+      mutation.mutate(symbols, {
+        onSuccess: (data) => {
+          queryClient.setQueryData(EVENT_SYMBOLS_KEY, data)
+          options?.onSuccess?.()
+        },
+      }),
+  }
+}

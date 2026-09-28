@@ -32,7 +32,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
-- Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
+- Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person, Symbole
+  für Termine der Kinder (z. B. Judo, Reiten, Verabredung), damit sie sie ohne Lesen erkennen
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
 - Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
   auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
@@ -389,6 +390,17 @@ Sie erscheinen dezent in Grau über den Terminen des Tages (🎉 Feiertag, 🏖�
 funktionieren auch ohne Google-Konto. Feiertage werden offline berechnet, Schulferien einmal am Tag
 von [OpenHolidays](https://www.openholidaysapi.org) geladen (übertragen wird nur das Bundesland,
 keine persönlichen Daten).
+
+**Symbole für Termine:** Kinder, die noch nicht lesen, erkennen ihre Termine nicht am Titel. Unter
+**Kalender & Wetter → Symbole für Termine** legt ihr fest, welche Begriffe ein Symbol bekommen:
+aus rund 20 Vorschlägen ankreuzen (Turnen, Judo, Reiten, Schwimmen, Fußball, Musikschule,
+Verabredung, Geburtstag, Oma & Opa, Kita, Arzt, Zahnarzt …) oder eigene Einträge mit einem Symbol
+und mehreren Begriffen anlegen („Verabredung, bei Lena“). Ein Begriff passt auch als Wortteil
+(„Turnen“ in „Kinderturnen“); Begriffe bis drei Buchstaben nur als ganzes Wort, damit „Opa“ nicht
+in „Europa“ steckt. Passen mehrere, gewinnt der längste („Zahnarzt“ vor „Arzt“). Ob die Termine
+einer Person Symbole bekommen, ist ein Schalter bei der Person (**Symbole bei Terminen**):
+standardmäßig an bei Kindern, aus bei Erwachsenen; für ältere Kinder einfach ausschalten. Das
+Symbol erscheint im Kalender, auf „Heute“, in den Termindetails und im Bilderrahmen.
 
 ## Wetter
 
@@ -823,6 +835,8 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 - [x] 4. Kalenderansicht: Woche mit Terminen in Personenfarbe und Avataren
 - [x] 5. Feinschliff: Termindetails per Tipp, ganztägige Termine im gleichen Stil, Feiertage und
   Schulferien je Bundesland, `PUBLIC_URL` für die Google-Weiterleitungs-URI
+- [x] 6. Nachträglich eingeschoben: Symbole für Termine (Begriffe im Titel → Symbol, Vorschläge,
+  Schalter je Person), damit Kinder ihre Termine ohne Lesen erkennen
 
 **In Arbeit: Tages-Dashboard „Heute“ (Phase 3)**
 
@@ -858,6 +872,10 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
   ausschaltbar; Anzeigedauer je Foto (gilt für die Familie)
 - [x] 4. Nachtmodus: Zeitfenster, dunkler Bildschirm oder gedimmte Uhr
 - [ ] 5. Feinschliff am echten Display
+
+**Als Nächstes: Screenshots**
+
+- Screenshots vom Display, vom Elternbereich und vom Handy in dieser README
 
 **1.1: Anpassen**
 
@@ -905,6 +923,8 @@ Die Mahlzeiten der Woche direkt am Display planen.
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
 - Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
+- Demoversion: eine öffentliche Instanz mit einer Beispielfamilie, die sich regelmäßig zurücksetzt,
+  zum Ausprobieren ohne Installation
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
 - Erwachsene eigenständiger: ein Putzplan (wiederkehrende Hausarbeit mit „wie dringend“, ähnlich

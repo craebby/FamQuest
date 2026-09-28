@@ -62,7 +62,15 @@ export const setupRequired = Response.json({ setup_required: true })
 export const notAuthenticated = Response.json({ code: 'auth.not_authenticated' }, { status: 401 })
 
 export function makeMember(overrides: Partial<Member> = {}): Member {
-  return { id: 1, name: 'Lena', role: 'child', color: 'purple', avatar_url: null, ...overrides }
+  return {
+    id: 1,
+    name: 'Lena',
+    role: 'child',
+    color: 'purple',
+    avatar_url: null,
+    event_symbols: true,
+    ...overrides,
+  }
 }
 
 export function makeTodayTask(overrides: Partial<TodayTask> = {}): TodayTask {

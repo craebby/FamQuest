@@ -9,6 +9,7 @@ import PinIcon from '~icons/fluent-emoji-flat/round-pushpin'
 import type { WeekEvent } from '../../api/calendar'
 import { Avatar } from '../../components/Avatar'
 import { FamilyAvatar } from '../../components/FamilyAvatar'
+import { TaskIcon } from '../../components/TaskIcon'
 import { colorTokens } from '../../memberColors'
 import { ColorStripe } from './EventCard'
 import { type Owners, ownerColors } from './owners'
@@ -95,6 +96,7 @@ export function EventDialog({
         <ColorStripe colors={colors} className="w-4" />
         <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
           <div className="flex items-start gap-3">
+            {event.icon && <TaskIcon icon={event.icon} className="size-16" />}
             <h2
               id="event-title"
               className="min-w-0 flex-1 text-3xl leading-tight font-extrabold break-words text-slate-800"

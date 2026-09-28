@@ -107,5 +107,30 @@
     "toast": "Toast",
     "takeaway": "Essen bestellen",
     "leftovers": "Reste"
+  },
+  "event_symbols": {
+    "gymnastics": "Turnen, Kinderturnen, Gymnastik",
+    "judo": "Judo, Karate, Kampfsport",
+    "riding": "Reiten, Reitstunde, Voltigieren, Pony",
+    "swimming": "Schwimmen, Schwimmkurs, Seepferdchen, Schwimmbad",
+    "football": "Fußball, Fussball",
+    "tennis": "Tennis",
+    "dance": "Tanzen, Ballett, Tanzkurs",
+    "climbing": "Klettern, Bouldern",
+    "music": "Musikschule, Musik, Klavier, Gitarre, Flöte, Geige, Chor",
+    "crafts": "Basteln, Malen, Malkurs",
+    "playdate": "Verabredung, Spielverabredung, Spieleverabredung, Playdate",
+    "birthday": "Geburtstag, Kindergeburtstag",
+    "party": "Fest, Party, Feier",
+    "grandparents": "Oma, Opa, Großeltern",
+    "daycare": "Kita, Kindergarten, Krippe",
+    "school": "Schule",
+    "library": "Bücherei, Bibliothek",
+    "doctor": "Arzt, Ärztin, Kinderarzt, U-Untersuchung",
+    "dentist": "Zahnarzt, Zahnärztin, Kieferorthopäde",
+    "vaccination": "Impfung, Impfen",
+    "haircut": "Friseur, Frisör, Haare schneiden",
+    "cinema": "Kino",
+    "trip": "Ausflug, Klassenfahrt"
   }
 }

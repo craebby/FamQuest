@@ -134,7 +134,9 @@
     "order_hint": "Mit den Pfeilen (oder per Ziehen mit der Maus) festlegen, in welcher Reihenfolge die Personen überall erscheinen.",
     "order_done": "Fertig",
     "move_left": "{{name}} nach vorne",
-    "move_right": "{{name}} nach hinten"
+    "move_right": "{{name}} nach hinten",
+    "event_symbols": "Symbole bei Terminen",
+    "event_symbols_hint": "Termine im Kalender bekommen Symbole (siehe „Kalender & Wetter“). Für Kinder, die noch nicht lesen; bei älteren einfach ausschalten."
   },
   "roles": {
     "parent": "Elternteil",
@@ -305,6 +307,7 @@
     "household": "Haushalt",
     "pets": "Tiere & Pflanzen",
     "activities": "Sport & Freizeit",
+    "appointments": "Termine & Hobbys",
     "day": "Tag & Wetter",
     "more": "Lob & mehr",
     "rewards": "Belohnungen"
@@ -748,5 +751,23 @@
     "edit_dish": "{{name}} bearbeiten",
     "delete_dish": "Gericht löschen",
     "delete_confirm": "„{{name}}“ wirklich löschen? Es verschwindet aus den Vorschlägen und aus vergangenen Wochen."
+  },
+  "event_symbols": {
+    "section": "Symbole für Termine",
+    "intro": "Steht einer dieser Begriffe im Titel eines Termins, zeigt der Kalender das Symbol dazu. So erkennen Kinder ihre Termine auch ohne zu lesen. „Turnen“ passt auch zu „Kinderturnen“; kurze Begriffe (bis drei Buchstaben) wie „Oma“ nur als ganzes Wort.",
+    "for_members": "Gilt für:",
+    "for_nobody": "Noch bei niemandem eingeschaltet. Unter „Familie“ die Person bearbeiten und „Symbole bei Terminen“ einschalten.",
+    "empty": "Noch keine Symbole festgelegt.",
+    "choose_suggestions": "Vorschläge auswählen",
+    "add_own": "Eigenes Symbol",
+    "suggestions_intro": "Tippe an, was bei euch vorkommt. Die Begriffe lassen sich danach ändern.",
+    "present": "schon da",
+    "add_selected_one": "{{count}} Symbol übernehmen",
+    "add_selected_other": "{{count}} Symbole übernehmen",
+    "edit": "„{{name}}“ bearbeiten",
+    "change_icon": "Symbol wählen",
+    "terms": "Begriffe",
+    "terms_hint": "Mit Komma trennen, z. B. „Judo, Karate, Kampfsport“",
+    "delete": "Löschen"
   }
 }

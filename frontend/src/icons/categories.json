@@ -259,6 +259,19 @@
     ]
   },
   {
+    "id": "appointments",
+    "icons": [
+      "martial-arts-uniform",
+      "horse-racing",
+      "person-climbing",
+      "older-person",
+      "stethoscope",
+      "syringe",
+      "hospital",
+      "person-getting-haircut"
+    ]
+  },
+  {
     "id": "day",
     "icons": [
       "alarm-clock",

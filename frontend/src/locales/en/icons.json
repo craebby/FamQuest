@@ -253,5 +253,13 @@
   "leafy-green": "Spinach, kale, greens",
   "bell-pepper": "Stir-fried vegetables, bell pepper, veggies",
   "hot-pepper": "Chili con carne, spicy, hot pepper",
-  "takeout-box": "Takeaway, delivery, leftovers"
+  "takeout-box": "Takeaway, delivery, leftovers",
+  "martial-arts-uniform": "Judo, karate, martial arts",
+  "horse-racing": "Riding, horse, riding lesson, pony",
+  "stethoscope": "Doctor, check-up, paediatrician, pediatrician",
+  "syringe": "Vaccination, jab, shot, syringe",
+  "hospital": "Hospital, clinic",
+  "older-person": "Grandma, grandpa, grandparents",
+  "person-getting-haircut": "Hairdresser, haircut, barber",
+  "person-climbing": "Climbing, bouldering, climbing gym"
 }

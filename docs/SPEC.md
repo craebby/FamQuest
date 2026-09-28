@@ -80,6 +80,15 @@ Einfach anfangen: festlegen, was es in der Woche gibt.
 - „Heute“ wird dabei zum Wochen-Dashboard: Kopf mit Uhr und Wetter klein, die aktuelle Routine der Kinder (sonst „Alles erledigt“), Platz für den Einkauf, darunter über die ganze Breite die nächsten sieben Tage mit Terminen und dem Essen am Tagesende (Symbol + Text). Bereiche lassen sich per Zahnrad ein- und ausschalten, die Anordnung ist fest. Aufgaben der Erwachsenen stehen nur noch unter „Aufgaben“; langfristig sollen sie eigenständiger werden (Putzplan und echte Todos, je Person abschaltbar).
 - Später: Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
 
+**Symbole für Termine** *(Einschub zu Phase 2, entschieden am 2026-09-28)*
+
+Kinder, die nicht lesen können, erkennen ihre Termine im Kalender sonst nicht. Deshalb bekommen Termine ein Symbol, wenn ein festgelegter Begriff im Titel steht (z. B. „Judo“ → Judoanzug, „Kinderturnen“ → Turnen).
+
+- Die Eltern legen die Begriffe für die ganze Familie im Elternbereich unter „Kalender & Wetter“ fest: je Eintrag ein Symbol und ein oder mehrere Begriffe. Rund 20 Vorschläge (Turnen, Judo, Reiten, Schwimmen, Fußball, Musikschule, Verabredung, Geburtstag, Oma & Opa, Kita, Arzt, Zahnarzt …) lassen sich ankreuzen und danach ändern; eigene Einträge sind jederzeit möglich.
+- Verglichen wird ohne Groß-/Kleinschreibung und Akzente, auch als Wortteil („Turnen“ passt zu „Kinderturnen“). Begriffe bis drei Buchstaben zählen nur als ganzes Wort (mit Plural-s), damit „Opa“ nicht in „Europa“ passt. Passen mehrere, gewinnt der längste („Zahnarzt“ vor „Arzt“).
+- Ob die Termine einer Person Symbole bekommen, ist ein Schalter an der Person: Standard an bei Kindern, aus bei Erwachsenen; für ältere Kinder einfach ausschalten. Ein Termin bekommt das Symbol, wenn eine seiner Personen es an hat; Familientermine, wenn es bei irgendjemandem an ist.
+- Das Symbol erscheint überall, wo Termine stehen: Kalender, Wochen-Dashboard „Heute“, Termindetails und Einblendung im Bilderrahmen. Die Zuordnung macht der Server.
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -314,8 +323,8 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Entität | Zweck | Wichtige Felder |
 | --- | --- | --- |
 | User | Login-Konto | E-Mail, Passwort-Hash, Rolle, Sprache |
-| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten); Phase 4: Einstellungen des Bilderrahmens (Einblendungen, Anzeigedauer, Nachtmodus); Phase 5: geplante Mahlzeiten |
-| FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
+| Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten); Phase 4: Einstellungen des Bilderrahmens (Einblendungen, Anzeigedauer, Nachtmodus); Phase 5: geplante Mahlzeiten; Symbole für Termine (Symbol + Begriffe) |
+| FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User; Symbole bei Terminen (an/aus) |
 | Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle, Extra |
 | TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember, Position (Reihenfolge je Person außerhalb von Routinen) |
 | Routine | Routine eines Kindes | FamilyMember, Tagesabschnitt, Wochentage (je Kind und Abschnitt ohne Überschneidung) |

@@ -107,5 +107,30 @@
     "toast": "Toasties",
     "takeaway": "Takeaway",
     "leftovers": "Leftovers"
+  },
+  "event_symbols": {
+    "gymnastics": "Gymnastics, gym class",
+    "judo": "Judo, karate, martial arts",
+    "riding": "Riding, riding lesson, pony",
+    "swimming": "Swimming, swim lesson, swimming pool",
+    "football": "Football, soccer",
+    "tennis": "Tennis",
+    "dance": "Dance, ballet, dance class",
+    "climbing": "Climbing, bouldering",
+    "music": "Music lesson, music, piano, guitar, flute, violin, choir",
+    "crafts": "Crafts, painting, art class",
+    "playdate": "Playdate, play date",
+    "birthday": "Birthday, birthday party",
+    "party": "Party, celebration, fair",
+    "grandparents": "Grandma, grandpa, grandparents, granny",
+    "daycare": "Daycare, nursery, kindergarten, preschool",
+    "school": "School",
+    "library": "Library",
+    "doctor": "Doctor, check-up, paediatrician, pediatrician",
+    "dentist": "Dentist, orthodontist",
+    "vaccination": "Vaccination, jab",
+    "haircut": "Hairdresser, haircut, barber",
+    "cinema": "Cinema, movies",
+    "trip": "Trip, outing, school trip"
   }
 }

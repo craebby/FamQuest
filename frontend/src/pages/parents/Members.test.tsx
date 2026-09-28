@@ -84,11 +84,46 @@ describe('Familienmitglieder im Elternbereich', () => {
 
     expect(await screen.findByRole('status')).toHaveTextContent('Tom ist gespeichert.')
     const create = calls.find((call) => call.key === 'POST /api/members')
-    expect(create?.body).toEqual({ name: 'Tom', role: 'child', color: 'green' })
+    expect(create?.body).toEqual({
+      name: 'Tom',
+      role: 'child',
+      color: 'green',
+      event_symbols: true,
+    })
     const avatar = calls.find((call) => call.key === 'PUT /api/members/2/avatar')
     expect(avatar?.body).toBeInstanceOf(Blob)
     expect(avatar?.headers['Content-Type']).toBe('image/webp')
     expect(avatar?.headers['X-CSRF-Token']).toBe('csrf-123')
+  })
+
+  it('schaltet Symbole bei Terminen je nach Rolle vor und lässt sie ändern', async () => {
+    const user = userEvent.setup()
+    const calls = mockApi({
+      ...unlocked,
+      'GET /api/auth/me': me(),
+      'GET /api/members': Response.json([makeMember()]),
+      'PUT /api/members/1': Response.json(makeMember({ event_symbols: false })),
+    })
+    renderApp('/parents/family')
+
+    await user.click(await screen.findByRole('button', { name: 'Person hinzufügen' }))
+    const symbols = screen.getByRole('switch', { name: 'Symbole bei Terminen' })
+    expect(symbols).toBeChecked()
+    await user.click(screen.getByRole('radio', { name: 'Elternteil' }))
+    expect(symbols).not.toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }))
+
+    await user.click(await screen.findByRole('button', { name: 'Lena bearbeiten' }))
+    await user.click(screen.getByRole('switch', { name: 'Symbole bei Terminen' }))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Lena ist gespeichert.')
+    expect(calls.find((call) => call.key === 'PUT /api/members/1')?.body).toEqual({
+      name: 'Lena',
+      role: 'child',
+      color: 'purple',
+      event_symbols: false,
+    })
   })
 
   it('verlangt einen Namen', async () => {

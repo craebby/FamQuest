@@ -65,6 +65,7 @@ const UPCOMING: CalendarUpcoming = {
       calendars: ['Lena'],
       member_ids: [1],
       family: false,
+      icon: null,
       continues_before: false,
       continues_after: false,
       day: '2026-10-04',

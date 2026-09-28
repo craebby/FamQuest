@@ -55,6 +55,8 @@ class Family(Base):
     frame_settings: Mapped[dict | None] = mapped_column(JSONB)
     # Essensplan: welche Mahlzeiten geplant werden; None = Standard (siehe api/meals.py).
     meal_settings: Mapped[dict | None] = mapped_column(JSONB)
+    # Symbole für Termine, [{"icon": "…", "terms": ["Judo", …]}, …] (siehe app/event_symbols.py).
+    event_symbols: Mapped[list[dict] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -103,6 +105,8 @@ class FamilyMember(Base):
     avatar: Mapped[str | None] = mapped_column(String(64))
     # Reihenfolge in Familienansicht und Listen (aufsteigend), festgelegt im Elternbereich.
     position: Mapped[int] = mapped_column(server_default="0")
+    # Termine der Person bekommen Symbole (siehe app/event_symbols.py); Standard nur für Kinder.
+    event_symbols: Mapped[bool] = mapped_column(default=False, server_default="false")
     # Optionale Verknüpfung mit einem Login-Konto (z. B. später für Kinder-Konten).
     user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), unique=True

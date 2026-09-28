@@ -68,6 +68,7 @@ Anbieter erst später. Hauptansicht am Display: Woche.
 3. Synchronisation im Hintergrund (inkrementell), Serientermine, ganztägige Termine, Fehlerbehandlung
 4. Kalenderansicht (Woche) in der Navigationsleiste, Termine in Personenfarbe mit Avatar
 5. Feinschliff
+6. Einschub: Symbole für Termine (Begriffe → Symbol im Elternbereich, Vorschläge, Schalter je Person)
 
 ## Etappen (Phase 3: Tages-Dashboard „Heute“)
 

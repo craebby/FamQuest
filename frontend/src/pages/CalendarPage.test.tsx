@@ -30,6 +30,7 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     calendars: ['Lena'],
     member_ids: [1],
     family: false,
+    icon: null,
     continues_before: false,
     continues_after: false,
     ...overrides,
@@ -123,6 +124,20 @@ describe('Kalender (Woche)', () => {
 
     const sunday = within(screen.getByRole('region', { name: 'Sonntag, 4. Oktober' }))
     expect(sunday.getByText('Keine Termine')).toBeVisible()
+  })
+
+  it('zeigt das Symbol eines Termins vor dem Titel', async () => {
+    mockCalendar(
+      makeWeek([
+        makeEvent({ key: 'a', title: 'Judo', icon: 'fluent-emoji-flat:martial-arts-uniform' }),
+        makeEvent({ key: 'b', title: 'Elternabend' }),
+      ]),
+    )
+    renderApp('/calendar')
+
+    const [judo, meeting] = (await saturday()).getAllByTestId('calendar-event')
+    expect(judo.querySelectorAll('svg')).toHaveLength(1)
+    expect(meeting.querySelectorAll('svg')).toHaveLength(0)
   })
 
   it('zeigt mehrtägige Termine mit Beginn bzw. Ende', async () => {

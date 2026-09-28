@@ -85,6 +85,7 @@ function NextEvent() {
       <span className="shrink-0">
         {upcomingDayLabel(event.day, upcoming.today, language, t)}, {when}
       </span>
+      {event.icon && <TaskIcon icon={event.icon} className="size-10" />}
       <span className="truncate font-extrabold">{event.title}</span>
     </p>
   )

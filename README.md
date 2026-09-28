@@ -31,7 +31,8 @@ services and without external CDNs. The full specification (in German) is in
 - Rewards per child from a list of suggestions, redeemed on the display
 - Parent checks for selected tasks
 - Fair sharing: each adult's share of the week's tasks
-- Google Calendar (read-only): week view on the display, events in each person's colour
+- Google Calendar (read-only): week view on the display, events in each person's colour, symbols
+  for children's events (e.g. judo, riding, playdate) so they recognise them without reading
 - Weather for your town (Open-Meteo, no API key needed)
 - Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
   with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
@@ -375,6 +376,17 @@ under **Calendar** has a **State** (Bundesland) setting with two switches, **pub
 🏖️ school holidays) and work without a Google account too. Public holidays are calculated
 offline; school holidays are loaded once a day from [OpenHolidays](https://www.openholidaysapi.org)
 (only the state is sent, no personal data).
+
+**Symbols for events:** children who can't read yet don't recognise their events by the title.
+Under **Calendar & weather → Symbols for events**, choose which words get a symbol: pick from
+about 20 suggestions (gymnastics, judo, riding, swimming, football, music lesson, playdate,
+birthday, grandparents, daycare, doctor, dentist …) or add your own entries with one symbol and
+several words ("Playdate, at Lena's"). A word also matches as part of a longer one ("swim" in
+"Swimming lesson"); words of up to three letters only match as a whole word. If several words
+match, the longest one wins. Whether a person's
+events get symbols is a switch in their profile (**Symbols for events**): on for children, off for
+adults by default; switch it off for older children. The symbol appears in the calendar, on
+"Today", in the event details and on the picture frame.
 
 ## Weather
 
@@ -798,6 +810,8 @@ use.
 - [x] 4. Calendar view: week with events in the person's colour and avatars
 - [x] 5. Polish: event details on tap, all-day events in the same style, public and school
   holidays per German state, `PUBLIC_URL` for the Google redirect URI
+- [x] 6. Added later: symbols for events (words in the title → symbol, suggestions, switch per
+  person) so children recognise their events without reading
 
 **In progress: "Today" dashboard (phase 3)**
 
@@ -831,6 +845,10 @@ When idle, the display turns into a digital picture frame.
   photo is shown (for the whole family)
 - [x] 4. Night mode: time window, dark screen or dimmed clock
 - [ ] 5. Polish on the real display
+
+**Next: screenshots**
+
+- Screenshots of the display, the parents' area and the phone in this README
 
 **1.1: make it your own**
 
@@ -879,6 +897,8 @@ Plan the week's meals right on the display.
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 - Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
+- Demo version: a public instance with a sample family that resets itself regularly, to try
+  FamQuest without installing it
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
 - More independent adults: a cleaning plan (recurring housework with "how urgent", similar to Tody)

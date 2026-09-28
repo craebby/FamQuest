@@ -134,7 +134,9 @@
     "order_hint": "Use the arrows (or drag with the mouse) to set the order in which people appear everywhere.",
     "order_done": "Done",
     "move_left": "Move {{name}} forward",
-    "move_right": "Move {{name}} back"
+    "move_right": "Move {{name}} back",
+    "event_symbols": "Symbols for events",
+    "event_symbols_hint": "Events in the calendar get symbols (see \"Calendar & weather\"). For children who can't read yet; just switch it off for older ones."
   },
   "roles": {
     "parent": "Parent",
@@ -305,6 +307,7 @@
     "household": "Household",
     "pets": "Animals & plants",
     "activities": "Sports & free time",
+    "appointments": "Appointments & hobbies",
     "day": "Day & weather",
     "more": "Praise & more",
     "rewards": "Rewards"
@@ -748,5 +751,23 @@
     "edit_dish": "Edit {{name}}",
     "delete_dish": "Delete dish",
     "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from past weeks."
+  },
+  "event_symbols": {
+    "section": "Symbols for events",
+    "intro": "If one of these words is in an event's title, the calendar shows its symbol. That way children recognise their events without reading. \"Swim\" also matches \"Swimming lesson\"; short words (up to three letters) like \"gym\" only as a whole word.",
+    "for_members": "Applies to:",
+    "for_nobody": "Not switched on for anyone yet. Under \"Family\", edit the person and switch on \"Symbols for events\".",
+    "empty": "No symbols set up yet.",
+    "choose_suggestions": "Choose suggestions",
+    "add_own": "Own symbol",
+    "suggestions_intro": "Tap what happens in your family. You can change the words afterwards.",
+    "present": "already there",
+    "add_selected_one": "Add {{count}} symbol",
+    "add_selected_other": "Add {{count}} symbols",
+    "edit": "Edit \"{{name}}\"",
+    "change_icon": "Choose symbol",
+    "terms": "Words",
+    "terms_hint": "Separate with commas, e.g. \"Judo, karate, martial arts\"",
+    "delete": "Delete"
   }
 }

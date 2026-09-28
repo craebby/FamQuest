@@ -62,6 +62,7 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     calendars: ['Lena'],
     member_ids: [1],
     family: false,
+    icon: null,
     continues_before: false,
     continues_after: false,
     ...overrides,

@@ -26,6 +26,7 @@ import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { ApprovalsSection } from './parents/ApprovalsSection'
 import { CalendarSection } from './parents/CalendarSection'
+import { EventSymbolsSection } from './parents/EventSymbolsSection'
 import { DeviceSection } from './parents/DeviceSection'
 import { FamilySection } from './parents/FamilySection'
 import { MealSettingsSection } from './parents/MealSettingsSection'
@@ -523,6 +524,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
                 setNotice(t('calendar.disconnected', { email }))
               }}
             />
+            <EventSymbolsSection />
             <WeatherSection onSaved={setNotice} />
           </>
         )}

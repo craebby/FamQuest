@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { MemberColor } from '../memberColors'
+import { CALENDAR_UPCOMING_KEY, CALENDAR_WEEK_KEY } from './calendar'
 import { api, apiGet } from './client'
 import { useParentMutation } from './mutations'
 import { TASKS_KEY } from './tasks'
@@ -16,12 +17,15 @@ export interface Member {
   role: MemberRole
   color: MemberColor
   avatar_url: string | null
+  /** Termine der Person bekommen Symbole (Standard: Kinder). */
+  event_symbols: boolean
 }
 
 export interface MemberData {
   name: string
   role: MemberRole
   color: MemberColor
+  event_symbols: boolean
 }
 
 /** Kinder der Familie; nur sie haben Belohnungen. */
@@ -45,7 +49,14 @@ export const removeAvatar = (id: number) => api<Member>('DELETE', `/members/${id
 export function useMembersMutation<TVariables, TResult>(
   request: (variables: TVariables) => Promise<TResult>,
 ) {
-  return useParentMutation(request, [MEMBERS_KEY, TASKS_KEY, TODAY_KEY])
+  // Kalender, weil Symbole für Termine an der Person hängen.
+  return useParentMutation(request, [
+    MEMBERS_KEY,
+    TASKS_KEY,
+    TODAY_KEY,
+    CALENDAR_WEEK_KEY,
+    CALENDAR_UPCOMING_KEY,
+  ])
 }
 
 export const reorderMembers = (memberIds: number[]) =>

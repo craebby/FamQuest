@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { WeekEvent } from '../../api/calendar'
 import { Avatar } from '../../components/Avatar'
 import { FamilyAvatar } from '../../components/FamilyAvatar'
+import { TaskIcon } from '../../components/TaskIcon'
 import { colorTokens } from '../../memberColors'
 import { type Owners, eventWhen, isAllDayOnThisDay, ownerColors } from './owners'
 
@@ -43,7 +44,7 @@ export function ColorStripe({
 
 /**
  * Termin in den Farben seiner Personen: helle Karte mit Farbstreifen, oben Uhrzeit bzw.
- * „Ganztägig“, darunter Titel und Avatare. Antippen öffnet die Details.
+ * „Ganztägig“, darunter Titel (ggf. mit Symbol) und Avatare. Antippen öffnet die Details.
  */
 export function EventCard({
   event,
@@ -91,8 +92,11 @@ export function EventCard({
           <span className="text-base font-extrabold" style={{ color: main.strong }}>
             {when}
           </span>
-          <span className="text-lg leading-tight font-bold break-words text-slate-800">
-            {title}
+          <span className="flex items-center gap-2">
+            {event.icon && <TaskIcon icon={event.icon} className="size-10" />}
+            <span className="min-w-0 text-lg leading-tight font-bold break-words text-slate-800">
+              {title}
+            </span>
           </span>
           <span className="sr-only">{t('calendar.people', { names: names.join(', ') })}</span>
           <OwnerAvatars owners={owners} familyColor={familyColor} />

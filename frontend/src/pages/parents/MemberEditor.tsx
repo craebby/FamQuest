@@ -21,7 +21,7 @@ import {
 import { ApiError } from '../../api/client'
 import { Avatar } from '../../components/Avatar'
 import { AvatarCropper } from '../../components/AvatarCropper'
-import { Alert, Button, TextField } from '../../components/ui'
+import { Alert, Button, Switch, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { COLOR_TOKENS, MEMBER_COLORS, type MemberColor } from '../../memberColors'
 import { useObjectUrl } from '../../useObjectUrl'
@@ -50,6 +50,9 @@ export function MemberEditor({ member, members, onSaved, onDeleted, onCancel }: 
   const [name, setName] = useState(member?.name ?? '')
   const [role, setRole] = useState<MemberRole>(member?.role ?? 'child')
   const [color, setColor] = useState<MemberColor>(member?.color ?? firstFree)
+  // `null`: noch nicht angefasst, folgt beim Anlegen der Rolle (Kinder ja, Erwachsene nein).
+  const [eventSymbols, setEventSymbols] = useState<boolean | null>(member?.event_symbols ?? null)
+  const showSymbols = eventSymbols ?? role === 'child'
   const [photo, setPhoto] = useState<PhotoChange>({ kind: 'keep' })
   const [cropFile, setCropFile] = useState<File | null>(null)
   const [nameMissing, setNameMissing] = useState(false)
@@ -78,7 +81,10 @@ export function MemberEditor({ member, members, onSaved, onDeleted, onCancel }: 
     const trimmed = name.trim()
     setNameMissing(!trimmed)
     if (!trimmed) return
-    save.mutate({ name: trimmed, role, color }, { onSuccess: (saved) => onSaved(saved.name) })
+    save.mutate(
+      { name: trimmed, role, color, event_symbols: showSymbols },
+      { onSuccess: (saved) => onSaved(saved.name) },
+    )
   }
 
   const nameError = nameMissing
@@ -200,6 +206,16 @@ export function MemberEditor({ member, members, onSaved, onDeleted, onCancel }: 
             })}
           </div>
         </fieldset>
+
+        <div className="flex flex-col gap-1">
+          <Switch
+            checked={showSymbols}
+            showLabel
+            label={t('members.event_symbols')}
+            onChange={setEventSymbols}
+          />
+          <p className="text-base text-slate-500">{t('members.event_symbols_hint')}</p>
+        </div>
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={busy}>

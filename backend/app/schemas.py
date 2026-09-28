@@ -111,6 +111,8 @@ class MemberIn(BaseModel):
     name: MemberName
     role: MemberRole
     color: MemberColor
+    # Termine mit Symbolen; weggelassen: beim Anlegen nur für Kinder, beim Ändern unverändert.
+    event_symbols: bool | None = None
 
 
 class MemberOrderIn(BaseModel):
@@ -125,6 +127,7 @@ class MemberOut(BaseModel):
     role: str
     color: str
     avatar_url: str | None
+    event_symbols: bool
 
 
 class DailyRecurrence(BaseModel):

@@ -253,5 +253,13 @@
   "leafy-green": "Spinat, Mangold, Grünkohl",
   "bell-pepper": "Gemüsepfanne, Paprika, Gemüse",
   "hot-pepper": "Chili con Carne, scharf, Peperoni",
-  "takeout-box": "Bestellen, Lieferdienst, Essen holen, Reste"
+  "takeout-box": "Bestellen, Lieferdienst, Essen holen, Reste",
+  "martial-arts-uniform": "Judo, Karate, Kampfsport, Kampfanzug",
+  "horse-racing": "Reiten, Pferd, Reitstunde, Pony",
+  "stethoscope": "Arzt, Ärztin, Kinderarzt, Doktor, Untersuchung",
+  "syringe": "Impfung, impfen, Spritze",
+  "hospital": "Krankenhaus, Klinik",
+  "older-person": "Oma, Opa, Großeltern",
+  "person-getting-haircut": "Friseur, Haare schneiden, Frisör",
+  "person-climbing": "Klettern, Bouldern, Kletterhalle"
 }

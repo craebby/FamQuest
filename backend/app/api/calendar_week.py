@@ -14,6 +14,7 @@ from sqlalchemy import and_, or_, select
 
 from app.auth import CurrentSession, DbSession, get_family
 from app.calendar_sync import local_midnight
+from app.event_symbols import SymbolMatcher
 from app.holidays import holidays_between
 from app.models import Calendar, CalendarConnection, CalendarEvent, FamilyMember
 from app.today import family_now
@@ -42,6 +43,8 @@ class WeekEventOut(BaseModel):
     member_ids: list[int]
     # Gehört (auch) der ganzen Familie.
     family: bool
+    # Symbol zum Titel (siehe app/event_symbols.py), falls eine der Personen Symbole bekommt.
+    icon: str | None
     # Begann vor diesem Tag bzw. geht über ihn hinaus.
     continues_before: bool
     continues_after: bool
@@ -84,6 +87,26 @@ class UpcomingOut(BaseModel):
     events: list[UpcomingEventOut]
 
 
+class _People:
+    """Reihenfolge der Personen und wessen Termine Symbole bekommen."""
+
+    def __init__(self, db: DbSession, rules: list[dict] | None) -> None:
+        members = db.execute(
+            select(FamilyMember.id, FamilyMember.event_symbols).order_by(
+                FamilyMember.position, FamilyMember.id
+            )
+        ).all()
+        # Reihenfolge, nach der die Avatare eines Termins sortiert werden.
+        self.positions = {member_id: index for index, (member_id, _) in enumerate(members)}
+        self.with_symbols = {member_id for member_id, symbols in members if symbols}
+        self.matcher = SymbolMatcher(rules)
+
+    def icon_for(self, entry: "_Merged") -> str | None:
+        # Familientermine zählen für alle, also auch für jemanden mit Symbolen.
+        wanted = (entry.family and self.with_symbols) or entry.member_ids & self.with_symbols
+        return self.matcher.icon_for(entry.event.title) if wanted else None
+
+
 class _Merged:
     """Ein Termin, ggf. aus mehreren Kalendern zusammengeführt."""
 
@@ -110,7 +133,7 @@ def week(
     range_start, range_end = local_midnight(start, tz), local_midnight(end, tz)
 
     merged = _merged_events(db, start, end, range_start, range_end)
-    positions = _positions(db)
+    people = _People(db, family.event_symbols)
     holidays = holidays_between(db, family, start, end, lang or family.default_language)
     days = []
     for index in range(7):
@@ -118,7 +141,7 @@ def week(
         day_start, day_end = local_midnight(day, tz), local_midnight(day + dt.timedelta(days=1), tz)
         events = []
         for entry in merged:
-            out = _event_on_day(entry, day, day_start, day_end, positions)
+            out = _event_on_day(entry, day, day_start, day_end, people)
             if out is not None:
                 events.append(out)
         # Ganztägige zuerst, dann nach Beginn.
@@ -163,14 +186,14 @@ def upcoming(
     today = now.date()
     end = today + dt.timedelta(days=UPCOMING_DAYS)
 
-    positions = _positions(db)
+    people = _People(db, family.event_symbols)
     found = []
     for entry in _merged_events(db, today, end, now, local_midnight(end, tz)):
         event = entry.event
         first = event.start_date if event.all_day else event.start_at.astimezone(tz).date()
         day = max(first, today)
         day_start, day_end = local_midnight(day, tz), local_midnight(day + dt.timedelta(days=1), tz)
-        out = _event_on_day(entry, day, day_start, day_end, positions)
+        out = _event_on_day(entry, day, day_start, day_end, people)
         if out is None:
             continue
         whole_day = out.all_day or (out.continues_before and out.continues_after)
@@ -246,22 +269,12 @@ def _merged_events(
     return list(merged.values())
 
 
-def _positions(db: DbSession) -> dict[int, int]:
-    """Reihenfolge der Personen, nach der die Avatare eines Termins sortiert werden."""
-    return {
-        member_id: index
-        for index, member_id in enumerate(
-            db.scalars(select(FamilyMember.id).order_by(FamilyMember.position, FamilyMember.id))
-        )
-    }
-
-
 def _event_on_day(
     entry: _Merged,
     day: dt.date,
     day_start: dt.datetime,
     day_end: dt.datetime,
-    positions: dict[int, int],
+    people: _People,
 ) -> WeekEventOut | None:
     event = entry.event
     if event.all_day:
@@ -288,8 +301,11 @@ def _event_on_day(
         all_day=event.all_day,
         start=start,
         end=end,
-        member_ids=sorted(entry.member_ids, key=lambda m: positions.get(m, len(positions))),
+        member_ids=sorted(
+            entry.member_ids, key=lambda m: people.positions.get(m, len(people.positions))
+        ),
         family=entry.family,
+        icon=people.icon_for(entry),
         continues_before=before,
         continues_after=after,
     )
