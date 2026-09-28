@@ -219,10 +219,23 @@
     "interval_months_other": "Every {{count}} months",
     "extra": "Extra",
     "extra_hint": "Extra: optional, shown in its own \"Extras\" block. Earns points but doesn't count towards the daily progress.",
-    "routine_hint": "Tasks of one time of day form a routine together. You set their order when the list is filtered by one person.",
-    "order_hint": "This is how {{name}} sees the tasks on the display. Use the arrows to set the order within each routine.",
+    "routine_hint": "The tasks of one time of day form a routine. You set their order in the \"Routines\" section.",
+    "order_hint": "This is how {{name}} sees the tasks on the display. You set the order of the routines in the \"Routines\" section.",
     "move_up": "Move {{title}} up",
     "move_down": "Move {{title}} down"
+  },
+  "routines": {
+    "section": "Routines",
+    "intro": "Morning, afternoon and evening: this is how the routine looks on the display, step by step. Use the arrows to sort, tap a step to edit it.",
+    "need_children": "Add a child first, then you can put together their routines.",
+    "choose_child": "Choose a child",
+    "choose_day": "Choose a day",
+    "today": "Today",
+    "day_today": "{{day}}, today",
+    "steps_count_one": "{{count}} step",
+    "steps_count_other": "{{count}} steps",
+    "empty_block": "No steps on this day yet.",
+    "add_step": "Add a step"
   },
   "times_of_day": {
     "morning": "Morning",

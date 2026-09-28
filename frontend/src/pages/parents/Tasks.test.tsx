@@ -77,29 +77,29 @@ describe('Aufgaben im Elternbereich', () => {
     ])
     renderApp('/parents')
 
-    await screen.findByRole('button', { name: 'Bett machen bearbeiten' })
-    const taskTitles = screen
+    const section = within(await screen.findByRole('region', { name: 'Aufgaben' }))
+    await section.findByRole('button', { name: 'Bett machen bearbeiten' })
+    const taskTitles = section
       .getAllByRole('button', { name: /bearbeiten$/ })
       .map((button) => button.getAttribute('aria-label'))
-      .filter((label) => !['Lena bearbeiten', 'Tom bearbeiten'].includes(label ?? ''))
     // Morgens vor abends, Aufgaben ohne Tageszeit zuletzt.
     expect(taskTitles).toEqual([
       'Bett machen bearbeiten',
       'Schlafanzug an bearbeiten',
       'Müll bearbeiten',
     ])
-    const bed = screen.getByRole('button', { name: 'Bett machen bearbeiten' })
+    const bed = section.getByRole('button', { name: 'Bett machen bearbeiten' })
     expect(within(bed).getByText('Montag bis Freitag')).toBeVisible()
     expect(within(bed).getByText('1 Punkt')).toBeInTheDocument()
-    const trash = screen.getByRole('button', { name: 'Müll bearbeiten' })
+    const trash = section.getByRole('button', { name: 'Müll bearbeiten' })
     expect(within(trash).getByText('Niemand zugeordnet')).toBeVisible()
     expect(within(trash).getByText('Inaktiv')).toBeVisible()
 
-    const filter = screen.getByRole('group', { name: 'Nach Person filtern' })
+    const filter = section.getByRole('group', { name: 'Nach Person filtern' })
     await user.click(within(filter).getByRole('button', { name: /Lena/ }))
 
-    expect(screen.getByRole('button', { name: 'Schlafanzug an bearbeiten' })).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'Bett machen bearbeiten' })).toBeNull()
+    expect(section.getByRole('button', { name: 'Schlafanzug an bearbeiten' })).toBeVisible()
+    expect(section.queryByRole('button', { name: 'Bett machen bearbeiten' })).toBeNull()
   })
 
   it('legt eine Aufgabe an und schlägt das Symbol passend zum Titel vor', async () => {
@@ -246,7 +246,8 @@ describe('Aufgaben im Elternbereich', () => {
     })
     renderApp('/parents')
 
-    await user.click(await screen.findByRole('button', { name: 'Zähne putzen bearbeiten' }))
+    const section = within(await screen.findByRole('region', { name: 'Aufgaben' }))
+    await user.click(await section.findByRole('button', { name: 'Zähne putzen bearbeiten' }))
     await user.click(screen.getByRole('button', { name: 'Symbol ändern: Zähne putzen' }))
     const picker = screen.getByRole('dialog', { name: 'Symbol wählen' })
     expect(within(picker).getByRole('button', { name: 'Zähne putzen' })).toHaveAttribute(
@@ -314,60 +315,24 @@ describe('Aufgaben im Elternbereich', () => {
     expect(calls.some((call) => call.key === 'DELETE /api/tasks/1')).toBe(true)
   })
 
-  it('legt die Reihenfolge einer Routine je Person fest', async () => {
+  it('zeigt gefiltert die Blöcke einer Person, sortiert wird unter „Routinen“', async () => {
     const user = userEvent.setup()
-    const tasks = [
-      makeTask({ id: 1, title: 'Zähne putzen', positions: [{ member_id: 1, position: 0 }] }),
-      makeTask({
-        id: 2,
-        title: 'Anziehen',
-        member_ids: [1, 2],
-        positions: [
-          { member_id: 1, position: 1 },
-          { member_id: 2, position: 0 },
-        ],
-      }),
-      makeTask({
-        id: 3,
-        title: 'Tisch abräumen',
-        time_of_day: null,
-        extra: true,
-        positions: [{ member_id: 1, position: 2 }],
-      }),
-    ]
-    let current = tasks
-    const calls = api(tasks, {
-      'GET /api/tasks': () => Response.json(current),
-      'PUT /api/members/1/task-order': (body) => {
-        const ids = (body as { task_ids: number[] }).task_ids
-        current = current.map((task) => ({
-          ...task,
-          positions: task.positions.map((entry) =>
-            entry.member_id === 1 ? { ...entry, position: ids.indexOf(task.id) } : entry,
-          ),
-        }))
-        return new Response(null, { status: 204 })
-      },
-    })
+    api([
+      makeTask({ id: 1, title: 'Zähne putzen' }),
+      makeTask({ id: 3, title: 'Tisch abräumen', time_of_day: null, extra: true }),
+    ])
     renderApp('/parents')
 
-    const filter = await screen.findByRole('group', { name: 'Nach Person filtern' })
+    const section = within(await screen.findByRole('region', { name: 'Aufgaben' }))
+    const filter = await section.findByRole('group', { name: 'Nach Person filtern' })
     await user.click(within(filter).getByRole('button', { name: /Lena/ }))
 
-    const morning = within(screen.getByRole('region', { name: 'Morgens' }))
-    expect(morning.getByRole('button', { name: 'Zähne putzen nach oben' })).toBeDisabled()
-    expect(within(screen.getByRole('region', { name: 'Extras' })).getByText('Tisch abräumen'))
-    await user.click(morning.getByRole('button', { name: 'Anziehen nach oben' }))
-
-    expect(calls.find((call) => call.key === 'PUT /api/members/1/task-order')?.body).toEqual({
-      task_ids: [2, 1, 3],
-    })
-    // Sofort in der neuen Reihenfolge.
+    expect(section.getByText(/Abschnitt „Routinen“/)).toBeVisible()
     expect(
-      morning
-        .getAllByRole('button', { name: /bearbeiten$/ })
-        .map((button) => button.getAttribute('aria-label')),
-    ).toEqual(['Anziehen bearbeiten', 'Zähne putzen bearbeiten'])
+      within(section.getByRole('region', { name: 'Morgens' })).getByText('Zähne putzen'),
+    ).toBeVisible()
+    expect(within(section.getByRole('region', { name: 'Extras' })).getByText('Tisch abräumen'))
+    expect(section.queryByRole('button', { name: /nach oben$/ })).toBeNull()
   })
 
   it('legt eine Extra-Aufgabe ohne Tageszeit an', async () => {

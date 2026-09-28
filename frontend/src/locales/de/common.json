@@ -219,10 +219,23 @@
     "interval_months_other": "Alle {{count}} Monate",
     "extra": "Extra",
     "extra_hint": "Extra: freiwillig, steht im eigenen Block „Extras“. Bringt Punkte, zählt aber nicht zum Tagesfortschritt.",
-    "routine_hint": "Aufgaben eines Tagesabschnitts bilden zusammen eine Routine. Die Reihenfolge legt ihr fest, wenn die Liste nach einer Person gefiltert ist.",
-    "order_hint": "So sieht {{name}} die Aufgaben am Display. Mit den Pfeilen legt ihr die Reihenfolge innerhalb jeder Routine fest.",
+    "routine_hint": "Aufgaben eines Tagesabschnitts bilden zusammen eine Routine. Die Reihenfolge legt ihr im Abschnitt „Routinen“ fest.",
+    "order_hint": "So sieht {{name}} die Aufgaben am Display. Die Reihenfolge der Routinen legt ihr im Abschnitt „Routinen“ fest.",
     "move_up": "{{title}} nach oben",
     "move_down": "{{title}} nach unten"
+  },
+  "routines": {
+    "section": "Routinen",
+    "intro": "Morgens, nachmittags und abends: So sieht die Routine am Display aus, Schritt für Schritt. Mit den Pfeilen sortieren, antippen zum Bearbeiten.",
+    "need_children": "Legt zuerst ein Kind an, dann könnt ihr seine Routinen zusammenstellen.",
+    "choose_child": "Kind wählen",
+    "choose_day": "Tag wählen",
+    "today": "Heute",
+    "day_today": "{{day}}, heute",
+    "steps_count_one": "{{count}} Schritt",
+    "steps_count_other": "{{count}} Schritte",
+    "empty_block": "An diesem Tag noch keine Schritte.",
+    "add_step": "Schritt hinzufügen"
   },
   "times_of_day": {
     "morning": "Morgens",

@@ -126,7 +126,7 @@ Ist eine Aufgabe mehreren Personen zugeordnet, erledigt und punktet jede Person 
 
 **Routinen und Reihenfolge** *(nach dem Praxistest, Phase 3)*
 
-Die Aufgaben eines Tagesabschnitts bilden eine Routine, die als Block in fester Reihenfolge erscheint (z. B. morgens: Zähne putzen → anziehen → Kuscheltier einpacken; nachmittags: Rucksack aufhängen → Brotdose in die Küche; abends: Schlafi an → Zähne putzen). Die Reihenfolge legen Eltern je Person fest (in der nach einer Person gefilterten Aufgabenliste). Freiwillige Extras stehen in einem eigenen Block danach und zählen nicht zum Tagesfortschritt.
+Die Aufgaben eines Tagesabschnitts bilden eine Routine, die als Block in fester Reihenfolge erscheint (z. B. morgens: Zähne putzen → anziehen → Kuscheltier einpacken; nachmittags: Rucksack aufhängen → Brotdose in die Küche; abends: Schlafi an → Zähne putzen). Die Reihenfolge legen Eltern je Kind im Abschnitt „Routinen“ des Elternbereichs fest: Tagesabschnitte als Blöcke mit nummerierten Schritten, ↑/↓ zum Sortieren, „Schritt hinzufügen“ mit vorausgewähltem Kind und Tagesabschnitt, Auswahl des Wochentags (heute vorausgewählt), damit man die Routine eines bestimmten Tages sieht. Später geht der Abschnitt im Abschnitt „Aufgaben“ auf. Freiwillige Extras stehen in einem eigenen Block danach und zählen nicht zum Tagesfortschritt.
 
 **Aufgaben-Vorlagen**
 

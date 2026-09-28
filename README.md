@@ -142,9 +142,7 @@ it appears small under **"Coming up"** and can already be done early; the rhythm
 that day. "Coming up" does not count towards the daily progress.
 
 The list can be filtered by tapping a person; new tasks are then preselected for that person.
-Filtered by one person, the list shows that person's routines exactly as on the display, with
-large ↑/↓ buttons to set the **order within each routine**. The order is per person: two children
-can brush their teeth at different steps. New tasks go to the end. The
+Filtered by one person, the list shows that person's tasks in blocks exactly as on the display. The
 switch in each row sets a task active or inactive. When a person is deleted their tasks are kept;
 tasks without anyone assigned are marked in the list.
 
@@ -154,6 +152,24 @@ set). To extend the catalogue, add names from the `fluent-emoji-flat` set (e.g. 
 `frontend/src/icons/categories.json` and search terms to
 `frontend/src/locales/<language>/icons.json` (the first term is the label). Tests check that every
 icon exists and has a unique label in every language.
+
+### Routines
+
+The **"Routines"** section in the parents' area puts together each child's routines. Tap a child at
+the top (when there are several), then a weekday (today is preselected): below it the child's
+**morning**, **afternoon** and **evening** appear as blocks, **midday** only when something is
+planned there. Each block lists the steps numbered in the order the child sees them on the display,
+with the number of steps and the stars they are worth. Steps that don't happen every day show when
+they do ("Monday to Friday"); inactive steps are faded.
+
+- **↑/↓** moves a step within its routine; the display follows immediately. The order is per child:
+  two children can brush their teeth at different steps. Steps that only happen on other days keep
+  their place.
+- **Tap a step** to edit it (same editor as under "Tasks").
+- **"Add a step"** opens the task editor with the child and the time of day already selected. New
+  steps go to the end of the routine.
+
+Extras and "anytime" tasks are not part of a routine; they stay in the "Tasks" section.
 
 ## Today (start page)
 
@@ -656,7 +672,7 @@ use.
   person and optional extra tasks
 - [x] 5. Configurable start page: gear on "Today" (with the parents' PIN) to switch tiles on and
   off and change their order, for the whole family; week widget as an optional tile
-- [ ] 6. Routine management: a "Routines" section in the parents' area showing each child's
+- [x] 6. Routine management: a "Routines" section in the parents' area showing each child's
   morning, afternoon and evening as blocks in a fixed order; later merged into the "Tasks" section
 - [ ] 7. Polish on the real display; rework the week widget on the start page (layout and
   readability)

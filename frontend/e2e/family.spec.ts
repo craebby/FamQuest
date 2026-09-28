@@ -328,3 +328,39 @@ test('Startseite anpassen: mit PIN Kacheln ein- und ausschalten, gilt nach dem N
   await page.getByRole('link', { name: 'Einstellungen' }).click()
   await expect(page.getByRole('heading', { name: 'Eltern-PIN eingeben' })).toBeVisible()
 })
+
+test('Routinen: Schritt hinzufügen und sortieren, die Familienansicht folgt', async ({ page }) => {
+  await login(page)
+  await page
+    .getByRole('navigation', { name: 'Hauptnavigation' })
+    .getByRole('link', { name: 'Einstellungen' })
+    .click()
+  await enterPin(page, PIN)
+
+  const morning = page
+    .getByRole('region', { name: 'Routinen' })
+    .getByRole('region', { name: 'Morgens' })
+  await morning.getByRole('button', { name: 'Schritt hinzufügen' }).click()
+  await expect(page.getByRole('radio', { name: 'Morgens' })).toBeChecked()
+  await expect(page.getByRole('checkbox', { name: /Lena/ })).toBeChecked()
+  await page.getByLabel('Titel').fill('Anziehen')
+  await page.getByRole('button', { name: 'Speichern' }).click()
+  await expect(page.getByRole('status')).toHaveText('„Anziehen“ ist gespeichert.')
+
+  await expect(morning.getByRole('button', { name: /bearbeiten$/ })).toHaveText([
+    /Zähne putzen/,
+    /Anziehen/,
+  ])
+  await morning.getByRole('button', { name: 'Anziehen nach oben' }).click()
+  await expect(morning.getByRole('button', { name: /bearbeiten$/ })).toHaveText([
+    /Anziehen/,
+    /Zähne putzen/,
+  ])
+
+  await toTasks(page)
+  const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
+  await expect(column.getByRole('button', { name: /^(Anziehen|Zähne putzen)/ })).toHaveText([
+    /Anziehen/,
+    /Zähne putzen/,
+  ])
+})

@@ -59,6 +59,8 @@ interface TaskEditorProps {
   members: Member[]
   /** Vorauswahl der Personen bei neuen Aufgaben (z. B. aus dem Filter der Liste). */
   initialMemberIds?: number[]
+  /** Vorauswahl des Tagesabschnitts bei neuen Aufgaben (z. B. „Schritt hinzufügen“ einer Routine). */
+  initialTimeOfDay?: TimeOfDay
   /** Zeitzone der Familie, für das Standarddatum bei „Einmal“. */
   timeZone: string
   onSaved: (title: string) => void
@@ -70,6 +72,7 @@ export function TaskEditor({
   task,
   members,
   initialMemberIds = [],
+  initialTimeOfDay,
   timeZone,
   onSaved,
   onDeleted,
@@ -99,7 +102,7 @@ export function TaskEditor({
   const [shared, setShared] = useState(task?.shared ?? false)
   // Block der Aufgabe: ein Tagesabschnitt der Routine, „Jederzeit“ (null) oder „Extra“.
   const [block, setBlock] = useState<TimeOfDay | null | 'extra'>(
-    task?.extra ? 'extra' : (task?.time_of_day ?? null),
+    task ? (task.extra ? 'extra' : task.time_of_day) : (initialTimeOfDay ?? null),
   )
   const [color, setColor] = useState<MemberColor | null>(task?.color ?? null)
   const [description, setDescription] = useState(task?.description ?? '')

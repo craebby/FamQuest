@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDate, todayIn, weekdayName, weekdayOrder } from './weekdays'
+import { addDays, formatDate, isoWeekday, todayIn, weekdayName, weekdayOrder } from './weekdays'
 
 describe('Wochentage', () => {
   it('beginnen je nach Sprache am Montag oder Sonntag', () => {
@@ -21,5 +21,12 @@ describe('Wochentage', () => {
     const lateEvening = new Date('2026-09-25T22:30:00Z')
     expect(todayIn('Europe/Berlin', lateEvening)).toBe('2026-09-26')
     expect(todayIn('America/New_York', lateEvening)).toBe('2026-09-25')
+  })
+
+  it('rechnet mit Kalendertagen über Monats- und Jahresgrenzen', () => {
+    expect(addDays('2026-09-28', 6)).toBe('2026-10-04')
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01')
+    expect(isoWeekday('2026-09-28')).toBe(1)
+    expect(isoWeekday('2026-10-04')).toBe(7)
   })
 })

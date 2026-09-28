@@ -1,7 +1,15 @@
 import type { TFunction } from 'i18next'
 
 import type { Recurrence } from './api/tasks'
-import { WEEKEND, WORKDAYS, formatDate, sameDays, weekdayName, weekdayOrder } from './weekdays'
+import {
+  WEEKEND,
+  WORKDAYS,
+  formatDate,
+  isoWeekday,
+  sameDays,
+  weekdayName,
+  weekdayOrder,
+} from './weekdays'
 
 /** Kurzbeschreibung einer Wiederholung, z. B. „Täglich“, „Mo, Mi, Fr“ oder „Am 3. Okt. 2026“. */
 export function recurrenceSummary(t: TFunction, language: string, recurrence: Recurrence): string {
@@ -37,4 +45,20 @@ export function flexibleSummary(t: TFunction, days: number): string {
   if (days % 30 === 0) return t('tasks.summary_flexible_months', { count: days / 30 })
   if (days % 7 === 0) return t('tasks.summary_flexible_weeks', { count: days / 7 })
   return t('tasks.summary_flexible_days', { count: days })
+}
+
+/**
+ * Steht eine Aufgabe mit dieser Wiederholung an diesem Tag an? Flexible Aufgaben haben keinen
+ * festen Tag und gelten deshalb für jeden Tag.
+ */
+export function occursOn(recurrence: Recurrence, isoDate: string): boolean {
+  switch (recurrence.kind) {
+    case 'daily':
+    case 'flexible':
+      return true
+    case 'weekly':
+      return recurrence.weekdays.includes(isoWeekday(isoDate))
+    case 'once':
+      return recurrence.date === isoDate
+  }
 }

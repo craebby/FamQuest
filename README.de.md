@@ -141,10 +141,8 @@ wieder dran. Vorher steht sie klein unter **„Demnächst“** und kann schon fr
 der Rhythmus beginnt dann ab diesem Tag neu. „Demnächst“ zählt nicht zum Tagesfortschritt.
 
 Die Liste lässt sich mit einem Tipp auf eine Person filtern. Neue Aufgaben sind dann für diese
-Person vorausgewählt. Gefiltert auf eine Person zeigt die Liste deren Routinen genau wie am Display,
-mit großen ↑/↓-Knöpfen für die **Reihenfolge innerhalb jeder Routine**. Die Reihenfolge gilt je
-Person: Zwei Kinder können das Zähneputzen an unterschiedlicher Stelle haben. Neue Aufgaben kommen
-ans Ende. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
+Person vorausgewählt. Gefiltert auf eine Person zeigt die Liste deren Aufgaben in Blöcken genau wie am
+Display. Der Schalter in jeder Zeile setzt eine Aufgabe aktiv oder inaktiv. Wird eine
 Person gelöscht, bleiben ihre Aufgaben erhalten; Aufgaben ohne Person sind in der Liste markiert.
 
 Die Symbole sind beim Build ins Frontend eingebettet (nur die Katalog-Symbole, nicht das ganze Set).
@@ -153,6 +151,24 @@ Katalog erweitern: Namen aus dem Set `fluent-emoji-flat` (z. B. auf
 `frontend/src/icons/categories.json` eintragen und in `frontend/src/locales/<sprache>/icons.json`
 Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Tests prüfen, dass jedes Symbol
 existiert und in jeder Sprache eindeutig benannt ist.
+
+### Routinen
+
+Im Abschnitt **„Routinen“** des Elternbereichs stellt ihr die Routinen jedes Kindes zusammen. Oben
+ein Kind antippen (bei mehreren), dann einen Wochentag (heute ist vorausgewählt): Darunter stehen
+**morgens**, **nachmittags** und **abends** als Blöcke, **mittags** nur, wenn dort etwas geplant
+ist. Jeder Block zeigt die Schritte nummeriert in der Reihenfolge, in der das Kind sie am Display
+sieht, dazu die Anzahl der Schritte und die Sterne. Schritte, die nicht jeden Tag anstehen, zeigen,
+wann sie dran sind („Montag bis Freitag“); inaktive Schritte sind blass.
+
+- **↑/↓** verschiebt einen Schritt innerhalb seiner Routine; das Display folgt sofort. Die
+  Reihenfolge gilt je Kind: Zwei Kinder können das Zähneputzen an unterschiedlicher Stelle haben.
+  Schritte, die nur an anderen Tagen anstehen, behalten ihren Platz.
+- **Schritt antippen** öffnet ihn zum Bearbeiten (derselbe Editor wie unter „Aufgaben“).
+- **„Schritt hinzufügen“** öffnet den Aufgaben-Editor mit Kind und Tagesabschnitt vorausgewählt.
+  Neue Schritte kommen ans Ende der Routine.
+
+Extras und Aufgaben für „Jederzeit“ gehören zu keiner Routine; sie bleiben im Abschnitt „Aufgaben“.
 
 ## Heute (Startseite)
 
@@ -676,7 +692,7 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Reihenfolge je Person und freiwillige Extra-Aufgaben
 - [x] 5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und
   Reihenfolge, gilt für die ganze Familie; Wochen-Widget als optionale Kachel
-- [ ] 6. Routinenverwaltung: eigener Abschnitt „Routinen“ im Elternbereich, je Kind morgens,
+- [x] 6. Routinenverwaltung: eigener Abschnitt „Routinen“ im Elternbereich, je Kind morgens,
   nachmittags und abends als Blöcke in fester Reihenfolge; geht später im Abschnitt „Aufgaben“ auf
 - [ ] 7. Feinschliff am echten Display; Wochen-Widget der Startseite überarbeiten (Aufbau und
   Lesbarkeit)

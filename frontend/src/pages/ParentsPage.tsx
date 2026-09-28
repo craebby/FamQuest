@@ -17,7 +17,7 @@ import {
 } from '../api/auth'
 import { type Member, childrenOf, useMembers } from '../api/members'
 import { type Reward, useRewards } from '../api/rewards'
-import { type Task, useTasks } from '../api/tasks'
+import { type Task, type TimeOfDay, useTasks } from '../api/tasks'
 import { useToday } from '../api/today'
 import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
@@ -34,6 +34,7 @@ import { PointsSection } from './parents/PointsSection'
 import { RewardEditor } from './parents/RewardEditor'
 import { RewardPoolPicker } from './parents/RewardPoolPicker'
 import { RewardsSection } from './parents/RewardsSection'
+import { RoutinesSection } from './parents/RoutinesSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
 import { WeatherSection } from './parents/WeatherSection'
@@ -200,6 +201,9 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const [editingTask, setEditingTask] = useState<Task | 'new' | null>(null)
   const [pointsMember, setPointsMember] = useState<Member | null>(null)
   const [taskFilter, setTaskFilter] = useState<number | null>(null)
+  // Neue Aufgabe aus einer Routine: Kind und Tagesabschnitt sind vorausgewählt.
+  const [taskPreset, setTaskPreset] = useState<{ memberId: number; time: TimeOfDay } | null>(null)
+  const [routinesChildId, setRoutinesChildId] = useState<number | null>(null)
   const [rewardsChildId, setRewardsChildId] = useState<number | null>(null)
   const [editingReward, setEditingReward] = useState<{ reward?: Reward; member: Member } | null>(
     null,
@@ -255,19 +259,25 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   }
 
   if (editingTask) {
-    const closeWith = (message: string) => {
+    const close = () => {
       setEditingTask(null)
+      setTaskPreset(null)
+    }
+    const closeWith = (message: string) => {
+      close()
       setNotice(message)
     }
+    const initialMemberId = taskPreset?.memberId ?? taskFilter
     return (
       <TaskEditor
         task={editingTask === 'new' ? undefined : editingTask}
         members={members.data ?? []}
-        initialMemberIds={taskFilter === null ? [] : [taskFilter]}
+        initialMemberIds={initialMemberId === null ? [] : [initialMemberId]}
+        initialTimeOfDay={taskPreset?.time}
         timeZone={me.family.timezone}
         onSaved={(title) => closeWith(t('tasks.saved', { title }))}
         onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
-        onCancel={() => setEditingTask(null)}
+        onCancel={close}
       />
     )
   }
@@ -275,6 +285,8 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
   const childMembers = childrenOf(members.data ?? [])
   const rewardsChild =
     childMembers.find((member) => member.id === rewardsChildId) ?? childMembers[0]
+  const routinesChild =
+    childMembers.find((member) => member.id === routinesChildId) ?? childMembers[0]
 
   if (editingReward) {
     const closeWith = (message: string) => {
@@ -383,6 +395,24 @@ function ParentSettings({ me, onLeave }: { me: Me; onLeave: () => void }) {
           setNotice(undefined)
           setEditingTask('new')
         }}
+      />
+
+      <RoutinesSection
+        childMembers={childMembers}
+        tasks={tasks.data}
+        error={tasks.error}
+        member={routinesChild}
+        onSelect={setRoutinesChildId}
+        onEdit={(task) => {
+          setNotice(undefined)
+          setEditingTask(task)
+        }}
+        onAdd={(member, time) => {
+          setNotice(undefined)
+          setTaskPreset({ memberId: member.id, time })
+          setEditingTask('new')
+        }}
+        timeZone={me.family.timezone}
       />
 
       <PointsSection
