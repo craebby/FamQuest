@@ -109,6 +109,7 @@ const MEAL_WEEK: MealWeek = {
       dish_id: 1,
       name: 'Fischstäbchen',
       icon: 'fluent-emoji-flat:fish',
+      image_url: null,
     },
     {
       date: '2026-10-03',
@@ -116,6 +117,7 @@ const MEAL_WEEK: MealWeek = {
       dish_id: 2,
       name: 'Pizza',
       icon: 'fluent-emoji-flat:pizza',
+      image_url: null,
     },
   ],
 }

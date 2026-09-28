@@ -6,6 +6,15 @@ import type { Dish, MealWeek } from '../api/meals'
 import i18n from '../i18n'
 import { makeMe, mockApi, renderApp, setupDone } from '../test/utils'
 
+// Der echte Cropper braucht Layout und Canvas, die jsdom nicht hat.
+vi.mock('../components/AvatarCropper', () => ({
+  AvatarCropper: ({ onConfirm }: { onConfirm: (image: Blob) => void }) => (
+    <button type="button" onClick={() => onConfirm(new Blob(['x'], { type: 'image/webp' }))}>
+      Zuschnitt fertig
+    </button>
+  ),
+}))
+
 beforeEach(async () => {
   await i18n.changeLanguage('de')
 })
@@ -25,6 +34,7 @@ const WEEK: MealWeek = {
       dish_id: 1,
       name: 'Fischstäbchen',
       icon: 'fluent-emoji-flat:fish',
+      image_url: null,
     },
   ],
 }
@@ -34,12 +44,17 @@ const DISHES: Dish[] = [
     id: 1,
     name: 'Fischstäbchen',
     icon: 'fluent-emoji-flat:fish',
+    image_url: null,
     last_planned: '2026-10-02',
     times_planned: 4,
   },
 ]
 
-function mockMeals(week: MealWeek = WEEK, language = 'de') {
+function mockMeals(
+  week: MealWeek = WEEK,
+  language = 'de',
+  extra: Parameters<typeof mockApi>[0] = {},
+) {
   return mockApi({
     'GET /api/setup/status': setupDone,
     'GET /api/auth/me': Response.json(
@@ -50,6 +65,7 @@ function mockMeals(week: MealWeek = WEEK, language = 'de') {
     'PUT /api/meals/2026-10-03/dinner': (body) =>
       Response.json({ date: '2026-10-03', meal: 'dinner', dish_id: 2, ...(body as object) }),
     'DELETE /api/meals/2026-10-02/dinner': new Response(null, { status: 204 }),
+    ...extra,
   })
 }
 
@@ -96,11 +112,11 @@ describe('Essensplan', () => {
     const dialog = screen.getByRole('dialog', { name: 'Abendessen, Samstag, 3. Oktober' })
     const suggestions = within(dialog).getByRole('list', { name: 'Vorschläge' })
     // Eigene Gerichte zuerst, danach die Standardgerichte.
-    const buttons = within(suggestions).getAllByRole('button')
-    expect(buttons[0]).toHaveTextContent('Fischstäbchen')
-    expect(buttons[1]).toHaveTextContent('Nudeln mit Tomatensoße')
+    const items = within(suggestions).getAllByRole('listitem')
+    expect(items[0]).toHaveTextContent('Fischstäbchen')
+    expect(items[1]).toHaveTextContent('Nudeln mit Tomatensoße')
 
-    await user.click(buttons[1])
+    await user.click(within(items[1]).getByRole('button'))
 
     expect(calls.find((call) => call.key === 'PUT /api/meals/2026-10-03/dinner')?.body).toEqual({
       name: 'Nudeln mit Tomatensoße',
@@ -180,5 +196,70 @@ describe('Essensplan', () => {
       await screen.findByRole('button', { name: 'Dinner: Fischstäbchen, change' }),
     ).toBeVisible()
     expect(screen.getAllByRole('button', { name: 'Add Dinner' })).toHaveLength(6)
+  })
+
+  it('bearbeitet ein eigenes Gericht über den Stift: Name und Foto', async () => {
+    const user = userEvent.setup()
+    const saved = (body: unknown) => Response.json({ ...DISHES[0], ...(body as object) })
+    const calls = mockMeals(WEEK, 'de', {
+      'PUT /api/dishes/1': saved,
+      'PUT /api/dishes/1/image': () =>
+        Response.json({ ...DISHES[0], image_url: '/api/dish-images/abc.webp' }),
+    })
+    renderApp('/meals')
+
+    await user.click(await todayButton('Abendessen eintragen'))
+    // Nur eigene Gerichte haben einen Stift, Standardgerichte nicht.
+    expect(screen.queryByRole('button', { name: 'Pizza bearbeiten' })).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: 'Fischstäbchen bearbeiten' }))
+    expect(screen.getByRole('heading', { name: 'Fischstäbchen bearbeiten' })).toBeVisible()
+
+    await user.upload(
+      screen.getByTestId('dish-photo-input'),
+      new File(['foto'], 'fisch.jpg', { type: 'image/jpeg' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Zuschnitt fertig' }))
+    const upload = calls.find((call) => call.key === 'PUT /api/dishes/1/image')
+    expect(upload?.body).toBeInstanceOf(Blob)
+
+    const name = screen.getByRole('textbox', { name: 'Gericht' })
+    await user.clear(name)
+    await user.type(name, 'Fischstäbchen mit Kartoffelbrei')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(calls.find((call) => call.key === 'PUT /api/dishes/1')?.body).toEqual({
+      name: 'Fischstäbchen mit Kartoffelbrei',
+      icon: 'fluent-emoji-flat:fish',
+    })
+    // Zurück bei den Vorschlägen.
+    expect(await screen.findByRole('list', { name: 'Vorschläge' })).toBeVisible()
+  })
+
+  it('zeigt Fotos statt Symbolen', async () => {
+    mockMeals({
+      ...WEEK,
+      entries: [{ ...WEEK.entries[0], image_url: '/api/dish-images/abc.webp' }],
+    })
+    const { container } = renderApp('/meals')
+
+    await screen.findByRole('button', { name: 'Abendessen: Fischstäbchen, ändern' })
+    expect(container.querySelector('img[src="/api/dish-images/abc.webp"]')).not.toBeNull()
+  })
+
+  it('löscht ein Gericht nach Rückfrage und meldet, wenn es noch geplant ist', async () => {
+    const user = userEvent.setup()
+    const calls = mockMeals(WEEK, 'de', {
+      'DELETE /api/dishes/1': Response.json({ code: 'dish.planned' }, { status: 409 }),
+    })
+    renderApp('/meals')
+
+    await user.click(await todayButton('Abendessen eintragen'))
+    await user.click(await screen.findByRole('button', { name: 'Fischstäbchen bearbeiten' }))
+    await user.click(screen.getByRole('button', { name: 'Gericht löschen' }))
+    expect(screen.getByText(/wirklich löschen/)).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Gericht löschen' }))
+
+    expect(calls.map((call) => call.key)).toContain('DELETE /api/dishes/1')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Das Gericht steht noch im Plan.')
   })
 })

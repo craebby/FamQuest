@@ -155,7 +155,8 @@
     "title": "Choose image area",
     "hint": "Drag and zoom until the face is inside the circle.",
     "zoom": "Zoom",
-    "confirm": "Apply"
+    "confirm": "Apply",
+    "hint_rect": "Drag and zoom until the dish fills the picture nicely."
   },
   "tasks": {
     "section": "Tasks",
@@ -441,6 +442,13 @@
       "too_large": "The photo is too large (25 MB max).",
       "invalid_image": "The photo could not be read. JPEG, PNG and WebP are supported.",
       "not_found": "This photo no longer exists."
+    },
+    "dish": {
+      "not_found": "This dish no longer exists.",
+      "duplicate_name": "There is already a dish with this name.",
+      "planned": "This dish is still in the plan. Remove it there first.",
+      "invalid_image": "The photo couldn't be read. Please choose a JPEG, PNG or WebP image.",
+      "image_too_large": "The photo is too large (5 MB at most)."
     }
   },
   "rewards": {
@@ -742,6 +750,11 @@
     "remove": "Remove from plan",
     "close": "Close",
     "settings": "Meal plan",
-    "settings_hint": "Which meals you plan. Applies to the whole family."
+    "settings_hint": "Which meals you plan. Applies to the whole family.",
+    "picture": "Picture",
+    "picture_hint": "Your own photo replaces the icon everywhere, including on the display.",
+    "edit_dish": "Edit {{name}}",
+    "delete_dish": "Delete dish",
+    "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from past weeks."
   }
 }

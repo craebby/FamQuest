@@ -155,7 +155,8 @@
     "title": "Bildausschnitt wählen",
     "hint": "Verschieben und zoomen, bis das Gesicht im Kreis ist.",
     "zoom": "Zoom",
-    "confirm": "Übernehmen"
+    "confirm": "Übernehmen",
+    "hint_rect": "Verschieben und zoomen, bis das Gericht gut im Bild ist."
   },
   "tasks": {
     "section": "Aufgaben",
@@ -441,6 +442,13 @@
       "too_large": "Das Foto ist zu groß (höchstens 25 MB).",
       "invalid_image": "Das Foto konnte nicht gelesen werden. Möglich sind JPEG, PNG und WebP.",
       "not_found": "Das Foto gibt es nicht mehr."
+    },
+    "dish": {
+      "not_found": "Dieses Gericht gibt es nicht mehr.",
+      "duplicate_name": "Ein Gericht mit diesem Namen gibt es schon.",
+      "planned": "Das Gericht steht noch im Plan. Nehmt es dort zuerst heraus.",
+      "invalid_image": "Das Foto konnte nicht gelesen werden. Bitte ein JPEG-, PNG- oder WebP-Bild wählen.",
+      "image_too_large": "Das Foto ist zu groß (höchstens 5 MB)."
     }
   },
   "rewards": {
@@ -742,6 +750,11 @@
     "remove": "Aus dem Plan nehmen",
     "close": "Schließen",
     "settings": "Essensplan",
-    "settings_hint": "Welche Mahlzeiten ihr plant. Gilt für die ganze Familie."
+    "settings_hint": "Welche Mahlzeiten ihr plant. Gilt für die ganze Familie.",
+    "picture": "Bild",
+    "picture_hint": "Ein eigenes Foto ersetzt das Symbol überall, auch am Display.",
+    "edit_dish": "{{name}} bearbeiten",
+    "delete_dish": "Gericht löschen",
+    "delete_confirm": "„{{name}}“ wirklich löschen? Es verschwindet aus den Vorschlägen und aus vergangenen Wochen."
   }
 }

@@ -12,6 +12,7 @@ const dish = (overrides: Partial<Dish> = {}): Dish => ({
   id: 1,
   name: 'Omas Linsensuppe',
   icon: 'fluent-emoji-flat:pot-of-food',
+  image_url: null,
   last_planned: '2026-10-01',
   times_planned: 3,
   ...overrides,

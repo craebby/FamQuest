@@ -492,6 +492,8 @@ class Dish(Base):
     name: Mapped[str] = mapped_column(String(100))
     # Iconify-Name wie bei Aufgaben.
     icon: Mapped[str] = mapped_column(String(100))
+    # Eigenes Foto `<key>.webp` im Upload-Ordner „dishes“; ersetzt das Symbol in der Anzeige.
+    image: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

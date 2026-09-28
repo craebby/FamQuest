@@ -449,6 +449,11 @@ with today highlighted. The arrows browse to other weeks.
 - FamQuest remembers a typed dish and suggests it again. The same name in different case is the
   same dish.
 - Tap a planned dish to change it; "Remove from plan" clears the day again.
+- **Editing your own dishes:** the pencil on one of your dishes in the suggestions opens its name,
+  icon and **photo**. A photo (straight from the camera on a phone) is cropped square, scaled to
+  512 × 512, stored without metadata and then replaces the icon everywhere, including "Today".
+  "Delete dish" removes it from the suggestions and from past weeks; if it's planned for today or
+  later, remove it from the plan first.
 
 By default only **dinner** is planned. In the parents' area under **Settings → Meal plan** you can
 switch on breakfast, lunch and snack (for the whole family); every day then shows each meal with its
@@ -855,7 +860,8 @@ Plan the week's meals right on the display; children can wish for a dish.
   (suggestions from earlier dishes and about 40 common ones, icon picked automatically and
   changeable); only dinner by default, breakfast, lunch and snack can be switched on in the
   settings; the "Meals" tile on "Today" shows today's food
-- [ ] 2. Manage dishes: rename, change the icon, upload a photo, delete
+- [x] 2. Manage dishes: rename, change the icon, upload a photo, delete (via the pencil in the meal
+  plan, no PIN)
 - [ ] 3. Children's wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
 - [ ] 4. Polish

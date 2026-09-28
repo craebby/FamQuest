@@ -17,6 +17,9 @@ const FOOD_ICONS = new Set(
 export interface DishSuggestion {
   name: string
   icon: string
+  image_url: string | null
+  /** Nur bei Gerichten der Familie (bearbeitbar); Standardgerichte haben keine. */
+  dish_id?: number
 }
 
 function foodIcon(query: string): string | null {
@@ -62,8 +65,9 @@ export function dishSuggestions(
     seen.add(key)
     result.push(suggestion)
   }
-  for (const dish of dishes) add({ name: dish.name, icon: dish.icon })
+  for (const dish of dishes)
+    add({ name: dish.name, icon: dish.icon, image_url: dish.image_url, dish_id: dish.id })
   for (const template of DISH_POOL)
-    add({ name: dishTemplateName(t, template), icon: dishTemplateIcon(template) })
+    add({ name: dishTemplateName(t, template), icon: dishTemplateIcon(template), image_url: null })
   return result
 }

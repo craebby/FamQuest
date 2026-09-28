@@ -113,7 +113,7 @@ keine Rezepte (Mealie/Rezepte später).
 1. Wochenplan: Ansicht „Essen“ in der Navigationsleiste, Woche blättern, Gericht je Tag und Mahlzeit
    eintippen (Vorschläge, Symbol automatisch, änderbar); Mahlzeiten in den Einstellungen;
    Kachel „Essen“ auf „Heute“ mit dem heutigen Essen
-2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen
+2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen (Stift im Eintrage-Dialog, ohne PIN)
 3. Wünsche der Kinder: am Display Avatar + Gericht antippen, Eltern übernehmen in den Plan oder lehnen ab
 4. Feinschliff
 

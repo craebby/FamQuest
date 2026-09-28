@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from app.auth import get_family
@@ -73,6 +75,7 @@ def test_plan_the_week_without_parent_pin(client, admin, now):
         "dish_id": entry["dish_id"],
         "name": "Nudeln mit Tomatensoße",
         "icon": SPAGHETTI,
+        "image_url": None,
     }
     assert week(client) == {
         "start": MONDAY,
@@ -167,3 +170,135 @@ def test_meals_need_login(client, admin):
 
     assert client.get("/api/meals/week").status_code == 401
     assert client.get("/api/dishes").status_code == 401
+
+
+def dishes(client) -> list[dict]:
+    response = client.get("/api/dishes")
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def upload_image(client, me, dish_id, data=None):
+    from tests.test_members import image_bytes
+
+    return client.put(
+        f"/api/dishes/{dish_id}/image",
+        content=image_bytes() if data is None else data,
+        headers={**csrf(me), "Content-Type": "image/png"},
+    )
+
+
+def test_rename_and_change_icon_without_pin(client, admin, now):
+    dish = plan(client, admin, MONDAY, name="Nudln")["dish_id"]
+
+    response = client.put(
+        f"/api/dishes/{dish}", json={"name": " Nudeln ", "icon": BURGER}, headers=csrf(admin)
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json() == {
+        "id": dish,
+        "name": "Nudeln",
+        "icon": BURGER,
+        "image_url": None,
+        "last_planned": MONDAY,
+        "times_planned": 1,
+    }
+    assert [(e["name"], e["icon"]) for e in week(client)["entries"]] == [("Nudeln", BURGER)]
+
+
+def test_rename_to_an_existing_name_is_rejected(client, admin, now):
+    plan(client, admin, MONDAY, name="Pizza")
+    soup = plan(client, admin, "2026-09-29", name="Suppe")["dish_id"]
+
+    response = client.put(
+        f"/api/dishes/{soup}", json={"name": "PIZZA", "icon": SPAGHETTI}, headers=csrf(admin)
+    )
+    assert response.status_code == 409
+    assert response.json()["code"] == "dish.duplicate_name"
+
+    # Nur die Schreibweise ändern ist erlaubt.
+    response = client.put(
+        f"/api/dishes/{soup}", json={"name": "SUPPE", "icon": SPAGHETTI}, headers=csrf(admin)
+    )
+    assert response.status_code == 200, response.text
+
+
+def test_unknown_dish(client, admin):
+    response = client.put(
+        "/api/dishes/99", json={"name": "X", "icon": SPAGHETTI}, headers=csrf(admin)
+    )
+    assert response.status_code == 404
+    assert response.json()["code"] == "dish.not_found"
+
+
+def test_delete_dish_with_its_past_entries(client, admin, now):
+    dish = plan(client, admin, MONDAY, name="Suppe")["dish_id"]
+
+    assert client.delete(f"/api/dishes/{dish}", headers=csrf(admin)).status_code == 204
+    assert dishes(client) == []
+    assert week(client)["entries"] == []
+
+
+def test_dish_planned_today_or_later_cannot_be_deleted(client, admin, now):
+    dish = plan(client, admin, SATURDAY, name="Suppe")["dish_id"]
+
+    response = client.delete(f"/api/dishes/{dish}", headers=csrf(admin))
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "dish.planned"
+    assert [d["name"] for d in dishes(client)] == ["Suppe"]
+
+
+def test_upload_show_and_remove_image(client, admin, now):
+    from PIL import Image
+
+    dish = plan(client, admin, SATURDAY, name="Omas Lasagne")["dish_id"]
+
+    response = upload_image(client, admin, dish)
+    assert response.status_code == 200, response.text
+    url = response.json()["image_url"]
+    assert url.startswith("/api/dish-images/")
+    assert week(client)["entries"][0]["image_url"] == url
+
+    image = client.get(url)
+    assert image.status_code == 200
+    assert image.headers["content-type"] == "image/webp"
+    with Image.open(BytesIO(image.content)) as stored:
+        assert stored.size == (512, 512)
+
+    # Ein neues Foto ersetzt das alte, dessen Datei verschwindet.
+    new_url = upload_image(client, admin, dish).json()["image_url"]
+    assert new_url != url
+    assert client.get(url).status_code == 404
+
+    response = client.delete(f"/api/dishes/{dish}/image", headers=csrf(admin))
+    assert response.status_code == 200
+    assert response.json()["image_url"] is None
+    assert client.get(new_url).status_code == 404
+
+
+def test_invalid_image_is_rejected(client, admin, now):
+    dish = plan(client, admin, SATURDAY, name="Suppe")["dish_id"]
+
+    response = upload_image(client, admin, dish, data=b"kein Bild")
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "dish.invalid_image"
+
+
+def test_deleting_a_dish_removes_its_image(client, admin, now):
+    dish = plan(client, admin, MONDAY, name="Suppe")["dish_id"]
+    url = upload_image(client, admin, dish).json()["image_url"]
+
+    client.delete(f"/api/dishes/{dish}", headers=csrf(admin))
+
+    assert client.get(url).status_code == 404
+
+
+def test_dish_images_need_login(client, admin, now):
+    dish = plan(client, admin, MONDAY, name="Suppe")["dish_id"]
+    url = upload_image(client, admin, dish).json()["image_url"]
+    client.post("/api/auth/logout", headers=csrf(admin))
+
+    assert client.get(url).status_code == 401

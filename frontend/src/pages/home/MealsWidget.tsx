@@ -4,7 +4,7 @@ import MealIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import PlusIcon from '~icons/lucide/plus'
 
 import { useMealWeek } from '../../api/meals'
-import { TaskIcon } from '../../components/TaskIcon'
+import { DishPicture } from '../../components/DishPicture'
 import { errorMessage } from '../../errors'
 import { MEAL_ICONS } from '../meals/mealIcons'
 import { Widget } from './Widget'
@@ -53,7 +53,7 @@ export function MealsWidget({ className }: { className?: string }) {
                     aria-label={t(`meals.meal.${meal}`)}
                   />
                 )}
-                <TaskIcon icon={entry.icon} className="size-16" />
+                <DishPicture icon={entry.icon} imageUrl={entry.image_url} className="size-16" />
                 <span className="min-w-0 text-2xl font-extrabold break-words text-slate-800">
                   {entry.name}
                 </span>

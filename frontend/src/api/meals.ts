@@ -16,6 +16,8 @@ export interface Dish {
   id: number
   name: string
   icon: string
+  /** Eigenes Foto; ersetzt in der Anzeige das Symbol. */
+  image_url: string | null
   /** Wann zuletzt im Plan (ISO-Datum) und wie oft; für die Vorschläge. */
   last_planned: string | null
   times_planned: number
@@ -27,6 +29,7 @@ export interface MealEntry {
   dish_id: number
   name: string
   icon: string
+  image_url: string | null
 }
 
 export interface MealWeek {
@@ -90,3 +93,33 @@ export function usePlanMeal() {
       ]),
   })
 }
+
+/** Gericht ändern, Foto hochladen oder entfernen, löschen; im Alltag ohne Eltern-PIN. */
+function useDishMutation<TVariables, TResult>(
+  request: (variables: TVariables) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: request,
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: MEAL_WEEK_KEY }),
+        queryClient.invalidateQueries({ queryKey: DISHES_KEY }),
+      ]),
+  })
+}
+
+export const useUpdateDish = () =>
+  useDishMutation(({ id, name, icon }: { id: number; name: string; icon: string }) =>
+    api<Dish>('PUT', `/dishes/${id}`, { name, icon }),
+  )
+
+export const useDeleteDish = () =>
+  useDishMutation((id: number) => api<null>('DELETE', `/dishes/${id}`))
+
+export const useDishImage = () =>
+  useDishMutation(({ id, image }: { id: number; image: Blob | null }) =>
+    image
+      ? api<Dish>('PUT', `/dishes/${id}/image`, image)
+      : api<Dish>('DELETE', `/dishes/${id}/image`),
+  )

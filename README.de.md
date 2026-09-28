@@ -470,6 +470,11 @@ Montag bis Sonntag, heute hervorgehoben. Die Pfeile blättern zu anderen Wochen.
 - Ein eingetipptes Gericht merkt sich FamQuest und schlägt es danach wieder vor. Gleiche Namen in
   anderer Schreibweise sind dasselbe Gericht.
 - Ein Tipp auf ein geplantes Gericht ändert es; „Aus dem Plan nehmen“ leert den Tag wieder.
+- **Eigene Gerichte bearbeiten:** Der Stift an einem eigenen Gericht in den Vorschlägen öffnet
+  Name, Symbol und **Foto**. Ein Foto (am Handy auch direkt aus der Kamera) wird quadratisch
+  zugeschnitten, auf 512 × 512 verkleinert, ohne Metadaten gespeichert und ersetzt dann überall das
+  Symbol, auch auf „Heute“. „Gericht löschen“ entfernt es aus den Vorschlägen und aus vergangenen
+  Wochen; steht es heute oder später im Plan, muss es dort zuerst heraus.
 
 Standardmäßig wird nur das **Abendessen** geplant. Im Elternbereich unter **Einstellungen →
 Essensplan** lassen sich Frühstück, Mittagessen und Snack zuschalten (für die ganze Familie); dann
@@ -884,7 +889,8 @@ Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte 
   eintippen (Vorschläge aus bisherigen und rund 40 gängigen Gerichten, Symbol wird automatisch
   gewählt und lässt sich ändern); standardmäßig nur Abendessen, Frühstück, Mittag und Snack lassen
   sich in den Einstellungen zuschalten; die Kachel „Essen“ auf „Heute“ zeigt das heutige Essen
-- [ ] 2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen
+- [x] 2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen (über den Stift
+  im Essensplan, ohne PIN)
 - [ ] 3. Wünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
 - [ ] 4. Feinschliff

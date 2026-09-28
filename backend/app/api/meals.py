@@ -8,13 +8,24 @@ import datetime as dt
 import re
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi.responses import FileResponse
 from pydantic import AfterValidator, BaseModel, Field, StringConstraints
-from sqlalchemy import func, select
+from sqlalchemy import delete, exists, func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.calendar_week import MAX_WEEK_OFFSET
 from app.auth import CurrentSession, DbSession, ParentSession, get_family
+from app.avatars import (
+    MAX_UPLOAD_BYTES,
+    InvalidImage,
+    delete_image,
+    image_path,
+    read_body,
+    square_webp,
+    store_image,
+)
+from app.errors import ApiError
 from app.models import Dish, Family, MealPlanEntry
 from app.schemas import MEALS, IconName
 from app.today import family_now
@@ -23,6 +34,9 @@ router = APIRouter(tags=["meals"])
 
 Meal = Literal["breakfast", "lunch", "dinner", "snack"]
 assert tuple(Meal.__args__) == MEALS
+
+# Upload-Ordner der Fotos zu Gerichten.
+IMAGE_FOLDER = "dishes"
 
 # Standard: nur das Abendessen, das planen die meisten Familien.
 DEFAULT_MEALS: list[Meal] = ["dinner"]
@@ -50,6 +64,8 @@ class DishOut(BaseModel):
     id: int
     name: str
     icon: str
+    # Eigenes Foto; ersetzt in der Anzeige das Symbol.
+    image_url: str | None
     # Wann zuletzt im Plan (auch in der Zukunft) und wie oft; für die Vorschläge.
     last_planned: dt.date | None
     times_planned: int
@@ -61,6 +77,7 @@ class MealEntryOut(BaseModel):
     dish_id: int
     name: str
     icon: str
+    image_url: str | None
 
 
 class MealWeekOut(BaseModel):
@@ -73,6 +90,22 @@ class MealWeekOut(BaseModel):
 class MealEntryIn(BaseModel):
     name: DishName
     icon: IconName
+
+
+class DishIn(BaseModel):
+    name: DishName
+    icon: IconName
+
+
+async def read_dish_image(request: Request) -> bytes:
+    return await read_body(request, MAX_UPLOAD_BYTES, "dish.image_too_large")
+
+
+DishImage = Annotated[bytes, Depends(read_dish_image)]
+
+
+def image_url(dish: Dish) -> str | None:
+    return f"/api/dish-images/{dish.image}" if dish.image else None
 
 
 def _ordered(meals: list[str]) -> list[Meal]:
@@ -93,6 +126,7 @@ def entry_out(entry: MealPlanEntry) -> MealEntryOut:
         dish_id=entry.dish_id,
         name=entry.dish.name,
         icon=entry.dish.icon,
+        image_url=image_url(entry.dish),
     )
 
 
@@ -182,9 +216,8 @@ def clear_meal(date: dt.date, meal: Meal, _: CurrentSession, db: DbSession) -> N
         db.commit()
 
 
-@router.get("/dishes")
-def list_dishes(_: CurrentSession, db: DbSession) -> list[DishOut]:
-    """Alle Gerichte, zuletzt geplante zuerst."""
+def _dishes_out(db: DbSession, dish_id: int | None = None) -> list[DishOut]:
+    """Gerichte mit Nutzung, zuletzt geplante zuerst; mit `dish_id` nur dieses."""
     usage = (
         select(
             MealPlanEntry.dish_id,
@@ -194,18 +227,109 @@ def list_dishes(_: CurrentSession, db: DbSession) -> list[DishOut]:
         .group_by(MealPlanEntry.dish_id)
         .subquery()
     )
-    rows = db.execute(
+    query = (
         select(Dish, usage.c.last, usage.c.count)
         .outerjoin(usage, usage.c.dish_id == Dish.id)
         .order_by(usage.c.last.desc().nulls_last(), func.lower(Dish.name))
-    ).all()
+    )
+    if dish_id is not None:
+        query = query.where(Dish.id == dish_id)
     return [
         DishOut(
             id=dish.id,
             name=dish.name,
             icon=dish.icon,
+            image_url=image_url(dish),
             last_planned=last,
             times_planned=count or 0,
         )
-        for dish, last, count in rows
+        for dish, last, count in db.execute(query).all()
     ]
+
+
+def get_dish(db: DbSession, dish_id: int) -> Dish:
+    dish = db.get(Dish, dish_id)
+    if dish is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "dish.not_found")
+    return dish
+
+
+@router.get("/dishes")
+def list_dishes(_: CurrentSession, db: DbSession) -> list[DishOut]:
+    """Alle Gerichte, zuletzt geplante zuerst."""
+    return _dishes_out(db)
+
+
+@router.put("/dishes/{dish_id}")
+def update_dish(dish_id: int, body: DishIn, _: CurrentSession, db: DbSession) -> DishOut:
+    """Name und Symbol ändern; gilt überall, wo das Gericht geplant ist."""
+    dish = get_dish(db, dish_id)
+    other = _find_dish(db, body.name)
+    if other is not None and other.id != dish.id:
+        raise ApiError(status.HTTP_409_CONFLICT, "dish.duplicate_name")
+    dish.name, dish.icon = body.name, body.icon
+    try:
+        db.commit()
+    except IntegrityError as error:
+        raise ApiError(status.HTTP_409_CONFLICT, "dish.duplicate_name") from error
+    return _dishes_out(db, dish.id)[0]
+
+
+@router.delete("/dishes/{dish_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_dish(dish_id: int, _: CurrentSession, db: DbSession) -> None:
+    """Löscht ein Gericht samt vergangener Plan-Einträge. Steht es heute oder später im Plan,
+    muss es dort zuerst weg."""
+    dish = get_dish(db, dish_id)
+    today = family_now(get_family(db)).date()
+    planned = db.scalar(
+        select(exists().where(MealPlanEntry.dish_id == dish.id, MealPlanEntry.date >= today))
+    )
+    if planned:
+        raise ApiError(status.HTTP_409_CONFLICT, "dish.planned")
+    image = dish.image
+    db.execute(delete(MealPlanEntry).where(MealPlanEntry.dish_id == dish.id))
+    db.delete(dish)
+    db.commit()
+    delete_image(IMAGE_FOLDER, image)
+
+
+@router.put("/dishes/{dish_id}/image")
+def upload_dish_image(dish_id: int, _: CurrentSession, db: DbSession, upload: DishImage) -> DishOut:
+    """Nimmt das (im Browser zugeschnittene) Foto als Request-Body entgegen."""
+    dish = get_dish(db, dish_id)
+    try:
+        data = square_webp(upload)
+    except InvalidImage as error:
+        raise ApiError(status.HTTP_422_UNPROCESSABLE_CONTENT, "dish.invalid_image") from error
+    filename = store_image(IMAGE_FOLDER, data)
+    previous, dish.image = dish.image, filename
+    try:
+        db.commit()
+    except Exception:
+        delete_image(IMAGE_FOLDER, filename)
+        raise
+    delete_image(IMAGE_FOLDER, previous)
+    return _dishes_out(db, dish.id)[0]
+
+
+@router.delete("/dishes/{dish_id}/image")
+def remove_dish_image(dish_id: int, _: CurrentSession, db: DbSession) -> DishOut:
+    dish = get_dish(db, dish_id)
+    previous, dish.image = dish.image, None
+    db.commit()
+    delete_image(IMAGE_FOLDER, previous)
+    return _dishes_out(db, dish.id)[0]
+
+
+@router.get("/dish-images/{filename}")
+def get_dish_image(filename: str, _: CurrentSession, db: DbSession) -> FileResponse:
+    path = image_path(IMAGE_FOLDER, filename)
+    in_use = path is not None and db.scalar(select(exists().where(Dish.image == filename)))
+    if not in_use or not path.is_file():
+        raise ApiError(status.HTTP_404_NOT_FOUND, "common.not_found")
+    # Jedes neue Foto bekommt einen neuen Namen, daher darf der Browser lange cachen.
+    return FileResponse(
+        path,
+        media_type="image/webp",
+        headers={"Cache-Control": "private, max-age=31536000, immutable"},
+    )

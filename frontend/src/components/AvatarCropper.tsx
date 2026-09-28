@@ -16,10 +16,12 @@ interface AvatarCropperProps {
   file: File
   onConfirm: (image: Blob) => void
   onCancel: () => void
+  /** Rund für Avatare, eckig z. B. für Fotos von Gerichten. */
+  shape?: 'round' | 'rect'
 }
 
-/** Foto im Kreis zuschneiden: verschieben und zoomen per Touch, Maus oder Regler. */
-export function AvatarCropper({ file, onConfirm, onCancel }: AvatarCropperProps) {
+/** Foto quadratisch zuschneiden: verschieben und zoomen per Touch, Maus oder Regler. */
+export function AvatarCropper({ file, onConfirm, onCancel, shape = 'round' }: AvatarCropperProps) {
   const { t } = useTranslation()
   const src = useObjectUrl(file)
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 })
@@ -55,7 +57,9 @@ export function AvatarCropper({ file, onConfirm, onCancel }: AvatarCropperProps)
           <Alert>{errorMessage(t, 'avatar.invalid_image')}</Alert>
         ) : (
           <>
-            <p className="text-lg text-slate-600">{t('cropper.hint')}</p>
+            <p className="text-lg text-slate-600">
+              {t(shape === 'round' ? 'cropper.hint' : 'cropper.hint_rect')}
+            </p>
             <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-slate-800">
               {src && (
                 <Cropper
@@ -65,7 +69,7 @@ export function AvatarCropper({ file, onConfirm, onCancel }: AvatarCropperProps)
                   minZoom={MIN_ZOOM}
                   maxZoom={MAX_ZOOM}
                   aspect={1}
-                  cropShape="round"
+                  cropShape={shape}
                   showGrid={false}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}

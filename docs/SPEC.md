@@ -76,7 +76,8 @@ Einfach anfangen: festlegen, was es in der Woche gibt.
 - Mahlzeiten: Standard nur Abendessen; Frühstück, Mittagessen und Snack lassen die Eltern für die ganze Familie zuschalten.
 - Gerichte werden eingetippt, nicht vorher verwaltet. Vorschläge kommen aus den bisherigen Gerichten der Familie (zuletzt geplante zuerst) und aus rund 50 gängigen Standardgerichten; das Symbol wird zum Namen gewählt und ist änderbar. Gleicher Name in anderer Schreibweise ist dasselbe Gericht.
 - Geplant wird direkt in der Ansicht „Essen“ (Navigationsleiste), bewusst **ohne Eltern-PIN** – eine Ausnahme vom Grundsatz „keine Verwaltung im Alltagsbereich“, weil jeder Erwachsene am Kühlschrank schnell eintragen können soll. Eine PIN lässt sich später nachrüsten.
-- Später: Gerichte verwalten (umbenennen, Symbol, Foto, löschen), Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
+- Gerichte verwalten (umbenennen, Symbol, eigenes Foto statt Symbol, löschen) geht ebenfalls ohne PIN über den Stift im Eintrage-Dialog.
+- Später: Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
 
 ## 3. Setup, Anmeldung und Familienmitglieder
 
@@ -327,7 +328,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Sync-Stand |
 | CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine), ganztägig oder mit Uhrzeit |
 | Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
-| Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol |
+| Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol, optional eigenes Foto (512 × 512 WebP) |
 | MealPlanEntry | Phase 5 | Gericht an einem Tag zu einer Mahlzeit (Frühstück, Mittag, Abend, Snack); höchstens eins je Tag und Mahlzeit |
 
 Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen einen klaren Ort haben. Es gibt aber keine Tenant-Logik. (Idee für später, ohne Version: mehrere, z. B. befreundete Familien auf einer Installation, angelegt vom ersten Admin oder über eine versteckte Funktion. Bis dahin nichts einbauen, was das unnötig verbaut.)
@@ -351,6 +352,7 @@ Eine Family-Tabelle gibt es trotz Single-Family-Betrieb, damit Einstellungen ein
 - Uploads: Größenlimit, nur JPEG/PNG/WebP, Inhalt prüfen statt Endung, serverseitig neu kodieren, zufällige Dateinamen
 - Keine Secrets im Repository, keine sensiblen Daten in Logs
 - Phase 2: OAuth-Tokens verschlüsselt speichern
+- Phase 5: Fotos zu Gerichten wie Avatare (bis 5 MB, Inhalt geprüft, 512 × 512 neu kodiert, ohne Metadaten); Abruf nur mit Anmeldung
 - Phase 4: Fotos bis 25 MB, nur JPEG/PNG/WebP, serverseitig verkleinert und ohne Metadaten (GPS) neu kodiert; Abruf nur mit Anmeldung
 - Phase 3: Externe Dienste (Wetter) fragt nur der Server an, mit so wenig Daten wie möglich (nur Koordinaten und Zeitzone)
 

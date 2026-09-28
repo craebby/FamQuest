@@ -5,7 +5,7 @@ import RightIcon from '~icons/fluent-emoji-flat/right-arrow'
 import PlusIcon from '~icons/lucide/plus'
 
 import { type Meal, type MealWeek, useMealWeek } from '../api/meals'
-import { TaskIcon } from '../components/TaskIcon'
+import { DishPicture } from '../components/DishPicture'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { MealEditor } from './meals/MealEditor'
@@ -149,7 +149,11 @@ function Days({ week }: { week: MealWeek }) {
                     )}
                     {entry ? (
                       <>
-                        <TaskIcon icon={entry.icon} className="size-14 lg:size-16" />
+                        <DishPicture
+                          icon={entry.icon}
+                          imageUrl={entry.image_url}
+                          className="size-14 lg:size-16"
+                        />
                         <span className="min-w-0 text-lg leading-tight font-bold break-words text-slate-800">
                           {entry.name}
                         </span>
