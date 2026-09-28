@@ -19,6 +19,7 @@ from app.api import (
     parent,
     points,
     rewards,
+    routines,
     setup,
     task_week,
     tasks,
@@ -74,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         calendar_week,
         weather,
         home,
+        routines,
     ):
         api.include_router(module.router)
     app.include_router(api)

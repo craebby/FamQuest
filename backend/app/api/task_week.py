@@ -15,11 +15,10 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.api.calendar_week import MAX_WEEK_OFFSET
-from app.api.tasks import positions_out
-from app.api.today import due_dates, is_due
+from app.api.today import due_dates
 from app.auth import CurrentSession, DbSession, get_family
 from app.models import Task, TaskCompletion
-from app.schemas import MemberPositionOut
+from app.routines import AFTER_ROUTINE, RoutinePlan, Slot
 from app.today import family_now
 
 router = APIRouter(tags=["tasks"])
@@ -33,7 +32,6 @@ class WeekTaskOut(BaseModel):
     time_of_day: str | None
     color: str | None
     extra: bool
-    positions: list[MemberPositionOut]
 
 
 class WeekEntryOut(BaseModel):
@@ -43,6 +41,10 @@ class WeekEntryOut(BaseModel):
     status: Literal["done", "pending", "open"]
     # Bei „Einer für alle“: wer es erledigt hat (auch eine andere Person).
     done_by: int | None
+    # Platz in der Reihenfolge dieser Person an diesem Tag (Routinen je Wochentag verschieden).
+    position: int
+    # Optionaler Routinenschritt: zählt nicht zum Tagesfortschritt.
+    optional: bool
 
 
 class WeekTasksDayOut(BaseModel):
@@ -75,6 +77,10 @@ def _flexible_on(task: Task, due: dt.date | None, day: dt.date, today: dt.date) 
     return day >= first and (day - first).days % interval == 0
 
 
+def _position(task: Task, member_id: int) -> int:
+    return next((a.position for a in task.assignments if a.member_id == member_id), 0)
+
+
 @router.get("/tasks/week")
 def task_week(
     _: CurrentSession,
@@ -88,6 +94,7 @@ def task_week(
     days = [start + dt.timedelta(days=index) for index in range(7)]
 
     active = [task for task in db.scalars(select(Task).where(Task.active)) if task.assignments]
+    plan = RoutinePlan(db)
     completions = db.execute(
         select(
             TaskCompletion.task_id,
@@ -124,19 +131,32 @@ def task_week(
                     by = next(iter(who))
                 else:
                     by = None
+                slot = plan.slot(task, member_id, day)
                 planned = by is not None
                 if not planned and task.active:
-                    if task.recurrence.kind == "flexible":
+                    if task.recurrence.kind == "flexible" and not plan.in_routine(
+                        task.id, member_id
+                    ):
                         due = dues.get(task.id, {}).get(member_id)
                         planned = _flexible_on(task, due, day, today)
                     else:
                         created = task.created_at.astimezone(zone).date()
-                        planned = day >= created and is_due(task, day)
+                        planned = day >= created and slot is not None
                 if not planned:
                     continue
+                if slot is None:
+                    # Erledigt, steht aber nach heutiger Planung nicht (mehr) an.
+                    slot = Slot(AFTER_ROUTINE + _position(task, member_id))
                 status = "open" if by is None else ("done" if who[by] else "pending")
                 entries.append(
-                    WeekEntryOut(task_id=task.id, member_id=member_id, status=status, done_by=by)
+                    WeekEntryOut(
+                        task_id=task.id,
+                        member_id=member_id,
+                        status=status,
+                        done_by=by,
+                        position=slot.position,
+                        optional=slot.optional,
+                    )
                 )
         out_days.append(WeekTasksDayOut(date=day, entries=entries))
 
@@ -153,7 +173,6 @@ def task_week(
                 time_of_day=task.time_of_day,
                 color=task.color,
                 extra=task.extra,
-                positions=positions_out(task),
             )
             for task in sorted(known.values(), key=lambda task: task.id)
             if task.id in used

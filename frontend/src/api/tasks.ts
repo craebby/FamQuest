@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import type { MemberColor } from '../memberColors'
 import { api, apiGet } from './client'
@@ -43,11 +43,15 @@ export interface TaskData {
 export interface MemberPosition {
   member_id: number
   position: number
+  /** Optionaler Routinenschritt: Punkte ja, Tagesfortschritt nein. */
+  optional?: boolean
 }
 
 export interface Task extends TaskData {
   id: number
   positions: MemberPosition[]
+  /** Personen, für die die Aufgabe Schritt einer Routine ist. */
+  routine_member_ids: number[]
 }
 
 /** Block einer Aufgabe: Routine eines Tagesabschnitts, „Jederzeit“ (null) oder Extra. */
@@ -61,7 +65,8 @@ interface Orderable {
   positions: MemberPosition[]
 }
 
-export const blockOf = (task: Orderable): TaskBlock => (task.extra ? 'extra' : task.time_of_day)
+export const blockOf = (task: { extra: boolean; time_of_day: TimeOfDay | null }): TaskBlock =>
+  task.extra ? 'extra' : task.time_of_day
 
 /**
  * Aufgaben einer Person in ihrer Reihenfolge am Display: Blöcke nacheinander (Tagesabschnitte,
@@ -73,6 +78,11 @@ export function sortForMember<T extends Orderable>(tasks: T[], memberId: number)
     (a, b) =>
       block(a) - block(b) || positionFor(a, memberId) - positionFor(b, memberId) || a.id - b.id,
   )
+}
+
+/** Optionaler Routinenschritt für diese Person (zählt nicht zum Tagesfortschritt)? */
+export function isOptionalFor(task: { positions: MemberPosition[] }, memberId: number) {
+  return task.positions.find((entry) => entry.member_id === memberId)?.optional === true
 }
 
 /** Platz in der Reihenfolge dieser Person; ohne Eintrag ans Ende. */
@@ -93,41 +103,13 @@ export const createTask = (data: TaskData) => api<Task>('POST', '/tasks', data)
 export const updateTask = (id: number, data: TaskData) => api<Task>('PUT', `/tasks/${id}`, data)
 export const deleteTask = (id: number) => api<void>('DELETE', `/tasks/${id}`)
 
-export function taskData({ id: _id, positions: _positions, ...data }: Task): TaskData {
+export function taskData({
+  id: _id,
+  positions: _positions,
+  routine_member_ids: _routines,
+  ...data
+}: Task): TaskData {
   return data
-}
-
-interface TaskOrder {
-  memberId: number
-  /** Alle Aufgaben der Person in der neuen Reihenfolge. */
-  taskIds: number[]
-}
-
-const withOrder = (tasks: Task[], { memberId, taskIds }: TaskOrder) =>
-  tasks.map((task) => {
-    const position = taskIds.indexOf(task.id)
-    if (position < 0) return task
-    return {
-      ...task,
-      positions: task.positions.map((entry) =>
-        entry.member_id === memberId ? { ...entry, position } : entry,
-      ),
-    }
-  })
-
-/** Reihenfolge der Aufgaben einer Person (z. B. Schritte der Morgenroutine); sofort sichtbar. */
-export function useSetTaskOrder() {
-  const queryClient = useQueryClient()
-  const mutation = useTasksMutation((order: TaskOrder) =>
-    api<void>('PUT', `/members/${order.memberId}/task-order`, { task_ids: order.taskIds }),
-  )
-  return {
-    ...mutation,
-    mutate: (order: TaskOrder) => {
-      queryClient.setQueryData<Task[]>(TASKS_KEY, (tasks) => tasks && withOrder(tasks, order))
-      mutation.mutate(order)
-    },
-  }
 }
 
 export function useTasksMutation<TVariables, TResult>(

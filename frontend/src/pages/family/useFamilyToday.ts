@@ -1,5 +1,5 @@
 import { useMembers } from '../../api/members'
-import { sortForMember } from '../../api/tasks'
+import { isOptionalFor, sortForMember } from '../../api/tasks'
 import { type TodayTask, isUpcoming, useToday } from '../../api/today'
 
 /** Personen und heutige Aufgaben für Familien- und Personenansicht. */
@@ -25,8 +25,10 @@ export function tasksFor(tasks: TodayTask[], memberId: number) {
 
 /**
  * Aufgaben, die zum Tagesfortschritt zählen: ohne flexible Aufgaben, die erst demnächst fällig
- * sind, und ohne freiwillige Extras.
+ * sind, ohne freiwillige Extras und ohne optionale Routinenschritte.
  */
 export function currentTasks(tasks: TodayTask[], memberId: number, date: string) {
-  return tasks.filter((task) => !task.extra && !isUpcoming(task, memberId, date))
+  return tasks.filter(
+    (task) => !task.extra && !isOptionalFor(task, memberId) && !isUpcoming(task, memberId, date),
+  )
 }

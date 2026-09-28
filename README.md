@@ -123,7 +123,8 @@ Under "Tasks" in the parents' area you decide who does what and when. A task has
 - **How often**: every day, on specific weekdays (with shortcuts Mon–Fri or weekend), once on a
   date, or **flexible** (see below)
 - **When**: morning, midday, afternoon, evening, anytime or **Extra**. Tasks of one time of day
-  form a **routine** in a fixed order (e.g. morning: brush teeth → get dressed → pack teddy).
+  form a **routine** in a fixed order (e.g. morning: brush teeth → get dressed → pack teddy);
+  for children you set it up under [Routines](#routines).
   **Extras** are optional (e.g. clear the table): they have their own block at the end, earn
   points, but don't count towards the daily progress
 - **Card colour**: the person's colour by default
@@ -160,21 +161,30 @@ icon exists and has a unique label in every language.
 
 ### Routines
 
-The **"Routines"** section in the parents' area puts together each child's routines. Tap a child at
-the top (when there are several), then a weekday (today is preselected): below it the child's
-**morning**, **afternoon** and **evening** appear as blocks, **midday** only when something is
-planned there. Each block lists the steps numbered in the order the child sees them on the display,
-with the number of steps and the stars they are worth. Steps that don't happen every day show when
-they do ("Monday to Friday"); inactive steps are faded.
+The **"Routines"** section in the parents' area puts together each child's routines: a fixed
+sequence of steps for the **morning**, **afternoon** and **evening** (**midday** too, once there is
+a routine for it). Tap a child at the top; the chosen child is always highlighted.
 
-- **↑/↓** moves a step within its routine; the display follows immediately. The order is per child:
-  two children can brush their teeth at different steps. Steps that only happen on other days keep
-  their place.
-- **Tap a step** to edit it (same editor as under "Tasks").
-- **"Add a step"** opens the task editor with the child and the time of day already selected. New
-  steps go to the end of the routine.
+- **Versions for different days:** each routine has its weekdays (tap Mon … Sun). With **"Different
+  on other days"** a time of day gets another version, e.g. a shorter weekend morning; it starts as
+  a copy of the steps, so you only take out what isn't needed. A day always belongs to exactly one
+  version; days without any routine are listed below.
+- **Steps** are numbered in the order the child sees them on the display, with the number of steps
+  and the stars they are worth. **↑/↓** changes the order, **✕** takes a step out of the routine
+  (the task itself stays), a tap opens the task editor.
+- **Optional steps** (e.g. "pack the teddy") stay in the routine and earn points but don't count
+  towards the daily progress; on the display they have a dashed border.
+- **"Add a step"** creates a new step (the editor only asks for icon, title, points and so on; the
+  routine decides the child, time of day and days) or reuses an existing one, e.g. "brush teeth"
+  from the weekday version.
+- **"Use for another child"** copies a version to a sibling (same steps; each child completes and
+  earns points separately). On those days it replaces the sibling's current routine.
 
-Extras and "anytime" tasks are not part of a routine; they stay in the "Tasks" section.
+For a child, a task that is a routine step is due exactly on the routine's days; its own "How
+often" only applies to other people (e.g. an adult who has the same task). Extras, "anytime" and
+one-off or flexible tasks are not part of a routine; they stay in the "Tasks" section. When
+updating, existing children's tasks are turned into routines automatically: weekdays with the same
+steps become one version, the order is kept.
 
 ## Today (start page)
 
@@ -681,7 +691,7 @@ use.
   morning, afternoon and evening as blocks in a fixed order; later merged into the "Tasks" section
 - [x] 7. Parents' area with a menu: seven areas, sidebar on tablets, bottom bar with "More" on
   phones
-- [ ] 8. Routines as their own blocks: per child, time of day and weekdays (e.g. a lighter
+- [x] 8. Routines as their own blocks: per child, time of day and weekdays (e.g. a lighter
   weekend evening), numbered and optional steps, copy to another child
 - [ ] 9. Polish on the real display; rework the week widget on the start page (layout and
   readability)

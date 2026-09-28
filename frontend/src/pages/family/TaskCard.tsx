@@ -87,8 +87,19 @@ export function PointsFeedback({
 /** Aufgabenkarte: ein Tipp erledigt sie für diese Person, ein weiterer nimmt es zurück. */
 export function TaskCard({ task, member, date, size }: TaskCardProps) {
   const { t } = useTranslation()
-  const { done, doneByOther, pending, dueIn, showPoints, tapped, feedback, error, label, toggle } =
-    useTaskToggle(task, member, date)
+  const {
+    done,
+    doneByOther,
+    pending,
+    optional,
+    dueIn,
+    showPoints,
+    tapped,
+    feedback,
+    error,
+    label,
+    toggle,
+  } = useTaskToggle(task, member, date)
   const tokens = colorTokens(task.color ?? member.color)
   const sizes = SIZES[size]
 
@@ -99,10 +110,10 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
         aria-pressed={done}
         aria-label={label}
         onClick={toggle}
-        className={`relative flex w-full items-center rounded-3xl border-4 text-left shadow-sm transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${sizes.card}`}
+        className={`relative flex w-full items-center rounded-3xl border-4 text-left ${optional && !done ? 'border-dashed' : ''} shadow-sm transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${sizes.card}`}
         style={{
           backgroundColor: done ? tokens.soft : '#ffffff',
-          borderColor: done ? tokens.main : 'transparent',
+          borderColor: done ? tokens.main : optional ? tokens.soft : 'transparent',
           borderLeftColor: tokens.main,
         }}
       >

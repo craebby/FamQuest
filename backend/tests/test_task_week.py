@@ -80,7 +80,8 @@ def test_daily_task_over_the_week(client, parent, lena, now):
     }
     [task] = data["tasks"]
     assert (task["id"], task["title"], task["extra"]) == (teeth, "Zähne putzen", False)
-    assert task["positions"] == [{"member_id": lena, "position": 0}]
+    # Ohne Routine hinter den Routinenschritten.
+    assert {e["position"] for d in data["days"] for e in d["entries"]} == {1000}
 
 
 def test_weekdays_and_creation_date(client, parent, lena, now):

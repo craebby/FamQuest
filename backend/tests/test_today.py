@@ -79,7 +79,7 @@ def test_today_lists_only_due_active_assigned_tasks(client, parent, lena, now):
         "needs_approval": False,
         "shared": False,
         "extra": False,
-        "positions": [{"member_id": lena, "position": 0}],
+        "positions": [{"member_id": lena, "position": 1000, "optional": False}],
         "due_dates": [],
         "done_member_ids": [],
         "pending_member_ids": [],

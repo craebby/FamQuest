@@ -7,12 +7,12 @@ import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
 import CheckIcon from '~icons/lucide/check'
 
 import { type Member, useMembers } from '../api/members'
-import { sortForMember } from '../api/tasks'
 import {
   type TaskWeek,
   type WeekEntry,
   type WeekTask,
   dayProgress,
+  sortEntries,
   useTaskWeek,
 } from '../api/taskWeek'
 import { Avatar } from '../components/Avatar'
@@ -175,11 +175,10 @@ function MemberDay({
 }) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
-  const byTask = new Map(entries.map((entry) => [entry.task_id, entry]))
-  const ordered = sortForMember(
-    entries.flatMap((entry) => tasks.get(entry.task_id) ?? []),
-    member.id,
-  )
+  const ordered = sortEntries(entries, tasks).flatMap((entry) => {
+    const task = tasks.get(entry.task_id)
+    return task ? [{ task, entry }] : []
+  })
   const { done, total } = dayProgress(entries, tasks, member.id)
 
   return (
@@ -202,13 +201,13 @@ function MemberDay({
         )}
       </p>
       <ul className="flex flex-wrap gap-1">
-        {ordered.map((task) => (
+        {ordered.map(({ task, entry }) => (
           <WeekTaskIcon
             key={task.id}
             task={task}
-            entry={byTask.get(task.id)!}
+            entry={entry}
             member={member}
-            doneBy={members.find((candidate) => candidate.id === byTask.get(task.id)!.done_by)}
+            doneBy={members.find((candidate) => candidate.id === entry.done_by)}
             past={past}
           />
         ))}
@@ -248,7 +247,7 @@ function WeekTaskIcon({
     <li
       title={task.title}
       aria-label={`${task.title}: ${state}`}
-      className={`relative flex size-11 items-center justify-center rounded-xl border-2 ${task.extra ? 'border-dashed' : ''} ${entry.status === 'open' && past ? 'opacity-30 grayscale' : ''} ${byOther ? 'opacity-50 grayscale' : ''}`}
+      className={`relative flex size-11 items-center justify-center rounded-xl border-2 ${task.extra || entry.optional ? 'border-dashed' : ''} ${entry.status === 'open' && past ? 'opacity-30 grayscale' : ''} ${byOther ? 'opacity-50 grayscale' : ''}`}
       style={{
         backgroundColor: entry.status === 'done' && !byOther ? tokens.soft : '#ffffff',
         borderColor: entry.status === 'done' && !byOther ? tokens.main : '#e2e8f0',

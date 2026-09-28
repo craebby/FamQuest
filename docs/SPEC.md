@@ -126,7 +126,7 @@ Ist eine Aufgabe mehreren Personen zugeordnet, erledigt und punktet jede Person 
 
 **Routinen und Reihenfolge** *(nach dem Praxistest, Phase 3)*
 
-Die Aufgaben eines Tagesabschnitts bilden eine Routine, die als Block in fester Reihenfolge erscheint (z. B. morgens: Zähne putzen → anziehen → Kuscheltier einpacken; nachmittags: Rucksack aufhängen → Brotdose in die Küche; abends: Schlafi an → Zähne putzen). Die Reihenfolge legen Eltern je Kind im Abschnitt „Routinen“ des Elternbereichs fest: Tagesabschnitte als Blöcke mit nummerierten Schritten, ↑/↓ zum Sortieren, „Schritt hinzufügen“ mit vorausgewähltem Kind und Tagesabschnitt, Auswahl des Wochentags (heute vorausgewählt), damit man die Routine eines bestimmten Tages sieht. Später geht der Abschnitt im Abschnitt „Aufgaben“ auf. Freiwillige Extras stehen in einem eigenen Block danach und zählen nicht zum Tagesfortschritt.
+Eine Routine gehört zu einem Kind, einem Tagesabschnitt und bestimmten Wochentagen und besteht aus nummerierten Schritten in fester Reihenfolge (z. B. morgens Mo–Fr: Zähne putzen → anziehen → Brotdose → Kuscheltier; morgens Sa–So nur Zähne putzen → anziehen; abends: 1–5, dazu 6 optional). Mehrere Routinen desselben Kindes und Tagesabschnitts sind Versionen; ihre Wochentage überschneiden sich nie. Schritte sind Aufgaben; ein Schritt kann **optional** sein (Punkte ja, Tagesfortschritt nein). Ist eine Aufgabe für ein Kind Schritt einer Routine, steht sie für dieses Kind genau an den Tagen der Routine an; die Wiederholung der Aufgabe gilt dann nur für andere Personen. Eltern verwalten Routinen im Abschnitt „Routinen“ des Elternbereichs: Kind wählen, je Tagesabschnitt die Versionen mit Wochentagen, Schritte sortieren, optional markieren, herausnehmen, neu anlegen oder vorhandene übernehmen, Versionen für andere Tage („Andere Tage anders“, als Kopie) und Übertragen auf ein Geschwisterkind. Nur Kinder haben Routinen. Später geht der Abschnitt im Abschnitt „Aufgaben“ auf; ein „Urlaubsmodus“ ist als Idee vorgemerkt. Freiwillige Extras stehen in einem eigenen Block danach und zählen nicht zum Tagesfortschritt.
 
 **Aufgaben-Vorlagen**
 
@@ -298,7 +298,9 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Family | die eine Familie | Name, Standardsprache, Zeitzone, Eltern-PIN-Hash; Phase 3: Ort fürs Wetter (Name, Koordinaten) |
 | FamilyMember | Person im Haushalt | Name, Rolle, Farbe, Avatar, optional User |
 | Task | Aufgabendefinition | Titel, Icon, Beschreibung, Punkte, Tagesabschnitt, aktiv, Eltern prüfen, Einer für alle, Extra |
-| TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember, Position (Reihenfolge je Person) |
+| TaskAssignment | Aufgabe ↔ Person | Task, FamilyMember, Position (Reihenfolge je Person außerhalb von Routinen) |
+| Routine | Routine eines Kindes | FamilyMember, Tagesabschnitt, Wochentage (je Kind und Abschnitt ohne Überschneidung) |
+| RoutineStep | Schritt einer Routine | Routine, Task, Position, optional |
 | TaskRecurrence | Wiederholungsregel | Typ, Wochentage, Datum, Intervall in Tagen (flexibel) |
 | TaskCompletion | Erledigung | Task, Person, Datum, Zeitpunkt, geprüft am; eindeutig je Task/Person/Tag |
 | PointTransaction | Punktebuchung | Person, Betrag, Grund, Quelle |

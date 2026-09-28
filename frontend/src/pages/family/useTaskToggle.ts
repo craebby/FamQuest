@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { ApiError } from '../../api/client'
 import { type Member, useMembers } from '../../api/members'
+import { isOptionalFor } from '../../api/tasks'
 import { type TodayTask, daysUntilDue, doneBy, isPendingFor, useSetDone } from '../../api/today'
 
 /** So lange ist „+2 Punkte“ nach dem Abhaken zu sehen (auch ohne Animation). */
@@ -27,6 +28,8 @@ export function useTaskToggle(task: TodayTask, member: Member, date: string) {
   const members = useMembers().data
   const completer = doneBy(task, member.id)
   const done = completer !== null
+  // Optionaler Routinenschritt: gestrichelt, zählt nicht zum Tagesfortschritt.
+  const optional = isOptionalFor(task, member.id)
   // „Einer für alle“, von jemand anderem erledigt: dessen Avatar statt des Hakens.
   const doneByOther =
     completer !== null && completer !== member.id
@@ -50,6 +53,7 @@ export function useTaskToggle(task: TodayTask, member: Member, date: string) {
           points: t('tasks.points_count', { count: task.points }),
         })
       : task.title,
+    ...(optional ? [t('family.optional')] : []),
     ...(pending ? [t('family.pending')] : []),
     ...(doneByOther ? [t('family.done_by', { name: doneByOther.name })] : []),
     ...(dueIn !== null && dueIn < 0 ? [t('family.overdue', { count: -dueIn })] : []),
@@ -62,5 +66,17 @@ export function useTaskToggle(task: TodayTask, member: Member, date: string) {
     setDone.mutate({ date, taskId: task.id, memberId: member.id, done: !done })
   }
 
-  return { done, doneByOther, pending, dueIn, showPoints, tapped, feedback, error, label, toggle }
+  return {
+    done,
+    doneByOther,
+    pending,
+    optional,
+    dueIn,
+    showPoints,
+    tapped,
+    feedback,
+    error,
+    label,
+    toggle,
+  }
 }

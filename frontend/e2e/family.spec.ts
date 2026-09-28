@@ -343,7 +343,9 @@ test('Startseite anpassen: mit PIN Kacheln ein- und ausschalten, gilt nach dem N
   await expect(page.getByRole('heading', { name: 'Eltern-PIN eingeben' })).toBeVisible()
 })
 
-test('Routinen: Schritt hinzufügen und sortieren, die Familienansicht folgt', async ({ page }) => {
+test('Routinen: anlegen, Schritte übernehmen und sortieren, die Familienansicht folgt', async ({
+  page,
+}) => {
   await login(page)
   await page
     .getByRole('navigation', { name: 'Hauptnavigation' })
@@ -352,30 +354,38 @@ test('Routinen: Schritt hinzufügen und sortieren, die Familienansicht folgt', a
   await enterPin(page, PIN)
   await openArea(page, 'Routinen')
 
+  // Morgenroutine für alle Tage anlegen, „Zähne putzen“ übernehmen, „Anziehen“ neu anlegen.
   const morning = page
     .getByRole('region', { name: 'Routinen' })
     .getByRole('region', { name: 'Morgens' })
-  await morning.getByRole('button', { name: 'Schritt hinzufügen' }).click()
-  await expect(page.getByRole('radio', { name: 'Morgens' })).toBeChecked()
-  await expect(page.getByRole('checkbox', { name: /Lena/ })).toBeChecked()
+  await morning.getByRole('button', { name: 'Routine anlegen' }).click()
+  const everyDay = morning.getByRole('article', { name: 'Täglich' })
+  await everyDay.getByRole('button', { name: 'Schritt hinzufügen' }).click()
+  await everyDay.getByRole('button', { name: /Zähne putzen/ }).click()
+  await everyDay.getByRole('button', { name: 'Schritt hinzufügen' }).click()
+  await everyDay.getByRole('button', { name: 'Neuer Schritt' }).click()
+  await expect(page.getByText('Neuer Schritt für Lena · Morgens · Täglich')).toBeVisible()
   await page.getByLabel('Titel').fill('Anziehen')
   await page.getByRole('button', { name: 'Speichern' }).click()
   await expect(page.getByRole('status')).toHaveText('„Anziehen“ ist gespeichert.')
 
-  await expect(morning.getByRole('button', { name: /bearbeiten$/ })).toHaveText([
+  await expect(everyDay.getByRole('button', { name: /bearbeiten$/ })).toHaveText([
     /Zähne putzen/,
     /Anziehen/,
   ])
-  await morning.getByRole('button', { name: 'Anziehen nach oben' }).click()
-  await expect(morning.getByRole('button', { name: /bearbeiten$/ })).toHaveText([
+  await everyDay.getByRole('button', { name: 'Anziehen nach oben' }).click()
+  await everyDay.getByRole('button', { name: 'Zähne putzen optional' }).click()
+  await expect(everyDay.getByRole('button', { name: /bearbeiten$/ })).toHaveText([
     /Anziehen/,
     /Zähne putzen/,
   ])
 
+  // Am Display: in dieser Reihenfolge, „Zähne putzen“ optional und nicht im Fortschritt.
   await toTasks(page)
   const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
   await expect(column.getByRole('button', { name: /^(Anziehen|Zähne putzen)/ })).toHaveText([
     /Anziehen/,
     /Zähne putzen/,
   ])
+  await expect(column.getByRole('button', { name: /^Zähne putzen.*optional/ })).toBeVisible()
 })

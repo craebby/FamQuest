@@ -4,26 +4,25 @@ from fastapi import APIRouter, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 
-from app.api.tasks import get_task, positions_out
+from app.api.tasks import get_task
 from app.auth import CurrentSession, DbSession, get_family
 from app.errors import ApiError
 from app.models import FamilyMember, Task, TaskCompletion
 from app.points import book, earned_on, totals
-from app.recurrence import flexible_due, occurs_on
-from app.schemas import MemberDueOut, MemberPointsOut, TodayOut, TodayTaskOut
+from app.recurrence import flexible_due
+from app.routines import RoutinePlan, Slot
+from app.schemas import (
+    MemberDueOut,
+    MemberPointsOut,
+    MemberPositionOut,
+    TodayOut,
+    TodayTaskOut,
+)
 from app.today import family_now, time_of_day_at
 
 router = APIRouter(tags=["today"])
 
 # Die Familienansicht ist für alle am Display da: Anmeldung genügt, keine Eltern-PIN.
-
-
-def is_due(task: Task, day: dt.date) -> bool:
-    return task.active and occurs_on(task.recurrence, day)
-
-
-def assigned_only(task: Task, member_ids: list[int]) -> list[int]:
-    return [m for m in member_ids if any(a.member_id == m for a in task.assignments)]
 
 
 def due_dates(db: DbSession, tasks: list[Task], day: dt.date) -> dict[int, list[MemberDueOut]]:
@@ -64,11 +63,15 @@ def due_dates(db: DbSession, tasks: list[Task], day: dt.date) -> dict[int, list[
 def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
     now = family_now(get_family(db))
     day = now.date()
-    tasks = [
-        task
-        for task in db.scalars(select(Task).where(Task.active).order_by(Task.id))
-        if is_due(task, day) and task.assignments
-    ]
+    plan = RoutinePlan(db)
+    # Aufgabe → Personen, für die sie heute ansteht (mit ihrem Platz in der Reihenfolge).
+    due: dict[int, dict[int, Slot]] = {}
+    tasks: list[Task] = []
+    for task in db.scalars(select(Task).where(Task.active).order_by(Task.id)):
+        members = plan.due_members(task, day)
+        if members:
+            due[task.id] = members
+            tasks.append(task)
     done: dict[int, list[int]] = {}
     pending: dict[int, list[int]] = {}
     for task_id, member_id, approved_at in db.execute(
@@ -107,15 +110,20 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
                 points=task.points,
                 time_of_day=task.time_of_day,
                 color=task.color,
-                member_ids=[a.member_id for a in task.assignments],
+                member_ids=list(due[task.id]),
                 needs_approval=task.needs_approval,
                 shared=task.shared,
                 extra=task.extra,
-                positions=positions_out(task),
+                positions=[
+                    MemberPositionOut(
+                        member_id=member_id, position=slot.position, optional=slot.optional
+                    )
+                    for member_id, slot in due[task.id].items()
+                ],
                 due_dates=dues.get(task.id, []),
-                # Nur Personen, denen die Aufgabe (noch) zugeordnet ist.
-                done_member_ids=assigned_only(task, done.get(task.id, [])),
-                pending_member_ids=assigned_only(task, pending.get(task.id, [])),
+                # Nur Personen, für die die Aufgabe heute (noch) ansteht.
+                done_member_ids=[m for m in done.get(task.id, []) if m in due[task.id]],
+                pending_member_ids=[m for m in pending.get(task.id, []) if m in due[task.id]],
             )
             for task in tasks
         ],
@@ -144,8 +152,7 @@ def check_completable(
         # Das Display zeigt noch einen anderen Tag (z. B. kurz nach Mitternacht).
         raise ApiError(status.HTTP_409_CONFLICT, "completion.day_changed")
     task = get_task(db, task_id)
-    assigned = any(a.member_id == member_id for a in task.assignments)
-    if not assigned or not is_due(task, today):
+    if RoutinePlan(db).slot(task, member_id, today) is None:
         raise ApiError(status.HTTP_409_CONFLICT, "task.not_due")
     return task, today
 

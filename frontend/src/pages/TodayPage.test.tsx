@@ -361,7 +361,6 @@ const WEEK: TaskWeek = {
       time_of_day: 'morning',
       color: null,
       extra: false,
-      positions: [],
     },
   ],
   days: ['09-28', '09-29', '09-30', '10-01', '10-02', '10-03', '10-04'].map((day) => ({
@@ -375,6 +374,8 @@ const WEEK: TaskWeek = {
               member_id: 1,
               status: day === '09-29' || day === '10-03' ? 'open' : 'done',
               done_by: day === '09-29' || day === '10-03' ? null : 1,
+              position: 0,
+              optional: false,
             },
           ],
   })),

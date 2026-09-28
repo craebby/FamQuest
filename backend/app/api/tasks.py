@@ -4,13 +4,13 @@ from sqlalchemy import func, select
 from app.api.members import get_member
 from app.auth import DbSession, ParentSession
 from app.errors import ApiError
-from app.models import Task, TaskAssignment, TaskRecurrence
-from app.schemas import MemberPositionOut, TaskIn, TaskOrderIn, TaskOut
+from app.models import Routine, RoutineStep, Task, TaskAssignment, TaskRecurrence
+from app.schemas import MemberPositionOut, TaskIn, TaskOut
 
 router = APIRouter(tags=["tasks"])
 
 
-def task_out(task: Task) -> TaskOut:
+def task_out(task: Task, routine_members: set[int] | None = None) -> TaskOut:
     recurrence = task.recurrence
     return TaskOut(
         id=task.id,
@@ -32,6 +32,7 @@ def task_out(task: Task) -> TaskOut:
         },
         member_ids=sorted(assignment.member_id for assignment in task.assignments),
         positions=positions_out(task),
+        routine_member_ids=sorted(routine_members or ()),
     )
 
 
@@ -40,6 +41,25 @@ def positions_out(task: Task) -> list[MemberPositionOut]:
         MemberPositionOut(member_id=a.member_id, position=a.position)
         for a in sorted(task.assignments, key=lambda a: a.member_id)
     ]
+
+
+def routine_members(db: DbSession, task_ids: list[int] | None = None) -> dict[int, set[int]]:
+    """Aufgabe → Personen, für die sie Schritt einer Routine ist."""
+    query = select(RoutineStep.task_id, Routine.member_id).join(Routine)
+    if task_ids is not None:
+        query = query.where(RoutineStep.task_id.in_(task_ids))
+    result: dict[int, set[int]] = {}
+    for task_id, member_id in db.execute(query):
+        result.setdefault(task_id, set()).add(member_id)
+    return result
+
+
+def ensure_assignment(db: DbSession, task: Task, member_id: int) -> None:
+    """Ordnet die Aufgabe der Person zu, falls noch nicht geschehen (ans Ende ihrer Reihenfolge)."""
+    if not any(a.member_id == member_id for a in task.assignments):
+        task.assignments.append(
+            TaskAssignment(member_id=member_id, position=_next_position(db, member_id))
+        )
 
 
 def get_task(db: DbSession, task_id: int) -> Task:
@@ -52,6 +72,19 @@ def get_task(db: DbSession, task_id: int) -> Task:
 def apply_task(db: DbSession, task: Task, body: TaskIn) -> None:
     for member_id in body.member_ids:
         get_member(db, member_id)
+    in_routines = routine_members(db, [task.id]).get(task.id, set()) if task.id else set()
+    if in_routines and (body.time_of_day != task.time_of_day or body.extra):
+        # Routinenschritte haben den Tagesabschnitt ihrer Routine und sind keine Extras.
+        raise ApiError(status.HTTP_409_CONFLICT, "task.in_routine")
+    removed = in_routines - set(body.member_ids)
+    if removed:
+        # Wer die Aufgabe nicht mehr hat, verliert auch den Schritt in seinen Routinen.
+        for step in db.scalars(
+            select(RoutineStep)
+            .join(Routine)
+            .where(RoutineStep.task_id == task.id, Routine.member_id.in_(removed))
+        ):
+            db.delete(step)
 
     task.title, task.icon, task.points = body.title, body.icon, body.points
     task.description = body.description or None
@@ -85,7 +118,8 @@ def _next_position(db: DbSession, member_id: int) -> int:
 @router.get("/tasks")
 def list_tasks(_: ParentSession, db: DbSession) -> list[TaskOut]:
     tasks = db.scalars(select(Task).order_by(Task.id))
-    return [task_out(task) for task in tasks]
+    members = routine_members(db)
+    return [task_out(task, members.get(task.id)) for task in tasks]
 
 
 @router.post("/tasks", status_code=status.HTTP_201_CREATED)
@@ -102,35 +136,10 @@ def update_task(task_id: int, body: TaskIn, _: ParentSession, db: DbSession) -> 
     task = get_task(db, task_id)
     apply_task(db, task, body)
     db.commit()
-    return task_out(task)
+    return task_out(task, routine_members(db, [task.id]).get(task.id))
 
 
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: int, _: ParentSession, db: DbSession) -> None:
     db.delete(get_task(db, task_id))
-    db.commit()
-
-
-@router.put("/members/{member_id}/task-order", status_code=status.HTTP_204_NO_CONTENT)
-def set_task_order(member_id: int, body: TaskOrderIn, _: ParentSession, db: DbSession) -> None:
-    """Reihenfolge der Aufgaben einer Person, z. B. die Schritte ihrer Morgenroutine.
-
-    Genannte Aufgaben kommen in dieser Reihenfolge nach vorn, alle anderen behalten ihre
-    bisherige Abfolge dahinter.
-    """
-    get_member(db, member_id)
-    assignments = db.scalars(
-        select(TaskAssignment)
-        .where(TaskAssignment.member_id == member_id)
-        .order_by(TaskAssignment.position, TaskAssignment.task_id)
-    ).all()
-    by_task = {a.task_id: a for a in assignments}
-    if len(set(body.task_ids)) != len(body.task_ids) or any(
-        task_id not in by_task for task_id in body.task_ids
-    ):
-        raise ApiError(status.HTTP_409_CONFLICT, "task.order_invalid")
-    listed = [by_task[task_id] for task_id in body.task_ids]
-    rest = [a for a in assignments if a.task_id not in set(body.task_ids)]
-    for position, assignment in enumerate(listed + rest):
-        assignment.position = position
     db.commit()

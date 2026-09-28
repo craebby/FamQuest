@@ -65,7 +65,8 @@
     "overdue_other": "due for {{count}} days",
     "due_in_one": "due tomorrow",
     "due_in_other": "due in {{count}} days",
-    "extras": "Extras"
+    "extras": "Extras",
+    "optional": "optional"
   },
   "parents": {
     "title": "Parent area",
@@ -238,16 +239,32 @@
   },
   "routines": {
     "section": "Routines",
-    "intro": "Morning, afternoon and evening: this is how the routine looks on the display, step by step. Use the arrows to sort, tap a step to edit it.",
+    "intro": "For each child: morning, afternoon and evening as a fixed sequence of steps. With \"Different on other days\" the weekend, for example, gets its own shorter version.",
     "need_children": "Add a child first, then you can put together their routines.",
     "choose_child": "Choose a child",
-    "choose_day": "Choose a day",
-    "today": "Today",
-    "day_today": "{{day}}, today",
+    "label": "{{name}} · {{time}} · {{days}}",
+    "no_days": "On no day",
+    "none_yet": "No routine yet.",
+    "create": "Create routine",
+    "add_variant": "Different on other days",
+    "uncovered": "No routine on: {{days}}",
+    "days_group": "Days for {{routine}}",
     "steps_count_one": "{{count}} step",
     "steps_count_other": "{{count}} steps",
-    "empty_block": "No steps on this day yet.",
-    "add_step": "Add a step"
+    "empty_block": "No steps yet.",
+    "add_step": "Add a step",
+    "new_step": "New step",
+    "pick_existing": "Or reuse an existing step:",
+    "optional": "Optional",
+    "optional_toggle": "{{title}} optional",
+    "remove_step": "Remove {{title}} from the routine",
+    "copy": "Use for another child",
+    "copy_hint": "Who else should this routine ({{days}}) apply to? On these days it replaces that child's current routine.",
+    "copied": "{{routine}} now also applies to {{name}}.",
+    "delete": "Delete",
+    "delete_confirm": "Really delete {{routine}}? The tasks themselves are kept.",
+    "new_step_for": "New step for {{routine}}",
+    "task_in_routines": "Step in the {{time}} routine of {{names}}. The routine decides on which days it is due."
   },
   "times_of_day": {
     "morning": "Morning",
@@ -365,7 +382,12 @@
     "task": {
       "not_found": "This task no longer exists",
       "not_due": "This task isn't due today.",
-      "order_invalid": "The order no longer matches the tasks. Please reload."
+      "in_routine": "This task is a step in a routine. Its time of day and \"Extra\" can't be changed here."
+    },
+    "routine": {
+      "not_found": "This routine no longer exists. Please reload.",
+      "child_only": "Routines are only for children.",
+      "step_invalid": "This step doesn't fit the routine. Please reload."
     },
     "completion": {
       "day_changed": "A new day has started. The tasks have been updated."

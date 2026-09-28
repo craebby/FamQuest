@@ -9,6 +9,7 @@ import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 import CheckIcon from '~icons/lucide/check'
 
 import type { Member } from '../../api/members'
+import { isOptionalFor } from '../../api/tasks'
 import { type Today, type TodayTask, doneBy, isUpcoming, pointsFor } from '../../api/today'
 import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
@@ -78,9 +79,10 @@ function MemberRow({
   const extras = tasks.filter((task) => task.extra)
   // Fortschritt: nur, was diese Person selbst erledigt hat. „Einer für alle“, von jemand
   // anderem erledigt, zählt für den anderen und fällt hier heraus.
+  // Optionale Routinenschritte zählen wie Extras nicht zum Fortschritt.
   const own = routine.filter((task) => {
     const by = doneBy(task, member.id)
-    return by === null || by === member.id
+    return !isOptionalFor(task, member.id) && (by === null || by === member.id)
   })
   const done = own.filter((task) => doneBy(task, member.id) === member.id).length
   const points = pointsFor(today, member.id)
@@ -169,7 +171,7 @@ function MemberRow({
 /** Aufgabe als Symbol mit kurzem Titel: ein Tipp erledigt sie, ein weiterer nimmt es zurück. */
 function TaskChip({ task, member, date }: { task: TodayTask; member: Member; date: string }) {
   const { t } = useTranslation()
-  const { done, doneByOther, pending, dueIn, tapped, feedback, error, label, toggle } =
+  const { done, doneByOther, pending, optional, dueIn, tapped, feedback, error, label, toggle } =
     useTaskToggle(task, member, date)
   const color = task.color ?? member.color
   const tokens = colorTokens(color)
@@ -183,7 +185,7 @@ function TaskChip({ task, member, date }: { task: TodayTask; member: Member; dat
         aria-label={label}
         title={task.title}
         onClick={toggle}
-        className="flex w-24 flex-col items-center gap-1 rounded-2xl border-4 px-1 pt-2 pb-1 transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100"
+        className={`flex w-24 flex-col items-center gap-1 rounded-2xl border-4 px-1 pt-2 pb-1 ${optional && !done ? 'border-dashed' : ''} transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100`}
         style={
           doneByOther
             ? // Von jemand anderem erledigt: neutral statt in der eigenen Farbe.

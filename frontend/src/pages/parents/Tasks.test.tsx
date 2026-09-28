@@ -25,6 +25,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     recurrence: { kind: 'daily' },
     member_ids: [1],
     positions: [{ member_id: 1, position: 0 }],
+    routine_member_ids: [],
     ...overrides,
   }
 }

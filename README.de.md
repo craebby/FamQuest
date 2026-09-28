@@ -124,7 +124,8 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
   einmal an einem Datum oder **flexibel** (siehe unten)
 - **Wann**: morgens, mittags, nachmittags, abends, jederzeit oder **Extra**. Die Aufgaben eines
   Tagesabschnitts bilden eine **Routine** in fester Reihenfolge (z. B. morgens: Zähne putzen →
-  anziehen → Kuscheltier einpacken). **Extras** sind freiwillig (z. B. Tisch abräumen): Sie stehen
+  anziehen → Kuscheltier einpacken); für Kinder stellt ihr sie unter [Routinen](#routinen)
+  zusammen. **Extras** sind freiwillig (z. B. Tisch abräumen): Sie stehen
   in einem eigenen Block am Ende, bringen Punkte, zählen aber nicht zum Tagesfortschritt
 - **Farbe der Karte**: standardmäßig die Farbe der jeweiligen Person
 - **Aktiv**: inaktive Aufgaben bleiben gespeichert, erscheinen aber nicht in der Familienansicht
@@ -159,21 +160,31 @@ existiert und in jeder Sprache eindeutig benannt ist.
 
 ### Routinen
 
-Im Abschnitt **„Routinen“** des Elternbereichs stellt ihr die Routinen jedes Kindes zusammen. Oben
-ein Kind antippen (bei mehreren), dann einen Wochentag (heute ist vorausgewählt): Darunter stehen
-**morgens**, **nachmittags** und **abends** als Blöcke, **mittags** nur, wenn dort etwas geplant
-ist. Jeder Block zeigt die Schritte nummeriert in der Reihenfolge, in der das Kind sie am Display
-sieht, dazu die Anzahl der Schritte und die Sterne. Schritte, die nicht jeden Tag anstehen, zeigen,
-wann sie dran sind („Montag bis Freitag“); inaktive Schritte sind blass.
+Im Abschnitt **„Routinen“** des Elternbereichs stellt ihr die Routinen jedes Kindes zusammen: eine
+feste Abfolge von Schritten für **morgens**, **nachmittags** und **abends** (**mittags**, sobald es
+dort eine Routine gibt). Oben ein Kind antippen; das gewählte Kind ist immer hervorgehoben.
 
-- **↑/↓** verschiebt einen Schritt innerhalb seiner Routine; das Display folgt sofort. Die
-  Reihenfolge gilt je Kind: Zwei Kinder können das Zähneputzen an unterschiedlicher Stelle haben.
-  Schritte, die nur an anderen Tagen anstehen, behalten ihren Platz.
-- **Schritt antippen** öffnet ihn zum Bearbeiten (derselbe Editor wie unter „Aufgaben“).
-- **„Schritt hinzufügen“** öffnet den Aufgaben-Editor mit Kind und Tagesabschnitt vorausgewählt.
-  Neue Schritte kommen ans Ende der Routine.
+- **Versionen für verschiedene Tage:** Jede Routine hat ihre Wochentage (Mo … So antippen). Mit
+  **„Andere Tage anders“** bekommt ein Tagesabschnitt eine weitere Version, z. B. einen kürzeren
+  Morgen am Wochenende; sie startet als Kopie der Schritte, ihr nehmt nur heraus, was nicht nötig
+  ist. Ein Tag gehört immer zu genau einer Version; Tage ohne Routine stehen darunter.
+- **Schritte** sind nummeriert in der Reihenfolge, in der das Kind sie am Display sieht, dazu die
+  Anzahl der Schritte und die Sterne. **↑/↓** ändert die Reihenfolge, **✕** nimmt einen Schritt aus
+  der Routine (die Aufgabe selbst bleibt), ein Tipp öffnet den Aufgaben-Editor.
+- **Optionale Schritte** (z. B. „Kuscheltier einpacken“) bleiben in der Routine und bringen Punkte,
+  zählen aber nicht zum Tagesfortschritt; am Display haben sie einen gestrichelten Rand.
+- **„Schritt hinzufügen“** legt einen neuen Schritt an (der Editor fragt nur nach Symbol, Titel,
+  Punkten usw.; Kind, Tagesabschnitt und Tage bestimmt die Routine) oder übernimmt einen
+  vorhandenen, z. B. „Zähne putzen“ aus der Werktags-Version.
+- **„Auf anderes Kind übertragen“** kopiert eine Version auf ein Geschwisterkind (gleiche Schritte;
+  jedes Kind erledigt und punktet getrennt). An diesen Tagen ersetzt sie dessen bisherige Routine.
 
-Extras und Aufgaben für „Jederzeit“ gehören zu keiner Routine; sie bleiben im Abschnitt „Aufgaben“.
+Ist eine Aufgabe für ein Kind Schritt einer Routine, steht sie für dieses Kind genau an den Tagen
+der Routine an; ihr eigenes „Wie oft?“ gilt nur noch für andere Personen (z. B. einen Erwachsenen
+mit derselben Aufgabe). Extras, „Jederzeit“ sowie einmalige und flexible Aufgaben gehören zu keiner
+Routine; sie bleiben im Abschnitt „Aufgaben“. Beim Update werden bestehende Aufgaben der Kinder
+automatisch zu Routinen: Wochentage mit denselben Schritten werden eine Version, die Reihenfolge
+bleibt.
 
 ## Heute (Startseite)
 
@@ -701,7 +712,7 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   nachmittags und abends als Blöcke in fester Reihenfolge; geht später im Abschnitt „Aufgaben“ auf
 - [x] 7. Elternbereich mit Menü: sieben Bereiche, am Tablet Leiste links, am Handy unten mit
   „Mehr“
-- [ ] 8. Routinen als eigene Blöcke: je Kind, Tagesabschnitt und Wochentagen (z. B. abgespeckter
+- [x] 8. Routinen als eigene Blöcke: je Kind, Tagesabschnitt und Wochentagen (z. B. abgespeckter
   Abend am Wochenende), nummerierte und optionale Schritte, auf ein anderes Kind kopieren
 - [ ] 9. Feinschliff am echten Display; Wochen-Widget der Startseite überarbeiten (Aufbau und
   Lesbarkeit)

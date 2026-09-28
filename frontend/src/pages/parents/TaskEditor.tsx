@@ -13,6 +13,7 @@ import CheckIcon from '~icons/lucide/check'
 
 import { ApiError } from '../../api/client'
 import type { Member } from '../../api/members'
+import { useAddRoutineStep } from '../../api/routines'
 import {
   type RecurrenceKind,
   MAX_INTERVAL_DAYS,
@@ -59,8 +60,11 @@ interface TaskEditorProps {
   members: Member[]
   /** Vorauswahl der Personen bei neuen Aufgaben (z. B. aus dem Filter der Liste). */
   initialMemberIds?: number[]
-  /** Vorauswahl des Tagesabschnitts bei neuen Aufgaben (z. B. „Schritt hinzufügen“ einer Routine). */
-  initialTimeOfDay?: TimeOfDay
+  /**
+   * Neuer Schritt einer Routine: Kind, Tagesabschnitt und Wiederholung legt die Routine fest,
+   * deshalb fehlen diese Felder; `label` beschreibt die Routine, z. B. „Lena · Morgens (Mo–Fr)“.
+   */
+  routineStep?: { routineId: number; memberId: number; time: TimeOfDay; label: string }
   /** Zeitzone der Familie, für das Standarddatum bei „Einmal“. */
   timeZone: string
   onSaved: (title: string) => void
@@ -72,7 +76,7 @@ export function TaskEditor({
   task,
   members,
   initialMemberIds = [],
-  initialTimeOfDay,
+  routineStep,
   timeZone,
   onSaved,
   onDeleted,
@@ -102,7 +106,7 @@ export function TaskEditor({
   const [shared, setShared] = useState(task?.shared ?? false)
   // Block der Aufgabe: ein Tagesabschnitt der Routine, „Jederzeit“ (null) oder „Extra“.
   const [block, setBlock] = useState<TimeOfDay | null | 'extra'>(
-    task ? (task.extra ? 'extra' : task.time_of_day) : (initialTimeOfDay ?? null),
+    task?.extra ? 'extra' : (task?.time_of_day ?? null),
   )
   const [color, setColor] = useState<MemberColor | null>(task?.color ?? null)
   const [description, setDescription] = useState(task?.description ?? '')
@@ -118,6 +122,15 @@ export function TaskEditor({
     task ? updateTask(task.id, data) : createTask(data),
   )
   const remove = useTasksMutation((id: number) => deleteTask(id))
+  const addStep = useAddRoutineStep()
+  // Für diese Personen ist die Aufgabe Schritt einer Routine; deren Tage bestimmt die Routine.
+  const routineMembers = members.filter((member) => task?.routine_member_ids.includes(member.id))
+  const onlyInRoutines =
+    routineStep !== undefined ||
+    (task !== undefined &&
+      task.member_ids.length > 0 &&
+      task.member_ids.every((id) => task.routine_member_ids.includes(id)))
+  const saveError = save.error ?? addStep.error
 
   const fieldError = (field: string) =>
     save.error instanceof ApiError && save.error.fields[field]
@@ -126,7 +139,9 @@ export function TaskEditor({
   const titleError =
     submitted && !title.trim() ? errorMessage(t, 'validation.required') : fieldError('title')
   const membersError =
-    submitted && memberIds.length === 0 ? errorMessage(t, 'validation.choose_member') : undefined
+    submitted && memberIds.length === 0 && !routineStep
+      ? errorMessage(t, 'validation.choose_member')
+      : undefined
   const weekdaysError =
     submitted && kind === 'weekly' && weekdays.length === 0
       ? errorMessage(t, 'validation.choose_weekday')
@@ -139,7 +154,33 @@ export function TaskEditor({
   const submit = (event: FormEvent) => {
     event.preventDefault()
     setSubmitted(true)
-    if (!title.trim() || memberIds.length === 0) return
+    if (!title.trim()) return
+    if (routineStep) {
+      addStep.mutate(
+        {
+          id: routineStep.routineId,
+          step: {
+            task: {
+              title: title.trim(),
+              icon,
+              description: description.trim(),
+              points,
+              time_of_day: routineStep.time,
+              extra: false,
+              color,
+              active,
+              needs_approval: needsApproval,
+              shared: false,
+              recurrence: { kind: 'daily' },
+              member_ids: [routineStep.memberId],
+            },
+          },
+        },
+        { onSuccess: () => onSaved(title.trim()) },
+      )
+      return
+    }
+    if (memberIds.length === 0) return
     if (kind === 'weekly' && weekdays.length === 0) return
     if ((kind === 'once' || kind === 'flexible') && !date) return
     save.mutate(
@@ -171,7 +212,7 @@ export function TaskEditor({
 
   const toggle = (list: number[], value: number) =>
     list.includes(value) ? list.filter((item) => item !== value) : [...list, value]
-  const busy = save.isPending || remove.isPending
+  const busy = save.isPending || remove.isPending || addStep.isPending
 
   const applyTemplate = (template: TaskTemplate, templateTitle: string) => {
     setTitle(templateTitle)
@@ -212,8 +253,13 @@ export function TaskEditor({
         onSubmit={submit}
         noValidate
       >
-        {save.isError && !(save.error instanceof ApiError && save.error.fields.title) && (
-          <Alert>{errorMessage(t, save.error)}</Alert>
+        {saveError && !(saveError instanceof ApiError && saveError.fields.title) && (
+          <Alert>{errorMessage(t, saveError)}</Alert>
+        )}
+        {routineStep && (
+          <p className="rounded-2xl bg-orange-50 px-4 py-3 text-lg font-semibold text-orange-900">
+            {t('routines.new_step_for', { routine: routineStep.label })}
+          </p>
         )}
         {remove.isError && <Alert>{errorMessage(t, remove.error)}</Alert>}
 
@@ -272,173 +318,200 @@ export function TaskEditor({
           <p className="text-base text-slate-500">{t('tasks.needs_approval_hint')}</p>
         </div>
 
-        <Field label={t('tasks.members')} error={membersError}>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-3">
-            {members.map((member) => (
-              <label key={member.id} className="cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={memberIds.includes(member.id)}
-                  onChange={() => setMemberIds((ids) => toggle(ids, member.id))}
-                  className="peer sr-only"
-                />
-                <span className="flex h-full flex-col items-center gap-2 rounded-2xl border-2 border-slate-200 p-3 text-center text-lg font-bold break-words text-slate-700 peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-focus-visible:outline-4 peer-focus-visible:outline-orange-400">
-                  <Avatar name={member.name} color={member.color} src={member.avatar_url} />
-                  {member.name}
-                </span>
-              </label>
-            ))}
-          </div>
-        </Field>
-
-        {memberIds.length > 1 && (
-          <div className="flex flex-col gap-1">
-            <Switch checked={shared} onChange={setShared} label={t('tasks.shared')} showLabel />
-            <p className="text-base text-slate-500">{t('tasks.shared_hint')}</p>
-          </div>
-        )}
-
-        <Field label={t('tasks.recurrence')}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {(['daily', 'weekly', 'flexible', 'once'] as const).map((value) => {
-              const Icon = KIND_ICONS[value]
-              return (
-                <ChoiceTile
-                  key={value}
-                  name="recurrence"
-                  checked={kind === value}
-                  onChange={() => setKind(value)}
-                >
-                  <Icon className="size-10" aria-hidden="true" />
-                  {t(`tasks.kind_${value}`)}
-                </ChoiceTile>
-              )
-            })}
-          </div>
-        </Field>
-
-        {kind === 'weekly' && (
-          <Field label={t('tasks.weekdays')} error={weekdaysError}>
-            <div className="flex flex-wrap gap-2">
-              {weekdayOrder(language).map((day) => (
-                <label key={day} className="cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={weekdays.includes(day)}
-                    onChange={() => setWeekdays((days) => toggle(days, day))}
-                    aria-label={weekdayName(language, day, 'long')}
-                    className="peer sr-only"
-                  />
-                  <span className="flex size-16 items-center justify-center rounded-2xl border-2 border-slate-200 text-lg font-bold text-slate-700 peer-checked:border-orange-500 peer-checked:bg-orange-500 peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-orange-400">
-                    {weekdayName(language, day, 'short')}
-                  </span>
-                </label>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                variant="secondary"
-                aria-pressed={sameDays(weekdays, WORKDAYS)}
-                onClick={() => setWeekdays(WORKDAYS)}
-              >
-                {t('tasks.workdays')}
-              </Button>
-              <Button
-                variant="secondary"
-                aria-pressed={sameDays(weekdays, WEEKEND)}
-                onClick={() => setWeekdays(WEEKEND)}
-              >
-                {t('tasks.weekend')}
-              </Button>
-            </div>
-          </Field>
-        )}
-
-        {kind === 'once' && (
-          <TextField
-            label={t('tasks.date')}
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            error={dateError}
-          />
-        )}
-
-        {kind === 'flexible' && (
+        {!routineStep && (
           <>
-            <Field label={t('tasks.interval')}>
-              <p className="-mt-1 text-base text-slate-500">{t('tasks.flexible_hint')}</p>
-              <div className="flex flex-wrap gap-3">
-                {INTERVAL_PRESETS.map((days) => (
-                  <Button
-                    key={days}
-                    variant="secondary"
-                    aria-pressed={intervalDays === days}
-                    className="aria-pressed:bg-orange-500 aria-pressed:text-white aria-pressed:ring-orange-500"
-                    onClick={() => setIntervalDays(days)}
-                  >
-                    {intervalLabel(t, days)}
-                  </Button>
+            <Field label={t('tasks.members')} error={membersError}>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-3">
+                {members.map((member) => (
+                  <label key={member.id} className="cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={memberIds.includes(member.id)}
+                      onChange={() => setMemberIds((ids) => toggle(ids, member.id))}
+                      className="peer sr-only"
+                    />
+                    <span className="flex h-full flex-col items-center gap-2 rounded-2xl border-2 border-slate-200 p-3 text-center text-lg font-bold break-words text-slate-700 peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-focus-visible:outline-4 peer-focus-visible:outline-orange-400">
+                      <Avatar name={member.name} color={member.color} src={member.avatar_url} />
+                      {member.name}
+                    </span>
+                  </label>
                 ))}
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <NumberStepper
-                  label={t('tasks.interval_days')}
-                  value={intervalDays}
-                  min={1}
-                  max={MAX_INTERVAL_DAYS}
-                  onChange={setIntervalDays}
-                  decreaseLabel={t('tasks.fewer_days')}
-                  increaseLabel={t('tasks.more_days')}
-                />
-                <span className="text-lg font-bold text-slate-700">
-                  {t('tasks.days', { count: intervalDays })}
-                </span>
-              </div>
             </Field>
-            <TextField
-              label={t('tasks.first_due')}
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-              error={dateError}
-            />
+
+            {memberIds.length > 1 && (
+              <div className="flex flex-col gap-1">
+                <Switch checked={shared} onChange={setShared} label={t('tasks.shared')} showLabel />
+                <p className="text-base text-slate-500">{t('tasks.shared_hint')}</p>
+              </div>
+            )}
           </>
         )}
 
-        <Field label={t('tasks.time_of_day')}>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-3">
-            <ChoiceTile name="time_of_day" checked={block === null} onChange={() => setBlock(null)}>
-              <AnytimeIcon className="size-10" aria-hidden="true" />
-              {t('tasks.anytime')}
-            </ChoiceTile>
-            {TIMES_OF_DAY.map((value) => {
-              const Icon = TIME_OF_DAY_ICONS[value]
-              return (
+        {!onlyInRoutines && (
+          <>
+            <Field label={t('tasks.recurrence')}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {(['daily', 'weekly', 'flexible', 'once'] as const).map((value) => {
+                  const Icon = KIND_ICONS[value]
+                  return (
+                    <ChoiceTile
+                      key={value}
+                      name="recurrence"
+                      checked={kind === value}
+                      onChange={() => setKind(value)}
+                    >
+                      <Icon className="size-10" aria-hidden="true" />
+                      {t(`tasks.kind_${value}`)}
+                    </ChoiceTile>
+                  )
+                })}
+              </div>
+            </Field>
+
+            {kind === 'weekly' && (
+              <Field label={t('tasks.weekdays')} error={weekdaysError}>
+                <div className="flex flex-wrap gap-2">
+                  {weekdayOrder(language).map((day) => (
+                    <label key={day} className="cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={weekdays.includes(day)}
+                        onChange={() => setWeekdays((days) => toggle(days, day))}
+                        aria-label={weekdayName(language, day, 'long')}
+                        className="peer sr-only"
+                      />
+                      <span className="flex size-16 items-center justify-center rounded-2xl border-2 border-slate-200 text-lg font-bold text-slate-700 peer-checked:border-orange-500 peer-checked:bg-orange-500 peer-checked:text-white peer-focus-visible:outline-4 peer-focus-visible:outline-orange-400">
+                        {weekdayName(language, day, 'short')}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="secondary"
+                    aria-pressed={sameDays(weekdays, WORKDAYS)}
+                    onClick={() => setWeekdays(WORKDAYS)}
+                  >
+                    {t('tasks.workdays')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    aria-pressed={sameDays(weekdays, WEEKEND)}
+                    onClick={() => setWeekdays(WEEKEND)}
+                  >
+                    {t('tasks.weekend')}
+                  </Button>
+                </div>
+              </Field>
+            )}
+
+            {kind === 'once' && (
+              <TextField
+                label={t('tasks.date')}
+                type="date"
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+                error={dateError}
+              />
+            )}
+
+            {kind === 'flexible' && (
+              <>
+                <Field label={t('tasks.interval')}>
+                  <p className="-mt-1 text-base text-slate-500">{t('tasks.flexible_hint')}</p>
+                  <div className="flex flex-wrap gap-3">
+                    {INTERVAL_PRESETS.map((days) => (
+                      <Button
+                        key={days}
+                        variant="secondary"
+                        aria-pressed={intervalDays === days}
+                        className="aria-pressed:bg-orange-500 aria-pressed:text-white aria-pressed:ring-orange-500"
+                        onClick={() => setIntervalDays(days)}
+                      >
+                        {intervalLabel(t, days)}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <NumberStepper
+                      label={t('tasks.interval_days')}
+                      value={intervalDays}
+                      min={1}
+                      max={MAX_INTERVAL_DAYS}
+                      onChange={setIntervalDays}
+                      decreaseLabel={t('tasks.fewer_days')}
+                      increaseLabel={t('tasks.more_days')}
+                    />
+                    <span className="text-lg font-bold text-slate-700">
+                      {t('tasks.days', { count: intervalDays })}
+                    </span>
+                  </div>
+                </Field>
+                <TextField
+                  label={t('tasks.first_due')}
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  error={dateError}
+                />
+              </>
+            )}
+          </>
+        )}
+
+        {routineStep || routineMembers.length > 0 ? (
+          routineMembers.length > 0 && (
+            <p className="rounded-2xl bg-orange-50 px-4 py-3 text-lg text-orange-900">
+              {t('routines.task_in_routines', {
+                names: new Intl.ListFormat(language, { type: 'conjunction' }).format(
+                  routineMembers.map((member) => member.name),
+                ),
+                time: t(`times_of_day.${task?.time_of_day ?? 'morning'}`),
+              })}
+            </p>
+          )
+        ) : (
+          <>
+            <Field label={t('tasks.time_of_day')}>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-3">
                 <ChoiceTile
-                  key={value}
                   name="time_of_day"
-                  checked={block === value}
-                  onChange={() => setBlock(value)}
+                  checked={block === null}
+                  onChange={() => setBlock(null)}
                 >
-                  <Icon className="size-10" aria-hidden="true" />
-                  {t(`times_of_day.${value}`)}
+                  <AnytimeIcon className="size-10" aria-hidden="true" />
+                  {t('tasks.anytime')}
                 </ChoiceTile>
-              )
-            })}
-            <ChoiceTile
-              name="time_of_day"
-              checked={block === 'extra'}
-              onChange={() => setBlock('extra')}
-            >
-              <ExtraIcon className="size-10" aria-hidden="true" />
-              {t('tasks.extra')}
-            </ChoiceTile>
-          </div>
-          <p className="text-base text-slate-500">
-            {t(block === 'extra' ? 'tasks.extra_hint' : 'tasks.routine_hint')}
-          </p>
-        </Field>
+                {TIMES_OF_DAY.map((value) => {
+                  const Icon = TIME_OF_DAY_ICONS[value]
+                  return (
+                    <ChoiceTile
+                      key={value}
+                      name="time_of_day"
+                      checked={block === value}
+                      onChange={() => setBlock(value)}
+                    >
+                      <Icon className="size-10" aria-hidden="true" />
+                      {t(`times_of_day.${value}`)}
+                    </ChoiceTile>
+                  )
+                })}
+                <ChoiceTile
+                  name="time_of_day"
+                  checked={block === 'extra'}
+                  onChange={() => setBlock('extra')}
+                >
+                  <ExtraIcon className="size-10" aria-hidden="true" />
+                  {t('tasks.extra')}
+                </ChoiceTile>
+              </div>
+              <p className="text-base text-slate-500">
+                {t(block === 'extra' ? 'tasks.extra_hint' : 'tasks.routine_hint')}
+              </p>
+            </Field>
+          </>
+        )}
 
         <Field label={t('tasks.color')}>
           <div className="flex flex-wrap gap-3">

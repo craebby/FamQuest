@@ -173,6 +173,8 @@ class TaskIn(BaseModel):
 class MemberPositionOut(BaseModel):
     member_id: int
     position: int
+    # Optionaler Routinenschritt: Punkte ja, Tagesfortschritt nein.
+    optional: bool = False
 
 
 class TaskOut(BaseModel):
@@ -191,12 +193,55 @@ class TaskOut(BaseModel):
     member_ids: list[int]
     # Platz in der Reihenfolge jeder Person.
     positions: list[MemberPositionOut]
+    # Personen, für die die Aufgabe Schritt einer Routine ist.
+    routine_member_ids: list[int] = []
 
 
-class TaskOrderIn(BaseModel):
-    # Aufgaben der Person in der gewünschten Reihenfolge (nicht genannte behalten ihre Abfolge
-    # dahinter).
-    task_ids: Annotated[list[int], Field(max_length=500)]
+class RoutineStepIn(BaseModel):
+    task_id: int
+    optional: bool = False
+
+
+class RoutineStepOut(BaseModel):
+    task_id: int
+    optional: bool
+
+
+class RoutineOut(BaseModel):
+    id: int
+    member_id: int
+    time_of_day: str
+    weekdays: list[int]
+    # Schritte in ihrer Reihenfolge.
+    steps: list[RoutineStepOut]
+
+
+Weekdays = Annotated[list[Weekday], Field(max_length=7), AfterValidator(_unique_sorted)]
+
+
+class RoutineCreateIn(BaseModel):
+    member_id: int
+    time_of_day: TimeOfDay
+    # Diese Tage gehen der neuen Routine; andere Varianten desselben Tagesabschnitts geben sie ab.
+    weekdays: Weekdays
+    # Schritte einer bestehenden Routine übernehmen (z. B. „Wochenende anders“, Geschwisterkind).
+    copy_from: int | None = None
+
+
+class RoutineDaysIn(BaseModel):
+    weekdays: Weekdays
+
+
+class RoutineStepsIn(BaseModel):
+    steps: Annotated[list[RoutineStepIn], Field(max_length=50)]
+
+
+class RoutineStepAddIn(BaseModel):
+    """Neuer Schritt am Ende: eine vorhandene Aufgabe (`task_id`) oder eine neue (`task`)."""
+
+    task_id: int | None = None
+    task: TaskIn | None = None
+    optional: bool = False
 
 
 class MemberDueOut(BaseModel):

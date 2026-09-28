@@ -178,6 +178,46 @@ class TaskAssignment(Base):
     position: Mapped[int] = mapped_column(default=0, server_default="0")
 
 
+class Routine(Base):
+    """Routine eines Kindes: ein Tagesabschnitt an bestimmten Wochentagen, Schritte in Reihenfolge.
+
+    Mehrere Routinen desselben Kindes und Tagesabschnitts sind Varianten (z. B. „Morgen Mo–Fr“ und
+    „Morgen Sa–So“); ihre Wochentage überschneiden sich nie. Ist eine Aufgabe für eine Person
+    Schritt einer Routine, steht sie für diese Person genau an den Tagen dieser Routine an; die
+    eigene Wiederholung der Aufgabe gilt dann nur noch für andere Personen.
+    """
+
+    __tablename__ = "routines"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), index=True
+    )
+    # Einer von schemas.TIMES_OF_DAY; die Schritte haben denselben Tagesabschnitt.
+    time_of_day: Mapped[str] = mapped_column(String(20))
+    # ISO-Wochentage 1 (Montag) bis 7 (Sonntag); leer = an keinem Tag.
+    weekdays: Mapped[list[int]] = mapped_column(ARRAY(SmallInteger), server_default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    steps: Mapped[list["RoutineStep"]] = relationship(
+        cascade="all, delete-orphan", lazy="selectin", order_by="RoutineStep.position"
+    )
+
+
+class RoutineStep(Base):
+    """Schritt einer Routine: eine Aufgabe an einem Platz, optional oder Pflicht."""
+
+    __tablename__ = "routine_steps"
+    __table_args__ = (UniqueConstraint("routine_id", "task_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    routine_id: Mapped[int] = mapped_column(ForeignKey("routines.id", ondelete="CASCADE"))
+    task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"), index=True)
+    position: Mapped[int] = mapped_column(default=0, server_default="0")
+    # Optional: steht in der Routine, bringt Punkte, zählt aber nicht zum Tagesfortschritt.
+    optional: Mapped[bool] = mapped_column(default=False, server_default="false")
+
+
 class TaskCompletion(Base):
     """Erledigung einer Aufgabe durch eine Person an einem Kalendertag der Familie.
 

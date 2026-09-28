@@ -17,7 +17,8 @@ import {
 } from '../api/auth'
 import { type Member, childrenOf, useMembers } from '../api/members'
 import { type Reward, useRewards } from '../api/rewards'
-import { type Task, type TimeOfDay, useTasks } from '../api/tasks'
+import { type Routine, useRoutines } from '../api/routines'
+import { type Task, useTasks } from '../api/tasks'
 import { useToday } from '../api/today'
 import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
@@ -198,6 +199,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   const logout = useLogout()
   const members = useMembers()
   const tasks = useTasks()
+  const routines = useRoutines()
   const today = useToday()
   const rewards = useRewards()
   const [editingPin, setEditingPin] = useState(false)
@@ -205,8 +207,8 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   const [editingTask, setEditingTask] = useState<Task | 'new' | null>(null)
   const [pointsMember, setPointsMember] = useState<Member | null>(null)
   const [taskFilter, setTaskFilter] = useState<number | null>(null)
-  // Neue Aufgabe aus einer Routine: Kind und Tagesabschnitt sind vorausgewählt.
-  const [taskPreset, setTaskPreset] = useState<{ memberId: number; time: TimeOfDay } | null>(null)
+  // Neuer Schritt einer Routine (Editor ohne Personen, Tageszeit und Wiederholung).
+  const [newStep, setNewStep] = useState<{ routine: Routine; label: string } | null>(null)
   const [routinesChildId, setRoutinesChildId] = useState<number | null>(null)
   const [rewardsChildId, setRewardsChildId] = useState<number | null>(null)
   const [editingReward, setEditingReward] = useState<{ reward?: Reward; member: Member } | null>(
@@ -218,7 +220,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   // an der man in der Übersicht gerade war.
   const view = editingMember
     ? 'member'
-    : editingTask
+    : editingTask || newStep
       ? 'task'
       : editingReward
         ? 'reward'
@@ -268,22 +270,30 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
     )
   }
 
-  if (editingTask) {
+  if (editingTask || newStep) {
     const close = () => {
       setEditingTask(null)
-      setTaskPreset(null)
+      setNewStep(null)
     }
     const closeWith = (message: string) => {
       close()
       setNotice(message)
     }
-    const initialMemberId = taskPreset?.memberId ?? taskFilter
     return (
       <TaskEditor
-        task={editingTask === 'new' ? undefined : editingTask}
+        task={editingTask && editingTask !== 'new' ? editingTask : undefined}
         members={members.data ?? []}
-        initialMemberIds={initialMemberId === null ? [] : [initialMemberId]}
-        initialTimeOfDay={taskPreset?.time}
+        initialMemberIds={taskFilter === null ? [] : [taskFilter]}
+        routineStep={
+          newStep
+            ? {
+                routineId: newStep.routine.id,
+                memberId: newStep.routine.member_id,
+                time: newStep.routine.time_of_day,
+                label: newStep.label,
+              }
+            : undefined
+        }
         timeZone={me.family.timezone}
         onSaved={(title) => closeWith(t('tasks.saved', { title }))}
         onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
@@ -432,19 +442,19 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
             <RoutinesSection
               childMembers={childMembers}
               tasks={tasks.data}
-              error={tasks.error}
+              routines={routines.data}
+              error={routines.error ?? tasks.error}
               member={routinesChild}
               onSelect={setRoutinesChildId}
-              onEdit={(task) => {
+              onEditTask={(task) => {
                 setNotice(undefined)
                 setEditingTask(task)
               }}
-              onAdd={(member, time) => {
+              onNewStep={(routine, label) => {
                 setNotice(undefined)
-                setTaskPreset({ memberId: member.id, time })
-                setEditingTask('new')
+                setNewStep({ routine, label })
               }}
-              timeZone={me.family.timezone}
+              onMessage={setNotice}
             />
           </>
         )}

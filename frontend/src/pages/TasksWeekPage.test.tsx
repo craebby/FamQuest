@@ -26,7 +26,6 @@ function task(overrides: Partial<WeekTask>): WeekTask {
     time_of_day: 'morning',
     color: null,
     extra: false,
-    positions: [],
     ...overrides,
   }
 }
@@ -39,8 +38,8 @@ const WEEK: TaskWeek = {
   start: '2026-09-28',
   today: '2026-10-03',
   tasks: [
-    task({ id: 1, positions: [{ member_id: 1, position: 1 }] }),
-    task({ id: 2, title: 'Anziehen', positions: [{ member_id: 1, position: 0 }] }),
+    task({ id: 1 }),
+    task({ id: 2, title: 'Anziehen' }),
     task({ id: 3, title: 'Tisch abräumen', time_of_day: null, extra: true }),
   ],
   days: dates.map((date) => ({
@@ -54,14 +53,25 @@ const WEEK: TaskWeek = {
               member_id: 1,
               status: date === '2026-09-29' ? 'open' : 'done',
               done_by: date === '2026-09-29' ? null : 1,
+              position: 1,
+              optional: false,
             },
             {
               task_id: 2,
               member_id: 1,
               status: date === '2026-10-03' ? 'pending' : 'done',
               done_by: 1,
+              position: 0,
+              optional: false,
             },
-            { task_id: 3, member_id: 1, status: 'open', done_by: null },
+            {
+              task_id: 3,
+              member_id: 1,
+              status: 'open',
+              done_by: null,
+              position: 1000,
+              optional: false,
+            },
           ],
   })),
 }

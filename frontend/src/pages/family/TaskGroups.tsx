@@ -8,7 +8,13 @@ import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
 import ChevronIcon from '~icons/lucide/chevron-down'
 
 import type { Member } from '../../api/members'
-import { TASK_BLOCKS, type TaskBlock, type TimeOfDay, blockOf } from '../../api/tasks'
+import {
+  TASK_BLOCKS,
+  type TaskBlock,
+  type TimeOfDay,
+  blockOf,
+  isOptionalFor,
+} from '../../api/tasks'
 import { type TodayTask, daysUntilDue, isDoneFor, isUpcoming } from '../../api/today'
 import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { colorTokens } from '../../memberColors'
@@ -93,7 +99,11 @@ interface TaskGroupProps {
 function TaskGroup({ member, block, tasks, date, current, size }: TaskGroupProps) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
-  const allDone = tasks.every((task) => isDoneFor(task, member.id))
+  // Fertig ist ein Abschnitt, wenn alle Pflichtschritte erledigt sind; optionale dürfen offen bleiben.
+  const required = tasks.filter((task) => !isOptionalFor(task, member.id))
+  const allDone = (required.length > 0 ? required : tasks).every((task) =>
+    isDoneFor(task, member.id),
+  )
   // Ein gerade fertig gewordener Abschnitt klappt erst verzögert zu; beim Laden sofort.
   const [delayPassed, setDelayPassed] = useState(allDone)
   const [expanded, setExpanded] = useState(false)

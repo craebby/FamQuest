@@ -65,7 +65,8 @@
     "overdue_other": "seit {{count}} Tagen fällig",
     "due_in_one": "morgen fällig",
     "due_in_other": "in {{count}} Tagen fällig",
-    "extras": "Extras"
+    "extras": "Extras",
+    "optional": "optional"
   },
   "parents": {
     "title": "Elternbereich",
@@ -238,16 +239,32 @@
   },
   "routines": {
     "section": "Routinen",
-    "intro": "Morgens, nachmittags und abends: So sieht die Routine am Display aus, Schritt für Schritt. Mit den Pfeilen sortieren, antippen zum Bearbeiten.",
+    "intro": "Für jedes Kind: morgens, nachmittags und abends als feste Abfolge von Schritten. Mit „Andere Tage anders“ bekommt z. B. das Wochenende eine eigene, kürzere Version.",
     "need_children": "Legt zuerst ein Kind an, dann könnt ihr seine Routinen zusammenstellen.",
     "choose_child": "Kind wählen",
-    "choose_day": "Tag wählen",
-    "today": "Heute",
-    "day_today": "{{day}}, heute",
+    "label": "{{name}} · {{time}} · {{days}}",
+    "no_days": "An keinem Tag",
+    "none_yet": "Noch keine Routine.",
+    "create": "Routine anlegen",
+    "add_variant": "Andere Tage anders",
+    "uncovered": "Ohne Routine an: {{days}}",
+    "days_group": "Tage für {{routine}}",
     "steps_count_one": "{{count}} Schritt",
     "steps_count_other": "{{count}} Schritte",
-    "empty_block": "An diesem Tag noch keine Schritte.",
-    "add_step": "Schritt hinzufügen"
+    "empty_block": "Noch keine Schritte.",
+    "add_step": "Schritt hinzufügen",
+    "new_step": "Neuer Schritt",
+    "pick_existing": "Oder einen vorhandenen Schritt übernehmen:",
+    "optional": "Optional",
+    "optional_toggle": "{{title}} optional",
+    "remove_step": "{{title}} aus der Routine nehmen",
+    "copy": "Auf anderes Kind übertragen",
+    "copy_hint": "Für wen soll diese Routine ({{days}}) auch gelten? An diesen Tagen ersetzt sie die bisherige Routine des Kindes.",
+    "copied": "{{routine}} gilt jetzt auch für {{name}}.",
+    "delete": "Löschen",
+    "delete_confirm": "{{routine}} wirklich löschen? Die Aufgaben selbst bleiben erhalten.",
+    "new_step_for": "Neuer Schritt für {{routine}}",
+    "task_in_routines": "Schritt in der Routine ({{time}}) von {{names}}. An welchen Tagen er ansteht, legt die Routine fest."
   },
   "times_of_day": {
     "morning": "Morgens",
@@ -365,7 +382,12 @@
     "task": {
       "not_found": "Diese Aufgabe gibt es nicht mehr",
       "not_due": "Diese Aufgabe steht heute nicht an.",
-      "order_invalid": "Die Reihenfolge passt nicht mehr zu den Aufgaben. Bitte neu laden."
+      "in_routine": "Diese Aufgabe ist ein Schritt in einer Routine. Tageszeit und „Extra“ lassen sich hier nicht ändern."
+    },
+    "routine": {
+      "not_found": "Diese Routine gibt es nicht mehr. Bitte neu laden.",
+      "child_only": "Routinen gibt es nur für Kinder.",
+      "step_invalid": "Dieser Schritt passt nicht in die Routine. Bitte neu laden."
     },
     "completion": {
       "day_changed": "Ein neuer Tag hat begonnen. Die Aufgaben sind jetzt aktualisiert."

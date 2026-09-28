@@ -456,6 +456,33 @@ describe('Familienansicht', () => {
     expect(column.getByRole('img', { name: '0 von 2 Aufgaben erledigt' })).toBeInTheDocument()
   })
 
+  it('zeigt optionale Routinenschritte im Block, ohne sie mitzuzählen', async () => {
+    const dress = makeTodayTask({
+      id: 20,
+      title: 'Anziehen',
+      member_ids: [1],
+      positions: [{ member_id: 1, position: 0, optional: false }],
+    })
+    const teddy = makeTodayTask({
+      id: 21,
+      title: 'Kuscheltier',
+      member_ids: [1],
+      positions: [{ member_id: 1, position: 1, optional: true }],
+      done_member_ids: [],
+    })
+    mockApi(familyRoutes(makeToday({ tasks: [teddy, dress] })))
+    renderApp('/tasks')
+
+    const column = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
+    const morning = within(column.getByRole('region', { name: 'Morgens' }))
+    expect(
+      morning
+        .getAllByRole('button', { pressed: false })
+        .map((card) => card.getAttribute('aria-label')),
+    ).toEqual(['Anziehen, 2 Punkte', 'Kuscheltier, 2 Punkte, optional'])
+    expect(column.getByRole('img', { name: '0 von 1 Aufgaben erledigt' })).toBeInTheDocument()
+  })
+
   it('funktioniert auch auf Englisch', async () => {
     await i18n.changeLanguage('en')
     mockApi({

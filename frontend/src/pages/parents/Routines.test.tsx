@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Member } from '../../api/members'
+import type { Routine } from '../../api/routines'
 import type { Task } from '../../api/tasks'
 import i18n from '../../i18n'
 import { makeMe, makeMember, mockApi, renderApp, setupDone } from '../../test/utils'
@@ -27,42 +28,77 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     recurrence: { kind: 'daily' },
     member_ids: [1],
     positions: [{ member_id: 1, position: 0 }],
+    routine_member_ids: [1],
     ...overrides,
   }
 }
 
+function makeRoutine(overrides: Partial<Routine> = {}): Routine {
+  return {
+    id: 1,
+    member_id: 1,
+    time_of_day: 'morning',
+    weekdays: [1, 2, 3, 4, 5],
+    steps: [],
+    ...overrides,
+  }
+}
+
+const TASKS = [
+  makeTask({ id: 1, title: 'Zähne putzen', points: 2 }),
+  makeTask({ id: 2, title: 'Anziehen', icon: 'fluent-emoji-flat:t-shirt', points: 3 }),
+  makeTask({ id: 3, title: 'Kuscheltier', icon: 'fluent-emoji-flat:teddy-bear', points: 1 }),
+  makeTask({ id: 4, title: 'Schlafanzug', time_of_day: 'evening' }),
+]
+
+const WEEKDAY_MORNING = makeRoutine({
+  steps: [
+    { task_id: 1, optional: false },
+    { task_id: 2, optional: false },
+    { task_id: 3, optional: true },
+  ],
+})
+
+type Handler = Response | ((body: unknown) => Response)
+
 function api(
-  tasks: Task[],
-  extra: Record<string, Response | ((body: unknown) => Response)> = {},
+  routines: Routine[],
+  extra: Record<string, Handler> = {},
   members: Member[] = [lena, tom, mama],
 ) {
   return mockApi({
     'GET /api/setup/status': setupDone,
     'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
     'GET /api/members': Response.json(members),
-    'GET /api/tasks': Response.json(tasks),
+    'GET /api/tasks': Response.json(TASKS),
+    'GET /api/routines': Response.json(routines),
     ...extra,
   })
 }
 
-async function routines() {
+async function section() {
   return within(await screen.findByRole('region', { name: 'Routinen' }))
 }
 
-const stepTitles = (block: HTMLElement) =>
-  within(block)
+/** Karte einer Routine-Version, benannt nach ihren Tagen. */
+async function card(time: string, days: string) {
+  const block = within(await (await section()).findByRole('region', { name: time }))
+  return within(await block.findByRole('article', { name: days }))
+}
+
+const stepTitles = (scope: ReturnType<typeof within>) =>
+  scope
     .queryAllByRole('button', { name: /bearbeiten$/ })
-    .map((button) => button.getAttribute('aria-label')?.replace(' bearbeiten', ''))
+    .map((button: HTMLElement) => button.getAttribute('aria-label')?.replace(' bearbeiten', ''))
+
+const bodyOf = (calls: { key: string; body: unknown }[], key: string) =>
+  calls.filter((call) => call.key === key).at(-1)?.body
 
 beforeEach(async () => {
   await i18n.changeLanguage('de')
-  // Montag, 28. September 2026, vormittags in Berlin.
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-  vi.setSystemTime(new Date('2026-09-28T08:00:00Z'))
 })
 
 afterEach(() => {
-  vi.useRealTimers()
   vi.unstubAllGlobals()
 })
 
@@ -71,162 +107,233 @@ describe('Routinen im Elternbereich', () => {
     api([], {}, [mama])
     renderApp('/parents/routines')
 
-    expect((await routines()).getByText(/Legt zuerst ein Kind an/)).toBeVisible()
+    expect((await section()).getByText(/Legt zuerst ein Kind an/)).toBeVisible()
   })
 
   it('zeigt das gewählte Kind auch, wenn es nur eines gibt', async () => {
-    api([makeTask()], {}, [lena, mama])
+    api([], {}, [lena, mama])
     renderApp('/parents/routines')
 
-    const children = (await routines()).getByRole('group', { name: 'Kind wählen' })
+    const children = await (await section()).findByRole('group', { name: 'Kind wählen' })
     expect(within(children).getByRole('button', { name: /Lena/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
   })
 
-  it('zeigt je Kind die Tagesabschnitte als nummerierte Blöcke', async () => {
+  it('zeigt je Tagesabschnitt die Versionen mit nummerierten Schritten', async () => {
     const user = userEvent.setup()
     api([
-      makeTask({ id: 1, title: 'Zähne putzen', points: 2 }),
-      makeTask({ id: 2, title: 'Anziehen', points: 3, positions: [{ member_id: 1, position: 1 }] }),
-      makeTask({ id: 3, title: 'Schlafanzug an', time_of_day: 'evening', member_ids: [1, 2] }),
-      makeTask({ id: 4, title: 'Tisch abräumen', time_of_day: null, extra: true }),
-      makeTask({ id: 5, title: 'Kochen', member_ids: [3] }),
+      WEEKDAY_MORNING,
+      makeRoutine({ id: 2, weekdays: [6], steps: [{ task_id: 2, optional: false }] }),
+      makeRoutine({ id: 3, member_id: 2, weekdays: [1, 2, 3, 4, 5, 6, 7] }),
     ])
     renderApp('/parents/routines')
 
-    const section = await routines()
-    await section.findByRole('button', { name: 'Anziehen bearbeiten' })
-    // Nur Kinder stehen zur Wahl.
-    const children = section.getByRole('group', { name: 'Kind wählen' })
-    expect(within(children).getAllByRole('button')).toHaveLength(2)
-    expect(within(children).queryByRole('button', { name: /Mama/ })).toBeNull()
-    // Mittags erscheint nur, wenn dort etwas steht; Extras gehören nicht in die Routinen.
-    expect(section.getAllByRole('region').map((block) => block.getAttribute('aria-label'))).toEqual(
-      ['Morgens', 'Nachmittags', 'Abends'],
-    )
-    const morning = section.getByRole('region', { name: 'Morgens' })
-    expect(stepTitles(morning)).toEqual(['Zähne putzen', 'Anziehen'])
-    expect(within(morning).getByText('2 Schritte')).toBeVisible()
-    expect(within(morning).getByText('5 Punkte')).toBeInTheDocument()
-    expect(
-      within(section.getByRole('region', { name: 'Nachmittags' })).getByText(
-        'An diesem Tag noch keine Schritte.',
-      ),
-    ).toBeVisible()
-    expect(section.queryByText('Tisch abräumen')).toBeNull()
-
-    await user.click(within(children).getByRole('button', { name: /Tom/ }))
-    expect(stepTitles(section.getByRole('region', { name: 'Morgens' }))).toEqual([])
-    expect(stepTitles(section.getByRole('region', { name: 'Abends' }))).toEqual(['Schlafanzug an'])
-  })
-
-  it('zeigt die Routine eines gewählten Wochentags', async () => {
-    const user = userEvent.setup()
-    api([
-      makeTask({ id: 1, title: 'Zähne putzen' }),
-      makeTask({
-        id: 2,
-        title: 'Brotdose packen',
-        recurrence: { kind: 'weekly', weekdays: [1, 2, 3, 4, 5] },
-        positions: [{ member_id: 1, position: 1 }],
-      }),
-      makeTask({
-        id: 3,
-        title: 'Pfannkuchen',
-        recurrence: { kind: 'once', date: '2026-10-03' },
-        positions: [{ member_id: 1, position: 2 }],
-      }),
-    ])
-    renderApp('/parents/routines')
-
-    const section = await routines()
-    const days = section.getByRole('group', { name: 'Tag wählen' })
-    expect(within(days).getByRole('button', { name: 'Montag, heute' })).toHaveAttribute(
+    const weekdays = await card('Morgens', 'Montag bis Freitag')
+    expect(stepTitles(weekdays)).toEqual(['Zähne putzen', 'Anziehen', 'Kuscheltier'])
+    // Optionale Schritte zählen nicht mit.
+    expect(weekdays.getByText('2 Schritte')).toBeVisible()
+    expect(weekdays.getByText('5 Punkte')).toBeInTheDocument()
+    expect(weekdays.getByRole('button', { name: 'Kuscheltier optional' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
-    const morning = () => section.getByRole('region', { name: 'Morgens' })
-    await within(morning()).findByText('Brotdose packen')
-    expect(stepTitles(morning())).toEqual(['Zähne putzen', 'Brotdose packen'])
-    expect(within(morning()).getByText('Montag bis Freitag')).toBeVisible()
+    const days = weekdays.getByRole('group', { name: /^Tage für Lena · Morgens/ })
+    expect(within(days).getByRole('button', { name: 'Montag' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(within(days).getByRole('button', { name: 'Samstag' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
 
-    await user.click(within(days).getByRole('button', { name: 'Samstag' }))
-    expect(stepTitles(morning())).toEqual(['Zähne putzen', 'Pfannkuchen'])
+    const s = await section()
+    expect(stepTitles(await card('Morgens', 'Sa'))).toEqual(['Anziehen'])
+    expect(
+      within(s.getByRole('region', { name: 'Morgens' })).getByText('Ohne Routine an: So'),
+    ).toBeVisible()
+    // Ohne Routine: anlegen; „Mittags“ erscheint nur, wenn es dort eine gibt.
+    expect(
+      within(s.getByRole('region', { name: 'Nachmittags' })).getByRole('button', {
+        name: 'Routine anlegen',
+      }),
+    ).toBeVisible()
+    expect(s.queryByRole('region', { name: 'Mittags' })).toBeNull()
+
+    await user.click(
+      within(s.getByRole('group', { name: 'Kind wählen' })).getByRole('button', { name: /Tom/ }),
+    )
+    expect(stepTitles(await card('Morgens', 'Täglich'))).toEqual([])
   })
 
-  it('sortiert an einem Tag, ohne die Schritte anderer Tage zu verschieben', async () => {
+  it('sortiert, markiert optional und nimmt Schritte heraus', async () => {
     const user = userEvent.setup()
-    const tasks = [
-      makeTask({ id: 1, title: 'Zähne putzen' }),
-      makeTask({
-        id: 2,
-        title: 'Brötchen holen',
-        recurrence: { kind: 'weekly', weekdays: [6, 7] },
-        positions: [{ member_id: 1, position: 1 }],
-      }),
-      makeTask({ id: 3, title: 'Anziehen', positions: [{ member_id: 1, position: 2 }] }),
-      makeTask({
-        id: 4,
-        title: 'Schlafanzug an',
-        time_of_day: 'evening',
-        positions: [{ member_id: 1, position: 3 }],
-      }),
-    ]
-    let current = tasks
-    const calls = api(tasks, {
-      'GET /api/tasks': () => Response.json(current),
-      'PUT /api/members/1/task-order': (body) => {
-        const ids = (body as { task_ids: number[] }).task_ids
-        current = current.map((task) => ({
-          ...task,
-          positions: [{ member_id: 1, position: ids.indexOf(task.id) }],
-        }))
-        return new Response(null, { status: 204 })
+    let current = [WEEKDAY_MORNING]
+    const calls = api(current, {
+      'GET /api/routines': () => Response.json(current),
+      'PUT /api/routines/1/steps': (body) => {
+        const { steps } = body as { steps: Routine['steps'] }
+        current = [{ ...WEEKDAY_MORNING, steps }]
+        return Response.json(current[0])
       },
     })
     renderApp('/parents/routines')
 
-    const section = await routines()
-    const morning = section.getByRole('region', { name: 'Morgens' })
-    await within(morning).findByText('Anziehen')
-    expect(within(morning).getByRole('button', { name: 'Zähne putzen nach oben' })).toBeDisabled()
-    await user.click(within(morning).getByRole('button', { name: 'Anziehen nach oben' }))
-
-    expect(calls.find((call) => call.key === 'PUT /api/members/1/task-order')?.body).toEqual({
-      task_ids: [3, 2, 1, 4],
+    const morning = await card('Morgens', 'Montag bis Freitag')
+    expect(morning.getByRole('button', { name: 'Zähne putzen nach oben' })).toBeDisabled()
+    await user.click(morning.getByRole('button', { name: 'Anziehen nach oben' }))
+    expect(bodyOf(calls, 'PUT /api/routines/1/steps')).toEqual({
+      steps: [
+        { task_id: 2, optional: false },
+        { task_id: 1, optional: false },
+        { task_id: 3, optional: true },
+      ],
     })
     // Sofort in der neuen Reihenfolge.
-    expect(stepTitles(morning)).toEqual(['Anziehen', 'Zähne putzen'])
+    expect(stepTitles(morning)).toEqual(['Anziehen', 'Zähne putzen', 'Kuscheltier'])
+
+    await user.click(morning.getByRole('button', { name: 'Kuscheltier optional' }))
+    expect(bodyOf(calls, 'PUT /api/routines/1/steps')).toMatchObject({
+      steps: [{}, {}, { task_id: 3, optional: false }],
+    })
+
+    await user.click(morning.getByRole('button', { name: 'Zähne putzen aus der Routine nehmen' }))
+    expect(bodyOf(calls, 'PUT /api/routines/1/steps')).toEqual({
+      steps: [
+        { task_id: 2, optional: false },
+        { task_id: 3, optional: false },
+      ],
+    })
   })
 
-  it('legt einen Schritt mit Kind und Tagesabschnitt vorausgewählt an', async () => {
+  it('verschiebt Tage und legt eine Version für andere Tage an', async () => {
     const user = userEvent.setup()
-    const calls = api([], {
-      'POST /api/tasks': (body) =>
-        Response.json({ ...makeTask(), ...(body as object), id: 5 }, { status: 201 }),
+    const everyday = makeRoutine({ weekdays: [1, 2, 3, 4, 5, 6, 7], steps: WEEKDAY_MORNING.steps })
+    const calls = api([everyday], {
+      'PUT /api/routines/1/days': Response.json([everyday]),
+      'POST /api/routines': Response.json(makeRoutine({ id: 9 }), { status: 201 }),
     })
     renderApp('/parents/routines')
 
-    const section = await routines()
+    const morning = await card('Morgens', 'Täglich')
     await user.click(
-      within(section.getByRole('region', { name: 'Abends' })).getByRole('button', {
-        name: 'Schritt hinzufügen',
+      within(morning.getByRole('group', { name: /^Tage für/ })).getByRole('button', {
+        name: 'Mittwoch',
       }),
     )
-    expect(screen.getByRole('checkbox', { name: /Lena/ })).toBeChecked()
-    expect(screen.getByRole('radio', { name: 'Abends' })).toBeChecked()
+    expect(bodyOf(calls, 'PUT /api/routines/1/days')).toEqual({ weekdays: [1, 2, 4, 5, 6, 7] })
 
-    await user.type(screen.getByLabelText('Titel'), 'Schlafanzug an')
+    // Alle Tage belegt: Die neue Version bekommt das Wochenende und die Schritte als Vorlage.
+    const block = within((await section()).getByRole('region', { name: 'Morgens' }))
+    await user.click(block.getByRole('button', { name: 'Andere Tage anders' }))
+    expect(bodyOf(calls, 'POST /api/routines')).toEqual({
+      member_id: 1,
+      time_of_day: 'morning',
+      weekdays: [6, 7],
+      copy_from: 1,
+    })
+
+    const afternoon = within((await section()).getByRole('region', { name: 'Nachmittags' }))
+    await user.click(afternoon.getByRole('button', { name: 'Routine anlegen' }))
+    expect(bodyOf(calls, 'POST /api/routines')).toEqual({
+      member_id: 1,
+      time_of_day: 'afternoon',
+      weekdays: [1, 2, 3, 4, 5, 6, 7],
+    })
+  })
+
+  it('übernimmt einen vorhandenen Schritt', async () => {
+    const user = userEvent.setup()
+    const routine = makeRoutine({ steps: [{ task_id: 1, optional: false }] })
+    const calls = api([routine], {
+      'POST /api/routines/1/steps': Response.json(routine, { status: 201 }),
+    })
+    renderApp('/parents/routines')
+
+    const morning = await card('Morgens', 'Montag bis Freitag')
+    await user.click(morning.getByRole('button', { name: 'Schritt hinzufügen' }))
+    // Angeboten wird nur, was morgens passt und noch nicht in dieser Routine steht.
+    expect(morning.queryByRole('button', { name: /Schlafanzug/ })).toBeNull()
+    await user.click(morning.getByRole('button', { name: /Kuscheltier/ }))
+
+    expect(bodyOf(calls, 'POST /api/routines/1/steps')).toEqual({ task_id: 3 })
+  })
+
+  it('legt einen neuen Schritt an, ohne nach Kind, Tageszeit und Tagen zu fragen', async () => {
+    const user = userEvent.setup()
+    const calls = api([makeRoutine()], {
+      'POST /api/routines/1/steps': Response.json(makeRoutine(), { status: 201 }),
+    })
+    renderApp('/parents/routines')
+
+    const morning = await card('Morgens', 'Montag bis Freitag')
+    await user.click(morning.getByRole('button', { name: 'Schritt hinzufügen' }))
+    await user.click(morning.getByRole('button', { name: 'Neuer Schritt' }))
+
+    expect(screen.getByText('Neuer Schritt für Lena · Morgens · Montag bis Freitag')).toBeVisible()
+    expect(screen.queryByRole('checkbox', { name: /Lena/ })).toBeNull()
+    expect(screen.queryByRole('radio', { name: 'Abends' })).toBeNull()
+    expect(screen.queryByRole('radio', { name: 'Jeden Tag' })).toBeNull()
+
+    await user.type(screen.getByLabelText('Titel'), 'Brotdose')
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('„Schlafanzug an“ ist gespeichert.')
-    expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
-      title: 'Schlafanzug an',
-      time_of_day: 'evening',
-      extra: false,
-      member_ids: [1],
+    expect(await screen.findByRole('status')).toHaveTextContent('„Brotdose“ ist gespeichert.')
+    expect(bodyOf(calls, 'POST /api/routines/1/steps')).toMatchObject({
+      task: {
+        title: 'Brotdose',
+        time_of_day: 'morning',
+        extra: false,
+        recurrence: { kind: 'daily' },
+        member_ids: [1],
+      },
     })
+  })
+
+  it('überträgt eine Routine auf ein anderes Kind und löscht eine Version', async () => {
+    const user = userEvent.setup()
+    const calls = api([WEEKDAY_MORNING], {
+      'POST /api/routines': Response.json(makeRoutine({ id: 5, member_id: 2 }), { status: 201 }),
+      'DELETE /api/routines/1': new Response(null, { status: 204 }),
+    })
+    renderApp('/parents/routines')
+
+    const morning = await card('Morgens', 'Montag bis Freitag')
+    await user.click(morning.getByRole('button', { name: 'Auf anderes Kind übertragen' }))
+    // Nur andere Kinder, keine Erwachsenen.
+    expect(morning.queryByRole('button', { name: /Mama/ })).toBeNull()
+    await user.click(morning.getByRole('button', { name: /Tom/ }))
+
+    expect(bodyOf(calls, 'POST /api/routines')).toEqual({
+      member_id: 2,
+      time_of_day: 'morning',
+      weekdays: [1, 2, 3, 4, 5],
+      copy_from: 1,
+    })
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Lena · Morgens · Montag bis Freitag gilt jetzt auch für Tom.',
+    )
+
+    await user.click(morning.getByRole('button', { name: 'Löschen' }))
+    expect(morning.getByText(/wirklich löschen\?/)).toBeVisible()
+    await user.click(morning.getByRole('button', { name: 'Löschen' }))
+    expect(calls.some((call) => call.key === 'DELETE /api/routines/1')).toBe(true)
+  })
+
+  it('zeigt im Editor, dass eine Aufgabe zu einer Routine gehört', async () => {
+    const user = userEvent.setup()
+    api([WEEKDAY_MORNING])
+    renderApp('/parents/routines')
+
+    const morning = await card('Morgens', 'Montag bis Freitag')
+    await user.click(morning.getByRole('button', { name: 'Anziehen bearbeiten' }))
+
+    expect(screen.getByText(/Schritt in der Routine \(Morgens\) von Lena/)).toBeVisible()
+    // Tageszeit und Wiederholung legt die Routine fest.
+    expect(screen.queryByRole('radio', { name: 'Abends' })).toBeNull()
+    expect(screen.queryByRole('radio', { name: 'Jeden Tag' })).toBeNull()
+    expect(screen.getByRole('checkbox', { name: /Lena/ })).toBeChecked()
   })
 })
