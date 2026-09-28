@@ -5,14 +5,16 @@ import BeachIcon from '~icons/fluent-emoji-flat/beach-with-umbrella'
 import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import HourglassIcon from '~icons/fluent-emoji-flat/hourglass-not-done'
+import SparklesIcon from '~icons/fluent-emoji-flat/sparkles'
 import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 import CheckIcon from '~icons/lucide/check'
 
 import type { Member } from '../../api/members'
-import { isOptionalFor } from '../../api/tasks'
+import { TASK_BLOCKS, type TaskBlock, blockOf, isOptionalFor } from '../../api/tasks'
 import { type Today, type TodayTask, doneBy, isUpcoming, pointsFor } from '../../api/today'
 import { Avatar } from '../../components/Avatar'
 import { TaskIcon } from '../../components/TaskIcon'
+import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { errorMessage } from '../../errors'
 import { type CareSegment, careShares } from '../../care'
 import { colorTokens } from '../../memberColors'
@@ -76,7 +78,11 @@ function MemberRow({
     (task) => !isUpcoming(task, member.id, today.date),
   )
   const routine = tasks.filter((task) => !task.extra)
-  const extras = tasks.filter((task) => task.extra)
+  // Wie am Display: Routinen je Tagesabschnitt als Blöcke, dann „Jederzeit“ und Extras.
+  const blocks = TASK_BLOCKS.map((block) => ({
+    block,
+    tasks: tasks.filter((task) => blockOf(task) === block),
+  })).filter((group) => group.tasks.length > 0)
   // Fortschritt: nur, was diese Person selbst erledigt hat. „Einer für alle“, von jemand
   // anderem erledigt, zählt für den anderen und fällt hier heraus.
   // Optionale Routinenschritte zählen wie Extras nicht zum Fortschritt.
@@ -140,31 +146,57 @@ function MemberRow({
             {t('family.free_today')}
           </p>
         ) : (
-          <>
-            {routine.length > 0 && (
-              <ul className="flex flex-wrap gap-2">
-                {routine.map((task) => (
-                  <TaskChip key={task.id} task={task} member={member} date={today.date} />
-                ))}
-              </ul>
-            )}
-            {extras.length > 0 && (
-              <section
-                aria-label={t('family.extras')}
-                className="flex flex-wrap items-center gap-2 border-t-2 border-dashed border-slate-200 pt-2"
-              >
-                <ExtraIcon className="size-8 shrink-0" aria-hidden="true" />
-                <ul className="flex flex-wrap gap-2">
-                  {extras.map((task) => (
-                    <TaskChip key={task.id} task={task} member={member} date={today.date} />
-                  ))}
-                </ul>
-              </section>
-            )}
-          </>
+          <div className="flex flex-wrap items-start gap-2">
+            {blocks.map(({ block, tasks: blockTasks }) => (
+              <TaskBlockGroup
+                key={block ?? 'anytime'}
+                block={block}
+                tasks={blockTasks}
+                member={member}
+                date={today.date}
+                current={block === today.time_of_day}
+              />
+            ))}
+          </div>
         )}
       </div>
     </li>
+  )
+}
+
+/** Ein Block (Tagesabschnitt, „Jederzeit“ oder Extras): Symbol davor, Aufgaben in Reihenfolge. */
+function TaskBlockGroup({
+  block,
+  tasks,
+  member,
+  date,
+  current,
+}: {
+  block: TaskBlock
+  tasks: TodayTask[]
+  member: Member
+  date: string
+  /** Der Tagesabschnitt, der gerade dran ist, ist hinterlegt. */
+  current: boolean
+}) {
+  const { t } = useTranslation()
+  const Icon = block === 'extra' ? ExtraIcon : block ? TIME_OF_DAY_ICONS[block] : SparklesIcon
+  const label = t(
+    block === 'extra' ? 'family.extras' : block ? `times_of_day.${block}` : 'tasks.anytime',
+  )
+  return (
+    <section
+      aria-label={label}
+      className={`flex items-start gap-1.5 rounded-2xl p-1.5 ${block === 'extra' ? 'border-2 border-dashed border-slate-200' : ''}`}
+      style={current ? { backgroundColor: colorTokens(member.color).soft } : undefined}
+    >
+      <Icon className="mt-1 size-7 shrink-0" aria-hidden="true" />
+      <ul className="flex flex-wrap gap-1.5">
+        {tasks.map((task) => (
+          <TaskChip key={task.id} task={task} member={member} date={date} />
+        ))}
+      </ul>
+    </section>
   )
 }
 
@@ -185,7 +217,7 @@ function TaskChip({ task, member, date }: { task: TodayTask; member: Member; dat
         aria-label={label}
         title={task.title}
         onClick={toggle}
-        className={`flex w-24 flex-col items-center gap-1 rounded-2xl border-4 px-1 pt-2 pb-1 ${optional && !done ? 'border-dashed' : ''} transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100`}
+        className={`flex w-[4.5rem] flex-col items-center gap-0.5 rounded-xl border-[3px] px-0.5 pt-1.5 pb-1 ${optional && !done ? 'border-dashed' : ''} transition-transform select-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100`}
         style={
           doneByOther
             ? // Von jemand anderem erledigt: neutral statt in der eigenen Farbe.
@@ -198,10 +230,10 @@ function TaskChip({ task, member, date }: { task: TodayTask; member: Member; dat
       >
         <TaskIcon
           icon={task.icon}
-          className={`size-12 ${doneByOther ? 'opacity-40 grayscale' : done && !pending ? 'opacity-60' : ''}`}
+          className={`size-10 ${doneByOther ? 'opacity-40 grayscale' : done && !pending ? 'opacity-60' : ''}`}
         />
         <span
-          className={`line-clamp-2 w-full text-center text-sm leading-tight font-bold break-words hyphens-auto ${done ? 'text-slate-500 line-through' : 'text-slate-700'}`}
+          className={`line-clamp-2 w-full text-center text-xs leading-tight font-bold break-words hyphens-auto ${done ? 'text-slate-500 line-through' : 'text-slate-700'}`}
         >
           {task.title}
         </span>
@@ -209,7 +241,7 @@ function TaskChip({ task, member, date }: { task: TodayTask; member: Member; dat
       {pending ? (
         <span
           aria-hidden="true"
-          className={`pointer-events-none absolute -top-2 -right-2 flex size-8 items-center justify-center rounded-full bg-white shadow-sm ${pop}`}
+          className={`pointer-events-none absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-white shadow-sm ${pop}`}
         >
           <HourglassIcon className="size-6" />
         </span>
@@ -226,7 +258,7 @@ function TaskChip({ task, member, date }: { task: TodayTask; member: Member; dat
         done && (
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute -top-2 -right-2 flex size-8 items-center justify-center rounded-full ${pop}`}
+            className={`pointer-events-none absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full ${pop}`}
             style={{ backgroundColor: tokens.main, color: tokens.onMain }}
           >
             <CheckIcon className="size-5" strokeWidth={4} />

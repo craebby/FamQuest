@@ -47,6 +47,12 @@ describe('Icon-Katalog', () => {
     }
   })
 
+  it('setzt fehlende Icons aus dem Set zusammen, z. B. den Schlafanzug', () => {
+    expect(iconBody(iconId('pajamas'))).toMatch(/^<g transform=/)
+    expect(suggestIcon('Schlafanzug anziehen')).toBe(iconId('pajamas'))
+    expect(suggestIcon('Put on pyjamas')).toBe(iconId('pajamas'))
+  })
+
   it('ignoriert Groß-/Kleinschreibung und Umlaute', () => {
     expect(searchIcons('ZAHNE')).toContain('toothbrush')
     expect(searchIcons('Fussball')).toContain('soccer-ball')

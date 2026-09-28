@@ -346,6 +346,13 @@ describe('Startseite „Heute“', () => {
         .filter(Boolean),
     ).toEqual(['Anziehen', 'Zähne', 'Schlafi an', 'Tisch abräumen'])
     expect(row.getByRole('img', { name: '0 von 3 Aufgaben erledigt' })).toBeInTheDocument()
+    // Wie am Display als Blöcke je Tagesabschnitt.
+    const titles = (name: string) =>
+      within(row.getByRole('region', { name }))
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('title'))
+    expect(titles('Morgens')).toEqual(['Anziehen', 'Zähne'])
+    expect(titles('Abends')).toEqual(['Schlafi an'])
   })
 })
 

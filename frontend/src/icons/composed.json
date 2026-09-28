@@ -1,0 +1,18 @@
+{
+  "pajamas": [
+    { "icon": "jeans", "x": 6, "y": 11, "scale": 0.62 },
+    {
+      "icon": "t-shirt",
+      "x": 5,
+      "y": 0.5,
+      "scale": 0.7,
+      "colors": {
+        "#00D26A": "#0074BA",
+        "#44911B": "#0074BA",
+        "#86D72F": "#00A6ED",
+        "#C3EF3C": "#83CBFF"
+      }
+    },
+    { "icon": "crescent-moon", "x": 21, "y": 0, "scale": 0.34 }
+  ]
+}

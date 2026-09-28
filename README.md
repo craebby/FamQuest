@@ -156,8 +156,9 @@ The icons are embedded into the frontend at build time (only the catalogue icons
 set). To extend the catalogue, add names from the `fluent-emoji-flat` set (e.g. from
 [icon-sets.iconify.design](https://icon-sets.iconify.design/fluent-emoji-flat/)) to
 `frontend/src/icons/categories.json` and search terms to
-`frontend/src/locales/<language>/icons.json` (the first term is the label). Tests check that every
-icon exists and has a unique label in every language.
+`frontend/src/locales/<language>/icons.json` (the first term is the label). Icons that the set lacks
+(e.g. pyjamas) are put together from set icons in `frontend/src/icons/composed.json`. Tests check
+that every icon exists and has a unique label in every language.
 
 ### Routines
 
@@ -198,7 +199,8 @@ top, below it three columns (stacked on narrow screens):
   each with "Today", "Tomorrow" or the date, in the person's colour with avatars. Today's public
   or school holiday is shown above. A tap opens the details, the arrow opens the week view.
 - **Tasks**: one row per person with avatar, progress bar, points (children) and today's tasks as
-  large icons with a short title, routines in their order and extras after a dashed line.
+  small icons with a short title, grouped like on the display: morning, afternoon, evening (each
+  routine in its order, the current time of day highlighted), then "anytime" and the extras.
   Adults see their share of the week instead of a progress bar. **One tap** completes a task, just like in the family view
   (with "+2", hourglass for parent checks, avatar for "One for all"); tap again to undo. The
   avatar opens the person view, the arrow opens the family view.

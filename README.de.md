@@ -155,8 +155,9 @@ Die Symbole sind beim Build ins Frontend eingebettet (nur die Katalog-Symbole, n
 Katalog erweitern: Namen aus dem Set `fluent-emoji-flat` (z. B. auf
 [icon-sets.iconify.design](https://icon-sets.iconify.design/fluent-emoji-flat/)) in
 `frontend/src/icons/categories.json` eintragen und in `frontend/src/locales/<sprache>/icons.json`
-Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Tests prüfen, dass jedes Symbol
-existiert und in jeder Sprache eindeutig benannt ist.
+Suchbegriffe ergänzen (der erste Begriff ist die Bezeichnung). Symbole, die es im Set nicht gibt
+(z. B. einen Schlafanzug), setzt `frontend/src/icons/composed.json` aus Symbolen des Sets zusammen.
+Tests prüfen, dass jedes Symbol existiert und in jeder Sprache eindeutig benannt ist.
 
 ### Routinen
 
@@ -199,8 +200,9 @@ darunter drei Spalten (auf schmalen Bildschirmen untereinander):
   Voraus), jeweils mit „Heute“, „Morgen“ oder Datum, in der Personenfarbe mit Avataren. Darüber ein
   Feiertag oder Ferien von heute. Ein Tipp öffnet die Details, der Pfeil die Wochenansicht.
 - **Aufgaben**: eine Zeile pro Person mit Avatar, Fortschrittsbalken, Punkten (Kinder) und den
-  heutigen Aufgaben als große Symbole mit kurzem Titel, Routinen in ihrer Reihenfolge und Extras
-  hinter einer gestrichelten Linie. Erwachsene sehen statt eines Balkens ihren Anteil an der Woche.
+  heutigen Aufgaben als kleine Symbole mit kurzem Titel, gruppiert wie am Display: morgens,
+  nachmittags, abends (jede Routine in ihrer Reihenfolge, der aktuelle Tagesabschnitt
+  hinterlegt), dann „Jederzeit“ und die Extras. Erwachsene sehen statt eines Balkens ihren Anteil an der Woche.
   **Ein Tipp** erledigt eine Aufgabe wie in
   der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern, Avatar bei „Einer für
   alle“); nochmal tippen macht es rückgängig. Der Avatar öffnet die Personenansicht, der Pfeil die
