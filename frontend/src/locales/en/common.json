@@ -701,6 +701,15 @@
     "minutes_one": "{{count}} minute",
     "minutes_other": "{{count}} minutes",
     "open_tasks_of_one": "{{name}}: 1 task left",
-    "open_tasks_of_other": "{{name}}: {{count}} tasks left"
+    "open_tasks_of_other": "{{name}}: {{count}} tasks left",
+    "night": "Night mode",
+    "night_hint": "At night the picture frame shows no photos. The display itself stays on, see the README.",
+    "night_enabled": "Turn on night mode",
+    "night_start": "From",
+    "night_end": "Until",
+    "night_style": {
+      "dark": "Black",
+      "clock": "Dimmed clock"
+    }
   }
 }

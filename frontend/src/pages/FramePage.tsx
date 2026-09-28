@@ -3,10 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import PhotoIcon from '~icons/fluent-emoji-flat/framed-picture'
 
+import { useMe } from '../api/auth'
 import { DEFAULT_FRAME_SETTINGS, useFrameSettings } from '../api/frame'
 import { type Photo, usePhotos } from '../api/photos'
 import { errorMessage } from '../errors'
+import { useNow } from '../useNow'
+import { NightScreen } from './frame/NightScreen'
 import { Overlays } from './frame/Overlays'
+import { isNightTime } from './frame/night'
 import { FADE_MS, drawNext, fillsScreen } from './frame/slideshow'
 
 /** Neue oder ausgeblendete Fotos kommen ohne Neuladen der Seite an. */
@@ -66,9 +70,9 @@ function PhotoLayer({
 }
 
 /**
- * Bilderrahmen: sichtbare Fotos in zufälliger Reihenfolge als Vollbild mit Überblendung.
- * Ein Tipp irgendwo führt zu „Heute“. Das passiert erst beim Loslassen (click), damit derselbe
- * Tipp dort nichts auslöst.
+ * Bilderrahmen: sichtbare Fotos in zufälliger Reihenfolge als Vollbild mit Überblendung, im
+ * Nachtfenster stattdessen der Nachtbildschirm. Ein Tipp irgendwo führt zu „Heute“. Das passiert
+ * erst beim Loslassen (click), damit derselbe Tipp dort nichts auslöst.
  */
 export function FramePage() {
   const { t } = useTranslation()
@@ -79,6 +83,10 @@ export function FramePage() {
   // Bis die Einstellungen da sind (oder falls sie fehlen), gilt der Standard.
   const settings = useFrameSettings().data ?? DEFAULT_FRAME_SETTINGS
   const durationMs = settings.photo_seconds * 1000
+  const timeZone = useMe().data?.family.timezone
+  const now = useNow(15 * 1000)
+  const night =
+    settings.night_enabled && isNightTime(now, settings.night_start, settings.night_end, timeZone)
 
   // Die neueste Ebene blendet über der vorigen ein; danach bleibt nur sie übrig.
   const [layers, setLayers] = useState<Layer[]>([])
@@ -94,9 +102,11 @@ export function FramePage() {
 
   const current = layers.at(-1)
   const hasPhotos = visible.length > 0
+  // Nachts werden keine Fotos geladen; am Morgen geht es mit dem nächsten weiter.
+  const running = hasPhotos && !night
 
   useEffect(() => {
-    if (!hasPhotos) return
+    if (!running) return
     let cancelled = false
     const show = async () => {
       const candidates = visibleRef.current
@@ -126,7 +136,7 @@ export function FramePage() {
       window.clearTimeout(trim)
       window.clearTimeout(timer)
     }
-  }, [current, hasPhotos, visible.length, durationMs])
+  }, [current, running, visible.length, durationMs])
 
   useEffect(() => {
     const leave = () => navigate('/')
@@ -143,16 +153,17 @@ export function FramePage() {
         onClick={() => navigate('/')}
         className="fixed inset-0 cursor-none overflow-hidden bg-black focus:outline-none"
       >
-        {hasPhotos &&
+        {night && <NightScreen style={settings.night_style} now={now} timeZone={timeZone} />}
+        {running &&
           layers.map((layer) => <PhotoLayer key={layer.key} photo={layer.photo} screen={screen} />)}
-        {(empty || photos.isError) && (
+        {!night && (empty || photos.isError) && (
           <span className="flex h-full flex-col items-center justify-center gap-6 p-6 text-center text-2xl text-slate-200">
             <PhotoIcon className="size-24" aria-hidden="true" />
             {photos.isError ? errorMessage(t, photos.error) : t('frame.empty')}
           </span>
         )}
       </button>
-      <Overlays settings={settings} />
+      {!night && <Overlays settings={settings} />}
     </>
   )
 }

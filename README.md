@@ -16,7 +16,7 @@ services and without external CDNs. The full specification (in German) is in
 > will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
 > is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 has
 > started: the display becomes a picture frame, started from an icon or after being idle, with
-> clock, weather, next event and open tasks as overlays; night mode follows (see
+> clock, weather, next event and open tasks as overlays, and a night mode (see
 > [Roadmap](#roadmap)).
 
 ## Features
@@ -33,7 +33,8 @@ services and without external CDNs. The full specification (in German) is in
 - Google Calendar (read-only): week view on the display, events in each person's colour
 - Weather for your town (Open-Meteo, no API key needed)
 - Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
-  with optional clock, weather, next event and open tasks on top
+  with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
+  clock)
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -475,6 +476,36 @@ the photos. These settings apply to the whole family and take effect straight aw
   hectic).
 - Weather and events only appear once a place or a calendar is set up.
 
+**Night mode**
+
+On the same card, **Night mode** keeps photos off the display at night. It is off by default.
+
+- **From** and **Until** set the time window in the family's time zone; it may run past midnight
+  (default 22:00 to 06:00). If both times are the same, night mode never kicks in.
+- **Black**: the screen stays completely dark. **Dimmed clock**: a large, dark grey clock on black.
+  It moves a little every 5 minutes so it doesn't burn in.
+- At night there are no overlays and no photos are loaded. In the morning the photos continue on
+  their own.
+- A tap still goes to "Today". On devices with **start when idle**, the night screen comes back
+  after the idle time; on devices without it, it only appears when the picture frame is started.
+
+A browser can't switch off the display's backlight: "black" still glows faintly. To really switch
+the display off, use a command on the computer driving the display, for example via cron:
+
+```cron
+# Wayland (e.g. current Raspberry Pi OS): off at 22:00, on at 06:00
+0 22 * * * WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 wlr-randr --output HDMI-A-1 --off
+0 6  * * * WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 wlr-randr --output HDMI-A-1 --on
+
+# X11
+0 22 * * * DISPLAY=:0 xset dpms force off
+0 6  * * * DISPLAY=:0 xset dpms force on
+```
+
+Which command works depends on the device and the desktop; `wlr-randr` without arguments lists the
+output names. On older Raspberry Pi OS without the KMS driver, `vcgencmd display_power 0`/`1` also
+works.
+
 ## Configuration
 
 Configuration is done exclusively through environment variables in `.env`. All variables are
@@ -770,7 +801,7 @@ When idle, the display turns into a digital picture frame.
   (set per device), one tap goes back to "Today"
 - [x] 3. Overlays: clock and date, weather, next event, open tasks, each on or off; how long each
   photo is shown (for the whole family)
-- [ ] 4. Night mode: time window, dark screen or dimmed clock
+- [x] 4. Night mode: time window, dark screen or dimmed clock
 - [ ] 5. Polish on the real display
 
 **1.1: make it your own**

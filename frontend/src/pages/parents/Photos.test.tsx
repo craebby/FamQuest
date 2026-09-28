@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -130,6 +130,41 @@ describe('Einstellungen des Bilderrahmens', () => {
     expect(puts.map((call) => call.body)).toEqual([
       { ...DEFAULT_FRAME_SETTINGS, show_tasks: true },
       { ...DEFAULT_FRAME_SETTINGS, show_tasks: true, photo_seconds: 30 },
+    ])
+  })
+
+  it('stellt den Nachtmodus ein', async () => {
+    const user = userEvent.setup()
+    let saved: FrameSettings = DEFAULT_FRAME_SETTINGS
+    const calls = mockParents(() => [], {
+      'GET /api/frame/settings': () => Response.json(saved),
+      'PUT /api/frame/settings': (body: unknown) => {
+        saved = body as FrameSettings
+        return Response.json(saved)
+      },
+    })
+    renderApp('/parents/photos')
+
+    const section = within(await screen.findByRole('region', { name: 'Bilderrahmen' }))
+    const toggle = await section.findByRole('switch', { name: 'Nachtmodus einschalten' })
+    expect(toggle).not.toBeChecked()
+    // Zeiten und Darstellung erscheinen erst, wenn der Nachtmodus an ist.
+    expect(section.queryByLabelText('Von')).not.toBeInTheDocument()
+
+    await user.click(toggle)
+    expect(section.getByLabelText('Von')).toHaveValue('22:00')
+    expect(section.getByRole('radio', { name: 'Gedimmte Uhr' })).toBeChecked()
+    await user.click(section.getByRole('radio', { name: 'Schwarz' }))
+    fireEvent.change(section.getByLabelText('Bis'), { target: { value: '06:30' } })
+    // Halb getippte Zeiten werden nicht gespeichert.
+    fireEvent.change(section.getByLabelText('Von'), { target: { value: '' } })
+
+    const puts = () => calls.filter((call) => call.key === 'PUT /api/frame/settings')
+    await waitFor(() => expect(puts()).toHaveLength(3))
+    expect(puts().map((call) => call.body)).toEqual([
+      { ...DEFAULT_FRAME_SETTINGS, night_enabled: true },
+      { ...DEFAULT_FRAME_SETTINGS, night_enabled: true, night_style: 'dark' },
+      { ...DEFAULT_FRAME_SETTINGS, night_enabled: true, night_style: 'dark', night_end: '06:30' },
     ])
   })
 })

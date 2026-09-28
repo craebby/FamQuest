@@ -16,7 +16,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
 > Aufgaben aller und dem Wetter. Phase 4 hat begonnen: Das Display wird zum Bilderrahmen, per
 > Symbol oder nach Leerlauf, mit Uhr, Wetter, nächstem Termin und offenen Aufgaben als
-> Einblendungen; der Nachtmodus folgt (siehe [Roadmap](#roadmap)).
+> Einblendungen und mit Nachtmodus (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -33,7 +33,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
 - Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
-  auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben
+  auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
+  oder gedimmte Uhr)
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -495,6 +496,39 @@ erscheint. Die Einstellungen gelten für die ganze Familie und wirken sofort.
   ruhig als hektisch).
 - Wetter und Termine erscheinen erst, wenn ein Ort bzw. ein Kalender eingerichtet ist.
 
+**Nachtmodus**
+
+Auf derselben Karte sorgt der **Nachtmodus** dafür, dass nachts keine Fotos laufen. Er ist
+standardmäßig aus.
+
+- **Von** und **Bis** legen das Zeitfenster in der Zeitzone der Familie fest; es darf über
+  Mitternacht gehen (Standard 22:00 bis 06:00). Sind beide Zeiten gleich, greift der Nachtmodus nie.
+- **Schwarz**: Der Bildschirm bleibt ganz dunkel. **Gedimmte Uhr**: eine große, dunkelgraue Uhr auf
+  Schwarz. Sie wandert alle 5 Minuten ein Stück, damit sie sich nicht einbrennt.
+- Nachts gibt es keine Einblendungen, und es werden keine Fotos geladen. Am Morgen laufen die Fotos
+  von selbst weiter.
+- Ein Tipp führt weiterhin zu „Heute“. Auf Geräten mit **Start nach Leerlauf** kommt der
+  Nachtbildschirm nach der Leerlaufzeit zurück; auf Geräten ohne erscheint er nur, wenn der
+  Bilderrahmen gestartet wird.
+
+Ein Browser kann die Hintergrundbeleuchtung nicht abschalten: Auch „Schwarz“ leuchtet noch leicht.
+Um das Display wirklich auszuschalten, braucht es einen Befehl auf dem Rechner am Display, z. B.
+per cron:
+
+```cron
+# Wayland (z. B. aktuelles Raspberry Pi OS): um 22:00 aus, um 06:00 an
+0 22 * * * WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 wlr-randr --output HDMI-A-1 --off
+0 6  * * * WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 wlr-randr --output HDMI-A-1 --on
+
+# X11
+0 22 * * * DISPLAY=:0 xset dpms force off
+0 6  * * * DISPLAY=:0 xset dpms force on
+```
+
+Welcher Befehl funktioniert, hängt vom Gerät und vom Desktop ab; `wlr-randr` ohne Argumente zeigt
+die Namen der Ausgänge. Auf älterem Raspberry Pi OS ohne KMS-Treiber geht auch
+`vcgencmd display_power 0`/`1`.
+
 ## Konfiguration
 
 Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
@@ -796,7 +830,7 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
   Leerlauf (je Gerät einstellbar), ein Tipp führt zurück zu „Heute“
 - [x] 3. Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben, jeweils ein- und
   ausschaltbar; Anzeigedauer je Foto (gilt für die Familie)
-- [ ] 4. Nachtmodus: Zeitfenster, dunkler Bildschirm oder gedimmte Uhr
+- [x] 4. Nachtmodus: Zeitfenster, dunkler Bildschirm oder gedimmte Uhr
 - [ ] 5. Feinschliff am echten Display
 
 **1.1: Anpassen**

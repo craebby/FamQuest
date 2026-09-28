@@ -2,18 +2,23 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import ClockIcon from '~icons/fluent-emoji-flat/mantelpiece-clock'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
+import BlackIcon from '~icons/fluent-emoji-flat/black-large-square'
+import MoonIcon from '~icons/fluent-emoji-flat/crescent-moon'
+import NightIcon from '~icons/fluent-emoji-flat/night-with-stars'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import SunCloudIcon from '~icons/fluent-emoji-flat/sun-behind-cloud'
 
 import {
   FRAME_SETTINGS_KEY,
   type FrameSettings,
+  NIGHT_STYLES,
   PHOTO_SECONDS,
   useFrameSettings,
   useSaveFrameSettings,
 } from '../../api/frame'
-import { Alert, Section, Switch } from '../../components/ui'
+import { Alert, Section, Switch, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
+import { parseClockTime } from '../frame/night'
 import { ChoiceTile, Field } from './formParts'
 
 const OVERLAYS = [
@@ -23,7 +28,9 @@ const OVERLAYS = [
   { key: 'show_tasks', icon: StarIcon },
 ] as const
 
-/** Einblendungen und Anzeigedauer des Bilderrahmens; jede Änderung gilt sofort. */
+const NIGHT_STYLE_ICONS = { dark: BlackIcon, clock: MoonIcon } as const
+
+/** Einblendungen, Anzeigedauer und Nachtmodus des Bilderrahmens; jede Änderung gilt sofort. */
 export function FrameSettingsSection() {
   const { t } = useTranslation()
   const settings = useFrameSettings()
@@ -76,6 +83,55 @@ export function FrameSettingsSection() {
                 </ChoiceTile>
               ))}
             </div>
+          </Field>
+          <Field label={t('frame.night')}>
+            <p className="-mt-2 text-base text-slate-500">{t('frame.night_hint')}</p>
+            <div className="flex items-center gap-3">
+              <NightIcon className="size-8 shrink-0" aria-hidden="true" />
+              <Switch
+                checked={data.night_enabled}
+                onChange={(checked) => change({ night_enabled: checked })}
+                label={t('frame.night_enabled')}
+                showLabel
+              />
+            </div>
+            {data.night_enabled && (
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:max-w-md">
+                  {(['night_start', 'night_end'] as const).map((key) => (
+                    // Ungesteuert: Halb getippte Zeiten bleiben stehen, gespeichert wird erst eine
+                    // vollständige.
+                    <TextField
+                      key={key}
+                      type="time"
+                      label={t(`frame.${key}`)}
+                      defaultValue={data[key]}
+                      onChange={(event) => {
+                        const value = event.target.value
+                        if (parseClockTime(value) !== null && value !== data[key])
+                          change({ [key]: value })
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:max-w-md">
+                  {NIGHT_STYLES.map((style) => {
+                    const Icon = NIGHT_STYLE_ICONS[style]
+                    return (
+                      <ChoiceTile
+                        key={style}
+                        name="frame-night-style"
+                        checked={data.night_style === style}
+                        onChange={() => change({ night_style: style })}
+                      >
+                        <Icon className="size-10" aria-hidden="true" />
+                        {t(`frame.night_style.${style}`)}
+                      </ChoiceTile>
+                    )
+                  })}
+                </div>
+              </>
+            )}
           </Field>
         </>
       )}

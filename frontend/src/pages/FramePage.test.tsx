@@ -230,3 +230,47 @@ describe('Start des Bilderrahmens', () => {
     expect(await screen.findByTestId('frame-photo')).toBeInTheDocument()
   })
 })
+
+describe('Nachtmodus', () => {
+  const NIGHT = { night_enabled: true, night_start: '22:00', night_end: '06:00' } as const
+
+  it('zeigt nachts eine gedimmte Uhr statt Fotos und Einblendungen', async () => {
+    // 23:00 UTC ist im Winter Mitternacht in Berlin.
+    vi.useFakeTimers({ shouldAdvanceTime: true, now: new Date('2026-01-15T23:00:00Z') })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    mockFrame([makePhoto()], { ...NIGHT, night_style: 'clock' })
+    renderApp('/frame')
+
+    const night = await screen.findByTestId('frame-night')
+    expect(within(night).getByText('0:00')).toBeInTheDocument()
+    expect(screen.queryByTestId('frame-photo')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('frame-overlays')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Bilderrahmen beenden/ }))
+    expect(await screen.findByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible()
+  })
+
+  it('bleibt nachts ganz schwarz und zeigt am Morgen wieder Fotos', async () => {
+    // Kurz vor 6 Uhr in Berlin.
+    vi.useFakeTimers({ shouldAdvanceTime: true, now: new Date('2026-01-15T04:59:50Z') })
+    mockFrame([makePhoto()], { ...NIGHT, night_style: 'dark' })
+    renderApp('/frame')
+
+    const night = await screen.findByTestId('frame-night')
+    expect(night).toBeEmptyDOMElement()
+    expect(screen.queryByTestId('frame-photo')).not.toBeInTheDocument()
+
+    await act(() => vi.advanceTimersByTimeAsync(20 * 1000))
+    expect(await screen.findByTestId('frame-photo')).toBeInTheDocument()
+    expect(screen.queryByTestId('frame-night')).not.toBeInTheDocument()
+  })
+
+  it('zeigt nachts Fotos, solange der Nachtmodus aus ist', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, now: new Date('2026-01-15T23:00:00Z') })
+    mockFrame([makePhoto()], { ...NIGHT, night_enabled: false })
+    renderApp('/frame')
+
+    expect(await screen.findByTestId('frame-photo')).toBeInTheDocument()
+    expect(screen.queryByTestId('frame-night')).not.toBeInTheDocument()
+  })
+})
