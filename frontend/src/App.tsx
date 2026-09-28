@@ -10,6 +10,7 @@ import { errorMessage } from './errors'
 import { applyFamilyLanguage } from './i18n'
 import { CalendarPage } from './pages/CalendarPage'
 import { FamilyPage } from './pages/FamilyPage'
+import { FramePage } from './pages/FramePage'
 import { LoginPage } from './pages/LoginPage'
 import { ParentsPage } from './pages/ParentsPage'
 import { PersonPage } from './pages/PersonPage'
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/rewards/:memberId" element={<RewardsPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
           </Route>
+          <Route path="/frame" element={<FramePage />} />
           <Route path="/parents/:area?" element={<ParentsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

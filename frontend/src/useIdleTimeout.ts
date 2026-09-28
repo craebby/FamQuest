@@ -2,14 +2,15 @@ import { useEffect, useRef } from 'react'
 
 const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const
 
-/** Ruft `onIdle` auf, wenn so lange keine Eingabe erfolgt ist. */
-export function useIdleTimeout(timeoutMs: number, onIdle: () => void) {
+/** Ruft `onIdle` auf, wenn so lange keine Eingabe erfolgt ist; `null` schaltet das ab. */
+export function useIdleTimeout(timeoutMs: number | null, onIdle: () => void) {
   const onIdleRef = useRef(onIdle)
   useEffect(() => {
     onIdleRef.current = onIdle
   })
 
   useEffect(() => {
+    if (timeoutMs === null) return
     let timer = window.setTimeout(() => onIdleRef.current(), timeoutMs)
     const reset = () => {
       window.clearTimeout(timer)

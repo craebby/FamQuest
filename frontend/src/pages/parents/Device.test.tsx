@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DISPLAY_SIZE_STORAGE_KEY, applyDisplaySize } from '../../displaySize'
+import { FRAME_IDLE_STORAGE_KEY } from '../../frameIdle'
 import i18n from '../../i18n'
 import { makeMe, makeToday, mockApi, renderApp, setupDone } from '../../test/utils'
 
@@ -42,5 +43,22 @@ describe('Einstellungen für dieses Gerät', () => {
     await user.click(screen.getByRole('radio', { name: 'Normal' }))
     expect(document.documentElement.dataset.size).toBeUndefined()
     expect(localStorage.getItem(DISPLAY_SIZE_STORAGE_KEY)).toBeNull()
+  })
+
+  it('speichert den Bilderrahmen nach Leerlauf nur auf dem Gerät, standardmäßig aus', async () => {
+    const user = userEvent.setup()
+    mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
+      'GET /api/today': Response.json(makeToday()),
+    })
+    renderApp('/parents/settings')
+
+    expect(await screen.findByRole('radio', { name: 'Aus' })).toBeChecked()
+    await user.click(screen.getByRole('radio', { name: '5 Minuten' }))
+    expect(localStorage.getItem(FRAME_IDLE_STORAGE_KEY)).toBe('5')
+
+    await user.click(screen.getByRole('radio', { name: 'Aus' }))
+    expect(localStorage.getItem(FRAME_IDLE_STORAGE_KEY)).toBeNull()
   })
 })

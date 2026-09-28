@@ -18,8 +18,12 @@ export interface Photo {
 export const PHOTOS_KEY = ['photos'] as const
 
 /** Alle Fotos, zuletzt hochgeladene zuerst. */
-export function usePhotos() {
-  return useQuery({ queryKey: PHOTOS_KEY, queryFn: () => apiGet<Photo[]>('/photos') })
+export function usePhotos({ refetchInterval }: { refetchInterval?: number } = {}) {
+  return useQuery({
+    queryKey: PHOTOS_KEY,
+    queryFn: () => apiGet<Photo[]>('/photos'),
+    refetchInterval,
+  })
 }
 
 export const uploadPhoto = (file: Blob) => api<Photo>('POST', '/photos', file)

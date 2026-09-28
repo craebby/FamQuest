@@ -14,9 +14,9 @@ services and without external CDNs. The full specification (in German) is in
 > family view for ticking things off, points with daily progress, parent checks, rewards for
 > children, fair sharing between adults and family settings. The display test is done; the rest
 > will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
-> is now a day dashboard with the next events, everyone's tasks and the weather (see
-> Phase 4 has started: a picture frame for the display; photos can already be uploaded in the
-> parents' area (see [Roadmap](#roadmap)).
+> is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 has
+> started: the display becomes a picture frame, started from an icon or after being idle; overlays
+> and night mode follow (see [Roadmap](#roadmap)).
 
 ## Features
 
@@ -31,7 +31,7 @@ services and without external CDNs. The full specification (in German) is in
 - Fair sharing: each adult's share of the week's tasks
 - Google Calendar (read-only): week view on the display, events in each person's colour
 - Weather for your town (Open-Meteo, no API key needed)
-- Upload photos for the picture frame (the picture frame itself follows in phase 4)
+- Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -429,7 +429,7 @@ access at Google.
 ## Photos (picture frame)
 
 Upload the photos for the picture frame in the parents' area under **Photos** (framed picture
-icon). The picture frame that shows them on the display follows in the next stages of phase 4.
+icon).
 
 - **Add photos** picks several photos at once, on a phone straight from the gallery. They are
   uploaded one after another with a progress bar. If a photo fails, it is listed with the reason;
@@ -443,6 +443,20 @@ icon). The picture frame that shows them on the display follows in the next stag
 
 Photos are stored in the `uploads` volume (subfolder `photos`), can only be fetched when signed in
 and are included in the [backup](#backup-and-restore).
+
+**The picture frame on the display**
+
+- As soon as at least one photo is shown, a **Photos** icon (framed picture) appears in the
+  navigation bar. It starts the picture frame.
+- The photos appear full screen in random order with a soft cross-fade, currently every 15 seconds
+  (adjustable in the next stage). Every photo is shown once before any photo comes again.
+- Photos that roughly match the screen fill it. Portrait photos and very different shapes are shown
+  in full, with a blurred copy of the same photo behind them instead of black bars.
+- A tap anywhere ends the picture frame and goes to "Today". That tap doesn't tick off anything.
+- **Start when idle** is set per device under **Settings → This device → Picture frame when
+  idle** (off, 1, 5, 10 or 30 minutes; off by default). Switch it on for the kitchen display and
+  leave it off on parents' phones. It only starts from the everyday views, not in the parents'
+  area.
 
 ## Configuration
 
@@ -734,7 +748,7 @@ When idle, the display turns into a digital picture frame.
 
 - [x] 1. Manage photos: upload several photos at once in the parents' area (from the gallery on a
   phone), stored scaled down and without metadata, hide and show, delete
-- [ ] 2. Picture frame: full screen with cross-fades, random order without repeats, portrait
+- [x] 2. Picture frame: full screen with cross-fades, random order without repeats, portrait
   photos on a blurred background; started from an icon in the navigation bar or after being idle
   (set per device), one tap goes back to "Today"
 - [ ] 3. Overlays: clock and date, weather, next event, open tasks, each on or off; how long each

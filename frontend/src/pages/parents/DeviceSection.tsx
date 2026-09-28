@@ -6,6 +6,12 @@ import SmallIcon from '~icons/fluent-emoji-flat/mobile-phone'
 
 import { Section } from '../../components/ui'
 import { DISPLAY_SIZES, type DisplaySize, getDisplaySize, setDisplaySize } from '../../displaySize'
+import {
+  FRAME_IDLE_OPTIONS,
+  type FrameIdleMinutes,
+  getFrameIdleMinutes,
+  setFrameIdleMinutes,
+} from '../../frameIdle'
 import { ChoiceTile, Field } from './formParts'
 
 const SIZE_ICONS: Record<DisplaySize, typeof NormalIcon> = {
@@ -35,12 +41,13 @@ function useDisplayInfo(size: DisplaySize) {
   return info
 }
 
-/** Einstellungen, die nur für dieses Gerät gelten: Anzeigegröße und Anzeige-Info. */
+/** Einstellungen, die nur für dieses Gerät gelten: Anzeigegröße, Bilderrahmen, Anzeige-Info. */
 export function DeviceSection() {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
   const [size, setSize] = useState<DisplaySize>(getDisplaySize)
   const info = useDisplayInfo(size)
+  const [frameIdle, setFrameIdle] = useState<FrameIdleMinutes>(getFrameIdleMinutes)
   const number = (value: number) =>
     new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(value)
 
@@ -66,6 +73,26 @@ export function DeviceSection() {
               </ChoiceTile>
             )
           })}
+        </div>
+      </Field>
+      <Field label={t('device.frame_idle')}>
+        <p className="-mt-1 text-base text-slate-500">{t('device.frame_idle_hint')}</p>
+        <div className="grid grid-cols-3 gap-3 sm:max-w-2xl sm:grid-cols-5">
+          {FRAME_IDLE_OPTIONS.map((minutes) => (
+            <ChoiceTile
+              key={minutes}
+              name="frame-idle"
+              checked={frameIdle === minutes}
+              onChange={() => {
+                setFrameIdleMinutes(minutes)
+                setFrameIdle(minutes)
+              }}
+            >
+              {minutes === 0
+                ? t('device.frame_idle_off')
+                : t('device.frame_idle_minutes', { count: minutes })}
+            </ChoiceTile>
+          ))}
         </div>
       </Field>
       <p className="text-base text-slate-600" data-testid="display-info">

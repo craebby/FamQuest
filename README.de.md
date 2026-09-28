@@ -14,8 +14,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
 > Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) ist
 > fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
-> Aufgaben aller und dem Wetter. Phase 4 hat begonnen: ein Bilderrahmen für das Display; Fotos
-> lassen sich schon im Elternbereich hochladen (siehe [Roadmap](#roadmap)).
+> Aufgaben aller und dem Wetter. Phase 4 hat begonnen: Das Display wird zum Bilderrahmen, per
+> Symbol oder nach Leerlauf; Einblendungen und Nachtmodus folgen (siehe [Roadmap](#roadmap)).
 
 ## Features
 
@@ -31,7 +31,7 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 - Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
-- Fotos für den Bilderrahmen hochladen (der Bilderrahmen selbst folgt in Phase 4)
+- Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -449,7 +449,7 @@ trennen widerruft den Zugriff auch bei Google.
 ## Fotos (Bilderrahmen)
 
 Im Elternbereich unter **Fotos** (Symbol Bilderrahmen) ladet ihr die Fotos für den Bilderrahmen
-hoch. Der Bilderrahmen selbst, der sie am Display zeigt, folgt in den nächsten Etappen von Phase 4.
+hoch.
 
 - **Fotos hinzufügen** wählt mehrere Fotos auf einmal, am Handy direkt aus der Galerie. Sie gehen
   nacheinander hoch; ein Balken zeigt den Fortschritt. Scheitert ein Foto, steht es mit Grund in
@@ -464,6 +464,20 @@ hoch. Der Bilderrahmen selbst, der sie am Display zeigt, folgt in den nächsten 
 
 Die Fotos liegen im Volume `uploads` (Unterordner `photos`), sind nur mit Anmeldung abrufbar und
 werden vom [Backup](#backup-und-restore) mit erfasst.
+
+**Der Bilderrahmen am Display**
+
+- Sobald mindestens ein Foto gezeigt wird, erscheint in der Navigationsleiste das Symbol **Fotos**
+  (gerahmtes Bild). Es startet den Bilderrahmen.
+- Die Fotos erscheinen im Vollbild in zufälliger Reihenfolge mit weicher Überblendung, vorerst alle
+  15 Sekunden (einstellbar ab der nächsten Etappe). Jedes Foto kommt einmal dran, bevor sich eines
+  wiederholt.
+- Fotos, die ungefähr zum Bildschirm passen, füllen ihn aus. Hochformat und stark abweichende
+  Formate erscheinen ganz, dahinter dasselbe Foto unscharf statt schwarzer Balken.
+- Ein Tipp irgendwohin beendet den Bilderrahmen und führt zu „Heute“. Dieser Tipp hakt nichts ab.
+- **Start nach Leerlauf** stellt ihr je Gerät ein: **Einstellungen → Dieses Gerät → Bilderrahmen
+  nach Leerlauf** (aus, 1, 5, 10 oder 30 Minuten; standardmäßig aus). Am Küchendisplay einschalten,
+  auf den Eltern-Handys aus lassen. Er startet nur aus den Alltagsansichten, nicht im Elternbereich.
 
 ## Konfiguration
 
@@ -761,7 +775,7 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 
 - [x] 1. Fotos verwalten: im Elternbereich mehrere Fotos auf einmal hochladen (am Handy aus der
   Galerie), verkleinert und ohne Metadaten gespeichert, ein- und ausblenden, löschen
-- [ ] 2. Bilderrahmen: Vollbild mit Überblendung, zufällige Reihenfolge ohne Wiederholung,
+- [x] 2. Bilderrahmen: Vollbild mit Überblendung, zufällige Reihenfolge ohne Wiederholung,
   Hochformat mit unscharfem Hintergrund; Start per Symbol in der Navigationsleiste oder nach
   Leerlauf (je Gerät einstellbar), ein Tipp führt zurück zu „Heute“
 - [ ] 3. Einblendungen: Uhr und Datum, Wetter, nächster Termin, offene Aufgaben, jeweils ein- und

@@ -44,7 +44,8 @@
     "pending_one": "{{count}} task waiting for a check",
     "pending_other": "{{count}} tasks waiting for a check",
     "calendar": "Calendar",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "frame": "Photos"
   },
   "family": {
     "no_members": "No family members yet",
@@ -513,7 +514,12 @@
     "size_small": "Small",
     "size_normal": "Normal",
     "size_large": "Large",
-    "info": "Display: {{width}} × {{height}} px, scaling {{ratio}}, base font {{font}} px"
+    "info": "Display: {{width}} × {{height}} px, scaling {{ratio}}, base font {{font}} px",
+    "frame_idle": "Picture frame when idle",
+    "frame_idle_hint": "Applies to this device only. If nobody touches the display for this long, it shows the photos. A tap goes back to “Today”. On a phone, “Off” is best.",
+    "frame_idle_off": "Off",
+    "frame_idle_minutes_one": "{{count}} minute",
+    "frame_idle_minutes_other": "{{count}} minutes"
   },
   "calendar": {
     "section": "Calendar",
@@ -678,5 +684,9 @@
     "delete": "Delete",
     "delete_confirm": "Really delete this photo?",
     "deleted": "The photo has been deleted."
+  },
+  "frame": {
+    "exit": "Close the picture frame and go back to “Today”",
+    "empty": "No photos yet. You can upload some in the parent area under “Photos”."
   }
 }

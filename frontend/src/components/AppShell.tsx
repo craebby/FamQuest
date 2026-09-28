@@ -1,14 +1,18 @@
-import type { ComponentType, SVGProps } from 'react'
+import { type ComponentType, type SVGProps, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet, useLocation } from 'react-router'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
+import PhotoIcon from '~icons/fluent-emoji-flat/framed-picture'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
 
 import { useCalendarStatus } from '../api/calendar'
+import { usePhotos } from '../api/photos'
 import { useToday } from '../api/today'
+import { getFrameIdleMinutes } from '../frameIdle'
+import { useIdleTimeout } from '../useIdleTimeout'
 
 interface NavItemProps {
   to: string
@@ -65,6 +69,14 @@ export function AppShell() {
   const pending = useToday().data?.pending_approvals ?? 0
   // Den Kalender gibt es erst, wenn im Elternbereich einer ausgewählt ist.
   const calendarEnabled = useCalendarStatus().data?.enabled ?? false
+  // Den Bilderrahmen gibt es erst, wenn mindestens ein Foto sichtbar ist.
+  const hasPhotos = usePhotos().data?.some((photo) => photo.visible) ?? false
+  // Nach Leerlauf nur, wenn es auf diesem Gerät eingeschaltet ist (gelesen beim Betreten).
+  const [idleMinutes] = useState(getFrameIdleMinutes)
+  const navigate = useNavigate()
+  useIdleTimeout(hasPhotos && idleMinutes > 0 ? idleMinutes * 60 * 1000 : null, () =>
+    navigate('/frame'),
+  )
 
   return (
     <div className="flex min-h-dvh flex-col sm:flex-row">
@@ -88,6 +100,9 @@ export function AppShell() {
             icon={CalendarIcon}
             active={pathname.startsWith('/calendar')}
           />
+        )}
+        {hasPhotos && (
+          <NavItem to="/frame" label={t('nav.frame')} icon={PhotoIcon} active={false} />
         )}
         {/* Einstellungen abgesetzt am Ende der Leiste. */}
         <NavItem

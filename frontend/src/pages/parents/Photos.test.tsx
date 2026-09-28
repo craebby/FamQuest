@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Photo } from '../../api/photos'
 import i18n from '../../i18n'
-import { makeMe, makeToday, mockApi, renderApp, setupDone } from '../../test/utils'
+import { makeMe, makePhoto, makeToday, mockApi, renderApp, setupDone } from '../../test/utils'
 
 beforeEach(async () => {
   await i18n.changeLanguage('de')
@@ -13,21 +13,6 @@ beforeEach(async () => {
 afterEach(() => {
   vi.unstubAllGlobals()
 })
-
-function makePhoto(overrides: Partial<Photo> = {}): Photo {
-  const id = overrides.id ?? 1
-  return {
-    id,
-    url: `/api/photo-files/${id}.webp`,
-    thumb_url: `/api/photo-files/${id}-thumb.webp`,
-    width: 2560,
-    height: 1920,
-    taken_at: '2025-12-24T18:30:05',
-    visible: true,
-    created_at: '2026-09-28T12:00:00Z',
-    ...overrides,
-  }
-}
 
 function mockParents(photos: () => Photo[], extra = {}) {
   return mockApi({

@@ -6,6 +6,7 @@ import { vi } from 'vitest'
 import App from '../App'
 import type { Me } from '../api/auth'
 import type { Member } from '../api/members'
+import type { Photo } from '../api/photos'
 import type { Reward } from '../api/rewards'
 import type { Today, TodayTask } from '../api/today'
 
@@ -105,6 +106,21 @@ export function makeReward(overrides: Partial<Reward> = {}): Reward {
     description: '',
     cost: 10,
     active: true,
+    ...overrides,
+  }
+}
+
+export function makePhoto(overrides: Partial<Photo> = {}): Photo {
+  const id = overrides.id ?? 1
+  return {
+    id,
+    url: `/api/photo-files/${id}.webp`,
+    thumb_url: `/api/photo-files/${id}-thumb.webp`,
+    width: 2560,
+    height: 1920,
+    taken_at: '2025-12-24T18:30:05',
+    visible: true,
+    created_at: '2026-09-28T12:00:00Z',
     ...overrides,
   }
 }

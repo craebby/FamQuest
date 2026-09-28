@@ -44,7 +44,8 @@
     "pending_one": "{{count}} Aufgabe wartet auf Kontrolle",
     "pending_other": "{{count}} Aufgaben warten auf Kontrolle",
     "calendar": "Kalender",
-    "tasks": "Aufgaben"
+    "tasks": "Aufgaben",
+    "frame": "Fotos"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -513,7 +514,12 @@
     "size_small": "Klein",
     "size_normal": "Normal",
     "size_large": "Groß",
-    "info": "Anzeige: {{width}} × {{height}} px, Skalierung {{ratio}}, Grundschrift {{font}} px"
+    "info": "Anzeige: {{width}} × {{height}} px, Skalierung {{ratio}}, Grundschrift {{font}} px",
+    "frame_idle": "Bilderrahmen nach Leerlauf",
+    "frame_idle_hint": "Gilt nur auf diesem Gerät. Hat so lange niemand das Display berührt, zeigt es die Fotos. Ein Tipp führt zurück zu „Heute“. Am Handy am besten „Aus“.",
+    "frame_idle_off": "Aus",
+    "frame_idle_minutes_one": "{{count}} Minute",
+    "frame_idle_minutes_other": "{{count}} Minuten"
   },
   "calendar": {
     "section": "Kalender",
@@ -678,5 +684,9 @@
     "delete": "Löschen",
     "delete_confirm": "Foto wirklich löschen?",
     "deleted": "Das Foto ist gelöscht."
+  },
+  "frame": {
+    "exit": "Bilderrahmen beenden, zurück zu „Heute“",
+    "empty": "Noch keine Fotos. Im Elternbereich unter „Fotos“ kannst du welche hochladen."
   }
 }
