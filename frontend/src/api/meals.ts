@@ -57,8 +57,9 @@ export const useSaveMealSettings = () =>
   )
 
 /** Essensplan einer Woche; `offset` 0 = aktuelle Woche. Plant jemand am Handy, zieht das Display nach. */
-export function useMealWeek(offset: number) {
+export function useMealWeek(offset: number, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: [...MEAL_WEEK_KEY, offset],
     queryFn: () => apiGet<MealWeek>(`/meals/week?offset=${offset}`),
     refetchInterval: 5 * 60 * 1000,

@@ -21,7 +21,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 
 ## Features
 
-- Startseite „Heute“: Uhr, Wetter, die nächsten Termine und die Aufgaben aller auf einen Blick
+- Startseite „Heute“ als Wochen-Dashboard: Uhr und Wetter, die aktuelle Routine der Kinder und die
+  nächsten sieben Tage mit Terminen und Essen
 - Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
 - Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig, flexibel „etwa alle X Tage“) und
   Tagesabschnitte
@@ -209,36 +210,30 @@ bleibt.
 
 ## Heute (Startseite)
 
-Die Startseite ist ein Tages-Dashboard fürs Wanddisplay: oben Familienname, Datum und eine große Uhr,
-darunter drei Spalten (auf schmalen Bildschirmen untereinander):
+Die Startseite ist ein Wochen-Dashboard fürs Wanddisplay (auf schmalen Bildschirmen untereinander):
 
-- **Wetter** jetzt (Symbol, Temperatur, Beschreibung), heute Höchst-/Tiefstwert und
-  Regenwahrscheinlichkeit (ab 50 % mit Regenschirm), dazu die nächsten zwei Tage. Den Ort legen die
+- **Kopf:** Familienname, Datum, das **Wetter** klein (Symbol, Temperatur jetzt, heute Höchst-/
+  Tiefstwert, ab 50 % Regenwahrscheinlichkeit ein Schirm) und eine große Uhr. Den Ort legen die
   Eltern im Elternbereich unter **Kalender & Wetter** fest (Name oder Postleitzahl suchen, dann aus
-  der Liste wählen).
-- **Termine**: die nächsten 5 Termine aus dem Kalender (laufende und kommende, bis zwei Wochen im
-  Voraus), jeweils mit „Heute“, „Morgen“ oder Datum, in der Personenfarbe mit Avataren. Darüber ein
-  Feiertag oder Ferien von heute. Ein Tipp öffnet die Details, der Pfeil die Wochenansicht.
-- **Aufgaben**: eine Zeile pro Person mit Avatar, Fortschrittsbalken, Punkten (Kinder) und den
-  heutigen Aufgaben als kleine Symbole mit kurzem Titel, gruppiert wie am Display: morgens,
-  nachmittags, abends (jede Routine in ihrer Reihenfolge, der aktuelle Tagesabschnitt
-  hinterlegt), dann „Jederzeit“ und die Extras. Erwachsene sehen statt eines Balkens ihren Anteil an der Woche.
-  **Ein Tipp** erledigt eine Aufgabe wie in
-  der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern, Avatar bei „Einer für
-  alle“); nochmal tippen macht es rückgängig. Der Avatar öffnet die Personenansicht, der Pfeil die
-  Familienansicht.
-- **Essen**: was es heute gibt, mit großem Symbol; ist noch nichts geplant, führt ein Tipp zum
-  Essensplan (siehe [Essensplan](#essensplan)).
+  der Liste wählen); ohne Ort steht dort „Wetter einrichten“.
+- **Routine der Kinder:** nur die Kinder, nur der aktuelle Tagesabschnitt (morgens, mittags,
+  nachmittags, abends) mit seinen Aufgaben als Symbole. **Ein Tipp** erledigt eine Aufgabe wie in
+  der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern); nochmal tippen macht es
+  rückgängig. Ist alles geschafft oder gerade keine Routine dran, steht beim Kind nur **„Alles
+  erledigt“**. Der Avatar öffnet die Personenansicht, der Pfeil die Aufgaben. Die Aufgaben der
+  Erwachsenen stehen nicht auf der Startseite, sondern unter **Aufgaben**.
 - **Einkauf** ist ein Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phase 6).
+- **Die nächsten sieben Tage** ab heute über die ganze Breite: je Tag Feiertage oder Ferien, die
+  Termine in der Personenfarbe (ein Tipp öffnet die Details) und **unten das Essen** mit Foto oder
+  Symbol und Namen, z. B. „Ofengemüse mit Würstchen“. Ein Tipp aufs Essen oder aufs **+** trägt
+  direkt ein (siehe [Essensplan](#essensplan)). Ohne Kalender steht dort „Kalender verbinden“,
+  das Essen erscheint trotzdem.
 
-Ohne Ort oder Kalender zeigen die Kacheln einen kurzen Hinweis mit Knopf zum Elternbereich.
-
-**Startseite anpassen:** Das Zahnrad auf „Heute“ fragt die Eltern-PIN ab und zeigt dann alle
-Kacheln als Liste. Jede Kachel lässt sich ein- und ausschalten und mit den Pfeilen nach oben oder
-unten schieben; „Standard wiederherstellen“ holt den ursprünglichen Aufbau zurück. Der Aufbau wird
-auf dem Server gespeichert und gilt für alle Displays der Familie. Die zuschaltbare Kachel
-**Woche** zeigt je Person und Tag einen Ring (voller Ring = alles geschafft); der Pfeil öffnet die
-Wochenansicht im Aufgabenbereich.
+**Startseite anpassen:** Das Zahnrad auf „Heute“ fragt die Eltern-PIN ab und zeigt dann die
+Bereiche Wetter, Routine der Kinder, Einkauf, Termine und Essen. Jeder lässt sich ein- und
+ausschalten, die Anordnung ist fest; „Standard wiederherstellen“ schaltet alles wieder ein. Die
+Einstellung wird auf dem Server gespeichert und gilt für alle Displays der Familie. Die Wochen-
+übersicht der Aufgaben (Ringe je Person) gibt es im Aufgabenbereich unter „Woche“.
 
 ## Familienansicht
 
@@ -847,8 +842,8 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
 - [x] 8. Routinen als eigene Blöcke: je Kind, Tagesabschnitt und Wochentagen (z. B. abgespeckter
   Abend am Wochenende), nummerierte und optionale Schritte, auf ein anderes Kind kopieren
 - [ ] 9. Feinschliff am echten Display; alltagsnahe Aufgaben-Vorlagen und Belohnungs-Vorschläge
-  (erledigt); das Wochen-Widget der Startseite bleibt vorerst, wie es ist (noch offen, ob es gebraucht
-  wird)
+  (erledigt); das Wochen-Widget der Startseite ist mit dem Wochen-Dashboard (Phase 5, Etappe 3)
+  entfallen
 
 **Bilderrahmen (Phase 4)**
 
@@ -891,9 +886,12 @@ Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte 
   sich in den Einstellungen zuschalten; die Kachel „Essen“ auf „Heute“ zeigt das heutige Essen
 - [x] 2. Gerichte verwalten: umbenennen, Symbol ändern, Foto hochladen, löschen (über den Stift
   im Essensplan, ohne PIN)
-- [ ] 3. Wünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
+- [x] 3. „Heute“ als Wochen-Dashboard: oben Uhr und Wetter klein, darunter die aktuelle Routine der
+  Kinder und Platz für den Einkauf, unten breit die nächsten 7 Tage mit Terminen und Essen; Bereiche
+  per Zahnrad ein- und ausschalten; Aufgaben der Erwachsenen nur noch unter „Aufgaben“
+- [ ] 4. Wünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
-- [ ] 4. Feinschliff
+- [ ] 5. Feinschliff
 
 **Später (Phase 6 der Spezifikation)**
 
@@ -909,6 +907,9 @@ Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte 
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
 - Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
+- Erwachsene eigenständiger: ein Putzplan (wiederkehrende Hausarbeit mit „wie dringend“, ähnlich
+  Tody) und echte Todos zum Dran-Denken, getrennt von Routinen und Punkten der Kinder; für jede Person
+  abschaltbar, weil manche ihre Todos woanders pflegen
 
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst

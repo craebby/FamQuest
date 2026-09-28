@@ -21,7 +21,8 @@ services and without external CDNs. The full specification (in German) is in
 
 ## Features
 
-- "Today" start page: clock, weather, the next events and everyone's tasks at a glance
+- "Today" as a week dashboard: clock and weather, the children's current routine and the next seven
+  days with events and meals
 - Family view with one column per person; complete a task with a single tap
 - Routines (daily, specific weekdays, Mon–Fri, once, flexible "about every X days") and times of day
 - Routines in a fixed order per person, optional extra tasks in their own block
@@ -204,32 +205,29 @@ steps become one version, the order is kept.
 
 ## Today (start page)
 
-The start page is a day dashboard for the wall display: family name, date and a large clock at the
-top, below it three columns (stacked on narrow screens):
+The start page is a week dashboard for the wall display (stacked on narrow screens):
 
-- **Weather** now (icon, temperature, description), today's high/low and chance of rain (with an
-  umbrella from 50 %), plus the next two days. Parents choose the town in the parents' area under
-  **Calendar & weather** (search by name or postcode, then pick from the list).
-- **Events**: the next 5 events from the calendar (ongoing and upcoming, up to two weeks ahead),
-  each with "Today", "Tomorrow" or the date, in the person's colour with avatars. Today's public
-  or school holiday is shown above. A tap opens the details, the arrow opens the week view.
-- **Tasks**: one row per person with avatar, progress bar, points (children) and today's tasks as
-  small icons with a short title, grouped like on the display: morning, afternoon, evening (each
-  routine in its order, the current time of day highlighted), then "anytime" and the extras.
-  Adults see their share of the week instead of a progress bar. **One tap** completes a task, just like in the family view
-  (with "+2", hourglass for parent checks, avatar for "One for all"); tap again to undo. The
-  avatar opens the person view, the arrow opens the family view.
-- **Meals**: what's for today, with a large icon; if nothing is planned yet, a tap opens the meal
-  plan (see [Meal plan](#meal-plan)).
+- **Top:** family name, date, a small **weather** (icon, current temperature, today's high/low, an
+  umbrella from 50 % chance of rain) and a large clock. Parents choose the town in the parents' area
+  under **Calendar & weather** (search by name or postcode, then pick from the list); without a
+  town it says "Set up weather".
+- **Children's routine:** only the children, only the current time of day (morning, midday,
+  afternoon, evening) with its tasks as icons. **One tap** completes a task, just like in the family
+  view (with "+2", hourglass for parent checks); tap again to undo. When everything is done, or no
+  routine is due right now, the child just shows **"All done"**. The avatar opens the person view,
+  the arrow opens the tasks. Adults' tasks are not on the start page but under **Tasks**.
 - **Shopping** is a placeholder, clearly marked "Coming soon" (phase 6).
+- **The next seven days** from today across the full width: public or school holidays, the events
+  in each person's colour (a tap opens the details) and **the meal at the bottom** of each day with
+  its photo or icon and name, e.g. "Oven vegetables with sausages". A tap on the meal or the **+**
+  plans it right there (see [Meal plan](#meal-plan)). Without a calendar it says "Connect a
+  calendar"; the meals still show.
 
-Without a town or calendar the widgets show a short hint with a button to the parents' area.
-
-**Customising the start page:** the gear on "Today" asks for the parents' PIN and then shows all
-tiles in a list. Each tile can be switched on or off and moved up or down with the arrows;
-"Restore default" brings back the original layout. The layout is stored on the server and applies
-to every display of the family. An optional **Week** tile shows one ring per person and day (full
-ring = everything done); a tap on the arrow opens the week view of the tasks area.
+**Customising the start page:** the gear on "Today" asks for the parents' PIN and then lists the
+sections weather, children's routine, shopping, events and meals. Each can be switched on or off;
+the arrangement is fixed. "Restore default" switches everything back on. The setting is stored on
+the server and applies to every display of the family. The week overview of tasks (one ring per
+person) lives in the tasks area under "Week".
 
 ## Family view
 
@@ -818,7 +816,7 @@ use.
 - [x] 8. Routines as their own blocks: per child, time of day and weekdays (e.g. a lighter
   weekend evening), numbered and optional steps, copy to another child
 - [ ] 9. Polish on the real display; everyday task templates and reward suggestions (done); the
-  week widget on the start page stays as it is for now (unclear whether it's needed)
+  week widget on the start page was replaced by the week dashboard (phase 5, stage 3)
 
 **Picture frame (phase 4)**
 
@@ -862,9 +860,13 @@ Plan the week's meals right on the display; children can wish for a dish.
   settings; the "Meals" tile on "Today" shows today's food
 - [x] 2. Manage dishes: rename, change the icon, upload a photo, delete (via the pencil in the meal
   plan, no PIN)
-- [ ] 3. Children's wishes: tap your avatar and a dish on the display; parents add it to the plan
+- [x] 3. "Today" as a week dashboard: clock and a small weather at the top, below the children's
+  current routine and room for shopping, at the bottom the next 7 days across the full width with
+  events and meals; sections can be switched on and off with the gear; adults' tasks only under
+  "Tasks"
+- [ ] 4. Children's wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
-- [ ] 4. Polish
+- [ ] 5. Polish
 
 **Later (phase 6 of the specification)**
 
@@ -879,6 +881,9 @@ Plan the week's meals right on the display; children can wish for a dish.
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 - Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
+- More independent adults: a cleaning plan (recurring housework with "how urgent", similar to Tody)
+  and real to-dos to remember, separate from the children's routines and points; optional per
+  person, since some people keep their to-dos elsewhere
 
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one

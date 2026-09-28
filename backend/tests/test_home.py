@@ -8,7 +8,6 @@ DEFAULT = [
     {"id": "tasks", "visible": True},
     {"id": "meals", "visible": True},
     {"id": "shopping", "visible": True},
-    {"id": "week", "visible": False},
 ]
 
 
@@ -25,7 +24,6 @@ def test_default_layout(client, admin):
 def test_parents_change_order_and_visibility(client, parent):
     tiles = [
         {"id": "tasks", "visible": True},
-        {"id": "week", "visible": True},
         {"id": "weather", "visible": False},
         {"id": "events", "visible": True},
         {"id": "meals", "visible": False},
@@ -49,7 +47,6 @@ def test_missing_tiles_are_added_at_the_end(client, parent):
         "weather",
         "meals",
         "shopping",
-        "week",
     ]
     assert get_layout(client)[0] == {"id": "events", "visible": False}
 
@@ -58,13 +55,15 @@ def test_unknown_tiles_in_database_are_ignored(client, admin):
     with SessionLocal() as db:
         get_family(db).home_layout = [
             {"id": "horoscope", "visible": True},
+            # Die frühere Kachel „Woche“ gibt es nicht mehr.
             {"id": "week", "visible": True},
-            {"id": "week", "visible": False},
+            {"id": "meals", "visible": False},
+            {"id": "meals", "visible": True},
         ]
         db.commit()
 
     tiles = get_layout(client)
-    assert tiles[0] == {"id": "week", "visible": True}
+    assert tiles[0] == {"id": "meals", "visible": False}
     assert len(tiles) == len(DEFAULT)
 
 
@@ -81,7 +80,7 @@ def test_invalid_layouts_are_rejected(client, parent):
 
 
 def test_changes_need_unlocked_parent_area(client, admin):
-    tiles = [{"id": "week", "visible": True}]
+    tiles = [{"id": "meals", "visible": False}]
     assert (
         client.put("/api/home/layout", json={"tiles": tiles}, headers=csrf(admin)).status_code
         == 403

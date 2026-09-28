@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 
-import type { Recurrence, TimeOfDay } from '../api/tasks'
+import type { Recurrence, TaskData, TimeOfDay } from '../api/tasks'
 import { iconId } from '../icons/catalog'
 import { WORKDAYS } from '../weekdays'
 
@@ -388,3 +388,29 @@ export const taskTemplateTitle = (t: TFunction, template: TaskTemplate) =>
   t(`tasks.${template.id}`, { ns: 'pool' })
 
 export const taskTemplateIcon = (template: TaskTemplate) => iconId(template.icon)
+
+/** Aufgabe aus einer Vorlage, wie sie der Editor nach „Aus Vorlagen wählen“ speichern würde. */
+export function templateTask(
+  template: TaskTemplate,
+  title: string,
+  memberIds: number[],
+  today: string,
+): TaskData {
+  const { recurrence } = template
+  return {
+    title,
+    icon: taskTemplateIcon(template),
+    description: '',
+    points: template.points,
+    time_of_day: template.extra ? null : template.time_of_day,
+    extra: template.extra ?? false,
+    color: null,
+    active: true,
+    needs_approval: template.needs_approval ?? false,
+    // Bei nur einer Person hat „Einer für alle“ keine Wirkung.
+    shared: (template.shared ?? false) && memberIds.length > 1,
+    // Flexible Aufgaben sind ab heute fällig.
+    recurrence: recurrence.kind === 'flexible' ? { ...recurrence, date: today } : recurrence,
+    member_ids: memberIds,
+  }
+}

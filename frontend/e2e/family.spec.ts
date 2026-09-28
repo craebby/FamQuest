@@ -65,7 +65,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
 
   // Noch keine Personen: Startseite und Familienansicht verweisen auf den Elternbereich.
   await expect(page.getByRole('heading', { name: 'Familie Sonnenschein' })).toBeVisible()
-  await expect(page.getByText('Im Elternbereich könnt ihr eure Familie anlegen.')).toBeVisible()
+  await expect(page.getByText('Im Elternbereich könnt ihr Kinder anlegen.')).toBeVisible()
   await toTasks(page)
   await expect(page.getByRole('heading', { name: 'Noch keine Familienmitglieder' })).toBeVisible()
 
@@ -291,56 +291,46 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   await expect(soon).toBeHidden()
 })
 
-test('Startseite: Aufgaben mit einem Tipp, Hinweise und Platz für später', async ({ page }) => {
+test('Startseite: Routine der Kinder, Hinweise und Platz für später', async ({ page }) => {
   await login(page)
 
+  // Nur die Kinder; welche Aufgaben gerade dran sind, hängt von der Uhrzeit ab.
   await expect(page.getByRole('link', { name: 'Alle Aufgaben öffnen' })).toBeVisible()
-  const lena = page.getByRole('listitem', { name: 'Aufgaben von Lena' })
-  const teeth = lena.getByRole('button', { name: /^Zähne putzen/ })
-  const pressed = await teeth.getAttribute('aria-pressed')
-  const saved = page.waitForResponse((response) => response.url().includes('/api/today/tasks/'))
-  await teeth.tap()
-  await expect(teeth).not.toHaveAttribute('aria-pressed', pressed!)
-  expect((await saved).status()).toBe(204)
-  await page.reload()
-  await expect(teeth).not.toHaveAttribute('aria-pressed', pressed!)
+  await expect(page.getByRole('listitem', { name: 'Aufgaben von Lena' })).toBeVisible()
+  await expect(page.getByRole('listitem', { name: 'Aufgaben von Papa' })).toBeHidden()
 
   // Ohne Ort und Kalender: Hinweise auf den Elternbereich; der Einkauf kommt später.
-  await expect(
-    page.getByRole('region', { name: 'Wetter' }).getByRole('link', { name: 'Einrichten' }),
-  ).toBeVisible()
-  await expect(
-    page.getByRole('region', { name: 'Termine' }).getByRole('link', { name: 'Einrichten' }),
-  ).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Wetter einrichten' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Kalender verbinden' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Kommt bald')
+  await expect(page.locator('section[aria-current="date"]')).toHaveCount(1)
 })
 
-test('Essensplan: am Display ohne PIN eintragen, Startseite zeigt das heutige Essen', async ({
-  page,
-}) => {
+test('Essen: auf der Startseite ohne PIN eintragen, mit eigenem Foto', async ({ page }) => {
   await login(page)
 
-  const meals = page.getByRole('region', { name: 'Essen' })
-  await meals.getByRole('link', { name: 'Heute ist noch nichts geplant' }).tap()
   const today = page.locator('section[aria-current="date"]')
   await today.getByRole('button', { name: 'Abendessen eintragen' }).tap()
   await page
     .getByRole('list', { name: 'Vorschläge' })
     .getByRole('button', { name: 'Nudeln mit Tomatensoße' })
     .tap()
-  await expect(
-    today.getByRole('button', { name: 'Abendessen: Nudeln mit Tomatensoße, ändern' }),
-  ).toBeVisible()
+  const dish = today.getByRole('button', { name: 'Abendessen: Nudeln mit Tomatensoße, ändern' })
+  await expect(dish).toBeVisible()
 
+  // Die Ansicht „Essen“ zeigt dasselbe.
+  await page
+    .getByRole('navigation', { name: 'Hauptnavigation' })
+    .getByRole('link', { name: 'Essen' })
+    .tap()
+  await expect(dish).toBeVisible()
   await page
     .getByRole('navigation', { name: 'Hauptnavigation' })
     .getByRole('link', { name: 'Heute' })
     .tap()
-  await expect(meals).toContainText('Nudeln mit Tomatensoße')
 
   // Eigenes Foto zum Gericht: im echten Cropper zuschneiden, danach statt des Symbols überall.
-  await meals.getByRole('link', { name: 'Essensplan öffnen' }).tap()
-  await today.getByRole('button', { name: 'Abendessen: Nudeln mit Tomatensoße, ändern' }).tap()
+  await dish.tap()
   await page.getByRole('button', { name: 'Nudeln mit Tomatensoße bearbeiten' }).tap()
   await page.getByTestId('dish-photo-input').setInputFiles({
     name: 'nudeln.png',
@@ -369,7 +359,7 @@ test('Wochenansicht im Aufgabenbereich', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Diese Woche' })).toBeVisible()
 })
 
-test('Startseite anpassen: mit PIN Kacheln ein- und ausschalten, gilt nach dem Neuladen', async ({
+test('Startseite anpassen: mit PIN Bereiche ein- und ausschalten, gilt nach dem Neuladen', async ({
   page,
 }) => {
   await login(page)
@@ -378,13 +368,14 @@ test('Startseite anpassen: mit PIN Kacheln ein- und ausschalten, gilt nach dem N
   await enterPin(page, PIN)
   const editor = page.getByRole('region', { name: 'Startseite anpassen' })
   await editor.getByRole('switch', { name: 'Einkauf anzeigen' }).click()
-  await editor.getByRole('switch', { name: 'Woche anzeigen' }).click()
+  await editor.getByRole('switch', { name: 'Wetter anzeigen' }).click()
   await editor.getByRole('button', { name: 'Speichern' }).click()
   await expect(editor).toBeHidden()
 
   await page.reload()
-  await expect(page.getByRole('region', { name: 'Woche' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Die nächsten sieben Tage' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Einkauf' })).toBeHidden()
+  await expect(page.getByRole('link', { name: 'Wetter einrichten' })).toBeHidden()
   // Nach dem Speichern ist der Elternbereich wieder gesperrt.
   await page.getByRole('link', { name: 'Einstellungen' }).click()
   await expect(page.getByRole('heading', { name: 'Eltern-PIN eingeben' })).toBeVisible()

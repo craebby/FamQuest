@@ -77,6 +77,7 @@ Einfach anfangen: festlegen, was es in der Woche gibt.
 - Gerichte werden eingetippt, nicht vorher verwaltet. Vorschläge kommen aus den bisherigen Gerichten der Familie (zuletzt geplante zuerst) und aus rund 50 gängigen Standardgerichten; das Symbol wird zum Namen gewählt und ist änderbar. Gleicher Name in anderer Schreibweise ist dasselbe Gericht.
 - Geplant wird direkt in der Ansicht „Essen“ (Navigationsleiste), bewusst **ohne Eltern-PIN** – eine Ausnahme vom Grundsatz „keine Verwaltung im Alltagsbereich“, weil jeder Erwachsene am Kühlschrank schnell eintragen können soll. Eine PIN lässt sich später nachrüsten.
 - Gerichte verwalten (umbenennen, Symbol, eigenes Foto statt Symbol, löschen) geht ebenfalls ohne PIN über den Stift im Eintrage-Dialog.
+- „Heute“ wird dabei zum Wochen-Dashboard: Kopf mit Uhr und Wetter klein, die aktuelle Routine der Kinder (sonst „Alles erledigt“), Platz für den Einkauf, darunter über die ganze Breite die nächsten sieben Tage mit Terminen und dem Essen am Tagesende (Symbol + Text). Bereiche lassen sich per Zahnrad ein- und ausschalten, die Anordnung ist fest. Aufgaben der Erwachsenen stehen nur noch unter „Aufgaben“; langfristig sollen sie eigenständiger werden (Putzplan und echte Todos, je Person abschaltbar).
 - Später: Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
 
 ## 3. Setup, Anmeldung und Familienmitglieder

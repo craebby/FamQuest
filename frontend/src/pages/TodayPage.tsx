@@ -1,15 +1,16 @@
-import { type CSSProperties, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
+import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 
 import { useLockParent, useMe } from '../api/auth'
 import {
   DEFAULT_TILES,
   type Tile,
   type TileId,
-  layoutColumns,
   useHomeLayout,
   useSaveHomeLayout,
+  visibleTiles,
 } from '../api/home'
 import { useToday } from '../api/today'
 import { useIdleTimeout } from '../useIdleTimeout'
@@ -17,11 +18,15 @@ import { useNow } from '../useNow'
 import { formatLongDate } from '../weekdays'
 import { PARENT_IDLE_TIMEOUT_MS } from './ParentsPage'
 import { HomeEditor, PinDialog } from './home/HomeEditor'
-import { TileView } from './home/tiles'
+import { RoutineWidget } from './home/RoutineWidget'
+import { WeatherBadge } from './home/WeatherBadge'
+import { WeekBoard } from './home/WeekBoard'
+import { ComingSoon } from './home/Widget'
 
 /**
- * Startseite „Heute“: Uhr und Datum, darunter die Kacheln in der Reihenfolge, die die Eltern
- * über das Zahnrad festlegen (für die ganze Familie). Auf dem Wanddisplay bis zu drei Spalten.
+ * Startseite „Heute“ als Wochen-Dashboard: im Kopf Datum, Wetter und Uhr; darunter die aktuelle
+ * Routine der Kinder und der Einkauf; unten über die ganze Breite die nächsten sieben Tage mit
+ * Terminen und Essen. Welche Bereiche sichtbar sind, legen die Eltern über das Zahnrad fest.
  */
 export function TodayPage() {
   const { t, i18n } = useTranslation()
@@ -38,6 +43,10 @@ export function TodayPage() {
   // null: normale Ansicht; 'pin': PIN-Abfrage; sonst der Entwurf im Bearbeitungsmodus.
   const [editing, setEditing] = useState<Tile[] | 'pin' | null>(null)
 
+  const shown = visibleTiles(
+    Array.isArray(editing) ? editing : (layout.data?.tiles ?? DEFAULT_TILES),
+  )
+
   const startEditing = () => {
     if (layout.data) setEditing(layout.data.tiles)
   }
@@ -49,6 +58,7 @@ export function TodayPage() {
         {today && (
           <p className="text-xl font-bold text-slate-600">{formatLongDate(language, today.date)}</p>
         )}
+        {shown.has('weather') && <WeatherBadge />}
         <p className="ml-auto text-4xl font-extrabold text-slate-800 tabular-nums">
           <span className="sr-only">{t('home.time')}: </span>
           <time>{time}</time>
@@ -68,17 +78,12 @@ export function TodayPage() {
       {editing === 'pin' && (
         <PinDialog onUnlocked={startEditing} onCancel={() => setEditing(null)} />
       )}
-      {Array.isArray(editing) ? (
+      {Array.isArray(editing) && (
         <EditMode draft={editing} onChange={setEditing} onClose={() => setEditing(null)} />
-      ) : (
-        <Tiles tiles={visibleTiles(layout.data?.tiles ?? DEFAULT_TILES)} />
       )}
+      <Sections shown={shown} today={today?.date} />
     </main>
   )
-}
-
-function visibleTiles(tiles: Tile[]): TileId[] {
-  return tiles.filter((tile) => tile.visible).map((tile) => tile.id)
 }
 
 /** Bearbeiten mit Vorschau; beim Verlassen (auch nach Leerlauf) sperrt die Seite wieder. */
@@ -111,42 +116,30 @@ function EditMode({
         busy={save.isPending}
         error={save.error}
       />
-      <Tiles tiles={visibleTiles(draft)} />
     </>
   )
 }
 
-/**
- * Kacheln in Spalten: schmal untereinander, mittelgroß zwei Spalten (die dritte darunter, dort
- * nebeneinander), auf dem Wanddisplay alle Spalten nebeneinander, die Aufgaben breiter.
- */
-function Tiles({ tiles }: { tiles: TileId[] }) {
-  const columns = layoutColumns(tiles)
-  const style = {
-    '--home-columns': columns
-      .map((column) => (column.wide ? 'minmax(0,1.5fr)' : 'minmax(0,1fr)'))
-      .join(' '),
-  } as CSSProperties
-
+/** Routine und Einkauf nebeneinander (der Einkauf schmaler), darunter die Woche. */
+function Sections({ shown, today }: { shown: Set<TileId>; today: string | undefined }) {
+  const { t } = useTranslation()
+  const top = shown.has('tasks') || shown.has('shopping')
+  const both = shown.has('tasks') && shown.has('shopping')
   return (
-    <div
-      style={style}
-      className="grid flex-1 grid-cols-1 items-start gap-4 md:grid-cols-2 lg:[grid-template-columns:var(--home-columns)]"
-    >
-      {columns.map((column, index) => (
+    <>
+      {top && (
         <div
-          key={column.tiles.join()}
-          className={`flex min-w-0 flex-col gap-4 ${
-            columns.length === 1 || (columns.length === 3 && index === 2)
-              ? 'md:col-span-2 lg:col-span-1'
-              : ''
-          } ${columns.length === 3 && index === 2 ? 'md:flex-row md:*:flex-1 lg:flex-col lg:*:flex-none' : ''}`}
+          className={`grid grid-cols-1 items-start gap-4 ${both ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''}`}
         >
-          {column.tiles.map((id) => (
-            <TileView key={id} id={id} />
-          ))}
+          {shown.has('tasks') && <RoutineWidget />}
+          {shown.has('shopping') && (
+            <ComingSoon title={t('home.shopping')} icon={CartIcon} text={t('home.shopping_hint')} />
+          )}
         </div>
-      ))}
-    </div>
+      )}
+      {today && (shown.has('events') || shown.has('meals')) && (
+        <WeekBoard today={today} showEvents={shown.has('events')} showMeals={shown.has('meals')} />
+      )}
+    </>
   )
 }

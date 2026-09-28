@@ -12,12 +12,7 @@ import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { Alert, Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { normalize } from '../../icons/catalog'
-import {
-  TASK_POOL,
-  type TaskTemplate,
-  taskTemplateIcon,
-  taskTemplateTitle,
-} from '../../pools/tasks'
+import { TASK_POOL, taskTemplateIcon, taskTemplateTitle, templateTask } from '../../pools/tasks'
 import { flexibleSummary, recurrenceSummary } from '../../recurrence'
 import { todayIn } from '../../weekdays'
 import { Field, FilterChip } from './formParts'
@@ -30,32 +25,6 @@ interface TaskPoolPickerProps {
   timeZone: string
   onDone: (count: number) => void
   onCancel: () => void
-}
-
-/** Aufgabe aus einer Vorlage, wie sie der Editor nach „Aus Vorlagen wählen“ speichern würde. */
-export function templateTask(
-  template: TaskTemplate,
-  title: string,
-  memberIds: number[],
-  today: string,
-): TaskData {
-  const { recurrence } = template
-  return {
-    title,
-    icon: taskTemplateIcon(template),
-    description: '',
-    points: template.points,
-    time_of_day: template.extra ? null : template.time_of_day,
-    extra: template.extra ?? false,
-    color: null,
-    active: true,
-    needs_approval: template.needs_approval ?? false,
-    // Bei nur einer Person hat „Einer für alle“ keine Wirkung.
-    shared: (template.shared ?? false) && memberIds.length > 1,
-    // Flexible Aufgaben sind ab heute fällig.
-    recurrence: recurrence.kind === 'flexible' ? { ...recurrence, date: today } : recurrence,
-    member_ids: memberIds,
-  }
 }
 
 async function createTasks(list: TaskData[]) {

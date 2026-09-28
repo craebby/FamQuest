@@ -14,6 +14,25 @@ const FOOD_ICONS = new Set(
   ),
 )
 
+// Füllwörter tragen nichts zum Symbol bei („mit“ steckt sonst etwa in „Mittagessen“).
+const FILLER_WORDS = new Set([
+  'mit',
+  'und',
+  'oder',
+  'von',
+  'vom',
+  'aus',
+  'dem',
+  'den',
+  'der',
+  'die',
+  'das',
+  'with',
+  'and',
+  'the',
+  'from',
+])
+
 export interface DishSuggestion {
   name: string
   icon: string
@@ -38,7 +57,9 @@ export function iconForName(t: TFunction, name: string, dishes: readonly Dish[])
   if (dish) return dish.icon
   const template = DISH_POOL.find((entry) => normalize(dishTemplateName(t, entry)) === key)
   if (template) return dishTemplateIcon(template)
-  const words = name.split(/\s+/).filter((word) => word.length >= 3)
+  const words = name
+    .split(/\s+/)
+    .filter((word) => word.length >= 3 && !FILLER_WORDS.has(normalize(word)))
   for (const query of [name, ...words]) {
     const icon = foodIcon(query)
     if (icon) return icon

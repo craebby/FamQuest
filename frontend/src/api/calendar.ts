@@ -153,8 +153,9 @@ export function useCalendarStatus() {
  * Termine der Woche; `offset` 0 = aktuelle Woche. `language` bestimmt die Namen der Feiertage.
  * Aktualisiert sich jede Minute.
  */
-export function useCalendarWeek(offset: number, language: string) {
+export function useCalendarWeek(offset: number, language: string, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: [...CALENDAR_WEEK_KEY, offset, language],
     queryFn: () =>
       apiGet<CalendarWeek>(`/calendar/week?offset=${offset}&lang=${language.slice(0, 2)}`),

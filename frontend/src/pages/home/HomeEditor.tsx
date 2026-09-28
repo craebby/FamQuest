@@ -1,12 +1,10 @@
 import { type CSSProperties, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import DownIcon from '~icons/fluent-emoji-flat/down-arrow'
 import EyeIcon from '~icons/fluent-emoji-flat/eye'
 import LockedIcon from '~icons/fluent-emoji-flat/locked'
-import UpIcon from '~icons/fluent-emoji-flat/up-arrow'
 
 import { useUnlockParent } from '../../api/auth'
-import type { Tile } from '../../api/home'
+import { TILE_IDS, type Tile } from '../../api/home'
 import { PinPad } from '../../components/PinPad'
 import { Alert, Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
@@ -59,8 +57,8 @@ export function PinDialog({
 }
 
 /**
- * Aufbau der Startseite bearbeiten: Kacheln ein- und ausblenden und verschieben. Darunter zeigt
- * die Seite sofort, wie es aussieht; gespeichert wird erst mit „Speichern“.
+ * Aufbau der Startseite bearbeiten: Bereiche ein- und ausblenden (die Anordnung ist fest).
+ * Darunter zeigt die Seite sofort, wie es aussieht; gespeichert wird erst mit „Speichern“.
  */
 export function HomeEditor({
   tiles,
@@ -81,13 +79,10 @@ export function HomeEditor({
 }) {
   const { t } = useTranslation()
 
-  const move = (index: number, by: -1 | 1) => {
-    const next = [...tiles]
-    ;[next[index], next[index + by]] = [next[index + by], next[index]]
-    onChange(next)
-  }
-  const toggle = (index: number) =>
-    onChange(tiles.map((tile, i) => (i === index ? { ...tile, visible: !tile.visible } : tile)))
+  const toggle = (id: Tile['id']) =>
+    onChange(tiles.map((tile) => (tile.id === id ? { ...tile, visible: !tile.visible } : tile)))
+  // In der Reihenfolge, in der die Bereiche auf der Seite stehen.
+  const ordered = [...tiles].sort((a, b) => TILE_IDS.indexOf(a.id) - TILE_IDS.indexOf(b.id))
 
   return (
     <section
@@ -105,7 +100,7 @@ export function HomeEditor({
         className="grid grid-cols-1 gap-2 lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-(--editor-rows)"
         style={{ '--editor-rows': `repeat(${Math.ceil(tiles.length / 2)}, auto)` } as CSSProperties}
       >
-        {tiles.map((tile, index) => {
+        {ordered.map((tile) => {
           const { title, icon: Icon } = TILES[tile.id]
           const name = t(title)
           return (
@@ -131,7 +126,7 @@ export function HomeEditor({
                   aria-checked={tile.visible}
                   aria-label={t('home.tile_visible', { name })}
                   title={t('home.tile_visible', { name })}
-                  onClick={() => toggle(index)}
+                  onClick={() => toggle(tile.id)}
                   className={`flex h-14 w-24 shrink-0 items-center rounded-full p-1 transition-colors focus-visible:outline-4 focus-visible:outline-orange-400 ${tile.visible ? 'justify-end bg-emerald-500' : 'justify-start bg-slate-300'}`}
                 >
                   <span className="flex size-12 items-center justify-center rounded-full bg-white shadow">
@@ -141,18 +136,6 @@ export function HomeEditor({
                     />
                   </span>
                 </button>
-                <MoveButton
-                  label={t('home.move_up', { name })}
-                  disabled={index === 0}
-                  onClick={() => move(index, -1)}
-                  icon={UpIcon}
-                />
-                <MoveButton
-                  label={t('home.move_down', { name })}
-                  disabled={index === tiles.length - 1}
-                  onClick={() => move(index, 1)}
-                  icon={DownIcon}
-                />
               </span>
             </li>
           )
@@ -170,30 +153,5 @@ export function HomeEditor({
         </Button>
       </div>
     </section>
-  )
-}
-
-function MoveButton({
-  label,
-  disabled,
-  onClick,
-  icon: Icon,
-}: {
-  label: string
-  disabled: boolean
-  onClick: () => void
-  icon: typeof UpIcon
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-      className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm hover:bg-orange-100 focus-visible:outline-4 focus-visible:outline-orange-400 disabled:opacity-30"
-    >
-      <Icon className="size-8" aria-hidden="true" />
-    </button>
   )
 }

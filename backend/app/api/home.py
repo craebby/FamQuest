@@ -1,4 +1,9 @@
-"""Aufbau der Startseite „Heute“: welche Kacheln in welcher Reihenfolge, für die ganze Familie."""
+"""Aufbau der Startseite „Heute“: welche Bereiche sichtbar sind, für die ganze Familie.
+
+Die Anordnung ist fest (Kopf mit Wetter, Routine und Einkauf, unten die Woche mit Terminen und
+Essen); die gespeicherte Reihenfolge spielt keine Rolle mehr. Die frühere Kachel „week“ (Ringe je
+Person) gibt es nicht mehr, gespeicherte Einträge dazu fallen weg.
+"""
 
 from typing import Literal
 
@@ -11,16 +16,16 @@ from app.models import Family
 
 router = APIRouter(prefix="/home", tags=["home"])
 
-TileId = Literal["weather", "events", "tasks", "week", "meals", "shopping"]
+# tasks: die aktuelle Routine der Kinder.
+TileId = Literal["weather", "events", "tasks", "meals", "shopping"]
 
-# Standardaufbau (so sah die Startseite vor der Einstellung aus); die Woche ist zuschaltbar.
+# Standard: alles sichtbar.
 DEFAULT_TILES: list[tuple[TileId, bool]] = [
     ("weather", True),
     ("events", True),
     ("tasks", True),
     ("meals", True),
     ("shopping", True),
-    ("week", False),
 ]
 
 

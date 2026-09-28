@@ -46,6 +46,8 @@ describe('Symbol zum Namen', () => {
 
   it('findet sonst ein passendes Essens-Symbol über einzelne Wörter', () => {
     expect(iconForName(t, 'Schnitzel mit Reis', [])).toBe('fluent-emoji-flat:cut-of-meat')
+    // „mit“ zählt nicht (steckt sonst in „Mittagessen“ bei der Pfanne).
+    expect(iconForName(t, 'Ofengemüse mit Würstchen', [])).toBe('fluent-emoji-flat:hot-dog')
     expect(iconForName(t, 'Burger vom Grill', [])).toBe('fluent-emoji-flat:hamburger')
     expect(iconForName(t, 'Ofencamembert mit Preiselbeeren', [])).toBe(
       'fluent-emoji-flat:cheese-wedge',

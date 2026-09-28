@@ -2,10 +2,9 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { CalendarUpcoming, UpcomingEvent } from '../api/calendar'
+import type { CalendarWeek, WeekEvent } from '../api/calendar'
+import { DEFAULT_TILES, type Tile } from '../api/home'
 import type { MealWeek } from '../api/meals'
-import { DEFAULT_TILES, type Tile, layoutColumns } from '../api/home'
-import type { TaskWeek } from '../api/taskWeek'
 import type { Weather } from '../api/weather'
 import i18n from '../i18n'
 import {
@@ -29,6 +28,7 @@ afterEach(() => {
 const LENA = makeMember()
 const PAPA = makeMember({ id: 2, name: 'Papa', role: 'parent', color: 'blue' })
 
+// Heute ist Samstag, 3. Oktober, morgens.
 const teeth = makeTodayTask({ id: 10 })
 const bed = makeTodayTask({
   id: 11,
@@ -37,27 +37,26 @@ const bed = makeTodayTask({
   points: 1,
   done_member_ids: [1],
 })
+const pyjamas = makeTodayTask({ id: 13, title: 'Schlafanzug', time_of_day: 'evening' })
 const trash = makeTodayTask({ id: 12, title: 'Müll rausbringen', member_ids: [2] })
 
 const WEATHER: Weather = {
   place: { name: 'Köln', latitude: 50.94, longitude: 6.96 },
   current: { temperature: 12.4, code: 61, is_day: true },
   days: [
-    { date: '2026-10-03', code: 61, max: 14.1, min: 8.2, precipitation: 80 },
+    { date: '2026-10-03', code: 61, max: 14.1, min: -0.4, precipitation: 80 },
     { date: '2026-10-04', code: 2, max: 16, min: 7.9, precipitation: 10 },
-    { date: '2026-10-05', code: 0, max: 18.5, min: -0.4, precipitation: null },
   ],
   stale: false,
 }
 
-function makeEvent(overrides: Partial<UpcomingEvent> = {}): UpcomingEvent {
+function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
   return {
     key: '1',
     title: 'Schwimmen',
-    all_day: false,
-    // 15:00 bis 16:00 in Berlin.
     start: '2026-10-03T13:00:00Z',
     end: '2026-10-03T14:00:00Z',
+    all_day: false,
     location: null,
     description: null,
     calendars: ['Lena'],
@@ -65,37 +64,44 @@ function makeEvent(overrides: Partial<UpcomingEvent> = {}): UpcomingEvent {
     family: false,
     continues_before: false,
     continues_after: false,
-    day: '2026-10-03',
     ...overrides,
   }
 }
 
-const UPCOMING: CalendarUpcoming = {
+const DAYS = ['09-28', '09-29', '09-30', '10-01', '10-02', '10-03', '10-04']
+
+function eventsOn(day: string): WeekEvent[] {
+  if (day === '10-03') return [makeEvent()]
+  if (day === '10-04') {
+    return [
+      makeEvent({
+        key: '2',
+        title: 'Oma besuchen',
+        start: '2026-10-04T08:00:00Z',
+        end: '2026-10-04T10:00:00Z',
+        member_ids: [],
+        family: true,
+      }),
+    ]
+  }
+  // Vor heute: steht nicht auf der Startseite.
+  if (day === '10-02')
+    return [makeEvent({ key: '3', title: 'Turnen', start: '2026-10-02T13:00:00Z' })]
+  return []
+}
+
+const CALENDAR: CalendarWeek = {
+  start: '2026-09-28',
   today: '2026-10-03',
   timezone: 'Europe/Berlin',
   family_color: 'pink',
   problem: false,
-  holidays: [{ kind: 'public', name: 'Tag der Deutschen Einheit' }],
-  events: [
-    makeEvent(),
-    makeEvent({
-      key: '2',
-      title: 'Oma besuchen',
-      start: '2026-10-04T08:00:00Z',
-      end: '2026-10-04T10:00:00Z',
-      member_ids: [],
-      family: true,
-      day: '2026-10-04',
-    }),
-    makeEvent({
-      key: '3',
-      title: 'Elternabend',
-      start: '2026-10-07T16:00:00Z',
-      end: '2026-10-07T18:00:00Z',
-      member_ids: [2],
-      day: '2026-10-07',
-    }),
-  ],
+  days: DAYS.map((day) => ({
+    date: `2026-${day}`,
+    holidays:
+      day === '10-03' ? [{ kind: 'public' as const, name: 'Tag der Deutschen Einheit' }] : [],
+    events: eventsOn(day),
+  })),
 }
 
 const MEAL_WEEK: MealWeek = {
@@ -115,8 +121,8 @@ const MEAL_WEEK: MealWeek = {
       date: '2026-10-03',
       meal: 'dinner',
       dish_id: 2,
-      name: 'Pizza',
-      icon: 'fluent-emoji-flat:pizza',
+      name: 'Ofengemüse mit Würstchen',
+      icon: 'fluent-emoji-flat:hot-dog',
       image_url: null,
     },
   ],
@@ -124,15 +130,15 @@ const MEAL_WEEK: MealWeek = {
 
 function mockHome({
   weather = WEATHER,
-  upcoming = UPCOMING,
   calendarEnabled = true,
   language = 'de',
+  tasks = [teeth, bed, pyjamas, trash],
   extra = {},
 }: {
   weather?: Weather
-  upcoming?: CalendarUpcoming
   calendarEnabled?: boolean
   language?: string
+  tasks?: ReturnType<typeof makeTodayTask>[]
   /** Weitere oder abweichende Antworten, z. B. für den Aufbau der Startseite. */
   extra?: Parameters<typeof mockApi>[0]
 } = {}) {
@@ -147,14 +153,18 @@ function mockHome({
     'GET /api/today': () =>
       Response.json(
         makeToday({
-          tasks: [{ ...teeth, done_member_ids: teethDone ? [1] : [] }, bed, trash],
+          tasks: tasks.map((task) =>
+            task.id === teeth.id && teethDone ? { ...task, done_member_ids: [1] } : task,
+          ),
           points: [{ member_id: 1, today: 1, total: 10, week_done: 1 }],
         }),
       ),
     'GET /api/weather': Response.json(weather),
     'GET /api/calendar/status': Response.json({ enabled: calendarEnabled }),
-    'GET /api/calendar/upcoming': Response.json(upcoming),
+    // Diese und nächste Woche bekommen dieselbe Antwort; es zählen nur die Tage ab heute.
+    'GET /api/calendar/week': Response.json(CALENDAR),
     'GET /api/meals/week': Response.json(MEAL_WEEK),
+    'GET /api/dishes': Response.json([]),
     'PUT /api/today/tasks/10/members/1': () => {
       teethDone = true
       return new Response(null, { status: 204 })
@@ -177,83 +187,129 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByText('Samstag, 3. Oktober')).toBeVisible()
   })
 
-  it('zeigt das Wetter jetzt, heute und an den nächsten Tagen', async () => {
+  it('zeigt das Wetter klein im Kopf', async () => {
     mockHome()
     renderApp('/')
 
     const weather = await region('Wetter')
-    expect(await weather.findByText('12°')).toBeVisible()
-    expect(weather.getByText('Regen', { selector: 'p' })).toBeVisible()
-    expect(weather.getByText('Köln')).toBeVisible()
-    expect(weather.getByText('14° / 8°')).toBeVisible()
-    expect(weather.getByText('Regen 80 %')).toBeVisible()
+    expect(await weather.findByText('12°', { exact: false })).toBeVisible()
     // Kein „-0°“.
-    expect(weather.getByText('19° / 0°')).toBeVisible()
+    expect(weather.getByText('14° / 0°')).toBeVisible()
+    expect(weather.getByText('Regen 80 %')).toBeVisible()
   })
 
   it('verweist ohne Ort für das Wetter auf den Elternbereich', async () => {
     mockHome({ weather: { place: null, current: null, days: [], stale: false } })
     renderApp('/')
 
-    const weather = await region('Wetter')
-    expect(await weather.findByRole('link', { name: 'Einrichten' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: 'Wetter einrichten' })).toHaveAttribute(
       'href',
       '/parents/connections',
     )
   })
 
-  it('zeigt die nächsten Termine mit Tag und öffnet die Details', async () => {
+  it('zeigt die nächsten sieben Tage ab heute mit Terminen und Essen', async () => {
     const user = userEvent.setup()
     mockHome()
     renderApp('/')
 
-    const events = await region('Termine')
-    const cards = await events.findAllByTestId('calendar-event')
-    expect(cards.map((card) => card.textContent)).toEqual([
-      expect.stringContaining('Heute · 15:00–16:00 UhrSchwimmen'),
-      expect.stringContaining('Morgen · 10:00–12:00 UhrOma besuchen'),
-      expect.stringContaining('Mi., 7.10. · 18:00–20:00 UhrElternabend'),
+    const board = await region('Die nächsten sieben Tage')
+    const days = await board.findAllByRole('region')
+    expect(days.map((day) => day.getAttribute('aria-label'))).toEqual([
+      'Samstag, 3. Oktober',
+      'Sonntag, 4. Oktober',
+      'Montag, 5. Oktober',
+      'Dienstag, 6. Oktober',
+      'Mittwoch, 7. Oktober',
+      'Donnerstag, 8. Oktober',
+      'Freitag, 9. Oktober',
     ])
-    expect(events.getByTestId('holiday')).toHaveTextContent('Tag der Deutschen Einheit')
-    expect(events.getByRole('link', { name: 'Kalender öffnen' })).toHaveAttribute(
-      'href',
-      '/calendar',
-    )
+    expect(days[0]).toHaveAttribute('aria-current', 'date')
 
-    await user.click(within(cards[1]).getByRole('button'))
+    const today = within(days[0])
+    expect(await today.findByText('Schwimmen')).toBeVisible()
+    expect(today.getByTestId('holiday')).toHaveTextContent('Tag der Deutschen Einheit')
+    expect(
+      await today.findByRole('button', { name: 'Abendessen: Ofengemüse mit Würstchen, ändern' }),
+    ).toBeVisible()
+    expect(board.queryByText('Turnen')).not.toBeInTheDocument()
+    expect(board.queryByText('Fischstäbchen')).not.toBeInTheDocument()
+
+    const tomorrow = within(days[1])
+    expect(tomorrow.getByText('Oma besuchen')).toBeVisible()
+    expect(tomorrow.getByRole('button', { name: 'Abendessen eintragen' })).toBeVisible()
+
+    await user.click(within(tomorrow.getByTestId('calendar-event')).getByRole('button'))
     expect(await screen.findByRole('dialog', { name: 'Oma besuchen' })).toBeVisible()
   })
 
-  it('verweist ohne Kalender auf den Elternbereich', async () => {
+  it('trägt das Essen direkt auf der Startseite ein', async () => {
+    const user = userEvent.setup()
+    const calls = mockHome({
+      extra: {
+        'PUT /api/meals/2026-10-04/dinner': (body) =>
+          Response.json({ date: '2026-10-04', meal: 'dinner', dish_id: 3, ...(body as object) }),
+      },
+    })
+    renderApp('/')
+
+    const tomorrow = await region('Sonntag, 4. Oktober')
+    await user.click(await tomorrow.findByRole('button', { name: 'Abendessen eintragen' }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Abendessen, Sonntag, 4. Oktober' }))
+    await user.click(dialog.getByRole('button', { name: 'Pizza' }))
+
+    expect(calls.find((call) => call.key === 'PUT /api/meals/2026-10-04/dinner')?.body).toEqual({
+      name: 'Pizza',
+      icon: 'fluent-emoji-flat:pizza',
+    })
+  })
+
+  it('verweist ohne Kalender auf den Elternbereich und zeigt trotzdem das Essen', async () => {
     mockHome({ calendarEnabled: false })
     renderApp('/')
 
-    const events = await region('Termine')
-    expect(await events.findByRole('link', { name: 'Einrichten' })).toBeVisible()
-    expect(events.queryByRole('link', { name: 'Kalender öffnen' })).toBeNull()
+    expect(await screen.findByRole('link', { name: 'Kalender verbinden' })).toHaveAttribute(
+      'href',
+      '/parents/connections',
+    )
+    const today = await region('Samstag, 3. Oktober')
+    expect(
+      await today.findByRole('button', { name: 'Abendessen: Ofengemüse mit Würstchen, ändern' }),
+    ).toBeVisible()
+    expect(today.queryByText('Schwimmen')).not.toBeInTheDocument()
   })
 
-  it('zeigt die Aufgaben aller Personen und erledigt sie mit einem Tipp', async () => {
+  it('zeigt nur die aktuelle Routine der Kinder und erledigt sie mit einem Tipp', async () => {
     const user = userEvent.setup()
     const calls = mockHome()
     renderApp('/')
 
-    const lena = within(await screen.findByRole('listitem', { name: 'Aufgaben von Lena' }))
-    expect(lena.getByRole('img', { name: '1 von 2 Aufgaben erledigt' })).toBeInTheDocument()
+    const routine = await region('Morgens')
+    const lena = within(await routine.findByRole('listitem', { name: 'Aufgaben von Lena' }))
     expect(lena.getByRole('button', { name: /^Bett machen/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
-    const card = lena.getByRole('button', { name: /^Zähne putzen/ })
-    expect(card).toHaveAttribute('aria-pressed', 'false')
+    // Abends ist noch nicht dran; Erwachsene stehen hier nicht.
+    expect(lena.queryByRole('button', { name: /^Schlafanzug/ })).not.toBeInTheDocument()
+    expect(routine.queryByRole('listitem', { name: 'Aufgaben von Papa' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Müll rausbringen')).not.toBeInTheDocument()
 
-    await user.click(card)
+    await user.click(lena.getByRole('button', { name: /^Zähne putzen/ }))
 
-    expect(card).toHaveAttribute('aria-pressed', 'true')
     expect(lena.getByTestId('points-feedback')).toHaveTextContent('+2')
     expect(calls.some((call) => call.key === 'PUT /api/today/tasks/10/members/1')).toBe(true)
-    const papa = within(screen.getByRole('listitem', { name: 'Aufgaben von Papa' }))
-    expect(papa.getByRole('button', { name: 'Müll rausbringen' })).toBeVisible()
+    // Nach einem kurzen Moment (für das Feedback) steht nur noch „Alles erledigt“.
+    expect(await lena.findByText('Alles erledigt', {}, { timeout: 3000 })).toBeVisible()
+    expect(lena.queryByRole('button', { name: /^Zähne putzen/ })).not.toBeInTheDocument()
+  })
+
+  it('zeigt „Alles erledigt“ auch, wenn gerade keine Routine dran ist', async () => {
+    mockHome({ tasks: [pyjamas] })
+    renderApp('/')
+
+    const lena = within(await screen.findByRole('listitem', { name: 'Aufgaben von Lena' }))
+    expect(lena.getByText('Alles erledigt')).toBeVisible()
   })
 
   it('öffnet die Person über den Avatar und führt zurück zur Startseite', async () => {
@@ -268,25 +324,11 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByRole('link', { name: 'Alle Aufgaben öffnen' })).toBeVisible()
   })
 
-  it('zeigt das heutige Essen; der Einkauf ist als „kommt bald“ gekennzeichnet', async () => {
+  it('hält Platz für den Einkauf frei, als „kommt bald“ gekennzeichnet', async () => {
     mockHome()
     renderApp('/')
 
-    const meals = await region('Essen')
-    expect(await meals.findByText('Pizza')).toBeVisible()
-    expect(meals.queryByText('Fischstäbchen')).not.toBeInTheDocument()
-    expect(meals.getByRole('link', { name: 'Essensplan öffnen' })).toHaveAttribute('href', '/meals')
     expect((await region('Einkauf')).getByText('Kommt bald')).toBeVisible()
-  })
-
-  it('lädt zum Planen ein, wenn heute noch nichts geplant ist', async () => {
-    mockHome({ extra: { 'GET /api/meals/week': Response.json({ ...MEAL_WEEK, entries: [] }) } })
-    renderApp('/')
-
-    const meals = await region('Essen')
-    expect(
-      await meals.findByRole('link', { name: 'Heute ist noch nichts geplant' }),
-    ).toHaveAttribute('href', '/meals')
   })
 
   it('funktioniert auch auf Englisch', async () => {
@@ -295,194 +337,35 @@ describe('Startseite „Heute“', () => {
     renderApp('/')
 
     expect(await screen.findByRole('region', { name: 'Weather' })).toBeVisible()
-    const events = await region('Events')
-    const cards = await events.findAllByTestId('calendar-event')
-    expect(cards[1]).toHaveTextContent('Tomorrow')
+    expect(await screen.findByRole('region', { name: 'The next seven days' })).toBeVisible()
     expect(await screen.findByRole('listitem', { name: "Lena's tasks" })).toBeVisible()
-    expect(await (await region('Meals')).findByText('Pizza')).toBeVisible()
     expect((await region('Shopping')).getByText('Coming soon')).toBeVisible()
-  })
-
-  it('zählt „Einer für alle“ nur für den, der es erledigt hat', async () => {
-    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'orange' })
-    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'blue' })
-    mockApi({
-      'GET /api/setup/status': setupDone,
-      'GET /api/auth/me': Response.json(makeMe()),
-      'GET /api/members': Response.json([LENA, mama, papa]),
-      'GET /api/today': Response.json(
-        makeToday({
-          tasks: [
-            makeTodayTask({ id: 1, title: 'Müll', member_ids: [3, 4], done_member_ids: [3] }),
-            makeTodayTask({ id: 2, title: 'Bad', member_ids: [3, 4], done_member_ids: [4] }),
-            makeTodayTask({
-              id: 3,
-              title: 'Spülmaschine',
-              member_ids: [3, 4],
-              shared: true,
-              done_member_ids: [3],
-            }),
-            makeTodayTask({ id: 4, title: 'Zähne', member_ids: [1], shared: true }),
-          ],
-          points: [
-            { member_id: 3, today: 0, total: 0, week_done: 2 },
-            { member_id: 4, today: 0, total: 0, week_done: 1 },
-          ],
-        }),
-      ),
-      'GET /api/weather': Response.json(WEATHER),
-      'GET /api/calendar/status': Response.json({ enabled: false }),
-    })
-    renderApp('/')
-
-    // Erwachsene: Anteil an der Woche wie in der Familienansicht (2 zu 1).
-    const mamaRow = within(await screen.findByRole('listitem', { name: 'Aufgaben von Mama' }))
-    const papaRow = within(screen.getByRole('listitem', { name: 'Aufgaben von Papa' }))
-    expect(mamaRow.getByRole('img', { name: /67 %/ })).toBeInTheDocument()
-    expect(papaRow.getByRole('img', { name: /33 %/ })).toBeInTheDocument()
-    // Bei Papa steht die Spülmaschine als von Mama erledigt.
-    expect(papaRow.getByRole('button', { name: /^Spülmaschine.*erledigt von Mama/ })).toBeVisible()
-  })
-
-  it('zeigt Routinen in ihrer Reihenfolge und Extras getrennt, ohne sie mitzuzählen', async () => {
-    mockApi({
-      'GET /api/setup/status': setupDone,
-      'GET /api/auth/me': Response.json(makeMe()),
-      'GET /api/members': Response.json([LENA]),
-      'GET /api/today': Response.json(
-        makeToday({
-          tasks: [
-            makeTodayTask({ id: 1, title: 'Zähne', positions: [{ member_id: 1, position: 2 }] }),
-            makeTodayTask({ id: 2, title: 'Anziehen', positions: [{ member_id: 1, position: 0 }] }),
-            makeTodayTask({
-              id: 3,
-              title: 'Schlafi an',
-              time_of_day: 'evening',
-              positions: [{ member_id: 1, position: 1 }],
-            }),
-            makeTodayTask({
-              id: 4,
-              title: 'Tisch abräumen',
-              time_of_day: null,
-              extra: true,
-              positions: [{ member_id: 1, position: 3 }],
-            }),
-          ],
-        }),
-      ),
-      'GET /api/weather': Response.json(WEATHER),
-      'GET /api/calendar/status': Response.json({ enabled: false }),
-    })
-    renderApp('/')
-
-    const row = within(await screen.findByRole('listitem', { name: 'Aufgaben von Lena' }))
-    const extras = within(row.getByRole('region', { name: 'Extras' }))
-    expect(extras.getByRole('button', { name: /^Tisch abräumen/ })).toBeVisible()
     expect(
-      row
-        .getAllByRole('button')
-        .map((button) => button.getAttribute('title'))
-        .filter(Boolean),
-    ).toEqual(['Anziehen', 'Zähne', 'Schlafi an', 'Tisch abräumen'])
-    expect(row.getByRole('img', { name: '0 von 3 Aufgaben erledigt' })).toBeInTheDocument()
-    // Wie am Display als Blöcke je Tagesabschnitt.
-    const titles = (name: string) =>
-      within(row.getByRole('region', { name }))
-        .getAllByRole('button')
-        .map((button) => button.getAttribute('title'))
-    expect(titles('Morgens')).toEqual(['Anziehen', 'Zähne'])
-    expect(titles('Abends')).toEqual(['Schlafi an'])
+      await screen.findByRole('button', { name: 'Dinner: Ofengemüse mit Würstchen, change' }),
+    ).toBeVisible()
   })
 })
-
-const WEEK: TaskWeek = {
-  start: '2026-09-28',
-  today: '2026-10-03',
-  tasks: [
-    {
-      id: 10,
-      title: 'Zähne putzen',
-      icon: 'fluent-emoji-flat:toothbrush',
-      points: 2,
-      time_of_day: 'morning',
-      color: null,
-      extra: false,
-    },
-  ],
-  days: ['09-28', '09-29', '09-30', '10-01', '10-02', '10-03', '10-04'].map((day) => ({
-    date: `2026-${day}`,
-    entries:
-      day === '10-04'
-        ? []
-        : [
-            {
-              task_id: 10,
-              member_id: 1,
-              status: day === '09-29' || day === '10-03' ? 'open' : 'done',
-              done_by: day === '09-29' || day === '10-03' ? null : 1,
-              position: 0,
-              optional: false,
-            },
-          ],
-  })),
-}
 
 async function enterPin(user: ReturnType<typeof userEvent.setup>, pin: string) {
   for (const digit of pin) await user.click(screen.getByRole('button', { name: digit }))
   await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
 }
 
-const tileHeadings = () =>
-  screen
-    .getAllByRole('heading', { level: 2 })
-    .map((heading) => heading.textContent)
-    .filter((text) => text !== 'Startseite anpassen')
-
 describe('Startseite anpassen', () => {
-  it('zeigt die Kacheln in der gespeicherten Reihenfolge, ausgeblendete nicht', async () => {
-    const tiles: Tile[] = [
-      { id: 'week', visible: true },
-      { id: 'tasks', visible: true },
-      { id: 'weather', visible: false },
-      { id: 'events', visible: true },
-      { id: 'meals', visible: false },
-      { id: 'shopping', visible: false },
-    ]
-    mockHome({
-      extra: {
-        'GET /api/home/layout': Response.json({ tiles }),
-        'GET /api/tasks/week': Response.json(WEEK),
-      },
-    })
+  it('blendet ausgeschaltete Bereiche aus', async () => {
+    const tiles: Tile[] = DEFAULT_TILES.map((tile) => ({
+      ...tile,
+      visible: tile.id !== 'events' && tile.id !== 'shopping',
+    }))
+    mockHome({ extra: { 'GET /api/home/layout': Response.json({ tiles }) } })
     renderApp('/')
 
-    await screen.findByRole('region', { name: 'Woche' })
-    expect(tileHeadings()).toEqual(['Woche', 'Aufgaben', 'Termine'])
-    expect(screen.queryByRole('region', { name: 'Wetter' })).not.toBeInTheDocument()
-  })
-
-  it('zeigt im Wochen-Widget je Person und Tag den Fortschritt', async () => {
-    mockHome({
-      extra: {
-        'GET /api/home/layout': Response.json({
-          tiles: DEFAULT_TILES.map((tile) => ({ ...tile, visible: tile.id === 'week' })),
-        }),
-        'GET /api/tasks/week': Response.json(WEEK),
-      },
-    })
-    renderApp('/')
-
-    const week = await region('Woche')
-    expect(week.getByRole('link', { name: 'Wochenansicht öffnen' })).toHaveAttribute(
-      'href',
-      '/tasks/week',
-    )
-    expect(await week.findByRole('img', { name: 'Lena' })).toBeVisible()
-    expect(week.getByRole('img', { name: 'Montag: 1 von 1 Aufgaben erledigt' })).toBeVisible()
-    expect(week.getByRole('img', { name: 'Dienstag: 0 von 1 Aufgaben erledigt' })).toBeVisible()
-    expect(week.getByRole('img', { name: 'Sonntag: keine Aufgaben' })).toBeVisible()
-    // Papa hat diese Woche keine Aufgaben und bekommt keine Zeile.
-    expect(week.queryByRole('img', { name: 'Papa' })).not.toBeInTheDocument()
+    const today = await region('Samstag, 3. Oktober')
+    expect(
+      await today.findByRole('button', { name: 'Abendessen: Ofengemüse mit Würstchen, ändern' }),
+    ).toBeVisible()
+    expect(today.queryByText('Schwimmen')).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Einkauf' })).not.toBeInTheDocument()
   })
 
   it('verlangt die Eltern-PIN, speichert den neuen Aufbau und sperrt danach wieder', async () => {
@@ -490,7 +373,6 @@ describe('Startseite anpassen', () => {
     const calls = mockHome({
       extra: {
         'GET /api/home/layout': Response.json({ tiles: DEFAULT_TILES }),
-        'GET /api/tasks/week': Response.json(WEEK),
         'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
         'PUT /api/home/layout': (body) => Response.json(body),
         'POST /api/parent/lock': Response.json(makeMe()),
@@ -504,13 +386,13 @@ describe('Startseite anpassen', () => {
     await enterPin(user, '1234')
 
     const editor = await region('Startseite anpassen')
+    // Die Anordnung ist fest: nur ein- und ausschalten.
+    expect(editor.queryByRole('button', { name: /nach oben/ })).not.toBeInTheDocument()
     await user.click(editor.getByRole('switch', { name: 'Wetter anzeigen' }))
-    await user.click(editor.getByRole('switch', { name: 'Woche anzeigen' }))
-    await user.click(editor.getByRole('button', { name: 'Aufgaben nach oben' }))
-    await user.click(editor.getByRole('button', { name: 'Aufgaben nach oben' }))
-    expect(editor.getByRole('button', { name: 'Aufgaben nach oben' })).toBeDisabled()
+    await user.click(editor.getByRole('switch', { name: 'Routine der Kinder anzeigen' }))
     // Die Vorschau darunter folgt sofort.
-    expect(tileHeadings()).toEqual(['Aufgaben', 'Termine', 'Essen', 'Einkauf', 'Woche'])
+    expect(screen.queryByRole('region', { name: 'Wetter' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Morgens' })).not.toBeInTheDocument()
 
     await user.click(editor.getByRole('button', { name: 'Speichern' }))
 
@@ -518,12 +400,11 @@ describe('Startseite anpassen', () => {
     const put = calls.find((call) => call.key === 'PUT /api/home/layout')
     expect(put?.body).toEqual({
       tiles: [
-        { id: 'tasks', visible: true },
         { id: 'weather', visible: false },
+        { id: 'tasks', visible: false },
+        { id: 'shopping', visible: true },
         { id: 'events', visible: true },
         { id: 'meals', visible: true },
-        { id: 'shopping', visible: true },
-        { id: 'week', visible: true },
       ],
     })
     expect(calls.some((call) => call.key === 'POST /api/parent/lock')).toBe(true)
@@ -536,7 +417,6 @@ describe('Startseite anpassen', () => {
       extra: {
         'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
         'GET /api/home/layout': Response.json({ tiles }),
-        'GET /api/tasks/week': Response.json(WEEK),
         'POST /api/parent/lock': Response.json(makeMe()),
       },
     })
@@ -550,37 +430,12 @@ describe('Startseite anpassen', () => {
 
     await user.click(editor.getByRole('button', { name: 'Standard wiederherstellen' }))
     expect(editor.getByRole('switch', { name: 'Essen anzeigen' })).toBeChecked()
-    expect(editor.getByRole('switch', { name: 'Woche anzeigen' })).not.toBeChecked()
 
     await user.click(editor.getByRole('button', { name: 'Abbrechen' }))
 
     await screen.findByRole('button', { name: 'Startseite anpassen' })
-    expect(screen.queryByRole('region', { name: 'Essen' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Abendessen/ })).not.toBeInTheDocument()
     expect(calls.some((call) => call.key === 'PUT /api/home/layout')).toBe(false)
     expect(calls.some((call) => call.key === 'POST /api/parent/lock')).toBe(true)
-  })
-})
-
-describe('Spalten der Startseite', () => {
-  it('stellt die Aufgaben breit in die Mitte', () => {
-    expect(layoutColumns(['weather', 'events', 'tasks', 'meals', 'shopping'])).toEqual([
-      { tiles: ['weather', 'events'], wide: false },
-      { tiles: ['tasks'], wide: true },
-      { tiles: ['meals', 'shopping'], wide: false },
-    ])
-    expect(layoutColumns(['tasks', 'week'])).toEqual([
-      { tiles: ['tasks'], wide: true },
-      { tiles: ['week'], wide: false },
-    ])
-  })
-
-  it('verteilt ohne Aufgaben der Reihe nach auf bis zu drei Spalten', () => {
-    expect(layoutColumns(['weather', 'events', 'week', 'meals'])).toEqual([
-      { tiles: ['weather', 'events'], wide: false },
-      { tiles: ['week'], wide: false },
-      { tiles: ['meals'], wide: false },
-    ])
-    expect(layoutColumns(['week'])).toEqual([{ tiles: ['week'], wide: false }])
-    expect(layoutColumns([])).toEqual([])
   })
 })
