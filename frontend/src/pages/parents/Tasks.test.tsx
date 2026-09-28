@@ -151,21 +151,19 @@ describe('Aufgaben im Elternbereich', () => {
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))
     const dialog = screen.getByRole('dialog', { name: 'Vorlage wählen' })
-    await user.click(
-      within(dialog).getByRole('button', { name: /Sachen für die Kita vorbereiten/ }),
-    )
+    await user.click(within(dialog).getByRole('button', { name: /Rucksack aufhängen/ }))
 
     expect(screen.queryByRole('dialog')).toBeNull()
-    expect(screen.getByLabelText('Titel')).toHaveValue('Sachen für die Kita vorbereiten')
+    expect(screen.getByLabelText('Titel')).toHaveValue('Rucksack aufhängen')
     await user.click(screen.getByRole('checkbox', { name: /Lena/ }))
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
 
     expect(await screen.findByRole('status')).toHaveTextContent('ist gespeichert.')
     expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
-      title: 'Sachen für die Kita vorbereiten',
+      title: 'Rucksack aufhängen',
       icon: 'fluent-emoji-flat:backpack',
-      points: 2,
-      time_of_day: 'evening',
+      points: 1,
+      time_of_day: 'afternoon',
       recurrence: { kind: 'weekly', weekdays: [1, 2, 3, 4, 5] },
     })
   })

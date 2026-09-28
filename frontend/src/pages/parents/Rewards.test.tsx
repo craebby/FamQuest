@@ -18,7 +18,7 @@ const lena = makeMember({ id: 1, name: 'Lena', color: 'purple' })
 const tom = makeMember({ id: 2, name: 'Tom', color: 'green' })
 const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
 
-const iceCream = makeReward({ id: 1, member_id: 1, name: 'Ein Eis', cost: 10 })
+const iceCream = makeReward({ id: 1, member_id: 1, name: 'Eis essen gehen', cost: 10 })
 const zoo = makeReward({ id: 2, member_id: 2, name: 'Zoo', icon: 'fluent-emoji-flat:giraffe' })
 
 const redemption: Redemption = {
@@ -26,7 +26,7 @@ const redemption: Redemption = {
   reward_id: 1,
   member_id: 1,
   status: 'redeemed',
-  reward_name: 'Ein Eis',
+  reward_name: 'Eis essen gehen',
   reward_icon: iceCream.icon,
   cost: 10,
   created_at: '2026-10-03T10:00:00Z',
@@ -66,7 +66,7 @@ describe('Belohnungen im Elternbereich', () => {
     api()
     renderApp('/parents/rewards')
 
-    await screen.findByRole('button', { name: 'Ein Eis bearbeiten' })
+    await screen.findByRole('button', { name: 'Eis essen gehen bearbeiten' })
     const section = rewardsSection()
     // Nur Kinder stehen zur Wahl.
     const chooser = section.getByRole('group', { name: 'Kind wählen' })
@@ -79,7 +79,7 @@ describe('Belohnungen im Elternbereich', () => {
 
     await user.click(within(chooser).getByRole('button', { name: 'Tom' }))
     expect(section.getByRole('button', { name: 'Zoo bearbeiten' })).toBeVisible()
-    expect(section.queryByRole('button', { name: 'Ein Eis bearbeiten' })).toBeNull()
+    expect(section.queryByRole('button', { name: 'Eis essen gehen bearbeiten' })).toBeNull()
   })
 
   it('übernimmt mehrere Vorschläge auf einmal', async () => {
@@ -91,11 +91,11 @@ describe('Belohnungen im Elternbereich', () => {
     expect(
       screen.getByRole('heading', { name: 'Belohnungen für Lena auswählen', level: 1 }),
     ).toBeVisible()
-    // „Ein Eis“ hat Lena schon.
-    expect(screen.getByRole('checkbox', { name: /Ein Eis/ })).toBeDisabled()
+    // „Eis essen gehen“ hat Lena schon.
+    expect(screen.getByRole('checkbox', { name: /Eis essen gehen/ })).toBeDisabled()
 
-    await user.click(screen.getByRole('checkbox', { name: /Schaumbad/ }))
-    await user.click(screen.getByRole('checkbox', { name: /Kinobesuch/ }))
+    await user.click(screen.getByRole('checkbox', { name: /Frühstückswunsch/ }))
+    await user.click(screen.getByRole('checkbox', { name: /Übernachtungsparty/ }))
     await user.click(screen.getByRole('button', { name: '2 Belohnungen hinzufügen' }))
 
     expect(await screen.findByText('Lena hat 2 neue Belohnungen.')).toBeVisible()
@@ -103,18 +103,18 @@ describe('Belohnungen im Elternbereich', () => {
     expect(bodies).toEqual([
       {
         member_id: 1,
-        name: 'Schaumbad',
-        icon: 'fluent-emoji-flat:bathtub',
+        name: 'Besonderer Frühstückswunsch',
+        icon: 'fluent-emoji-flat:pancakes',
         description: '',
-        cost: 10,
+        cost: 15,
         active: true,
       },
       {
         member_id: 1,
-        name: 'Kinobesuch',
-        icon: 'fluent-emoji-flat:cinema',
+        name: 'Übernachtungsparty',
+        icon: 'fluent-emoji-flat:camping',
         description: '',
-        cost: 80,
+        cost: 250,
         active: true,
       },
     ])
@@ -159,7 +159,7 @@ describe('Belohnungen im Elternbereich', () => {
     const calls = api({ 'PUT /api/rewards/1': Response.json({ ...iceCream, active: false }) })
     renderApp('/parents/rewards')
 
-    await user.click(await screen.findByRole('switch', { name: 'Ein Eis aktiv' }))
+    await user.click(await screen.findByRole('switch', { name: 'Eis essen gehen aktiv' }))
 
     expect(calls.find((call) => call.key === 'PUT /api/rewards/1')?.body).toMatchObject({
       active: false,

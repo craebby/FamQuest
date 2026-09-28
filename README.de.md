@@ -133,11 +133,21 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
   [Kontrolle durch die Eltern](#kontrolle-durch-die-eltern))
 
 Beim Anlegen füllt **„Aus Vorlagen wählen“** das Formular mit einem Tipp vor. Es gibt zwei
-Gruppen: „Kinder“ (Zähne putzen, Anziehen, Spielzeug aufräumen, Tisch abräumen …) und „Haushalt“ für
-die Care-Arbeit der Erwachsenen (Kochen, Einkaufen, Wäsche, Kinder bringen und abholen, ins Bett
-bringen, Termine …). Haushaltsvorlagen sind „Einer für alle“; Bad putzen, Staubsaugen, Einkaufen
-und Termine sind flexibel mit etwa einer Woche. Alles bleibt danach änderbar. Die Vorlagen stehen in
-`frontend/src/pools/tasks.ts`, ihre Titel in `frontend/src/locales/<sprache>/pool.json`.
+Gruppen: „Kinder“ mit kurzen Alltagsroutinen (morgens Zähne putzen, Anziehen, Frühstücken; nach
+Kita oder Schule Rucksack aufhängen, Brotdose ausräumen; abends Spielsachen aufräumen, Schlafanzug,
+Zähne putzen, ab ins Bett) plus freiwilligen Extras (Tisch decken, beim Kochen helfen …) und
+„Haushalt“ für die Care-Arbeit der Erwachsenen samt Mental Load (Kochen, Spülmaschine, Wäsche,
+Einkaufen, Putzen, Post und Rechnungen, Ablage, Technik, Steuererklärung …). Haushaltsvorlagen sind
+„Einer für alle“ und meist flexibel mit alltagsnahen Abständen (Müll alle 2 Tage, Bad wöchentlich,
+Bettwäsche alle 2 Wochen, Fenster alle 3 Monate, Steuer jährlich). Alles bleibt danach änderbar. Die
+Vorlagen stehen in `frontend/src/pools/tasks.ts`, ihre Titel in
+`frontend/src/locales/<sprache>/pool.json`.
+
+Die Belohnungs-Vorschläge (`frontend/src/pools/rewards.ts`) enthalten nur, was es nicht ohnehin
+gibt, z. B. einen besonderen Frühstückswunsch, Bildschirmzeit, einen Film aussuchen, eine besondere
+Aktivität, Geld für die Spardose, etwas aus dem Spielzeugladen. Die Preise gehen von etwa 15–20
+Punkten am Tag aus; große Belohnungen (Übernachtungsparty, Ausflug, Freizeitpark, großer Wunsch)
+sind zum Sparen über mehrere Wochen gedacht.
 
 **Flexible Aufgaben** haben keinen festen Tag, sondern einen Rhythmus: alle X Tage (Schnellwahl
 alle 2 Tage, jede Woche, alle 2 Wochen, jeden Monat) und ein Datum für die erste Fälligkeit. Ab dann
@@ -716,8 +726,9 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   „Mehr“
 - [x] 8. Routinen als eigene Blöcke: je Kind, Tagesabschnitt und Wochentagen (z. B. abgespeckter
   Abend am Wochenende), nummerierte und optionale Schritte, auf ein anderes Kind kopieren
-- [ ] 9. Feinschliff am echten Display; Wochen-Widget der Startseite überarbeiten (Aufbau und
-  Lesbarkeit)
+- [ ] 9. Feinschliff am echten Display; alltagsnahe Aufgaben-Vorlagen und Belohnungs-Vorschläge
+  (erledigt); das Wochen-Widget der Startseite bleibt vorerst, wie es ist (noch offen, ob es gebraucht
+  wird)
 
 **1.1: Anpassen**
 

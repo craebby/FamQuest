@@ -175,29 +175,33 @@ test('Eltern wählen Belohnungen aus, das Kind löst am Display ein', async ({ p
 
   // Aus dem Pool zwei Belohnungen für Lena übernehmen, eine davon günstiger machen.
   await page.getByRole('button', { name: 'Aus Vorschlägen wählen' }).click()
-  await choose(page, 'checkbox', /Eine kleine Süßigkeit/)
-  await choose(page, 'checkbox', /Ein Eis/)
+  await choose(page, 'checkbox', /Frühstückswunsch/)
+  await choose(page, 'checkbox', /15 Minuten Bildschirmzeit/)
   await page.getByRole('button', { name: '2 Belohnungen hinzufügen' }).click()
   await expect(page.getByRole('status')).toHaveText('Lena hat 2 neue Belohnungen.')
-  await page.getByRole('button', { name: 'Eine kleine Süßigkeit bearbeiten' }).click()
-  await page.getByRole('button', { name: 'Weniger Punkte' }).click()
+  await page.getByRole('button', { name: 'Besonderer Frühstückswunsch bearbeiten' }).click()
+  await page.getByRole('spinbutton', { name: 'Kosten in Punkten' }).fill('4')
   await page.getByRole('button', { name: 'Speichern' }).click()
-  await expect(page.getByRole('status')).toHaveText('„Eine kleine Süßigkeit“ ist gespeichert.')
+  await expect(page.getByRole('status')).toHaveText(
+    '„Besonderer Frühstückswunsch“ ist gespeichert.',
+  )
   await toTasks(page)
 
   // Geschenk → Lena → Belohnung → bestätigen. Lena hat 4 Punkte.
   await nav.getByRole('link', { name: 'Belohnungen' }).tap()
   await page.getByRole('link', { name: 'Belohnungen von Lena' }).tap()
-  await expect(page.getByText('Noch 6 Punkte nötig')).toBeVisible()
-  await page.getByRole('button', { name: 'Eine kleine Süßigkeit einlösen' }).tap()
+  await expect(page.getByText('Noch 16 Punkte nötig')).toBeVisible()
+  await page.getByRole('button', { name: 'Besonderer Frühstückswunsch einlösen' }).tap()
   await page.getByRole('button', { name: 'Ja, einlösen' }).tap()
   await expect(
-    page.getByRole('heading', { name: 'Viel Spaß: Eine kleine Süßigkeit!' }),
+    page.getByRole('heading', { name: 'Viel Spaß: Besonderer Frühstückswunsch!' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Fertig' }).tap()
   await expect(page.getByText('Insgesamt 0 Punkte')).toBeAttached()
-  await expect(page.getByText('Noch 10 Punkte nötig')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Eine kleine Süßigkeit einlösen' })).toBeHidden()
+  await expect(page.getByText('Noch 20 Punkte nötig')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Besonderer Frühstückswunsch einlösen' }),
+  ).toBeHidden()
 
   // Die Einlösung steht in der Historie im Elternbereich.
   await nav.getByRole('link', { name: 'Einstellungen' }).click()
@@ -214,28 +218,28 @@ test('Aufgabe mit Elternkontrolle: erst nach Bestätigung gibt es Punkte', async
   await enterPin(page, PIN)
   await openArea(page, 'Aufgaben')
 
-  // Vorlage „Spielzeug aufräumen“ bringt „Eltern prüfen“ gleich mit.
+  // Vorlage „Spielsachen aufräumen“ bringt „Eltern prüfen“ gleich mit.
   await page.getByRole('button', { name: 'Aufgabe hinzufügen' }).click()
   await page.getByRole('button', { name: 'Aus Vorlagen wählen' }).click()
-  await page.getByRole('button', { name: /Spielzeug aufräumen/ }).click()
+  await page.getByRole('button', { name: /Spielsachen aufräumen/ }).click()
   await expect(page.getByRole('switch', { name: 'Eltern prüfen' })).toBeChecked()
   await choose(page, 'checkbox', /Lena/)
   await choose(page, 'radio', 'Jederzeit')
   await page.getByRole('button', { name: 'Speichern' }).click()
-  await expect(page.getByRole('status')).toHaveText('„Spielzeug aufräumen“ ist gespeichert.')
+  await expect(page.getByRole('status')).toHaveText('„Spielsachen aufräumen“ ist gespeichert.')
   await toTasks(page)
 
   const column = page.getByRole('region', { name: 'Aufgaben von Lena' })
-  await column.getByRole('button', { name: /^Spielzeug aufräumen/ }).tap()
+  await column.getByRole('button', { name: /^Spielsachen aufräumen/ }).tap()
   await expect(
-    column.getByRole('button', { name: 'Spielzeug aufräumen, 3 Punkte, wartet auf Kontrolle' }),
+    column.getByRole('button', { name: 'Spielsachen aufräumen, 3 Punkte, wartet auf Kontrolle' }),
   ).toHaveAttribute('aria-pressed', 'true')
   await expect(column.getByText('Insgesamt 0 Punkte')).toBeAttached()
 
   // Das Zahnrad zeigt die wartende Kontrolle; die Eltern bestätigen.
   await nav.getByRole('link', { name: 'Einstellungen, 1 Aufgabe wartet auf Kontrolle' }).click()
   await enterPin(page, PIN)
-  await page.getByRole('button', { name: 'Spielzeug aufräumen von Lena bestätigen' }).click()
+  await page.getByRole('button', { name: 'Spielsachen aufräumen von Lena bestätigen' }).click()
   await expect(page.getByRole('heading', { name: 'Zu prüfen' })).toBeHidden()
   await toTasks(page)
 

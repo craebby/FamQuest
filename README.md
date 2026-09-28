@@ -133,12 +133,19 @@ Under "Tasks" in the parents' area you decide who does what and when. A task has
   [Parent checks](#parent-checks))
 
 When creating a task, **"Choose from templates"** fills in the form with one tap. There are two
-groups: "Children" (brush teeth, get dressed, tidy up toys, clear the table …) and "Household" for
-the adults' care work (cooking, shopping, laundry, taking the kids and picking them up, bedtime,
-appointments …). Household templates are "One for all"; cleaning the bathroom, vacuuming, shopping
-and appointments are flexible, about once a week. Everything can be changed afterwards. The
-templates live in `frontend/src/pools/tasks.ts`, their titles in
-`frontend/src/locales/<language>/pool.json`.
+groups: "Children" with short everyday routines (morning: brush teeth, get dressed, breakfast;
+after nursery or school: hang up the backpack, unpack the lunchbox; evening: put toys away, pyjamas,
+brush teeth, off to bed) plus optional extras (set the table, help with cooking …), and "Household"
+for the adults' care work, including the mental load (cooking, dishwasher, laundry, shopping,
+cleaning, bills and filing, tech, tax return …). Household templates are "One for all" and mostly
+flexible with realistic intervals (rubbish every 2 days, bathroom weekly, bed linen every 2 weeks,
+windows every 3 months, tax return yearly). Everything can be changed afterwards. The templates live
+in `frontend/src/pools/tasks.ts`, their titles in `frontend/src/locales/<language>/pool.json`.
+
+The reward suggestions (`frontend/src/pools/rewards.ts`) only contain things a child doesn't get
+anyway, e.g. a special breakfast wish, screen time, picking a movie, a special activity, money for
+the piggy bank, something from the toy shop. Prices assume about 15–20 points a day; big rewards
+(sleepover, day out, theme park, a big wish) are meant for saving up over several weeks.
 
 **Flexible tasks** have no fixed day but a rhythm: every X days (shortcuts every 2 days, every
 week, every 2 weeks, every month) and a date for the first time it is due. From then on the task
@@ -695,8 +702,8 @@ use.
   phones
 - [x] 8. Routines as their own blocks: per child, time of day and weekdays (e.g. a lighter
   weekend evening), numbered and optional steps, copy to another child
-- [ ] 9. Polish on the real display; rework the week widget on the start page (layout and
-  readability)
+- [ ] 9. Polish on the real display; everyday task templates and reward suggestions (done); the
+  week widget on the start page stays as it is for now (unclear whether it's needed)
 
 **1.1: make it your own**
 

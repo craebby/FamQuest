@@ -101,7 +101,7 @@ describe('Kontrolle durch die Eltern', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
     await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))
-    await user.click(screen.getByRole('button', { name: /Spielzeug aufräumen/ }))
+    await user.click(screen.getByRole('button', { name: /Spielsachen aufräumen/ }))
     expect(screen.getByRole('switch', { name: 'Eltern prüfen' })).toBeChecked()
     await user.click(screen.getByRole('checkbox', { name: /Lena/ }))
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
