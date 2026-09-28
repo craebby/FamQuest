@@ -10,7 +10,8 @@
     "cancel": "Cancel",
     "logout": "Sign out",
     "next": "Next",
-    "retry": "Try again"
+    "retry": "Try again",
+    "save": "Save"
   },
   "languages": {
     "de": "Deutsch",
@@ -372,6 +373,9 @@
     },
     "weather": {
       "unavailable": "The weather is not available right now"
+    },
+    "home": {
+      "invalid_layout": "This start page layout is invalid"
     }
   },
   "rewards": {
@@ -547,7 +551,18 @@
     "meals_hint": "Soon you'll see what's for dinner here.",
     "shopping": "Shopping",
     "shopping_hint": "Soon your shopping list will be here.",
-    "coming_soon": "Coming soon"
+    "coming_soon": "Coming soon",
+    "customize": "Customize start page",
+    "customize_hint": "Switch tiles on or off and move them with the arrows. You can see the result right below. Applies to the whole family.",
+    "tile_visible": "Show {{name}}",
+    "move_up": "Move {{name}} up",
+    "move_down": "Move {{name}} down",
+    "reset_layout": "Restore default",
+    "week": "Week",
+    "open_week": "Open week view",
+    "week_empty": "No tasks this week.",
+    "week_free": "no tasks",
+    "person": "Person"
   },
   "weather": {
     "now": "Now",

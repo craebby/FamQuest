@@ -31,6 +31,27 @@ export interface TaskWeek {
   days: { date: string; entries: WeekEntry[] }[]
 }
 
+/**
+ * Fortschritt einer Person an einem Tag. Wie auf der Startseite zählen Extras und Aufgaben, die
+ * jemand anderes für alle erledigt hat, nicht mit.
+ */
+export function dayProgress(
+  entries: WeekEntry[],
+  tasks: Map<number, WeekTask>,
+  memberId: number,
+): { done: number; total: number } {
+  const counted = entries.filter(
+    (entry) =>
+      entry.member_id === memberId &&
+      tasks.get(entry.task_id)?.extra === false &&
+      (entry.done_by === null || entry.done_by === memberId),
+  )
+  return {
+    done: counted.filter((entry) => entry.done_by === memberId).length,
+    total: counted.length,
+  }
+}
+
 export const TASK_WEEK_KEY = ['task-week'] as const
 
 /** Aufgaben einer Woche; `offset` 0 = aktuelle Woche. Aktualisiert sich jede Minute. */

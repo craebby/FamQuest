@@ -8,7 +8,13 @@ import CheckIcon from '~icons/lucide/check'
 
 import { type Member, useMembers } from '../api/members'
 import { sortForMember } from '../api/tasks'
-import { type TaskWeek, type WeekEntry, type WeekTask, useTaskWeek } from '../api/taskWeek'
+import {
+  type TaskWeek,
+  type WeekEntry,
+  type WeekTask,
+  dayProgress,
+  useTaskWeek,
+} from '../api/taskWeek'
 import { Avatar } from '../components/Avatar'
 import { TaskIcon } from '../components/TaskIcon'
 import { Alert, Button } from '../components/ui'
@@ -174,12 +180,7 @@ function MemberDay({
     entries.flatMap((entry) => tasks.get(entry.task_id) ?? []),
     member.id,
   )
-  // Wie auf der Startseite: Extras und von anderen erledigte Aufgaben zählen nicht mit.
-  const counted = ordered.filter((task) => {
-    const entry = byTask.get(task.id)!
-    return !task.extra && (entry.done_by === null || entry.done_by === member.id)
-  })
-  const done = counted.filter((task) => byTask.get(task.id)!.done_by === member.id).length
+  const { done, total } = dayProgress(entries, tasks, member.id)
 
   return (
     <div
@@ -191,11 +192,11 @@ function MemberDay({
         <span className="min-w-0 flex-1 truncate text-base font-bold text-slate-700">
           {member.name}
         </span>
-        {counted.length > 0 && (
+        {total > 0 && (
           <span className="text-base font-extrabold text-slate-600 tabular-nums">
-            <span className="sr-only">{t('points.progress', { done, total: counted.length })}</span>
+            <span className="sr-only">{t('points.progress', { done, total })}</span>
             <span aria-hidden="true">
-              {done}/{counted.length}
+              {done}/{total}
             </span>
           </span>
         )}

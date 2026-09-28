@@ -307,3 +307,24 @@ test('Wochenansicht im Aufgabenbereich', async ({ page }) => {
   await page.getByRole('button', { name: 'Nächste Woche' }).click()
   await expect(page.getByRole('button', { name: 'Diese Woche' })).toBeVisible()
 })
+
+test('Startseite anpassen: mit PIN Kacheln ein- und ausschalten, gilt nach dem Neuladen', async ({
+  page,
+}) => {
+  await login(page)
+
+  await page.getByRole('button', { name: 'Startseite anpassen' }).click()
+  await enterPin(page, PIN)
+  const editor = page.getByRole('region', { name: 'Startseite anpassen' })
+  await editor.getByRole('switch', { name: 'Einkauf anzeigen' }).click()
+  await editor.getByRole('switch', { name: 'Woche anzeigen' }).click()
+  await editor.getByRole('button', { name: 'Speichern' }).click()
+  await expect(editor).toBeHidden()
+
+  await page.reload()
+  await expect(page.getByRole('region', { name: 'Woche' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Einkauf' })).toBeHidden()
+  // Nach dem Speichern ist der Elternbereich wieder gesperrt.
+  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await expect(page.getByRole('heading', { name: 'Eltern-PIN eingeben' })).toBeVisible()
+})

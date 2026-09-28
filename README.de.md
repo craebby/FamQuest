@@ -178,6 +178,13 @@ darunter drei Spalten (auf schmalen Bildschirmen untereinander):
 
 Ohne Ort oder Kalender zeigen die Kacheln einen kurzen Hinweis mit Knopf zum Elternbereich.
 
+**Startseite anpassen:** Das Zahnrad auf „Heute“ fragt die Eltern-PIN ab und zeigt dann alle
+Kacheln als Liste. Jede Kachel lässt sich ein- und ausschalten und mit den Pfeilen nach oben oder
+unten schieben; „Standard wiederherstellen“ holt den ursprünglichen Aufbau zurück. Der Aufbau wird
+auf dem Server gespeichert und gilt für alle Displays der Familie. Die zuschaltbare Kachel
+**Woche** zeigt je Person und Tag einen Ring (voller Ring = alles geschafft); der Pfeil öffnet die
+Wochenansicht im Aufgabenbereich.
+
 ## Familienansicht
 
 Die Familienansicht („Aufgaben“, Stern) zeigt alle Familienmitglieder nebeneinander, jede Person
@@ -667,9 +674,12 @@ Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im A
   Symbole, Platz für Essen und Einkauf
 - [x] 4. Wochenansicht im Aufgabenbereich (was kommt noch, was ist erledigt); Routinen in fester
   Reihenfolge je Person und freiwillige Extra-Aufgaben
-- [ ] 5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und
+- [x] 5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und
   Reihenfolge, gilt für die ganze Familie; Wochen-Widget als optionale Kachel
-- [ ] 6. Feinschliff am echten Display
+- [ ] 6. Routinenverwaltung: eigener Abschnitt „Routinen“ im Elternbereich, je Kind morgens,
+  nachmittags und abends als Blöcke in fester Reihenfolge; geht später im Abschnitt „Aufgaben“ auf
+- [ ] 7. Feinschliff am echten Display; Wochen-Widget der Startseite überarbeiten (Aufbau und
+  Lesbarkeit)
 
 **1.1: Anpassen**
 

@@ -80,7 +80,9 @@ in einen eigenen Bereich. Wetter von Open-Meteo über den Server (ohne API-Schl�
 4. Wochenansicht im Aufgabenbereich (blättern: was kommt noch, was ist erledigt)
 5. Startseite konfigurierbar: Zahnrad auf „Heute“ (mit Eltern-PIN), Kacheln ein/aus und Reihenfolge,
    gilt für die ganze Familie; Wochen-Widget als optionale Kachel
-6. Feinschliff
+6. Routinenverwaltung: eigener Abschnitt „Routinen“ im Elternbereich, je Kind die Tagesabschnitte
+   (morgens/nachmittags/abends) als Blöcke mit Reihenfolge; geht später im Abschnitt „Aufgaben“ auf
+7. Feinschliff
 
 ## Befehle
 

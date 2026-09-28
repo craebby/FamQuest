@@ -175,6 +175,12 @@ top, below it three columns (stacked on narrow screens):
 
 Without a town or calendar the widgets show a short hint with a button to the parents' area.
 
+**Customising the start page:** the gear on "Today" asks for the parents' PIN and then shows all
+tiles in a list. Each tile can be switched on or off and moved up or down with the arrows;
+"Restore default" brings back the original layout. The layout is stored on the server and applies
+to every display of the family. An optional **Week** tile shows one ring per person and day (full
+ring = everything done); a tap on the arrow opens the week view of the tasks area.
+
 ## Family view
 
 The family view ("Tasks", star icon) shows all family members side by side, each with a large
@@ -648,9 +654,12 @@ use.
   space for meals and shopping
 - [x] 4. Week view in the tasks area (what's coming up, what's done); routines in a fixed order per
   person and optional extra tasks
-- [ ] 5. Configurable start page: gear on "Today" (with the parents' PIN) to switch tiles on and
+- [x] 5. Configurable start page: gear on "Today" (with the parents' PIN) to switch tiles on and
   off and change their order, for the whole family; week widget as an optional tile
-- [ ] 6. Polish on the real display
+- [ ] 6. Routine management: a "Routines" section in the parents' area showing each child's
+  morning, afternoon and evening as blocks in a fixed order; later merged into the "Tasks" section
+- [ ] 7. Polish on the real display; rework the week widget on the start page (layout and
+  readability)
 
 **1.1: make it your own**
 

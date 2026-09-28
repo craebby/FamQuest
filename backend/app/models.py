@@ -15,7 +15,7 @@ from sqlalchemy import (
     func,
     true,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -47,6 +47,9 @@ class Family(Base):
     weather_place: Mapped[str | None] = mapped_column(String(200))
     weather_latitude: Mapped[float | None] = mapped_column(Float)
     weather_longitude: Mapped[float | None] = mapped_column(Float)
+    # Kacheln der Startseite in Reihenfolge, [{"id": "weather", "visible": true}, …];
+    # None = Standardaufbau (siehe api/home.py).
+    home_layout: Mapped[list[dict] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

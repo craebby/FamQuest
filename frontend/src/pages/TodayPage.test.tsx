@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { CalendarUpcoming, UpcomingEvent } from '../api/calendar'
+import { DEFAULT_TILES, type Tile, layoutColumns } from '../api/home'
+import type { TaskWeek } from '../api/taskWeek'
 import type { Weather } from '../api/weather'
 import i18n from '../i18n'
 import {
@@ -100,11 +102,14 @@ function mockHome({
   upcoming = UPCOMING,
   calendarEnabled = true,
   language = 'de',
+  extra = {},
 }: {
   weather?: Weather
   upcoming?: CalendarUpcoming
   calendarEnabled?: boolean
   language?: string
+  /** Weitere oder abweichende Antworten, z. B. für den Aufbau der Startseite. */
+  extra?: Parameters<typeof mockApi>[0]
 } = {}) {
   // Wie der Server: Nach dem Erledigen liefert GET /api/today die Aufgabe als erledigt.
   let teethDone = false
@@ -128,6 +133,7 @@ function mockHome({
       teethDone = true
       return new Response(null, { status: 204 })
     },
+    ...extra,
   })
 }
 
@@ -340,5 +346,194 @@ describe('Startseite „Heute“', () => {
         .filter(Boolean),
     ).toEqual(['Anziehen', 'Zähne', 'Schlafi an', 'Tisch abräumen'])
     expect(row.getByRole('img', { name: '0 von 3 Aufgaben erledigt' })).toBeInTheDocument()
+  })
+})
+
+const WEEK: TaskWeek = {
+  start: '2026-09-28',
+  today: '2026-10-03',
+  tasks: [
+    {
+      id: 10,
+      title: 'Zähne putzen',
+      icon: 'fluent-emoji-flat:toothbrush',
+      points: 2,
+      time_of_day: 'morning',
+      color: null,
+      extra: false,
+      positions: [],
+    },
+  ],
+  days: ['09-28', '09-29', '09-30', '10-01', '10-02', '10-03', '10-04'].map((day) => ({
+    date: `2026-${day}`,
+    entries:
+      day === '10-04'
+        ? []
+        : [
+            {
+              task_id: 10,
+              member_id: 1,
+              status: day === '09-29' || day === '10-03' ? 'open' : 'done',
+              done_by: day === '09-29' || day === '10-03' ? null : 1,
+            },
+          ],
+  })),
+}
+
+async function enterPin(user: ReturnType<typeof userEvent.setup>, pin: string) {
+  for (const digit of pin) await user.click(screen.getByRole('button', { name: digit }))
+  await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+}
+
+const tileHeadings = () =>
+  screen
+    .getAllByRole('heading', { level: 2 })
+    .map((heading) => heading.textContent)
+    .filter((text) => text !== 'Startseite anpassen')
+
+describe('Startseite anpassen', () => {
+  it('zeigt die Kacheln in der gespeicherten Reihenfolge, ausgeblendete nicht', async () => {
+    const tiles: Tile[] = [
+      { id: 'week', visible: true },
+      { id: 'tasks', visible: true },
+      { id: 'weather', visible: false },
+      { id: 'events', visible: true },
+      { id: 'meals', visible: false },
+      { id: 'shopping', visible: false },
+    ]
+    mockHome({
+      extra: {
+        'GET /api/home/layout': Response.json({ tiles }),
+        'GET /api/tasks/week': Response.json(WEEK),
+      },
+    })
+    renderApp('/')
+
+    await screen.findByRole('region', { name: 'Woche' })
+    expect(tileHeadings()).toEqual(['Woche', 'Aufgaben', 'Termine'])
+    expect(screen.queryByRole('region', { name: 'Wetter' })).not.toBeInTheDocument()
+  })
+
+  it('zeigt im Wochen-Widget je Person und Tag den Fortschritt', async () => {
+    mockHome({
+      extra: {
+        'GET /api/home/layout': Response.json({
+          tiles: DEFAULT_TILES.map((tile) => ({ ...tile, visible: tile.id === 'week' })),
+        }),
+        'GET /api/tasks/week': Response.json(WEEK),
+      },
+    })
+    renderApp('/')
+
+    const week = await region('Woche')
+    expect(week.getByRole('link', { name: 'Wochenansicht öffnen' })).toHaveAttribute(
+      'href',
+      '/tasks/week',
+    )
+    expect(await week.findByRole('img', { name: 'Lena' })).toBeVisible()
+    expect(week.getByRole('img', { name: 'Montag: 1 von 1 Aufgaben erledigt' })).toBeVisible()
+    expect(week.getByRole('img', { name: 'Dienstag: 0 von 1 Aufgaben erledigt' })).toBeVisible()
+    expect(week.getByRole('img', { name: 'Sonntag: keine Aufgaben' })).toBeVisible()
+    // Papa hat diese Woche keine Aufgaben und bekommt keine Zeile.
+    expect(week.queryByRole('img', { name: 'Papa' })).not.toBeInTheDocument()
+  })
+
+  it('verlangt die Eltern-PIN, speichert den neuen Aufbau und sperrt danach wieder', async () => {
+    const user = userEvent.setup()
+    const calls = mockHome({
+      extra: {
+        'GET /api/home/layout': Response.json({ tiles: DEFAULT_TILES }),
+        'GET /api/tasks/week': Response.json(WEEK),
+        'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
+        'PUT /api/home/layout': (body) => Response.json(body),
+        'POST /api/parent/lock': Response.json(makeMe()),
+      },
+    })
+    renderApp('/')
+
+    await user.click(await screen.findByRole('button', { name: 'Startseite anpassen' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Startseite anpassen' })
+    expect(within(dialog).getByRole('heading', { name: 'Eltern-PIN eingeben' })).toBeVisible()
+    await enterPin(user, '1234')
+
+    const editor = await region('Startseite anpassen')
+    await user.click(editor.getByRole('switch', { name: 'Wetter anzeigen' }))
+    await user.click(editor.getByRole('switch', { name: 'Woche anzeigen' }))
+    await user.click(editor.getByRole('button', { name: 'Aufgaben nach oben' }))
+    await user.click(editor.getByRole('button', { name: 'Aufgaben nach oben' }))
+    expect(editor.getByRole('button', { name: 'Aufgaben nach oben' })).toBeDisabled()
+    // Die Vorschau darunter folgt sofort.
+    expect(tileHeadings()).toEqual(['Aufgaben', 'Termine', 'Essen', 'Einkauf', 'Woche'])
+
+    await user.click(editor.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByRole('button', { name: 'Startseite anpassen' })).toBeInTheDocument()
+    const put = calls.find((call) => call.key === 'PUT /api/home/layout')
+    expect(put?.body).toEqual({
+      tiles: [
+        { id: 'tasks', visible: true },
+        { id: 'weather', visible: false },
+        { id: 'events', visible: true },
+        { id: 'meals', visible: true },
+        { id: 'shopping', visible: true },
+        { id: 'week', visible: true },
+      ],
+    })
+    expect(calls.some((call) => call.key === 'POST /api/parent/lock')).toBe(true)
+  })
+
+  it('verwirft Änderungen mit „Abbrechen“; „Standard“ setzt nur den Entwurf zurück', async () => {
+    const user = userEvent.setup()
+    const tiles: Tile[] = DEFAULT_TILES.map((tile) => ({ ...tile, visible: tile.id !== 'meals' }))
+    const calls = mockHome({
+      extra: {
+        'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
+        'GET /api/home/layout': Response.json({ tiles }),
+        'GET /api/tasks/week': Response.json(WEEK),
+        'POST /api/parent/lock': Response.json(makeMe()),
+      },
+    })
+    renderApp('/')
+
+    // Schon entsperrt (oder ohne PIN): keine Abfrage.
+    await user.click(await screen.findByRole('button', { name: 'Startseite anpassen' }))
+    const editor = await region('Startseite anpassen')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(editor.getByRole('switch', { name: 'Essen anzeigen' })).not.toBeChecked()
+
+    await user.click(editor.getByRole('button', { name: 'Standard wiederherstellen' }))
+    expect(editor.getByRole('switch', { name: 'Essen anzeigen' })).toBeChecked()
+    expect(editor.getByRole('switch', { name: 'Woche anzeigen' })).not.toBeChecked()
+
+    await user.click(editor.getByRole('button', { name: 'Abbrechen' }))
+
+    await screen.findByRole('button', { name: 'Startseite anpassen' })
+    expect(screen.queryByRole('region', { name: 'Essen' })).not.toBeInTheDocument()
+    expect(calls.some((call) => call.key === 'PUT /api/home/layout')).toBe(false)
+    expect(calls.some((call) => call.key === 'POST /api/parent/lock')).toBe(true)
+  })
+})
+
+describe('Spalten der Startseite', () => {
+  it('stellt die Aufgaben breit in die Mitte', () => {
+    expect(layoutColumns(['weather', 'events', 'tasks', 'meals', 'shopping'])).toEqual([
+      { tiles: ['weather', 'events'], wide: false },
+      { tiles: ['tasks'], wide: true },
+      { tiles: ['meals', 'shopping'], wide: false },
+    ])
+    expect(layoutColumns(['tasks', 'week'])).toEqual([
+      { tiles: ['tasks'], wide: true },
+      { tiles: ['week'], wide: false },
+    ])
+  })
+
+  it('verteilt ohne Aufgaben der Reihe nach auf bis zu drei Spalten', () => {
+    expect(layoutColumns(['weather', 'events', 'week', 'meals'])).toEqual([
+      { tiles: ['weather', 'events'], wide: false },
+      { tiles: ['week'], wide: false },
+      { tiles: ['meals'], wide: false },
+    ])
+    expect(layoutColumns(['week'])).toEqual([{ tiles: ['week'], wide: false }])
+    expect(layoutColumns([])).toEqual([])
   })
 })

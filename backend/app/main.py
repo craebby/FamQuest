@@ -14,6 +14,7 @@ from app.api import (
     calendar,
     calendar_week,
     health,
+    home,
     members,
     parent,
     points,
@@ -72,6 +73,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         calendar,
         calendar_week,
         weather,
+        home,
     ):
         api.include_router(module.router)
     app.include_router(api)

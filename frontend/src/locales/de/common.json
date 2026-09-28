@@ -10,7 +10,8 @@
     "cancel": "Abbrechen",
     "logout": "Abmelden",
     "next": "Weiter",
-    "retry": "Nochmal versuchen"
+    "retry": "Nochmal versuchen",
+    "save": "Speichern"
   },
   "languages": {
     "de": "Deutsch",
@@ -372,6 +373,9 @@
     },
     "weather": {
       "unavailable": "Das Wetter ist gerade nicht verfügbar"
+    },
+    "home": {
+      "invalid_layout": "Dieser Aufbau der Startseite ist ungültig"
     }
   },
   "rewards": {
@@ -547,7 +551,18 @@
     "meals_hint": "Hier steht bald, was es heute zu essen gibt.",
     "shopping": "Einkauf",
     "shopping_hint": "Hier steht bald eure Einkaufsliste.",
-    "coming_soon": "Kommt bald"
+    "coming_soon": "Kommt bald",
+    "customize": "Startseite anpassen",
+    "customize_hint": "Kacheln ein- oder ausschalten und mit den Pfeilen verschieben. Darunter siehst du gleich, wie es aussieht. Gilt für die ganze Familie.",
+    "tile_visible": "{{name}} anzeigen",
+    "move_up": "{{name}} nach oben",
+    "move_down": "{{name}} nach unten",
+    "reset_layout": "Standard wiederherstellen",
+    "week": "Woche",
+    "open_week": "Wochenansicht öffnen",
+    "week_empty": "Diese Woche stehen keine Aufgaben an.",
+    "week_free": "keine Aufgaben",
+    "person": "Person"
   },
   "weather": {
     "now": "Jetzt",
