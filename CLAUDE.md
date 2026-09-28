@@ -107,8 +107,8 @@ und nach Leerlauf; Einblendungen konfigurierbar; Einstellungen für die Familie,
 
 Entschieden: Standard nur Abendessen, Frühstück/Mittag/Snack in den Einstellungen zuschaltbar;
 Gerichte einfach eintippen (Vorschläge aus bisherigen und ca. 40 Standardgerichten mit Symbol);
-geplant wird direkt in der Ansicht „Essen“ ohne Eltern-PIN; Kinder dürfen sich Gerichte wünschen;
-keine Rezepte (Mealie/Rezepte später).
+geplant wird direkt in der Ansicht „Essen“ ohne Eltern-PIN; keine Rezepte (Mealie/Rezepte später);
+Wünsche der Kinder später (Roadmap, Ideen ohne Version).
 
 1. Wochenplan: Ansicht „Essen“ in der Navigationsleiste, Woche blättern, Gericht je Tag und Mahlzeit
    eintippen (Vorschläge, Symbol automatisch, änderbar); Mahlzeiten in den Einstellungen;
@@ -118,8 +118,7 @@ keine Rezepte (Mealie/Rezepte später).
    Kinder (sonst „Alles erledigt“) und Platz für den Einkauf, unten breit die nächsten 7 Tage mit
    Terminen und Essen (Symbol + Text); Bereiche per Zahnrad ein/aus (ohne Reihenfolge); Aufgaben der
    Erwachsenen nur noch unter „Aufgaben“
-4. Wünsche der Kinder: am Display Avatar + Gericht antippen, Eltern übernehmen in den Plan oder lehnen ab
-5. Feinschliff
+4. Feinschliff
 
 ## Befehle
 

@@ -852,7 +852,7 @@ When idle, the display turns into a digital picture frame.
 
 **Next: meal planning (phase 5)**
 
-Plan the week's meals right on the display; children can wish for a dish.
+Plan the week's meals right on the display.
 
 - [x] 1. Weekly plan: a "Meals" icon in the navigation bar, browse weeks, type the dish for each day
   (suggestions from earlier dishes and about 40 common ones, icon picked automatically and
@@ -864,9 +864,7 @@ Plan the week's meals right on the display; children can wish for a dish.
   current routine and room for shopping, at the bottom the next 7 days across the full width with
   events and meals; sections can be switched on and off with the gear; adults' tasks only under
   "Tasks"
-- [ ] 4. Children's wishes: tap your avatar and a dish on the display; parents add it to the plan
-  or decline
-- [ ] 5. Polish
+- [ ] 4. Polish on the real display
 
 **Later (phase 6 of the specification)**
 
@@ -881,6 +879,8 @@ Plan the week's meals right on the display; children can wish for a dish.
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 - Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
+- Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
+  or decline
 - More independent adults: a cleaning plan (recurring housework with "how urgent", similar to Tody)
   and real to-dos to remember, separate from the children's routines and points; optional per
   person, since some people keep their to-dos elsewhere

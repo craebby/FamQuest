@@ -878,7 +878,7 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 
 **Als Nächstes: Essensplanung (Phase 5)**
 
-Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte wünschen.
+Die Mahlzeiten der Woche direkt am Display planen.
 
 - [x] 1. Wochenplan: Symbol „Essen“ in der Navigationsleiste, Wochen blättern, das Gericht je Tag
   eintippen (Vorschläge aus bisherigen und rund 40 gängigen Gerichten, Symbol wird automatisch
@@ -889,9 +889,7 @@ Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte 
 - [x] 3. „Heute“ als Wochen-Dashboard: oben Uhr und Wetter klein, darunter die aktuelle Routine der
   Kinder und Platz für den Einkauf, unten breit die nächsten 7 Tage mit Terminen und Essen; Bereiche
   per Zahnrad ein- und ausschalten; Aufgaben der Erwachsenen nur noch unter „Aufgaben“
-- [ ] 4. Wünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
-  in den Plan oder lehnen ab
-- [ ] 5. Feinschliff
+- [ ] 4. Feinschliff am echten Display
 
 **Später (Phase 6 der Spezifikation)**
 
@@ -907,6 +905,8 @@ Die Mahlzeiten der Woche direkt am Display planen; Kinder dürfen sich Gerichte 
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
 - Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
+- Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
+  in den Plan oder lehnen ab
 - Erwachsene eigenständiger: ein Putzplan (wiederkehrende Hausarbeit mit „wie dringend“, ähnlich
   Tody) und echte Todos zum Dran-Denken, getrennt von Routinen und Punkten der Kinder; für jede Person
   abschaltbar, weil manche ihre Todos woanders pflegen
