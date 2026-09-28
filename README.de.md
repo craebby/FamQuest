@@ -19,6 +19,14 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > Einblendungen und mit Nachtmodus. Phase 5 hat begonnen: ein Essensplan für die Woche, direkt am
 > Display (siehe [Roadmap](#roadmap)).
 
+![„Heute“ am Kühlschrank-Display: Morgenroutine der Kinder, die nächsten sieben Tage mit Terminen und Abendessen](docs/screenshots/de/today.png)
+
+| Aufgaben der Woche | Termindetails | Symbole für Termine | Am Handy |
+| --- | --- | --- | --- |
+| ![Wochenansicht der Aufgaben](docs/screenshots/de/tasks-week.png) | ![Termindetails mit Symbol](docs/screenshots/de/calendar-event.png) | ![Symbole für Termine im Elternbereich](docs/screenshots/de/parents-symbols.png) | ![„Heute“ am Handy](docs/screenshots/de/phone-today.png) |
+
+Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#entwicklung)).
+
 ## Features
 
 - Startseite „Heute“ als Wochen-Dashboard: Uhr und Wetter, die aktuelle Routine der Kinder und die
@@ -117,6 +125,8 @@ Im Elternbereich unter „Familie“ legt ihr alle Personen des Haushalts an: Na
 
 ## Aufgaben und Routinen
 
+![Aufgaben im Elternbereich am Tablet](docs/screenshots/de/parents-tasks.png)
+
 Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine Aufgabe hat:
 
 - **Symbol**: aus einem mitgelieferten Katalog von gut 200 farbigen Emoji-Symbolen
@@ -183,6 +193,8 @@ Tests prüfen, dass jedes Symbol existiert und in jeder Sprache eindeutig benann
 
 ### Routinen
 
+![Routinen im Elternbereich: nummerierte Schritte für morgens, Montag bis Freitag](docs/screenshots/de/parents-routines.png)
+
 Im Abschnitt **„Routinen“** des Elternbereichs stellt ihr die Routinen jedes Kindes zusammen: eine
 feste Abfolge von Schritten für **morgens**, **nachmittags** und **abends** (**mittags**, sobald es
 dort eine Routine gibt). Oben ein Kind antippen; das gewählte Kind ist immer hervorgehoben.
@@ -237,6 +249,8 @@ Einstellung wird auf dem Server gespeichert und gilt für alle Displays der Fami
 übersicht der Aufgaben (Ringe je Person) gibt es im Aufgabenbereich unter „Woche“.
 
 ## Familienansicht
+
+![Familienansicht: eine Spalte pro Person mit den heutigen Aufgaben](docs/screenshots/de/tasks.png)
 
 Die Familienansicht („Aufgaben“, Stern) zeigt alle Familienmitglieder nebeneinander, jede Person
 mit großem Avatar und ihren heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe
@@ -307,6 +321,8 @@ keine Punktwerte.
 
 ## Kontrolle durch die Eltern
 
+![Elternbereich: Hausaufgaben warten auf Kontrolle, Punkte aller Familienmitglieder](docs/screenshots/de/parents-review.png)
+
 Für Aufgaben wie „Zimmer aufräumen“ lässt sich im Editor **„Eltern prüfen“** einschalten. Das Kind
 tippt die Karte wie gewohnt an; statt des Hakens erscheint eine **Sanduhr**, und es gibt noch keine
 Punkte. Am Zahnrad der Navigationsleiste steht, wie viele Erledigungen warten.
@@ -321,6 +337,8 @@ Auch Erledigungen früherer Tage bleiben prüfbar. Macht das Kind die Erledigung
 selbst rückgängig, wird nichts gebucht.
 
 ## Belohnungen
+
+![Belohnungen eines Kindes am Display](docs/screenshots/de/rewards.png)
 
 Belohnungen gibt es **nur für Kinder**, und jedes Kind hat seine eigenen. So passen Auswahl und
 Kosten zum Alter. Im Elternbereich unter „Belohnungen“ wählt ihr ein Kind und dann:
@@ -356,6 +374,8 @@ erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbe
 helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
 
 ## Google Kalender
+
+![Kalenderwoche mit Terminen in Personenfarbe, Termine der Kinder mit Symbolen](docs/screenshots/de/calendar.png)
 
 FamQuest zeigt eure Google-Kalender als Woche am Display: eine Spalte pro Tag (Montag bis
 Sonntag), Termine in der Farbe der Person, der sie gehören, mit ihrem Avatar. FamQuest liest die
@@ -463,6 +483,8 @@ trennen widerruft den Zugriff auch bei Google.
 
 ## Essensplan
 
+![Essensplan der Woche](docs/screenshots/de/meals.png)
+
 Unter **Essen** (Teller mit Besteck) in der Navigationsleiste steht der Essensplan der Woche,
 Montag bis Sonntag, heute hervorgehoben. Die Pfeile blättern zu anderen Wochen.
 
@@ -488,6 +510,8 @@ Essensplan** lassen sich Frühstück, Mittagessen und Snack zuschalten (für die
 steht an jedem Tag jede Mahlzeit mit ihrem Symbol. Ausgeschaltete Mahlzeiten bleiben gespeichert.
 
 ## Fotos (Bilderrahmen)
+
+![Bilderrahmen mit Uhr, Datum, nächstem Termin und Wetter](docs/screenshots/de/frame.jpg)
 
 Im Elternbereich unter **Fotos** (Symbol Bilderrahmen) ladet ihr die Fotos für den Bilderrahmen
 hoch.
@@ -775,6 +799,22 @@ die Eltern und flexible Aufgaben.
 Die Backend-Tests legen eine eigene Datenbank `<POSTGRES_DB>_test` an und setzen sie bei jedem Lauf
 neu auf.
 
+Screenshots und Demodaten:
+
+```sh
+cd frontend && npm run screenshots                   # braucht die laufende Datenbank
+```
+
+`npm run screenshots` baut das Frontend und startet die App zweimal (Deutsch und Englisch), jeweils
+mit frischer Datenbank `<POSTGRES_DB>_demo_<sprache>` und einer Beispielfamilie aus
+[`backend/app/demo.py`](backend/app/demo.py): vier Personen mit Emoji-Avataren, Routinen, eine
+Woche erledigter Aufgaben, Belohnungen, Essensplan, Kalendertermine und einige gemeinfreie Fotos
+([Quellen](backend/demo/photos/CREDITS.md)). Die Uhr der App steht auf Donnerstag der laufenden
+Woche, 7:25 Uhr, das Wetter ist fest vorgegeben; so sehen die Bilder jedes Mal gleich aus. Die
+Screenshots landen in `docs/screenshots/<sprache>/`. Die Demodaten lassen sich auch einzeln in eine
+leere Datenbank laden: `cd backend && uv run python -m app.demo seed --lang de` (Anmeldung mit
+`demo@famquest.example` / `famquest-demo`, PIN `1234`).
+
 Migrationen:
 
 ```sh
@@ -873,9 +913,8 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 - [x] 4. Nachtmodus: Zeitfenster, dunkler Bildschirm oder gedimmte Uhr
 - [ ] 5. Feinschliff am echten Display
 
-**Als Nächstes: Screenshots**
-
-- Screenshots vom Display, vom Elternbereich und vom Handy in dieser README
+**Screenshots:** fertig. Screenshots vom Display, vom Elternbereich und vom Handy in dieser README,
+erzeugt mit Demodaten (`npm run screenshots`).
 
 **1.1: Anpassen**
 
@@ -924,7 +963,7 @@ Die Mahlzeiten der Woche direkt am Display planen.
   umschalten
 - Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
 - Demoversion: eine öffentliche Instanz mit einer Beispielfamilie, die sich regelmäßig zurücksetzt,
-  zum Ausprobieren ohne Installation
+  zum Ausprobieren ohne Installation (die Beispielfamilie gibt es schon: `python -m app.demo`)
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
 - Erwachsene eigenständiger: ein Putzplan (wiederkehrende Hausarbeit mit „wie dringend“, ähnlich

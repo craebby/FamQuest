@@ -19,6 +19,14 @@ services and without external CDNs. The full specification (in German) is in
 > next event and open tasks as overlays, and a night mode. Phase 5 has started: a weekly meal plan,
 > right on the display (see [Roadmap](#roadmap)).
 
+![“Today” on the fridge display: the children's morning routine, the next seven days with events and dinner](docs/screenshots/en/today.png)
+
+| Tasks this week | Event details | Symbols for events | On the phone |
+| --- | --- | --- | --- |
+| ![Week view of the tasks](docs/screenshots/en/tasks-week.png) | ![Event details with symbol](docs/screenshots/en/calendar-event.png) | ![Symbols for events in the parents' area](docs/screenshots/en/parents-symbols.png) | ![“Today” on a phone](docs/screenshots/en/phone-today.png) |
+
+The screenshots show a sample family (demo data, see [Development](#development)).
+
 ## Features
 
 - "Today" as a week dashboard: clock and weather, the children's current routine and the next seven
@@ -115,6 +123,8 @@ or child), colour and optionally a photo. Children need no account and no passwo
 
 ## Tasks and routines
 
+![Tasks in the parents' area on a tablet](docs/screenshots/en/parents-tasks.png)
+
 Under "Tasks" in the parents' area you decide who does what and when. A task has:
 
 - **Icon**: from a bundled catalogue of about 200 colourful emoji icons
@@ -179,6 +189,8 @@ that every icon exists and has a unique label in every language.
 
 ### Routines
 
+![Routines in the parents' area: numbered steps for the morning, Monday to Friday](docs/screenshots/en/parents-routines.png)
+
 The **"Routines"** section in the parents' area puts together each child's routines: a fixed
 sequence of steps for the **morning**, **afternoon** and **evening** (**midday** too, once there is
 a routine for it). Tap a child at the top; the chosen child is always highlighted.
@@ -231,6 +243,8 @@ the server and applies to every display of the family. The week overview of task
 person) lives in the tasks area under "Week".
 
 ## Family view
+
+![Family view: one column per person with today's tasks](docs/screenshots/en/tasks.png)
 
 The family view ("Tasks", star icon) shows all family members side by side, each with a large
 avatar and today's tasks. Nobody has to sign in or switch users: whose task it is follows from the
@@ -296,6 +310,8 @@ Adults don't collect points (see [Fair sharing](#fair-sharing)); their cards sho
 
 ## Parent checks
 
+![Parents' area: homework waiting to be checked, points of all family members](docs/screenshots/en/parents-review.png)
+
 For tasks such as "Tidy your room" you can switch on **"Parents check"** in the editor. The child
 taps the card as usual; instead of a tick an **hourglass** appears and no points are given yet.
 The gear in the navigation bar shows how many completions are waiting.
@@ -310,6 +326,8 @@ Completions from earlier days stay checkable. If the child undoes the completion
 nothing is booked.
 
 ## Rewards
+
+![A child's rewards on the display](docs/screenshots/en/rewards.png)
 
 Rewards are **only for children**, and each child has their own, so choice and cost fit their age.
 Under "Rewards" in the parents' area you pick a child and then:
@@ -345,6 +363,8 @@ counts is the number of completed tasks; point values don't matter. This is deli
 competition but a way to share the work fairly. With only one adult, the display is hidden.
 
 ## Google Calendar
+
+![Calendar week with events in each person's colour, with symbols for the children's events](docs/screenshots/en/calendar.png)
 
 FamQuest shows your Google calendars as a week on the display: one column per day (Monday to
 Sunday), events in the colour of the person they belong to, with their avatar. FamQuest only
@@ -446,6 +466,8 @@ access at Google.
 
 ## Meal plan
 
+![Meal plan for the week](docs/screenshots/en/meals.png)
+
 **Meals** (plate with cutlery) in the navigation bar shows the week's meal plan, Monday to Sunday,
 with today highlighted. The arrows browse to other weeks.
 
@@ -470,6 +492,8 @@ switch on breakfast, lunch and snack (for the whole family); every day then show
 icon. Meals you switch off stay stored.
 
 ## Photos (picture frame)
+
+![Picture frame with clock, date, next event and weather](docs/screenshots/en/frame.jpg)
 
 Upload the photos for the picture frame in the parents' area under **Photos** (framed picture
 icon).
@@ -752,6 +776,22 @@ tasks.
 
 The backend tests create their own database `<POSTGRES_DB>_test` and reset it on every run.
 
+Screenshots and demo data:
+
+```sh
+cd frontend && npm run screenshots                   # needs the running database
+```
+
+`npm run screenshots` builds the frontend and starts the app twice (German and English), each with
+a fresh database `<POSTGRES_DB>_demo_<lang>` and a sample family from
+[`backend/app/demo.py`](backend/app/demo.py): four people with emoji avatars, routines, a week of
+ticked-off tasks, rewards, a meal plan, calendar events and a few public-domain photos
+([sources](backend/demo/photos/CREDITS.md)). The app's clock is set to Thursday of the current week
+at 7:25 and the weather is fixed, so the pictures look the same every time. The screenshots end
+up in `docs/screenshots/<lang>/`. The demo data can also be loaded on its own into an empty
+database: `cd backend && uv run python -m app.demo seed --lang en` (sign in with
+`demo@famquest.example` / `famquest-demo`, PIN `1234`).
+
 Migrations:
 
 ```sh
@@ -846,9 +886,8 @@ When idle, the display turns into a digital picture frame.
 - [x] 4. Night mode: time window, dark screen or dimmed clock
 - [ ] 5. Polish on the real display
 
-**Next: screenshots**
-
-- Screenshots of the display, the parents' area and the phone in this README
+**Screenshots:** done. Screenshots of the display, the parents' area and the phone in this README,
+generated with demo data (`npm run screenshots`).
 
 **1.1: make it your own**
 
@@ -898,7 +937,7 @@ Plan the week's meals right on the display.
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 - Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
 - Demo version: a public instance with a sample family that resets itself regularly, to try
-  FamQuest without installing it
+  FamQuest without installing it (the sample family already exists: `python -m app.demo`)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
 - More independent adults: a cleaning plan (recurring housework with "how urgent", similar to Tody)

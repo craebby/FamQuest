@@ -137,6 +137,8 @@ Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker;
   (Lint prüft auch Prettier; formatieren mit `npm run format`)
 - E2E (Playwright, braucht laufende DB): `cd frontend && npm run e2e`
   (baut das Frontend, legt DB `<POSTGRES_DB>_e2e` neu an, App auf Port 8001)
+- Screenshots für die READMEs (braucht laufende DB): `cd frontend && npm run screenshots`
+  (Demodaten aus `backend/app/demo.py`, DE + EN, Ergebnis in `docs/screenshots/<sprache>/`)
 - Gesamtes Image: `docker compose up -d --build`, Tests im Container:
   `docker compose --profile test run --rm --build tests`
 
