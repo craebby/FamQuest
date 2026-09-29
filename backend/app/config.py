@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
@@ -36,6 +37,12 @@ class Settings(BaseSettings):
     token_encryption_key: str = ""
     # Abstand der Kalender-Synchronisation im Hintergrund in Minuten; 0 = aus.
     calendar_sync_minutes: int = 5
+
+    # Öffentliche Demo: "de" oder "en" = Sprache der Beispielfamilie, leer = aus. Die Demo legt die
+    # Familie selbst an, setzt sie alle `demo_reset_minutes` Minuten zurück und sperrt Aktionen,
+    # die anderen Besuchern schaden könnten (PIN ändern, Bilder hochladen …). Siehe README.
+    demo_mode: Literal["", "de", "en"] = ""
+    demo_reset_minutes: int = 60
 
     @property
     def calendar_configured(self) -> bool:

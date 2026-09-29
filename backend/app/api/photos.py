@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy import exists, select
 
 from app.auth import CurrentSession, DbSession, ParentSession
+from app.demo_mode import NotInDemo
 from app.errors import ApiError
 from app.models import Photo
 from app.photos import (
@@ -68,7 +69,7 @@ def list_photos(_: CurrentSession, db: DbSession) -> list[PhotoOut]:
     return [photo_out(photo) for photo in photos]
 
 
-@router.post("/photos", status_code=status.HTTP_201_CREATED)
+@router.post("/photos", status_code=status.HTTP_201_CREATED, dependencies=[NotInDemo])
 def upload_photo(_: ParentSession, db: DbSession, upload: PhotoUpload) -> PhotoOut:
     """Nimmt ein Foto als Request-Body entgegen; mehrere Fotos kommen einzeln nacheinander."""
     processed = process_photo(upload)

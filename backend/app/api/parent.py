@@ -9,6 +9,7 @@ from app.auth import (
     me_response,
     unlock_parent_area,
 )
+from app.demo_mode import NotInDemo
 from app.errors import ApiError
 from app.logs import logger
 from app.schemas import FamilyName, LanguageCode, MeResponse, Pin, Timezone
@@ -60,7 +61,7 @@ def lock(auth_session: CurrentSession, db: DbSession) -> MeResponse:
     return me_response(db, auth_session)
 
 
-@router.put("/pin")
+@router.put("/pin", dependencies=[NotInDemo])
 def set_pin(body: PinRequest, auth_session: ParentSession, db: DbSession) -> MeResponse:
     """PIN festlegen oder ändern (auch zum Wiedereinschalten)."""
     family = get_family(db)
@@ -70,7 +71,7 @@ def set_pin(body: PinRequest, auth_session: ParentSession, db: DbSession) -> MeR
     return me_response(db, auth_session)
 
 
-@router.put("/family")
+@router.put("/family", dependencies=[NotInDemo])
 def update_family(body: FamilySettings, auth_session: ParentSession, db: DbSession) -> MeResponse:
     """Familienname, Standardsprache und Zeitzone („heute“ rechnet danach in der neuen Zone)."""
     family = get_family(db)
@@ -80,7 +81,7 @@ def update_family(body: FamilySettings, auth_session: ParentSession, db: DbSessi
     return me_response(db, auth_session)
 
 
-@router.delete("/pin")
+@router.delete("/pin", dependencies=[NotInDemo])
 def disable_pin(auth_session: ParentSession, db: DbSession) -> MeResponse:
     family = get_family(db)
     family.parent_pin_hash = None
@@ -89,7 +90,7 @@ def disable_pin(auth_session: ParentSession, db: DbSession) -> MeResponse:
     return me_response(db, auth_session)
 
 
-@router.post("/pin/reset")
+@router.post("/pin/reset", dependencies=[NotInDemo])
 def reset_pin(body: PinResetRequest, auth_session: CurrentSession, db: DbSession) -> MeResponse:
     """PIN vergessen: mit dem Passwort des angemeldeten Kontos eine neue PIN setzen."""
     limit_key = f"email:{auth_session.user.email}"

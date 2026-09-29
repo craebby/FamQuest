@@ -714,6 +714,32 @@ set `client_max_body_size 30m;` there (in Nginx Proxy Manager under "Advanced").
 The app must run on its own (sub)domain, e.g. `family.example.com`. A sub-path such as
 `example.com/family` is not supported.
 
+## Public demo
+
+FamQuest can run as a public demo so people can try it without installing it: a German and an
+English instance with the sample family from [`backend/app/demo.py`](backend/app/demo.py), each
+with its own database and separate from your real installation.
+
+```sh
+docker compose -f docker-compose.demo.yml up -d --build
+```
+
+The instances listen on `127.0.0.1:8081` (German) and `127.0.0.1:8082` (English) for a reverse
+proxy on the host (change with `DEMO_PORT_DE` and `DEMO_PORT_EN`). If your proxy runs in a Docker
+network, add `-f docker-compose.demo.proxy.yml`; the instances are then reachable there as
+`famquest-demo-de:8000` and `famquest-demo-en:8000` (network from `PROXY_NETWORK`). Give each one
+its own subdomain, e.g. `demo-de.example.com` and `demo-en.example.com`.
+
+What the demo mode (`DEMO_MODE=de` or `en`) does:
+
+- It creates the sample family on start and resets it on the hour (`DEMO_RESET_MINUTES`, default
+  60). Events, meals and history are relative to today, the clock and the weather (Berlin) are
+  real. During the few seconds of a reset the app answers "The demo is being reset right now".
+- The sign-in page shows the parent PIN and a button "Open the demo", no password needed.
+- Actions that would spoil the demo for others are blocked: changing or switching off the PIN,
+  family settings (name, language, time zone), uploading pictures (avatars, photos, dishes) and
+  connecting Google Calendar. Everything else can be tried out.
+
 ## Troubleshooting
 
 **Sign-in fails although the password should be right.** The app logs why a sign-in was rejected
@@ -923,6 +949,9 @@ When idle, the display turns into a digital picture frame.
 **Screenshots:** done. Screenshots of the display, the parents' area and the phone in this README,
 generated with demo data (`npm run screenshots`).
 
+**Demo version:** done. A German and an English public instance with the sample family that
+resets itself on the hour (see [Public demo](#public-demo)).
+
 **1.1: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
@@ -973,8 +1002,6 @@ Plan the week's meals right on the display.
 - Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
 - Shopping list: several lists (e.g. supermarket and chemist), sorting by category or aisle (maybe
   with AI help), ingredients from the meal plan, export to Obsidian (Markdown checklist)
-- Demo version: a public instance with a sample family that resets itself regularly, to try
-  FamQuest without installing it (the sample family already exists: `python -m app.demo`)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
 - More independent adults: a cleaning plan (recurring housework with "how urgent", similar to Tody)

@@ -1,0 +1,27 @@
+# Demo hinter einem Reverse Proxy im selben Docker-Netzwerk (z. B. Nginx Proxy Manager):
+#   docker compose -f docker-compose.demo.yml -f docker-compose.demo.proxy.yml up -d --build
+# Die Instanzen sind im Netzwerk PROXY_NETWORK als famquest-demo-de:8000 und
+# famquest-demo-en:8000 erreichbar; auf dem Host wird kein Port veröffentlicht.
+services:
+  app-de:
+    ports: !reset []
+    networks:
+      default:
+      proxy:
+        aliases: [famquest-demo-de]
+    environment:
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+
+  app-en:
+    ports: !reset []
+    networks:
+      default:
+      proxy:
+        aliases: [famquest-demo-en]
+    environment:
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+
+networks:
+  proxy:
+    name: ${PROXY_NETWORK:-proxy}
+    external: true

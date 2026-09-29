@@ -13,6 +13,7 @@ from app.api import (
     auth,
     calendar,
     calendar_week,
+    demo,
     event_symbols,
     frame,
     health,
@@ -33,6 +34,7 @@ from app.api import (
 )
 from app.calendar_sync import run_periodically
 from app.config import Settings, get_settings
+from app.demo_mode import block_while_resetting, run_resets
 from app.errors import register_error_handlers
 from app.logs import configure_logging
 
@@ -44,13 +46,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        task = None
+        tasks = []
         # Läuft auch ohne Google: Schulferien für den Kalender kommen ebenfalls von hier.
         if settings.calendar_sync_minutes > 0:
             interval = timedelta(minutes=settings.calendar_sync_minutes)
-            task = asyncio.create_task(run_periodically(interval))
+            tasks.append(asyncio.create_task(run_periodically(interval)))
+        if settings.demo_mode:
+            interval = timedelta(minutes=settings.demo_reset_minutes)
+            tasks.append(asyncio.create_task(run_resets(settings.demo_mode, interval)))
         yield
-        if task is not None:
+        for task in tasks:
             task.cancel()
             with suppress(asyncio.CancelledError):
                 await task
@@ -62,6 +67,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     register_error_handlers(app)
+    if settings.demo_mode:
+        app.middleware("http")(block_while_resetting)
 
     api = APIRouter(prefix="/api")
     for module in (
@@ -79,6 +86,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         calendar,
         calendar_week,
         event_symbols,
+        demo,
         weather,
         home,
         routines,

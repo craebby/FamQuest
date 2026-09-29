@@ -7,7 +7,7 @@ from tests.conftest import SETUP_DATA, run_setup
 
 
 def test_setup_required_on_first_start(client):
-    assert client.get("/api/setup/status").json() == {"setup_required": True}
+    assert client.get("/api/setup/status").json() == {"setup_required": True, "demo": None}
 
 
 def test_setup_creates_family_and_admin_and_logs_in(client):
@@ -22,7 +22,7 @@ def test_setup_creates_family_and_admin_and_logs_in(client):
     }
     assert me["parent_unlocked"] is False
     assert client.get("/api/auth/me").json()["user"]["email"] == "mama@example.org"
-    assert client.get("/api/setup/status").json() == {"setup_required": False}
+    assert client.get("/api/setup/status").json() == {"setup_required": False, "demo": None}
 
 
 def test_session_cookie_is_http_only_and_same_site(client):
@@ -92,4 +92,4 @@ def test_setup_rejects_foreign_origin(client):
 
     assert response.status_code == 403
     assert response.json() == {"code": "auth.csrf_failed"}
-    assert client.get("/api/setup/status").json() == {"setup_required": True}
+    assert client.get("/api/setup/status").json() == {"setup_required": True, "demo": None}

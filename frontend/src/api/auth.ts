@@ -18,16 +18,31 @@ export interface SetupData {
   timezone: string
 }
 
+/** Öffentliche Demo: Sprache der Beispielfamilie, Eltern-PIN, Minuten bis zum Zurücksetzen. */
+export interface DemoInfo {
+  language: string
+  pin: string
+  reset_minutes: number
+}
+
+export interface SetupStatus {
+  setup_required: boolean
+  demo: DemoInfo | null
+}
+
 export const ME_KEY = ['me'] as const
 const SETUP_STATUS_KEY = ['setup-status'] as const
 
 export function useSetupStatus() {
   return useQuery({
     queryKey: SETUP_STATUS_KEY,
-    queryFn: () => apiGet<{ setup_required: boolean }>('/setup/status'),
+    queryFn: () => apiGet<SetupStatus>('/setup/status'),
     staleTime: Infinity,
   })
 }
+
+/** Demo-Angaben, sofern diese Installation die öffentliche Demo ist. */
+export const useDemo = () => useSetupStatus().data?.demo ?? null
 
 export function useMe() {
   return useQuery({
@@ -66,11 +81,18 @@ function useMeMutation<TVariables>(
 export const useSetup = () =>
   useMeMutation(
     (data: SetupData) => api<Me>('POST', '/setup', data),
-    (queryClient) => queryClient.setQueryData(SETUP_STATUS_KEY, { setup_required: false }),
+    (queryClient) =>
+      queryClient.setQueryData<SetupStatus>(SETUP_STATUS_KEY, (status) => ({
+        demo: null,
+        ...status,
+        setup_required: false,
+      })),
   )
 
 export const useLogin = () =>
   useMeMutation((data: { email: string; password: string }) => api<Me>('POST', '/auth/login', data))
+
+export const useDemoLogin = () => useMeMutation(() => api<Me>('POST', '/demo/login'))
 
 export function useLogout() {
   const queryClient = useQueryClient()

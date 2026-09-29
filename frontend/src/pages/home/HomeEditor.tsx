@@ -5,6 +5,7 @@ import LockedIcon from '~icons/fluent-emoji-flat/locked'
 
 import { useUnlockParent } from '../../api/auth'
 import { TILE_IDS, type Tile } from '../../api/home'
+import { DemoPinHint } from '../../components/DemoPinHint'
 import { PinPad } from '../../components/PinPad'
 import { Alert, Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
@@ -48,6 +49,7 @@ export function PinDialog({
           error={unlock.isError ? errorMessage(t, unlock.error) : undefined}
           busy={unlock.isPending}
         />
+        <DemoPinHint />
         <Button variant="secondary" onClick={onCancel}>
           {t('actions.cancel')}
         </Button>

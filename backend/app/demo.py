@@ -1,4 +1,4 @@
-"""Demodaten: eine Beispielfamilie für Screenshots (und später eine Demoversion).
+"""Demodaten: eine Beispielfamilie für Screenshots und die öffentliche Demo (app.demo_mode).
 
     uv run python -m app.demo seed --lang de --weekday 4 --at 07:25
     uv run python -m app.demo serve --weekday 4 --at 07:25 --port 8011
@@ -246,6 +246,7 @@ def fixed_weather(today: dt.date) -> None:
 
 class Demo:
     def __init__(self, lang: str, now: dt.datetime) -> None:
+        from app.demo_mode import SEED_HEADER, SEED_TOKEN
         from app.main import app as fastapi_app
 
         self.text = TEXT[lang]
@@ -253,7 +254,8 @@ class Demo:
         self.now = now
         self.tz = ZoneInfo(TIMEZONE)
         self.today = now.astimezone(self.tz).date()
-        self.client = TestClient(fastapi_app)
+        # Mit dem Seed-Header darf die Demo auch hochladen, was Besuchern gesperrt ist.
+        self.client = TestClient(fastapi_app, headers={SEED_HEADER: SEED_TOKEN})
         self.csrf = ""
         self.random = random.Random(42)
 

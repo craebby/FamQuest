@@ -19,6 +19,7 @@ from app.auth import (
 )
 from app.calendar_sync import clear_events, refresh_calendar_list, sync_all
 from app.config import get_settings
+from app.demo_mode import NotInDemo
 from app.errors import ApiError
 from app.holidays import REGIONS
 from app.logs import logger
@@ -228,7 +229,7 @@ def sync_now(request: Request, auth_session: ParentSession, db: DbSession) -> Ca
     return settings_out(request, db)
 
 
-@router.post("/google/connect")
+@router.post("/google/connect", dependencies=[NotInDemo])
 def connect_google(request: Request, auth_session: ParentSession, db: DbSession) -> ConnectOut:
     """Startet die Anmeldung bei Google; das Frontend leitet zur gelieferten Adresse weiter."""
     if not get_settings().calendar_configured:
@@ -336,7 +337,9 @@ def google_callback(
     return _back_to_parents(calendar="connected")
 
 
-@router.delete("/connections/{connection_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/connections/{connection_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[NotInDemo]
+)
 def disconnect(connection_id: int, auth_session: ParentSession, db: DbSession) -> None:
     connection = db.get(CalendarConnection, connection_id)
     if connection is None:

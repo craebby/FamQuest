@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from sqlalchemy import exists, select, text
 
 from app.auth import DbSession, check_origin, me_response, start_session
+from app.config import get_settings
+from app.demo import PIN as DEMO_PIN
 from app.errors import ApiError
 from app.logs import logger
 from app.models import Family, User
@@ -15,8 +17,17 @@ router = APIRouter(prefix="/setup", tags=["setup"])
 _SETUP_LOCK_ID = 7_300_001
 
 
+class DemoInfo(BaseModel):
+    """Öffentliche Demo: Sprache der Beispielfamilie, Eltern-PIN und Abstand der Resets."""
+
+    language: str
+    pin: str
+    reset_minutes: int
+
+
 class SetupStatus(BaseModel):
     setup_required: bool
+    demo: DemoInfo | None = None
 
 
 class SetupRequest(BaseModel):
@@ -34,7 +45,13 @@ def _setup_done(db: DbSession) -> bool:
 
 @router.get("/status")
 def setup_status(db: DbSession) -> SetupStatus:
-    return SetupStatus(setup_required=not _setup_done(db))
+    settings = get_settings()
+    demo = None
+    if settings.demo_mode:
+        demo = DemoInfo(
+            language=settings.demo_mode, pin=DEMO_PIN, reset_minutes=settings.demo_reset_minutes
+        )
+    return SetupStatus(setup_required=not _setup_done(db), demo=demo)
 
 
 @router.post(

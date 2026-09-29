@@ -13,6 +13,7 @@ import {
   useMe,
   useResetPin,
   useSetPin,
+  useDemo,
   useUnlockParent,
 } from '../api/auth'
 import { type Member, childrenOf, useMembers } from '../api/members'
@@ -20,6 +21,7 @@ import { type Reward, useRewards } from '../api/rewards'
 import { type Routine, useRoutines } from '../api/routines'
 import { type Task, useTasks } from '../api/tasks'
 import { useToday } from '../api/today'
+import { DemoPinHint } from '../components/DemoPinHint'
 import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, Section, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
@@ -85,6 +87,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 function ParentGate({ onLeave }: { onLeave: () => void }) {
   const { t } = useTranslation()
   const unlock = useUnlockParent()
+  const demo = useDemo()
   const [forgotten, setForgotten] = useState(false)
 
   if (forgotten) return <PinReset onCancel={() => setForgotten(false)} />
@@ -99,9 +102,12 @@ function ParentGate({ onLeave }: { onLeave: () => void }) {
         error={unlock.isError ? errorMessage(t, unlock.error) : undefined}
         busy={unlock.isPending}
       />
-      <Button variant="secondary" onClick={() => setForgotten(true)}>
-        {t('parents.forgot_pin')}
-      </Button>
+      <DemoPinHint />
+      {!demo && (
+        <Button variant="secondary" onClick={() => setForgotten(true)}>
+          {t('parents.forgot_pin')}
+        </Button>
+      )}
     </CenteredCard>
   )
 }

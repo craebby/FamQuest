@@ -36,6 +36,15 @@
     "password": "Password",
     "submit": "Sign in"
   },
+  "demo": {
+    "title": "Try FamQuest",
+    "intro": "Meet the Berger family, a sample family. Feel free to tap, tick off and change anything.",
+    "reset_hourly": "Everything is reset on the hour.",
+    "reset_minutes": "Everything is reset every {{count}} minutes.",
+    "pin": "Parent PIN: {{pin}}",
+    "open": "Open the demo",
+    "pin_hint": "Demo PIN: {{pin}}"
+  },
   "nav": {
     "label": "Main navigation",
     "today": "Today",
@@ -459,6 +468,10 @@
       "not_found": "This item no longer exists.",
       "not_on_list": "This item is no longer on the list.",
       "duplicate_name": "There is already an item with this name."
+    },
+    "demo": {
+      "disabled": "Not available in the demo",
+      "resetting": "The demo is being reset right now. Please try again in a moment."
     }
   },
   "rewards": {

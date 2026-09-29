@@ -1,0 +1,85 @@
+# Öffentliche Demo: zwei Instanzen mit der Beispielfamilie (Deutsch und Englisch), jede mit eigener
+# Datenbank, getrennt von der echten Installation. Sie legen die Familie beim Start selbst an und
+# setzen sie zur vollen Stunde zurück. Starten (im Repo, nutzt POSTGRES_PASSWORD aus .env):
+#   docker compose -f docker-compose.demo.yml up -d --build
+# Proxy im selben Docker-Netzwerk: zusätzlich -f docker-compose.demo.proxy.yml (siehe dort).
+name: famquest-demo
+
+x-db: &db
+  image: postgres:16-alpine
+  restart: unless-stopped
+  environment:
+    POSTGRES_USER: famquest
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}
+    POSTGRES_DB: famquest
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U famquest -d famquest"]
+    interval: 5s
+    timeout: 5s
+    retries: 10
+
+x-app: &app
+  build:
+    context: .
+    target: runtime
+  image: famquest:latest
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+    interval: 15s
+    timeout: 5s
+    start_period: 30s
+    retries: 3
+
+x-app-env: &app-env
+  POSTGRES_USER: famquest
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}
+  POSTGRES_DB: famquest
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+  DEMO_RESET_MINUTES: ${DEMO_RESET_MINUTES:-60}
+
+services:
+  db-de:
+    <<: *db
+    volumes:
+      - db-de:/var/lib/postgresql/data
+
+  app-de:
+    <<: *app
+    depends_on:
+      db-de:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      POSTGRES_HOST: db-de
+      DEMO_MODE: de
+    ports:
+      - "${DEMO_PORT_DE:-127.0.0.1:8081}:8000"
+    volumes:
+      - uploads-de:/data/uploads
+
+  db-en:
+    <<: *db
+    volumes:
+      - db-en:/var/lib/postgresql/data
+
+  app-en:
+    <<: *app
+    depends_on:
+      db-en:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      POSTGRES_HOST: db-en
+      DEMO_MODE: en
+    ports:
+      - "${DEMO_PORT_EN:-127.0.0.1:8082}:8000"
+    volumes:
+      - uploads-en:/data/uploads
+
+volumes:
+  db-de:
+  db-en:
+  uploads-de:
+  uploads-en:

@@ -736,6 +736,35 @@ Anfrage; dort daher `client_max_body_size 30m;` setzen (im Nginx Proxy Manager u
 Die App muss auf einer eigenen (Sub-)Domain laufen, z. B. `familie.example.com`. Ein Unterpfad wie
 `example.com/familie` wird nicht unterstützt.
 
+## Öffentliche Demo
+
+FamQuest lässt sich als öffentliche Demo betreiben, damit man es ohne Installation ausprobieren
+kann: eine deutsche und eine englische Instanz mit der Beispielfamilie aus
+[`backend/app/demo.py`](backend/app/demo.py), jede mit eigener Datenbank und getrennt von der
+echten Installation.
+
+```sh
+docker compose -f docker-compose.demo.yml up -d --build
+```
+
+Die Instanzen lauschen auf `127.0.0.1:8081` (Deutsch) und `127.0.0.1:8082` (Englisch) für einen
+Reverse Proxy auf dem Host (änderbar mit `DEMO_PORT_DE` und `DEMO_PORT_EN`). Läuft der Proxy in
+einem Docker-Netzwerk, zusätzlich `-f docker-compose.demo.proxy.yml` angeben; die Instanzen sind
+dort dann als `famquest-demo-de:8000` und `famquest-demo-en:8000` erreichbar (Netzwerk aus
+`PROXY_NETWORK`). Jede bekommt ihre eigene Subdomain, z. B. `demo-de.example.com` und
+`demo-en.example.com`.
+
+Was der Demomodus (`DEMO_MODE=de` oder `en`) macht:
+
+- Er legt die Beispielfamilie beim Start an und setzt sie zur vollen Stunde zurück
+  (`DEMO_RESET_MINUTES`, Standard 60). Termine, Essen und Verlauf liegen relativ zu heute, Uhr und
+  Wetter (Berlin) sind echt. In den wenigen Sekunden des Zurücksetzens meldet die App „Die Demo
+  wird gerade zurückgesetzt“.
+- Die Anmeldeseite zeigt die Eltern-PIN und einen Knopf „Demo öffnen“, ohne Passwort.
+- Gesperrt ist, was anderen die Demo verderben würde: PIN ändern oder abschalten,
+  Familieneinstellungen (Name, Sprache, Zeitzone), Bilder hochladen (Avatare, Fotos, Gerichte) und
+  Google Kalender verbinden. Alles andere darf ausprobiert werden.
+
 ## Fehlersuche
 
 **Anmeldung klappt nicht, obwohl das Passwort stimmen sollte.** Die App protokolliert, warum eine
@@ -951,6 +980,9 @@ Das Display wird im Leerlauf zum digitalen Bilderrahmen.
 **Screenshots:** fertig. Screenshots vom Display, vom Elternbereich und vom Handy in dieser README,
 erzeugt mit Demodaten (`npm run screenshots`).
 
+**Demoversion:** fertig. Eine deutsche und eine englische öffentliche Instanz mit der
+Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche Demo](#öffentliche-demo)).
+
 **1.1: Anpassen**
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
@@ -1002,8 +1034,6 @@ Die Mahlzeiten der Woche direkt am Display planen.
 - Einkaufsliste: mehrere Listen (z. B. Supermarkt und Drogerie), Sortierung nach Kategorie oder
   Gang im Laden (eventuell mit KI), Zutaten aus dem Essensplan, Export nach Obsidian
   (Markdown-Checkliste)
-- Demoversion: eine öffentliche Instanz mit einer Beispielfamilie, die sich regelmäßig zurücksetzt,
-  zum Ausprobieren ohne Installation (die Beispielfamilie gibt es schon: `python -m app.demo`)
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
 - Erwachsene eigenständiger: ein Putzplan (wiederkehrende Hausarbeit mit „wie dringend“, ähnlich

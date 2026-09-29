@@ -14,6 +14,7 @@ from app.avatars import (
     store_avatar,
 )
 from app.calendar_sync import unselect_member_calendars
+from app.demo_mode import NotInDemo
 from app.errors import ApiError
 from app.models import FamilyMember
 from app.schemas import MemberIn, MemberOrderIn, MemberOut
@@ -113,7 +114,7 @@ def delete_member(member_id: int, _: ParentSession, db: DbSession) -> None:
     delete_avatar(avatar)
 
 
-@router.put("/members/{member_id}/avatar")
+@router.put("/members/{member_id}/avatar", dependencies=[NotInDemo])
 def upload_avatar(
     member_id: int, _: ParentSession, db: DbSession, upload: AvatarUpload
 ) -> MemberOut:

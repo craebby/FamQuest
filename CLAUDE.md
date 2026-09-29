@@ -150,6 +150,7 @@ Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker;
   (baut das Frontend, legt DB `<POSTGRES_DB>_e2e` neu an, App auf Port 8001)
 - Screenshots für die READMEs (braucht laufende DB): `cd frontend && npm run screenshots`
   (Demodaten aus `backend/app/demo.py`, DE + EN, Ergebnis in `docs/screenshots/<sprache>/`)
+- Öffentliche Demo (DE + EN, Ports 8081/8082): `docker compose -f docker-compose.demo.yml up -d --build`
 - Gesamtes Image: `docker compose up -d --build`, Tests im Container:
   `docker compose --profile test run --rm --build tests`
 

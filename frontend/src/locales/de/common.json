@@ -36,6 +36,15 @@
     "password": "Passwort",
     "submit": "Anmelden"
   },
+  "demo": {
+    "title": "FamQuest ausprobieren",
+    "intro": "Das ist die Beispielfamilie Berger. Du darfst alles anklicken, abhaken und ändern.",
+    "reset_hourly": "Zur vollen Stunde wird alles zurückgesetzt.",
+    "reset_minutes": "Alle {{count}} Minuten wird alles zurückgesetzt.",
+    "pin": "Eltern-PIN: {{pin}}",
+    "open": "Demo öffnen",
+    "pin_hint": "Demo-PIN: {{pin}}"
+  },
   "nav": {
     "label": "Hauptnavigation",
     "today": "Heute",
@@ -459,6 +468,10 @@
       "not_found": "Diesen Artikel gibt es nicht mehr.",
       "not_on_list": "Der Artikel steht nicht mehr auf der Liste.",
       "duplicate_name": "Einen Artikel mit diesem Namen gibt es schon."
+    },
+    "demo": {
+      "disabled": "In der Demo nicht verfügbar",
+      "resetting": "Die Demo wird gerade zurückgesetzt. Bitte gleich noch einmal versuchen."
     }
   },
   "rewards": {

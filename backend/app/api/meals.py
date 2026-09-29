@@ -24,6 +24,7 @@ from app.avatars import (
     square_webp,
     store_image,
 )
+from app.demo_mode import NotInDemo
 from app.errors import ApiError
 from app.models import Dish, Family, MealPlanEntry
 from app.schemas import MEALS, IconName, TypedName
@@ -280,7 +281,7 @@ def delete_dish(dish_id: int, _: CurrentSession, db: DbSession) -> None:
     delete_image(IMAGE_FOLDER, image)
 
 
-@router.put("/dishes/{dish_id}/image")
+@router.put("/dishes/{dish_id}/image", dependencies=[NotInDemo])
 def upload_dish_image(dish_id: int, _: CurrentSession, db: DbSession, upload: DishImage) -> DishOut:
     """Nimmt das (im Browser zugeschnittene) Foto als Request-Body entgegen."""
     dish = get_dish(db, dish_id)

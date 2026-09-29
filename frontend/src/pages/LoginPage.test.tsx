@@ -69,4 +69,29 @@ describe('Login', () => {
     expect(await screen.findByRole('link', { name: 'Today' })).toBeVisible()
     expect(document.documentElement.lang).toBe('en')
   })
+
+  it('meldet in der Demo per Knopf an und zeigt die PIN', async () => {
+    const user = userEvent.setup()
+    const me = makeMe()
+    let loggedIn = false
+    mockApi({
+      'GET /api/setup/status': Response.json({
+        setup_required: false,
+        demo: { language: 'de', pin: '1234', reset_minutes: 60 },
+      }),
+      'GET /api/auth/me': () => (loggedIn ? Response.json(me) : notAuthenticated.clone()),
+      'POST /api/demo/login': () => {
+        loggedIn = true
+        return Response.json(me)
+      },
+    })
+    renderApp('/login')
+
+    expect(await screen.findByRole('heading', { name: 'FamQuest ausprobieren' })).toBeVisible()
+    expect(screen.getByText('Eltern-PIN: 1234')).toBeVisible()
+    expect(screen.queryByLabelText('Passwort')).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Demo öffnen' }))
+
+    expect(await screen.findByRole('link', { name: 'Heute' })).toBeVisible()
+  })
 })
