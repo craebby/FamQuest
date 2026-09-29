@@ -291,7 +291,7 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   await expect(soon).toBeHidden()
 })
 
-test('Startseite: Routine der Kinder, Hinweise und Platz für später', async ({ page }) => {
+test('Startseite: Routine der Kinder und Hinweise', async ({ page }) => {
   await login(page)
 
   // Nur die Kinder; welche Aufgaben gerade dran sind, hängt von der Uhrzeit ab.
@@ -299,11 +299,37 @@ test('Startseite: Routine der Kinder, Hinweise und Platz für später', async ({
   await expect(page.getByRole('listitem', { name: 'Aufgaben von Lena' })).toBeVisible()
   await expect(page.getByRole('listitem', { name: 'Aufgaben von Papa' })).toBeHidden()
 
-  // Ohne Ort und Kalender: Hinweise auf den Elternbereich; der Einkauf kommt später.
+  // Ohne Ort und Kalender: Hinweise auf den Elternbereich; die Einkaufsliste ist noch leer.
   await expect(page.getByRole('link', { name: 'Wetter einrichten' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Kalender verbinden' })).toBeVisible()
-  await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Kommt bald')
+  await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Alles da!')
   await expect(page.locator('section[aria-current="date"]')).toHaveCount(1)
+})
+
+test('Einkauf: auf der Startseite eintragen, in der Liste abhaken', async ({ page }) => {
+  await login(page)
+
+  const tile = page.getByRole('region', { name: 'Einkauf' })
+  await tile.getByRole('button', { name: 'Eintragen' }).tap()
+  const dialog = page.getByRole('dialog', { name: 'Was fehlt?' })
+  await dialog.getByRole('button', { name: 'Milch', exact: true }).tap()
+  await expect(dialog.getByRole('button', { name: 'Milch', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await dialog.getByRole('button', { name: 'Fertig' }).tap()
+  await expect(tile).toContainText('Milch')
+
+  await page.getByRole('link', { name: 'Einkauf', exact: true }).tap()
+  const milk = page.getByRole('button', { name: 'Milch', exact: true })
+  await milk.tap()
+  await page.reload()
+  // Abgehakt bleibt es bis zum Ende des Tages sichtbar, auf „Heute“ fehlt es nicht mehr.
+  await expect(
+    page.getByRole('region', { name: 'Abgehakt' }).getByRole('button', { name: 'Milch' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('link', { name: 'Heute', exact: true }).tap()
+  await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Alles da!')
 })
 
 test('Essen: auf der Startseite ohne PIN eintragen, mit eigenem Foto', async ({ page }) => {

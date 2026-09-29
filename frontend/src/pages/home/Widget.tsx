@@ -64,34 +64,3 @@ export function SetupHint({ text, to }: { text: string; to: string }) {
     </div>
   )
 }
-
-/** Platz für eine spätere Funktion, deutlich als „kommt bald“ gekennzeichnet. */
-export function ComingSoon({
-  title,
-  icon: Icon,
-  text,
-}: {
-  title: string
-  icon: Icon
-  text: string
-}) {
-  const { t } = useTranslation()
-  const id = useId()
-  return (
-    <section
-      aria-labelledby={id}
-      className="flex min-w-0 flex-1 flex-col gap-3 rounded-3xl border-4 border-dashed border-slate-200 p-4"
-    >
-      <header className="flex items-center gap-3">
-        <Icon className="size-10 shrink-0 opacity-50 grayscale" aria-hidden="true" />
-        <h2 id={id} className="min-w-0 flex-1 text-2xl font-extrabold text-slate-400">
-          {title}
-        </h2>
-        <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-base font-bold text-slate-500">
-          {t('home.coming_soon')}
-        </span>
-      </header>
-      <p className="text-lg text-slate-400">{text}</p>
-    </section>
-  )
-}

@@ -46,7 +46,8 @@
     "calendar": "Calendar",
     "tasks": "Tasks",
     "frame": "Photos",
-    "meals": "Meals"
+    "meals": "Meals",
+    "shopping": "Shopping"
   },
   "family": {
     "no_members": "No family members yet",
@@ -304,6 +305,7 @@
     "music": "Music",
     "food": "Food & drink",
     "dishes": "Dishes",
+    "groceries": "Groceries",
     "household": "Household",
     "pets": "Animals & plants",
     "activities": "Sports & free time",
@@ -452,6 +454,11 @@
       "planned": "This dish is still in the plan. Remove it there first.",
       "invalid_image": "The photo couldn't be read. Please choose a JPEG, PNG or WebP image.",
       "image_too_large": "The photo is too large (5 MB at most)."
+    },
+    "shopping": {
+      "not_found": "This item no longer exists.",
+      "not_on_list": "This item is no longer on the list.",
+      "duplicate_name": "There is already an item with this name."
     }
   },
   "rewards": {
@@ -625,8 +632,6 @@
     "setup": "Set up",
     "meals": "Meals",
     "shopping": "Shopping",
-    "shopping_hint": "Soon your shopping list will be here.",
-    "coming_soon": "Coming soon",
     "customize": "Customize start page",
     "customize_hint": "Switch sections on or off. You can see the result right below. Applies to the whole family.",
     "tile_visible": "Show {{name}}",
@@ -751,6 +756,33 @@
     "edit_dish": "Edit {{name}}",
     "delete_dish": "Delete dish",
     "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from past weeks."
+  },
+  "shopping": {
+    "title": "Shopping list",
+    "add_button": "Add",
+    "add_title": "What do we need?",
+    "add": "Add",
+    "item_name": "Item",
+    "item_placeholder": "Type, e.g. milk",
+    "note": "Amount or note",
+    "note_placeholder": "Amount, note",
+    "added": "\"{{name}}\" is on the list.",
+    "no_suggestions": "No suggestion fits. \"Add\" puts \"{{name}}\" on the list as a new item.",
+    "suggestions": "Suggestions",
+    "change_icon": "Change icon",
+    "edit_item": "Edit {{name}}",
+    "delete_item": "Delete item",
+    "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from the list.",
+    "close": "Close",
+    "done": "Done",
+    "empty": "Nothing missing!",
+    "empty_hint": "Need something? Tap here to add it.",
+    "checked_title": "Ticked off",
+    "clear_checked": "Remove ticked items",
+    "remove": "Remove {{name}} from the list",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more",
+    "open_list": "Open shopping list"
   },
   "event_symbols": {
     "section": "Symbols for events",

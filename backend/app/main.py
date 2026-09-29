@@ -25,6 +25,7 @@ from app.api import (
     rewards,
     routines,
     setup,
+    shopping,
     task_week,
     tasks,
     today,
@@ -84,6 +85,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         photos,
         frame,
         meals,
+        shopping,
     ):
         api.include_router(module.router)
     app.include_router(api)

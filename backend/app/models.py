@@ -519,3 +519,29 @@ class MealPlanEntry(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     dish: Mapped[Dish] = relationship(lazy="joined")
+
+
+class ShoppingItem(Base):
+    """Artikel für die Einkaufsliste. Entsteht beim Eintippen, bleibt danach als Vorschlag erhalten
+    und steht entweder auf der Liste (`on_list`) oder nicht."""
+
+    __tablename__ = "shopping_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    # Iconify-Name wie bei Aufgaben.
+    icon: Mapped[str] = mapped_column(String(100))
+    on_list: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # Menge oder Hinweis („2 ×“, „laktosefrei“); gilt nur, solange der Artikel auf der Liste steht.
+    note: Mapped[str | None] = mapped_column(String(60))
+    # Wann auf die Liste gesetzt (Reihenfolge) und wann abgehakt. Abgehakte bleiben bis zum Ende
+    # des Tages (Zeitzone der Familie) sichtbar, danach gelten sie als nicht mehr auf der Liste.
+    added_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Wie oft auf die Liste gesetzt; häufige kommen in den Vorschlägen zuerst.
+    times_added: Mapped[int] = mapped_column(default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# Gleicher Name in anderer Schreibweise ist derselbe Artikel („milch“ = „Milch“).
+Index("uq_shopping_items_name_lower", func.lower(ShoppingItem.name), unique=True)

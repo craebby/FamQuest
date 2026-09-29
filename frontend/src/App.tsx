@@ -13,6 +13,7 @@ import { FamilyPage } from './pages/FamilyPage'
 import { FramePage } from './pages/FramePage'
 import { LoginPage } from './pages/LoginPage'
 import { MealsPage } from './pages/MealsPage'
+import { ShoppingPage } from './pages/ShoppingPage'
 import { ParentsPage } from './pages/ParentsPage'
 import { PersonPage } from './pages/PersonPage'
 import { RewardsPage } from './pages/RewardsPage'
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="/rewards/:memberId" element={<RewardsPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/meals" element={<MealsPage />} />
+            <Route path="/shopping" element={<ShoppingPage />} />
           </Route>
           <Route path="/frame" element={<FramePage />} />
           <Route path="/parents/:area?" element={<ParentsPage />} />

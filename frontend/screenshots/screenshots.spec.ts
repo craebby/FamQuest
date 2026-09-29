@@ -94,6 +94,7 @@ test('Display', async ({ page }) => {
     },
   })
   await shoot(page, 'meals', '/meals', DISPLAY)
+  await shoot(page, 'shopping', '/shopping', DISPLAY)
   await shoot(page, 'rewards', `/rewards/${await memberId(page, 'Mia')}`, DISPLAY)
   await shoot(page, 'frame', '/frame', DISPLAY, {
     jpeg: true,
@@ -120,4 +121,5 @@ test('Elternbereich', async ({ page }) => {
 
 test('Handy', async ({ page }) => {
   await shoot(page, 'phone-today', '/', PHONE)
+  await shoot(page, 'phone-shopping', '/shopping', PHONE)
 })

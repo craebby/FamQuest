@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
-import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 
 import { useLockParent, useMe } from '../api/auth'
 import {
@@ -19,9 +18,9 @@ import { formatLongDate } from '../weekdays'
 import { PARENT_IDLE_TIMEOUT_MS } from './ParentsPage'
 import { HomeEditor, PinDialog } from './home/HomeEditor'
 import { RoutineWidget } from './home/RoutineWidget'
+import { ShoppingWidget } from './home/ShoppingWidget'
 import { WeatherBadge } from './home/WeatherBadge'
 import { WeekBoard } from './home/WeekBoard'
-import { ComingSoon } from './home/Widget'
 
 /**
  * Startseite „Heute“ als Wochen-Dashboard: im Kopf Datum, Wetter und Uhr; darunter die aktuelle
@@ -122,7 +121,6 @@ function EditMode({
 
 /** Routine und Einkauf nebeneinander (der Einkauf schmaler), darunter die Woche. */
 function Sections({ shown, today }: { shown: Set<TileId>; today: string | undefined }) {
-  const { t } = useTranslation()
   const top = shown.has('tasks') || shown.has('shopping')
   const both = shown.has('tasks') && shown.has('shopping')
   return (
@@ -132,9 +130,7 @@ function Sections({ shown, today }: { shown: Set<TileId>; today: string | undefi
           className={`grid grid-cols-1 items-start gap-4 ${both ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''}`}
         >
           {shown.has('tasks') && <RoutineWidget />}
-          {shown.has('shopping') && (
-            <ComingSoon title={t('home.shopping')} icon={CartIcon} text={t('home.shopping_hint')} />
-          )}
+          {shown.has('shopping') && <ShoppingWidget />}
         </div>
       )}
       {today && (shown.has('events') || shown.has('meals')) && (

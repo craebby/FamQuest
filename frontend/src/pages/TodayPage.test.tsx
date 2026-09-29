@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CalendarWeek, WeekEvent } from '../api/calendar'
 import { DEFAULT_TILES, type Tile } from '../api/home'
 import type { MealWeek } from '../api/meals'
+import type { ShoppingList } from '../api/shopping'
 import type { Weather } from '../api/weather'
 import i18n from '../i18n'
 import {
@@ -129,6 +130,14 @@ const MEAL_WEEK: MealWeek = {
   ],
 }
 
+const SHOPPING: ShoppingList = {
+  items: [
+    { id: 1, name: 'Milch', icon: 'fluent-emoji-flat:glass-of-milk', note: '2 ×', checked: false },
+    { id: 2, name: 'Brot', icon: 'fluent-emoji-flat:bread', note: null, checked: false },
+    { id: 3, name: 'Eier', icon: 'fluent-emoji-flat:egg', note: null, checked: true },
+  ],
+}
+
 function mockHome({
   weather = WEATHER,
   calendarEnabled = true,
@@ -166,6 +175,8 @@ function mockHome({
     'GET /api/calendar/week': Response.json(CALENDAR),
     'GET /api/meals/week': Response.json(MEAL_WEEK),
     'GET /api/dishes': Response.json([]),
+    'GET /api/shopping/list': Response.json(SHOPPING),
+    'GET /api/shopping/items': Response.json([]),
     'PUT /api/today/tasks/10/members/1': () => {
       teethDone = true
       return new Response(null, { status: 204 })
@@ -325,11 +336,32 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByRole('link', { name: 'Alle Aufgaben öffnen' })).toBeVisible()
   })
 
-  it('hält Platz für den Einkauf frei, als „kommt bald“ gekennzeichnet', async () => {
-    mockHome()
+  it('zeigt, was beim Einkauf fehlt, und trägt direkt dort ein', async () => {
+    const user = userEvent.setup()
+    const calls = mockHome({
+      extra: {
+        'POST /api/shopping/list': (body) =>
+          Response.json({ id: 4, note: null, checked: false, ...(body as object) }),
+      },
+    })
     renderApp('/')
 
-    expect((await region('Einkauf')).getByText('Kommt bald')).toBeVisible()
+    const shopping = await region('Einkauf')
+    expect(await shopping.findByText('Milch')).toBeVisible()
+    expect(shopping.getByText('· 2 ×')).toBeVisible()
+    expect(shopping.getByText('Brot')).toBeVisible()
+    // Abgehakte stehen nur in der Einkaufsliste selbst.
+    expect(shopping.queryByText('Eier')).toBeNull()
+
+    await user.click(shopping.getByRole('button', { name: 'Eintragen' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Was fehlt?' }))
+    await user.click(dialog.getByRole('button', { name: 'Butter' }))
+
+    expect(await dialog.findByText('„Butter“ steht auf der Liste.')).toBeVisible()
+    expect(calls.find((call) => call.key === 'POST /api/shopping/list')?.body).toEqual({
+      name: 'Butter',
+      icon: 'fluent-emoji-flat:butter',
+    })
   })
 
   it('funktioniert auch auf Englisch', async () => {
@@ -340,7 +372,7 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByRole('region', { name: 'Weather' })).toBeVisible()
     expect(await screen.findByRole('region', { name: 'The next seven days' })).toBeVisible()
     expect(await screen.findByRole('listitem', { name: "Lena's tasks" })).toBeVisible()
-    expect((await region('Shopping')).getByText('Coming soon')).toBeVisible()
+    expect(await (await region('Shopping')).findByText('Milch')).toBeVisible()
     expect(
       await screen.findByRole('button', { name: 'Dinner: Ofengemüse mit Würstchen, change' }),
     ).toBeVisible()

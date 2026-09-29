@@ -80,6 +80,17 @@ Einfach anfangen: festlegen, was es in der Woche gibt.
 - „Heute“ wird dabei zum Wochen-Dashboard: Kopf mit Uhr und Wetter klein, die aktuelle Routine der Kinder (sonst „Alles erledigt“), Platz für den Einkauf, darunter über die ganze Breite die nächsten sieben Tage mit Terminen und dem Essen am Tagesende (Symbol + Text). Bereiche lassen sich per Zahnrad ein- und ausschalten, die Anordnung ist fest. Aufgaben der Erwachsenen stehen nur noch unter „Aufgaben“; langfristig sollen sie eigenständiger werden (Putzplan und echte Todos, je Person abschaltbar).
 - Später: Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
 
+**Einkaufsliste** *(Phase 6, entschieden am 2026-09-29)*
+
+Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring! hat keine offizielle Schnittstelle, Google Keep nur für Firmenkonten); so gibt es Symbole für Kinder, die Kachel auf „Heute“ und später die Verbindung zum Essensplan.
+
+- Eine gemeinsame Liste für die Familie, Ansicht „Einkauf“ (Einkaufswagen) in der Navigationsleiste und Kachel „Einkauf“ auf „Heute“. Eintragen und Abhaken **ohne Eltern-PIN**, wie beim Essensplan.
+- Artikel werden eingetippt oder als Vorschlag angetippt: zuerst die eigenen (häufig gekaufte zuerst), dann rund 65 Standardartikel mit Symbol. Das Symbol kommt automatisch zum Namen und ist änderbar. Gleicher Name in anderer Schreibweise ist derselbe Artikel; jeder Artikel steht höchstens einmal auf der Liste. Ein Tipp auf einen Vorschlag, der schon auf der Liste steht, nimmt ihn wieder herunter.
+- Optional eine Menge oder ein Hinweis („2 ×“, „laktosefrei“), gilt nur für diesen Einkauf.
+- Ein Tipp hakt ab, ein weiterer nimmt es zurück. Abgehakte bleiben durchgestrichen sichtbar bis zum Ende des Tages in der Zeitzone der Familie, danach sind sie von der Liste; „Abgehakte entfernen“ räumt sie sofort weg.
+- Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
+- Später: PWA mit Offline-Nutzung im Laden (Version 1.2), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+
 **Symbole für Termine** *(Einschub zu Phase 2, entschieden am 2026-09-28)*
 
 Kinder, die nicht lesen können, erkennen ihre Termine im Kalender sonst nicht. Deshalb bekommen Termine ein Symbol, wenn ein festgelegter Begriff im Titel steht (z. B. „Judo“ → Judoanzug, „Kinderturnen“ → Turnen).
@@ -196,7 +207,7 @@ Alle Familienmitglieder stehen nebeneinander als Spalten, oben jeweils großer A
 
 **Navigation ohne Lesen**
 
-- Feste Navigationsleiste links (am Smartphone unten) mit großen, eindeutigen Symbolen: Heute (Haus, seit Phase 3; vorher Stern), Aufgaben (Stern), Belohnungen (Geschenk), Kalender, später Essen, Einkauf. Einstellungen (Zahnrad) abgesetzt am Ende
+- Feste Navigationsleiste links (am Smartphone unten) mit großen, eindeutigen Symbolen: Heute (Haus, seit Phase 3; vorher Stern), Aufgaben (Stern), Belohnungen (Geschenk), Kalender, Essen (Teller), Einkauf (Einkaufswagen), Fotos. Einstellungen (Zahnrad) abgesetzt am Ende
 - Symbole, Farben und Avatare sind überall gleich; ein Kind lernt die Wege darüber, nicht über Text
 - Beschriftungen unter Symbolen sind erlaubt, aber nie die einzige Orientierung
 - Aufgabe erledigen: genau ein Tipp von der Startansicht. Belohnung einlösen: über den Avatar oder Geschenk → Avatar → Belohnung → Bestätigen
@@ -386,7 +397,7 @@ Keine riesige Suite, aber die Geschäftslogik wird getestet: Setup/Auth und Sper
 | 3 | Familien-Dashboard „Heute“ als Startseite: Kalender, Aufgaben, Essensplan, Einkaufsliste, Wetter, Wochen-Widget; Aufgaben in eigenem Bereich mit optionaler Wochenansicht |
 | 4 | Bilderrahmen: Fotos hochladen und verwalten, Bilderrahmen im Leerlauf oder per Symbol, Einblendungen (Uhr, Wetter, Termin, Aufgaben), Nachtmodus |
 | 5 | Essensplanung: Wochenplan, Mahlzeiten, Rezepte optional |
-| 6 | Einkaufsliste: mehrere Listen, Einträge abhaken, später Verbindung zum Essensplan |
+| 6 | Einkaufsliste: eintragen mit Vorschlägen und Symbolen, abhaken, Kachel auf „Heute“; später mehrere Listen und Verbindung zum Essensplan |
 
 Phasen 2–6 werden in Phase 1 nicht implementiert. Die Struktur soll ihre spätere Integration aber nicht verbauen.
 

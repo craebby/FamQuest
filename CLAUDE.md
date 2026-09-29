@@ -121,6 +121,17 @@ Wünsche der Kinder später (Roadmap, Ideen ohne Version).
    Erwachsenen nur noch unter „Aufgaben“
 4. Feinschliff
 
+## Etappen (Phase 6: Einkaufsliste)
+
+Entschieden: eigene Liste statt fremdem Dienst; eintragen und abhaken ohne Eltern-PIN; Menge/Hinweis
+optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kommt mit 1.2;
+mehrere Listen, Sortierung (evtl. KI), Zutaten aus dem Essensplan und Obsidian-Export stehen unter „Ideen“.
+
+1. Einkaufsliste am Display und im Browser: Ansicht „Einkauf“ in der Navigationsleiste, Artikel mit
+   Vorschlägen (eigene + ca. 65 Standardartikel) und automatischem Symbol eintragen, abhaken,
+   Kachel „Einkauf“ auf „Heute“
+2. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

@@ -46,7 +46,8 @@
     "calendar": "Kalender",
     "tasks": "Aufgaben",
     "frame": "Fotos",
-    "meals": "Essen"
+    "meals": "Essen",
+    "shopping": "Einkauf"
   },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
@@ -304,6 +305,7 @@
     "music": "Musik",
     "food": "Essen & Trinken",
     "dishes": "Gerichte",
+    "groceries": "Einkauf",
     "household": "Haushalt",
     "pets": "Tiere & Pflanzen",
     "activities": "Sport & Freizeit",
@@ -452,6 +454,11 @@
       "planned": "Das Gericht steht noch im Plan. Nehmt es dort zuerst heraus.",
       "invalid_image": "Das Foto konnte nicht gelesen werden. Bitte ein JPEG-, PNG- oder WebP-Bild wählen.",
       "image_too_large": "Das Foto ist zu groß (höchstens 5 MB)."
+    },
+    "shopping": {
+      "not_found": "Diesen Artikel gibt es nicht mehr.",
+      "not_on_list": "Der Artikel steht nicht mehr auf der Liste.",
+      "duplicate_name": "Einen Artikel mit diesem Namen gibt es schon."
     }
   },
   "rewards": {
@@ -625,8 +632,6 @@
     "setup": "Einrichten",
     "meals": "Essen",
     "shopping": "Einkauf",
-    "shopping_hint": "Hier steht bald eure Einkaufsliste.",
-    "coming_soon": "Kommt bald",
     "customize": "Startseite anpassen",
     "customize_hint": "Bereiche ein- oder ausschalten. Darunter siehst du gleich, wie es aussieht. Gilt für die ganze Familie.",
     "tile_visible": "{{name}} anzeigen",
@@ -751,6 +756,33 @@
     "edit_dish": "{{name}} bearbeiten",
     "delete_dish": "Gericht löschen",
     "delete_confirm": "„{{name}}“ wirklich löschen? Es verschwindet aus den Vorschlägen und aus vergangenen Wochen."
+  },
+  "shopping": {
+    "title": "Einkaufsliste",
+    "add_button": "Eintragen",
+    "add_title": "Was fehlt?",
+    "add": "Hinzufügen",
+    "item_name": "Artikel",
+    "item_placeholder": "Eintippen, z. B. Milch",
+    "note": "Menge oder Hinweis",
+    "note_placeholder": "Menge, Hinweis",
+    "added": "„{{name}}“ steht auf der Liste.",
+    "no_suggestions": "Kein Vorschlag passt. „Hinzufügen“ setzt „{{name}}“ neu auf die Liste.",
+    "suggestions": "Vorschläge",
+    "change_icon": "Symbol ändern",
+    "edit_item": "{{name}} bearbeiten",
+    "delete_item": "Artikel löschen",
+    "delete_confirm": "„{{name}}“ wirklich löschen? Er verschwindet aus den Vorschlägen und von der Liste.",
+    "close": "Schließen",
+    "done": "Fertig",
+    "empty": "Alles da!",
+    "empty_hint": "Fehlt etwas? Hier antippen und eintragen.",
+    "checked_title": "Abgehakt",
+    "clear_checked": "Abgehakte entfernen",
+    "remove": "{{name}} von der Liste nehmen",
+    "more_one": "+{{count}} weiterer",
+    "more_other": "+{{count}} weitere",
+    "open_list": "Einkaufsliste öffnen"
   },
   "event_symbols": {
     "section": "Symbole für Termine",

@@ -81,6 +81,19 @@ TaskTitle = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1
 TaskDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
 # Iconify-Name "set:icon"; die Auswahl selbst kommt aus dem Icon-Katalog im Frontend.
 IconName = Annotated[str, Field(max_length=100, pattern=r"^[a-z0-9-]+:[a-z0-9-]+$")]
+
+
+def _collapse_spaces(value: str) -> str:
+    # Mehrfache Leerzeichen wie beim Tippen am Touchscreen zusammenfassen.
+    return re.sub(r"\s+", " ", value).strip()
+
+
+# Eingetippter Name eines Gerichts oder Einkaufsartikels.
+TypedName = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=100),
+    AfterValidator(_collapse_spaces),
+]
 TimeOfDay = Annotated[str, _one_of(TIMES_OF_DAY)]
 RewardName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 PointReason = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]

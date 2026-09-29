@@ -16,8 +16,8 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
 > Aufgaben aller und dem Wetter. Phase 4 macht das Display zum Bilderrahmen, per
 > Symbol oder nach Leerlauf, mit Uhr, Wetter, nächstem Termin und offenen Aufgaben als
-> Einblendungen und mit Nachtmodus. Phase 5 hat begonnen: ein Essensplan für die Woche, direkt am
-> Display (siehe [Roadmap](#roadmap)).
+> Einblendungen und mit Nachtmodus. Phase 5 bringt einen Essensplan für die Woche direkt am
+> Display, Phase 6 eine Einkaufsliste für Display und Handy (siehe [Roadmap](#roadmap)).
 
 ![„Heute“ am Kühlschrank-Display: Morgenroutine der Kinder, die nächsten sieben Tage mit Terminen und Abendessen](docs/screenshots/de/today.png)
 
@@ -47,6 +47,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
   auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
   oder gedimmte Uhr)
 - Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen
+- Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
+  Hinweis), im Laden abhaken
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -235,7 +237,9 @@ Die Startseite ist ein Wochen-Dashboard fürs Wanddisplay (auf schmalen Bildschi
   rückgängig. Ist alles geschafft oder gerade keine Routine dran, steht beim Kind nur **„Alles
   erledigt“**. Der Avatar öffnet die Personenansicht, der Pfeil die Aufgaben. Die Aufgaben der
   Erwachsenen stehen nicht auf der Startseite, sondern unter **Aufgaben**.
-- **Einkauf** ist ein Platzhalter, deutlich als „Kommt bald“ gekennzeichnet (Phase 6).
+- **Einkauf** daneben: was fehlt, als Symbole mit Namen (und Menge oder Hinweis). „Eintragen“
+  öffnet denselben Dialog wie die Einkaufsliste (siehe [Einkaufsliste](#einkaufsliste)), der Pfeil
+  die Liste.
 - **Die nächsten sieben Tage** ab heute über die ganze Breite: je Tag Feiertage oder Ferien, die
   Termine in der Personenfarbe (ein Tipp öffnet die Details) und **unten das Essen** mit Foto oder
   Symbol und Namen, z. B. „Ofengemüse mit Würstchen“. Ein Tipp aufs Essen oder aufs **+** trägt
@@ -508,6 +512,36 @@ Montag bis Sonntag, heute hervorgehoben. Die Pfeile blättern zu anderen Wochen.
 Standardmäßig wird nur das **Abendessen** geplant. Im Elternbereich unter **Einstellungen →
 Essensplan** lassen sich Frühstück, Mittagessen und Snack zuschalten (für die ganze Familie); dann
 steht an jedem Tag jede Mahlzeit mit ihrem Symbol. Ausgeschaltete Mahlzeiten bleiben gespeichert.
+
+## Einkaufsliste
+
+![Einkaufsliste am Display](docs/screenshots/de/shopping.png)
+
+Unter **Einkauf** (Einkaufswagen) in der Navigationsleiste steht, was fehlt, in großen Zeilen mit
+Symbolen.
+
+- **Ohne Eltern-PIN**, am Display oder im Browser am Handy. **„Eintragen“** öffnet „Was fehlt?“:
+  einen Vorschlag antippen oder einen Namen eintippen, optional mit **Menge oder Hinweis** („2 ×“,
+  „laktosefrei“), dann „Hinzufügen“. Der Dialog bleibt offen, damit mehrere Artikel hintereinander
+  dazukommen; „Fertig“ schließt ihn.
+- **Vorschläge:** zuerst eure eigenen Artikel (häufig gekaufte zuerst), dann rund 65 gängige wie
+  Milch, Brötchen, Bananen, Klopapier oder Windeln. Was schon auf der Liste steht, trägt einen
+  Haken; **nochmal antippen** nimmt es wieder herunter. Tippen filtert die Vorschläge.
+- **Symbol:** kommt automatisch zum Namen („Rote Zwiebeln“ → Zwiebel, sonst Einkaufstüten) und lässt
+  sich per Tipp darauf ändern. Der Stift an einem eigenen Artikel benennt ihn um, ändert das Symbol
+  oder löscht ihn.
+- **Abhaken:** ein Tipp auf eine Zeile hakt ab, ein weiterer nimmt es zurück. Abgehakte stehen
+  durchgestrichen darunter, **bis der Tag vorbei ist** (in der Zeitzone der Familie), damit sich ein
+  falscher Tipp im Laden noch zurücknehmen lässt; danach verschwinden sie von selbst. „Abgehakte
+  entfernen“ räumt sie sofort weg, das × nimmt einen Artikel von der Liste.
+- Die Liste lädt alle 30 Sekunden neu; so sieht das Display, was jemand am Handy eingetragen hat.
+
+<img src="docs/screenshots/de/phone-shopping.png" alt="Einkaufsliste am Handy" width="300">
+
+**Am Handy:** FamQuest im Browser öffnen. Unterwegs muss FamQuest dafür von außen erreichbar sein,
+z. B. per HTTPS hinter einem Reverse Proxy (siehe [Hinter einem Reverse Proxy](#hinter-einem-reverse-proxy))
+oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.2
+geplant.
 
 ## Fotos (Bilderrahmen)
 
@@ -808,7 +842,7 @@ cd frontend && npm run screenshots                   # braucht die laufende Date
 `npm run screenshots` baut das Frontend und startet die App zweimal (Deutsch und Englisch), jeweils
 mit frischer Datenbank `<POSTGRES_DB>_demo_<sprache>` und einer Beispielfamilie aus
 [`backend/app/demo.py`](backend/app/demo.py): vier Personen mit Emoji-Avataren, Routinen, eine
-Woche erledigter Aufgaben, Belohnungen, Essensplan, Kalendertermine und einige gemeinfreie Fotos
+Woche erledigter Aufgaben, Belohnungen, Essensplan, Einkaufsliste, Kalendertermine und einige gemeinfreie Fotos
 ([Quellen](backend/demo/photos/CREDITS.md)). Die Uhr der App steht auf Donnerstag der laufenden
 Woche, 7:25 Uhr, das Wetter ist fest vorgegeben; so sehen die Bilder jedes Mal gleich aus. Die
 Screenshots landen in `docs/screenshots/<sprache>/`. Die Demodaten lassen sich auch einzeln in eine
@@ -930,7 +964,8 @@ erzeugt mit Demodaten (`npm run screenshots`).
 **1.2: Unterwegs**
 
 - Installierbare Web-App (PWA) fürs Smartphone der Eltern: Aufgaben prüfen, Punkte buchen und
-  Aufgaben anlegen von unterwegs
+  Aufgaben anlegen von unterwegs; die Einkaufsliste auch ohne Netz im Laden, abgeglichen, sobald
+  wieder Verbindung besteht
 - Erwachsene legen Aufgaben schnell direkt in der Familienansicht an, ohne Elternbereich
 
 **Als Nächstes: Essensplanung (Phase 5)**
@@ -948,11 +983,12 @@ Die Mahlzeiten der Woche direkt am Display planen.
   per Zahnrad ein- und ausschalten; Aufgaben der Erwachsenen nur noch unter „Aufgaben“
 - [ ] 4. Feinschliff am echten Display
 
-**Später (Phase 6 der Spezifikation)**
+**In Arbeit: Einkaufsliste (Phase 6)**
 
-| Phase | Inhalt |
-| --- | --- |
-| 6 | Einkaufslisten |
+- [x] 1. Einkaufsliste am Display und im Browser: Symbol „Einkauf“ in der Navigationsleiste,
+  Artikel mit Vorschlägen und Symbolen eintragen (Menge oder Hinweis optional), abhaken, Abgehakte
+  bleiben bis zum Ende des Tages; die Kachel „Einkauf“ auf „Heute“ zeigt, was fehlt
+- [ ] 2. Feinschliff im Alltag
 
 **Ideen ohne Version**
 
@@ -962,6 +998,9 @@ Die Mahlzeiten der Woche direkt am Display planen.
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
 - Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
+- Einkaufsliste: mehrere Listen (z. B. Supermarkt und Drogerie), Sortierung nach Kategorie oder
+  Gang im Laden (eventuell mit KI), Zutaten aus dem Essensplan, Export nach Obsidian
+  (Markdown-Checkliste)
 - Demoversion: eine öffentliche Instanz mit einer Beispielfamilie, die sich regelmäßig zurücksetzt,
   zum Ausprobieren ohne Installation (die Beispielfamilie gibt es schon: `python -m app.demo`)
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch

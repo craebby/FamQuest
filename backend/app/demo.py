@@ -78,6 +78,19 @@ TEXT = {
             ("Lasagne", "shallow-pan-of-food"),
             ("Backcamembert", "cheese-wedge"),
         ],
+        # Einkaufsliste: Name, Symbol, Hinweis, schon abgehakt.
+        "shopping_list": [
+            ("Milch", "glass-of-milk", "2 ×", False),
+            ("Brötchen", "baguette-bread", None, False),
+            ("Bananen", "banana", None, False),
+            ("Äpfel", "red-apple", None, False),
+            ("Joghurt", "bowl-with-spoon", "Erdbeere", False),
+            ("Nudeln", "spaghetti", None, False),
+            ("Klopapier", "roll-of-paper", None, False),
+            ("Zahnpasta", "toothbrush", "für Kinder", False),
+            ("Eier", "egg", None, True),
+            ("Kaffee", "hot-beverage", None, True),
+        ],
         "events": {
             "gymnastics": "Kinderturnen",
             "judo": "Judo",
@@ -143,6 +156,18 @@ TEXT = {
             ("Tacos", "taco"),
             ("Lasagne", "shallow-pan-of-food"),
             ("Baked camembert", "cheese-wedge"),
+        ],
+        "shopping_list": [
+            ("Milk", "glass-of-milk", "2 ×", False),
+            ("Bread rolls", "baguette-bread", None, False),
+            ("Bananas", "banana", None, False),
+            ("Apples", "red-apple", None, False),
+            ("Yoghurt", "bowl-with-spoon", "strawberry", False),
+            ("Pasta", "spaghetti", None, False),
+            ("Toilet paper", "roll-of-paper", None, False),
+            ("Toothpaste", "toothbrush", "for kids", False),
+            ("Eggs", "egg", None, True),
+            ("Coffee", "hot-beverage", None, True),
         ],
         "events": {
             "gymnastics": "Gymnastics",
@@ -311,6 +336,7 @@ class Demo:
         self.history()
         self.rewards()
         self.meals()
+        self.shopping()
         self.calendar()
         self.settings()
         self.photos()
@@ -519,6 +545,13 @@ class Demo:
             self.call(
                 "PUT", f"/meals/{day.isoformat()}/dinner", json={"name": name, "icon": ICON + icon}
             )
+
+    def shopping(self) -> None:
+        for name, icon, note, checked in self.text["shopping_list"]:
+            body = {"name": name, "icon": ICON + icon} | ({"note": note} if note else {})
+            item = self.call("POST", "/shopping/list", json=body)
+            if checked:
+                self.call("PUT", f"/shopping/list/{item['id']}/checked", json={"checked": True})
 
     def calendar(self) -> None:
         """Kalender wie nach dem Verbinden eines Google-Kontos, Termine rund um heute."""

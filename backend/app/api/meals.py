@@ -5,12 +5,11 @@ und werden danach wieder vorgeschlagen; welche Mahlzeiten geplant werden, legen 
 """
 
 import datetime as dt
-import re
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import FileResponse
-from pydantic import AfterValidator, BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field
 from sqlalchemy import delete, exists, func, select
 from sqlalchemy.exc import IntegrityError
 
@@ -27,7 +26,7 @@ from app.avatars import (
 )
 from app.errors import ApiError
 from app.models import Dish, Family, MealPlanEntry
-from app.schemas import MEALS, IconName
+from app.schemas import MEALS, IconName, TypedName
 from app.today import family_now
 
 router = APIRouter(tags=["meals"])
@@ -40,18 +39,6 @@ IMAGE_FOLDER = "dishes"
 
 # Standard: nur das Abendessen, das planen die meisten Familien.
 DEFAULT_MEALS: list[Meal] = ["dinner"]
-
-
-def _clean_name(value: str) -> str:
-    # Mehrfache Leerzeichen wie beim Tippen am Touchscreen zusammenfassen.
-    return re.sub(r"\s+", " ", value).strip()
-
-
-DishName = Annotated[
-    str,
-    StringConstraints(strip_whitespace=True, min_length=1, max_length=100),
-    AfterValidator(_clean_name),
-]
 
 
 class MealSettings(BaseModel):
@@ -88,12 +75,12 @@ class MealWeekOut(BaseModel):
 
 
 class MealEntryIn(BaseModel):
-    name: DishName
+    name: TypedName
     icon: IconName
 
 
 class DishIn(BaseModel):
-    name: DishName
+    name: TypedName
     icon: IconName
 
 

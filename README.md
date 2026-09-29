@@ -16,8 +16,8 @@ services and without external CDNs. The full specification (in German) is in
 > will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
 > is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 turns
 > the display into a picture frame, started from an icon or after being idle, with clock, weather,
-> next event and open tasks as overlays, and a night mode. Phase 5 has started: a weekly meal plan,
-> right on the display (see [Roadmap](#roadmap)).
+> next event and open tasks as overlays, and a night mode. Phase 5 brings a weekly meal plan right
+> on the display, phase 6 a shopping list for the display and the phone (see [Roadmap](#roadmap)).
 
 ![“Today” on the fridge display: the children's morning routine, the next seven days with events and dinner](docs/screenshots/en/today.png)
 
@@ -46,6 +46,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
   with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
   clock)
 - Meal plan: type the week's dishes right on the display, with suggestions and icons
+- Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
+  note), tick it off in the shop
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -229,7 +231,9 @@ The start page is a week dashboard for the wall display (stacked on narrow scree
   view (with "+2", hourglass for parent checks); tap again to undo. When everything is done, or no
   routine is due right now, the child just shows **"All done"**. The avatar opens the person view,
   the arrow opens the tasks. Adults' tasks are not on the start page but under **Tasks**.
-- **Shopping** is a placeholder, clearly marked "Coming soon" (phase 6).
+- **Shopping** next to it: what's missing, as icons with names (and amount or note). "Add" opens
+  the same dialog as the shopping list (see [Shopping list](#shopping-list)); the arrow opens the
+  list.
 - **The next seven days** from today across the full width: public or school holidays, the events
   in each person's colour (a tap opens the details) and **the meal at the bottom** of each day with
   its photo or icon and name, e.g. "Oven vegetables with sausages". A tap on the meal or the **+**
@@ -490,6 +494,34 @@ with today highlighted. The arrows browse to other weeks.
 By default only **dinner** is planned. In the parents' area under **Settings → Meal plan** you can
 switch on breakfast, lunch and snack (for the whole family); every day then shows each meal with its
 icon. Meals you switch off stay stored.
+
+## Shopping list
+
+![Shopping list on the display](docs/screenshots/en/shopping.png)
+
+**Shopping** (trolley) in the navigation bar shows what's missing, in large rows with icons.
+
+- **No parents' PIN needed**, on the display or in a phone's browser. **"Add"** opens "What do we
+  need?": tap a suggestion or type a name, optionally with an **amount or note** ("2 ×", "lactose
+  free"), then "Add". The dialog stays open so you can add several items in a row; "Done" closes
+  it.
+- **Suggestions:** your own items first (most often bought first), then about 65 common ones such as
+  milk, bread rolls, bananas, toilet paper or nappies. Items already on the list are marked with a
+  tick; **tap again** to take one off. Typing filters the suggestions.
+- **Icon:** picked automatically from the name (e.g. "Red onions" → onion, otherwise shopping bags)
+  and changeable with a tap on it. The pencil on one of your items renames it, changes the icon or
+  deletes it.
+- **Ticking off:** one tap on a row ticks it off, another tap brings it back. Ticked items stay at
+  the bottom, crossed out, **until the end of the day** (in the family's time zone), so a wrong tap
+  in the shop can still be undone; then they disappear on their own. "Remove ticked items" clears
+  them right away; the × takes an item off the list.
+- The list reloads every 30 seconds, so the display shows what someone added on their phone.
+
+<img src="docs/screenshots/en/phone-shopping.png" alt="Shopping list on a phone" width="300">
+
+**On the phone:** open FamQuest in the browser. Away from home this needs FamQuest to be reachable
+from outside, e.g. over HTTPS behind a reverse proxy (see [Behind a reverse proxy](#behind-a-reverse-proxy))
+or via a VPN. An installable app that also works offline in the shop is planned for 1.2.
 
 ## Photos (picture frame)
 
@@ -785,7 +817,7 @@ cd frontend && npm run screenshots                   # needs the running databas
 `npm run screenshots` builds the frontend and starts the app twice (German and English), each with
 a fresh database `<POSTGRES_DB>_demo_<lang>` and a sample family from
 [`backend/app/demo.py`](backend/app/demo.py): four people with emoji avatars, routines, a week of
-ticked-off tasks, rewards, a meal plan, calendar events and a few public-domain photos
+ticked-off tasks, rewards, a meal plan, a shopping list, calendar events and a few public-domain photos
 ([sources](backend/demo/photos/CREDITS.md)). The app's clock is set to Thursday of the current week
 at 7:25 and the weather is fixed, so the pictures look the same every time. The screenshots end
 up in `docs/screenshots/<lang>/`. The demo data can also be loaded on its own into an empty
@@ -904,7 +936,7 @@ generated with demo data (`npm run screenshots`).
 **1.2: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
-  anywhere
+  anywhere; the shopping list also offline in the shop, synced once there's a connection again
 - Adults can quickly add tasks right from the family view, without the parents' area
 
 **Next: meal planning (phase 5)**
@@ -923,11 +955,12 @@ Plan the week's meals right on the display.
   "Tasks"
 - [ ] 4. Polish on the real display
 
-**Later (phase 6 of the specification)**
+**In progress: shopping list (phase 6)**
 
-| Phase | Contents |
-| --- | --- |
-| 6 | Shopping lists |
+- [x] 1. Shopping list on the display and in the browser: a "Shopping" icon in the navigation bar,
+  add items with suggestions and icons (amount or note optional), tick them off, ticked items stay
+  until the end of the day; the "Shopping" tile on "Today" shows what's missing
+- [ ] 2. Polish in everyday use
 
 **Ideas without a version yet**
 
@@ -936,6 +969,8 @@ Plan the week's meals right on the display.
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 - Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
+- Shopping list: several lists (e.g. supermarket and chemist), sorting by category or aisle (maybe
+  with AI help), ingredients from the meal plan, export to Obsidian (Markdown checklist)
 - Demo version: a public instance with a sample family that resets itself regularly, to try
   FamQuest without installing it (the sample family already exists: `python -m app.demo`)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
