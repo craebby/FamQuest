@@ -44,7 +44,12 @@ export function ShoppingAdder({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     // Kein Autofokus aufs Textfeld: Am Touchscreen würde sonst sofort die Tastatur aufgehen.
+    // Nur beim Öffnen: Rendert die Seite dahinter neu (Uhr, Abruf), verlöre sonst ein Textfeld
+    // mitten im Tippen den Fokus.
     dialog.current?.focus()
+  }, [])
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || picking) return
       if (editingId === null) onClose()

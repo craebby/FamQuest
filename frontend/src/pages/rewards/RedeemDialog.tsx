@@ -30,7 +30,12 @@ export function RedeemDialog({ reward, member, onClose }: RedeemDialogProps) {
   const done = redeem.isSuccess
 
   useEffect(() => {
+    // Nur beim Öffnen: Rendert die Seite dahinter neu (Uhr, Abruf), verlöre sonst ein Textfeld
+    // mitten im Tippen den Fokus.
     dialog.current?.focus()
+  }, [])
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
     }

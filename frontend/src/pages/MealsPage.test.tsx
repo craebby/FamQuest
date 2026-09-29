@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react'
+import { focusManager } from '@tanstack/react-query'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -140,6 +141,35 @@ describe('Essensplan', () => {
       name: 'Schnitzel mit Reis',
       icon: 'fluent-emoji-flat:cut-of-meat',
     })
+  })
+
+  it('behält beim Tippen den Fokus, auch wenn der Plan im Hintergrund neu geladen wird', async () => {
+    const user = userEvent.setup()
+    let loads = 0
+    mockMeals(WEEK, 'de', {
+      // Beim zweiten Abruf hat jemand am Handy geplant: Die Seite hinter dem Dialog rendert neu.
+      'GET /api/meals/week': () =>
+        Response.json(
+          loads++ === 0
+            ? WEEK
+            : { ...WEEK, entries: [...WEEK.entries, { ...WEEK.entries[0], date: '2026-10-01' }] },
+        ),
+    })
+    renderApp('/meals')
+
+    await user.click(await todayButton('Abendessen eintragen'))
+    const dialog = screen.getByRole('dialog')
+    const input = within(dialog).getByRole('textbox', { name: 'Gericht' })
+    await user.type(input, 'Piz')
+    act(() => {
+      focusManager.setFocused(false)
+      focusManager.setFocused(true)
+    })
+    await waitFor(() => expect(loads).toBe(2))
+    await user.keyboard('za')
+
+    expect(input).toHaveFocus()
+    expect(input).toHaveValue('Pizza')
   })
 
   it('lässt das Symbol selbst wählen', async () => {

@@ -71,7 +71,12 @@ export function EventDialog({
   const when = useWhen(event, timeZone)
 
   useEffect(() => {
+    // Nur beim Öffnen: Rendert die Seite dahinter neu (Uhr, Abruf), verlöre sonst ein Textfeld
+    // mitten im Tippen den Fokus.
     dialog.current?.focus()
+  }, [])
+
+  useEffect(() => {
     const onKey = (keyEvent: KeyboardEvent) => {
       if (keyEvent.key === 'Escape') onClose()
     }
