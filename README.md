@@ -80,8 +80,8 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git checkout v1.0.0`
-(later `git fetch --tags && git checkout v1.0.1`), then `docker compose up -d --build`.
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.0.1`,
+then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
 
