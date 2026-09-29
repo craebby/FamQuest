@@ -8,16 +8,10 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Version 0.x (Alpha). Phase 1 ist funktional komplett: Einrichtung beim ersten Start,
-> Anmeldung, Elternbereich mit PIN, Familienmitglieder mit Farbe und Foto, Aufgaben und Routinen mit
-> Vorlagen, die Familienansicht zum Abhaken, Punkte mit Tagesfortschritt, Kontrolle durch die
-> Eltern, Belohnungen für Kinder, faire Verteilung unter Erwachsenen und Familien-Einstellungen. Der
-> Display-Test ist abgeschlossen; der Rest zeigt sich im Alltag. Phase 2 (Google Kalender) ist
-> fertig. Phase 3 läuft: „Heute“ ist jetzt ein Tages-Dashboard mit den nächsten Terminen, den
-> Aufgaben aller und dem Wetter. Phase 4 macht das Display zum Bilderrahmen, per
-> Symbol oder nach Leerlauf, mit Uhr, Wetter, nächstem Termin und offenen Aufgaben als
-> Einblendungen und mit Nachtmodus. Phase 5 bringt einen Essensplan für die Woche direkt am
-> Display, Phase 6 eine Einkaufsliste für Display und Handy (siehe [Roadmap](#roadmap)).
+> **Status:** Version 1.0. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
+> Belohnungen, Kontrolle durch die Eltern), den Google Kalender (nur lesend), die Startseite „Heute“
+> als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan und die
+> Einkaufsliste. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
 
 ![„Heute“ am Kühlschrank-Display: Morgenroutine der Kinder, die nächsten sieben Tage mit Terminen und Abendessen](docs/screenshots/de/today.png)
 
@@ -85,6 +79,10 @@ Aktualisieren:
 git pull
 docker compose up -d --build
 ```
+
+`main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git checkout v1.0.0`
+(später `git fetch --tags && git checkout v1.0.1`), danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
 
@@ -882,11 +880,14 @@ einziges App-Image, das als unprivilegierter Benutzer läuft.
 
 ## Roadmap
 
-Aktueller Stand: **0.x Alpha**. Die Versionen nach 1.0 sind ein erster Plan und können sich noch
-ändern.
+Aktueller Stand: **1.0** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
+nach 1.0 sind ein erster Plan und können sich noch ändern.
 
-**1.0: Aufgabensystem (Phase 1).** Alles unter [Features](#features). Abgeschlossen; was der
-Display-Test ([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird jetzt im Alltag erprobt.
+**1.0: veröffentlicht.** Alles unter [Features](#features), also die Phasen 1 bis 6 unten. Ihr
+restlicher Feinschliff kommt aus dem Alltag als Updates 1.0.x.
+
+**Aufgabensystem (Phase 1):** abgeschlossen; was der Display-Test
+([Checkliste](docs/DISPLAY-TEST.md)) nicht abdeckt, wird im Alltag erprobt.
 
 - [x] 1. Grundgerüst: Backend, Frontend mit i18n, Docker, Alembic, Healthchecks
 - [x] 2. First-Run-Setup, Login/Logout, Sperre der Registrierung, Eltern-PIN

@@ -9,15 +9,10 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 0.x (alpha). Phase 1 is feature-complete: first-run setup, sign-in, parents'
-> area with PIN, family members with colour and photo, tasks and routines with templates, the
-> family view for ticking things off, points with daily progress, parent checks, rewards for
-> children, fair sharing between adults and family settings. The display test is done; the rest
-> will show in everyday use. Phase 2 (Google Calendar) is done. Phase 3 is in progress: "Today"
-> is now a day dashboard with the next events, everyone's tasks and the weather. Phase 4 turns
-> the display into a picture frame, started from an icon or after being idle, with clock, weather,
-> next event and open tasks as overlays, and a night mode. Phase 5 brings a weekly meal plan right
-> on the display, phase 6 a shopping list for the display and the phone (see [Roadmap](#roadmap)).
+> **Status:** version 1.0. Contains the task system (routines, family view, points, rewards,
+> parent checks), Google Calendar (read-only), the start page "Today" as a week dashboard with
+> weather, the picture frame with night mode, the meal plan and the shopping list. Polish continues
+> in everyday use (see [Roadmap](#roadmap)).
 
 ![“Today” on the fridge display: the children's morning routine, the next seven days with events and dinner](docs/screenshots/en/today.png)
 
@@ -83,6 +78,10 @@ Update:
 git pull
 docker compose up -d --build
 ```
+
+`main` always has the latest state. For a fixed version, check out a
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git checkout v1.0.0`
+(later `git fetch --tags && git checkout v1.0.1`), then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
 
@@ -857,11 +856,14 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **0.x alpha**. Versions after 1.0 are a first plan and may still change.
+Current state: **1.0** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.0 are a first plan and may still change.
 
-**1.0: task system (phase 1).** Everything listed under [Features](#features). Done; whatever
-the display test ([checklist](docs/DISPLAY-TEST.md)) doesn't cover is now being tried in everyday
-use.
+**1.0: released.** Everything listed under [Features](#features), i.e. phases 1 to 6 below. Their
+remaining polish comes as 1.0.x updates from everyday use.
+
+**Task system (phase 1):** done; whatever the display test ([checklist](docs/DISPLAY-TEST.md))
+doesn't cover is being tried in everyday use.
 
 - [x] 1. Foundation: backend, frontend with i18n, Docker, Alembic, health checks
 - [x] 2. First-run setup, sign-in/out, registration lock, parents' PIN
