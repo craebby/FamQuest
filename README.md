@@ -80,7 +80,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.0.1`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.0.2`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -237,11 +237,17 @@ The start page is a week dashboard for the wall display (stacked on narrow scree
   in each person's colour (a tap opens the details) and **the meal at the bottom** of each day with
   its photo or icon and name, e.g. "Oven vegetables with sausages". A tap on the meal or the **+**
   plans it right there (see [Meal plan](#meal-plan)). Without a calendar it says "Connect a
-  calendar"; the meals still show.
+  calendar"; the meals still show. On the wall display the page fits the screen: the meals always
+  stay visible at the bottom, and on a busy day only that day's events scroll (a fade and a small
+  arrow show there's more). All-day events take a single line; events that are already over today
+  shrink to time and title.
 
 **Customising the start page:** the gear on "Today" asks for the parents' PIN and then lists the
 sections weather, children's routine, shopping, events and meals. Each can be switched on or off;
-the arrangement is fixed. "Restore default" switches everything back on. The setting is stored on
+the arrangement is fixed. Below that you choose how the week runs: **From today** (today always
+first, then the next six days) or **Monday to Sunday** like a weekly planner, where the days already
+past stay visible but faded. "Restore default" switches everything back on and the week back to
+"From today". The setting is stored on
 the server and applies to every display of the family. The week overview of tasks (one ring per
 person) lives in the tasks area under "Week".
 
@@ -1008,6 +1014,8 @@ Plan the week's meals right on the display.
   and real to-dos to remember, separate from the children's routines and points; optional per
   person, since some people keep their to-dos elsewhere
 
+- Symbols or fixed colours for weekdays (e.g. Monday always green, as in many nurseries) so children
+  who can't read yet find their way around the week
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
   family per installation.

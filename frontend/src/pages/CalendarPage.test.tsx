@@ -238,7 +238,7 @@ describe('Kalender (Woche)', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  it('zeigt ganztägige Termine wie andere, nur mit „Ganztägig“ statt Uhrzeit', async () => {
+  it('zeigt ganztägige Termine in einer Zeile, „Ganztägig“ nur für Screenreader', async () => {
     mockCalendar(
       makeWeek([
         makeEvent({ title: 'Ausflug', all_day: true, start: '2026-10-03', end: '2026-10-05' }),
@@ -246,7 +246,33 @@ describe('Kalender (Woche)', () => {
     )
     renderApp('/calendar')
 
-    expect((await saturday()).getByTestId('calendar-event')).toHaveTextContent('GanztägigAusflug')
+    const event = (await saturday()).getByTestId('calendar-event')
+    expect(event).toHaveTextContent('Ganztägig: Ausflug')
+    expect(within(event).getByText('Ganztägig:', { exact: false })).toHaveClass('sr-only')
+  })
+
+  it('zeigt Uhrzeiten ohne „Uhr“ und vergangene Termine von heute verkleinert', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-10-03T15:00:00Z') })
+    mockCalendar(
+      makeWeek([
+        makeEvent({ key: 'a', title: 'Frühstück', icon: 'fluent-emoji-flat:bread' }),
+        makeEvent({
+          key: 'b',
+          title: 'Kino',
+          start: '2026-10-03T16:00:00Z',
+          end: '2026-10-03T18:00:00Z',
+        }),
+      ]),
+    )
+    renderApp('/calendar')
+
+    const [breakfast, cinema] = (await saturday()).getAllByTestId('calendar-event')
+    vi.useRealTimers()
+    expect(cinema).toHaveTextContent('18:00–20:00')
+    expect(cinema).not.toHaveTextContent('Uhr')
+    // Vorbei: nur Uhrzeit und Titel, ohne Symbol und Avatar.
+    expect(breakfast).toHaveClass('opacity-50')
+    expect(breakfast.querySelectorAll('svg, img')).toHaveLength(0)
   })
 
   it('zeigt Feiertage und Ferien dezent über den Terminen', async () => {

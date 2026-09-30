@@ -1,4 +1,5 @@
-"""Aufbau der Startseite „Heute“: welche Bereiche sichtbar sind, für die ganze Familie.
+"""Aufbau der Startseite „Heute“: welche Bereiche sichtbar sind und wie die Woche beginnt, für die
+ganze Familie.
 
 Die Anordnung ist fest (Kopf mit Wetter, Routine und Einkauf, unten die Woche mit Terminen und
 Essen); die gespeicherte Reihenfolge spielt keine Rolle mehr. Die frühere Kachel „week“ (Ringe je
@@ -18,6 +19,8 @@ router = APIRouter(prefix="/home", tags=["home"])
 
 # tasks: die aktuelle Routine der Kinder.
 TileId = Literal["weather", "events", "tasks", "meals", "shopping"]
+# rolling: ab heute sieben Tage; monday: die aktuelle Woche von Montag bis Sonntag.
+WeekMode = Literal["rolling", "monday"]
 
 # Standard: alles sichtbar.
 DEFAULT_TILES: list[tuple[TileId, bool]] = [
@@ -36,6 +39,7 @@ class TileIn(BaseModel):
 
 class HomeLayout(BaseModel):
     tiles: list[TileIn] = Field(max_length=len(DEFAULT_TILES))
+    week: WeekMode = "rolling"
 
 
 def layout_of(family: Family) -> HomeLayout:
@@ -49,7 +53,8 @@ def layout_of(family: Family) -> HomeLayout:
     for tile_id, visible in DEFAULT_TILES:
         if all(tile.id != tile_id for tile in tiles):
             tiles.append(TileIn(id=tile_id, visible=visible))
-    return HomeLayout(tiles=tiles)
+    week = family.home_week if family.home_week in ("rolling", "monday") else "rolling"
+    return HomeLayout(tiles=tiles, week=week)
 
 
 @router.get("/layout")
@@ -64,5 +69,6 @@ def set_layout(body: HomeLayout, _: ParentSession, db: DbSession) -> HomeLayout:
         raise ApiError(status.HTTP_422_UNPROCESSABLE_CONTENT, "home.invalid_layout")
     family = get_family(db)
     family.home_layout = [tile.model_dump() for tile in body.tiles]
+    family.home_week = body.week
     db.commit()
     return layout_of(family)

@@ -51,6 +51,8 @@ class Family(Base):
     # Kacheln der Startseite in Reihenfolge, [{"id": "weather", "visible": true}, …];
     # None = Standardaufbau (siehe api/home.py).
     home_layout: Mapped[list[dict] | None] = mapped_column(JSONB)
+    # Woche auf der Startseite: "rolling" (ab heute sieben Tage) oder "monday" (Montag bis Sonntag).
+    home_week: Mapped[str] = mapped_column(String(10), server_default="rolling")
     # Bilderrahmen: Einblendungen und Anzeigedauer; None = Standard (siehe api/frame.py).
     frame_settings: Mapped[dict | None] = mapped_column(JSONB)
     # Essensplan: welche Mahlzeiten geplant werden; None = Standard (siehe api/meals.py).

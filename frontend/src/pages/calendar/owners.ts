@@ -25,7 +25,10 @@ export const ownerColors = (owners: Owners, familyColor: string) => [
   ...(owners.family ? [familyColor] : []),
 ]
 
-/** Uhrzeit eines Termins an einem Tag: „10:00–11:00“, „ab 22:00“ oder „bis 02:00“. */
+/**
+ * Uhrzeit eines Termins an einem Tag: „10:00–11:00“, „ab 22:00“ oder „bis 02:00“. Ohne „Uhr“
+ * hinter der Spanne (spart Platz); mit AM/PM bleibt die übliche Spanne („4:30 – 6:30 PM“).
+ */
 export function eventWhen(
   event: WeekEvent,
   language: string,
@@ -37,7 +40,9 @@ export function eventWhen(
   const end = new Date(event.end)
   if (event.continues_before) return t('calendar.until', { time: time.format(end) })
   if (event.continues_after) return t('calendar.from', { time: time.format(start) })
-  return start.getTime() === end.getTime() ? time.format(start) : time.formatRange(start, end)
+  if (start.getTime() === end.getTime()) return time.format(start)
+  const twelveHour = time.formatToParts(start).some((part) => part.type === 'dayPeriod')
+  return twelveHour ? time.formatRange(start, end) : `${time.format(start)}–${time.format(end)}`
 }
 
 function parseDate(isoDate: string) {

@@ -43,8 +43,9 @@ export function ColorStripe({
 }
 
 /**
- * Termin in den Farben seiner Personen: helle Karte mit Farbstreifen, oben Uhrzeit bzw.
- * „Ganztägig“, darunter Titel (ggf. mit Symbol) und Avatare. Antippen öffnet die Details.
+ * Termin in den Farben seiner Personen: helle Karte mit Farbstreifen, oben Uhrzeit und Avatare,
+ * darunter Titel (ggf. mit Symbol). Ganztägige Termine stehen in einer Zeile, vorbei gegangene
+ * Termine schrumpfen auf Uhrzeit und Titel. Antippen öffnet die Details.
  */
 export function EventCard({
   event,
@@ -52,17 +53,14 @@ export function EventCard({
   familyColor,
   timeZone,
   past,
-  dayLabel,
   onOpen,
 }: {
   event: WeekEvent
   owners: Owners
   familyColor: string
   timeZone: string
-  /** Schon vorbei: blasser, damit das Kommende auffällt. */
+  /** Schon vorbei: blass und klein, damit das Kommende auffällt. */
   past: boolean
-  /** Vor die Uhrzeit gestellt, z. B. „Morgen“ (Startseite). */
-  dayLabel?: string
   onOpen: () => void
 }) {
   const { t, i18n } = useTranslation()
@@ -74,10 +72,56 @@ export function EventCard({
     ...owners.members.map((member) => member.name),
     ...(owners.family ? [t('calendar.family')] : []),
   ]
-  const time = isAllDayOnThisDay(event)
-    ? t('calendar.all_day')
-    : eventWhen(event, language, timeZone, t)
-  const when = dayLabel ? `${dayLabel} · ${time}` : time
+  const allDay = isAllDayOnThisDay(event)
+  const people = (
+    <span className="sr-only">{t('calendar.people', { names: names.join(', ') })}</span>
+  )
+  const titleText = (
+    <span className="min-w-0 flex-1 text-lg leading-tight font-bold break-words hyphens-auto text-slate-800">
+      {title}
+    </span>
+  )
+  const icon = event.icon && <TaskIcon icon={event.icon} className="size-8 shrink-0" />
+
+  let body
+  if (allDay) {
+    // Ohne eigene Zeile „Ganztägig“: Farbe und Avatar zeigen, wem der Tag gehört.
+    body = (
+      <span className="flex items-center gap-2">
+        <span className="sr-only">{t('calendar.all_day')}: </span>
+        {icon}
+        {titleText}
+        {people}
+        <OwnerAvatars owners={owners} familyColor={familyColor} />
+      </span>
+    )
+  } else if (past) {
+    body = (
+      <span className="flex items-baseline gap-2">
+        <span className="shrink-0 text-base font-extrabold" style={{ color: main.strong }}>
+          {eventWhen(event, language, timeZone, t)}
+        </span>
+        <span className="min-w-0 truncate text-base font-bold text-slate-800">{title}</span>
+        {people}
+      </span>
+    )
+  } else {
+    body = (
+      <>
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="flex-1 text-base font-extrabold" style={{ color: main.strong }}>
+            {eventWhen(event, language, timeZone, t)}
+          </span>
+          {people}
+          <OwnerAvatars owners={owners} familyColor={familyColor} />
+        </span>
+        <span className="flex items-center gap-2">
+          {icon}
+          {titleText}
+        </span>
+      </>
+    )
+  }
 
   return (
     <li className={past ? 'opacity-50' : ''} data-testid="calendar-event">
@@ -88,19 +132,7 @@ export function EventCard({
         style={{ backgroundColor: main.soft }}
       >
         <ColorStripe colors={colors} />
-        <span className="flex min-w-0 flex-1 flex-col gap-1 py-2 pr-2">
-          <span className="text-base font-extrabold" style={{ color: main.strong }}>
-            {when}
-          </span>
-          <span className="flex items-center gap-2">
-            {event.icon && <TaskIcon icon={event.icon} className="size-10" />}
-            <span className="min-w-0 text-lg leading-tight font-bold break-words text-slate-800">
-              {title}
-            </span>
-          </span>
-          <span className="sr-only">{t('calendar.people', { names: names.join(', ') })}</span>
-          <OwnerAvatars owners={owners} familyColor={familyColor} />
-        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-1 py-1.5 pr-2">{body}</span>
       </button>
     </li>
   )

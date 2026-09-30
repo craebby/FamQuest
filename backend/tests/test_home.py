@@ -90,3 +90,21 @@ def test_changes_need_unlocked_parent_area(client, admin):
 
 def test_layout_needs_login(client):
     assert client.get("/api/home/layout").status_code == 401
+
+
+def test_week_is_rolling_by_default_and_can_start_on_monday(client, parent):
+    assert client.get("/api/home/layout").json()["week"] == "rolling"
+
+    body = {"tiles": DEFAULT, "week": "monday"}
+    response = client.put("/api/home/layout", json=body, headers=csrf(parent))
+
+    assert response.status_code == 200, response.text
+    assert response.json()["week"] == "monday"
+    assert client.get("/api/home/layout").json()["week"] == "monday"
+
+
+def test_invalid_week_is_rejected(client, parent):
+    body = {"tiles": DEFAULT, "week": "sunday"}
+    response = client.put("/api/home/layout", json=body, headers=csrf(parent))
+    assert response.status_code == 422
+    assert response.json()["code"] == "common.validation"

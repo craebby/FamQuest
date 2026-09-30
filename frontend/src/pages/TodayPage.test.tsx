@@ -364,6 +364,35 @@ describe('Startseite „Heute“', () => {
     })
   })
 
+  it('zeigt auf Wunsch die Woche von Montag bis Sonntag, vergangene Tage blass', async () => {
+    mockHome({
+      extra: { 'GET /api/home/layout': Response.json({ tiles: DEFAULT_TILES, week: 'monday' }) },
+    })
+    renderApp('/')
+
+    const board = await region('Diese Woche')
+    const days = await board.findAllByRole('region')
+    expect(days.map((day) => day.getAttribute('aria-label'))).toEqual([
+      'Montag, 28. September',
+      'Dienstag, 29. September',
+      'Mittwoch, 30. September',
+      'Donnerstag, 1. Oktober',
+      'Freitag, 2. Oktober',
+      'Samstag, 3. Oktober',
+      'Sonntag, 4. Oktober',
+    ])
+    expect(days[5]).toHaveAttribute('aria-current', 'date')
+
+    // Gestern: Termin klein und blass, das Essen bleibt sichtbar.
+    const friday = within(days[4])
+    expect(await friday.findByTestId('calendar-event')).toHaveClass('opacity-50')
+    expect(friday.getByText('Turnen')).toBeVisible()
+    expect(
+      await friday.findByRole('button', { name: 'Abendessen: Fischstäbchen, ändern' }),
+    ).toBeVisible()
+    expect(await within(days[6]).findByText('Oma besuchen')).toBeVisible()
+  })
+
   it('funktioniert auch auf Englisch', async () => {
     await i18n.changeLanguage('en')
     mockHome({ language: 'en' })
@@ -390,7 +419,7 @@ describe('Startseite anpassen', () => {
       ...tile,
       visible: tile.id !== 'events' && tile.id !== 'shopping',
     }))
-    mockHome({ extra: { 'GET /api/home/layout': Response.json({ tiles }) } })
+    mockHome({ extra: { 'GET /api/home/layout': Response.json({ tiles, week: 'rolling' }) } })
     renderApp('/')
 
     const today = await region('Samstag, 3. Oktober')
@@ -405,7 +434,7 @@ describe('Startseite anpassen', () => {
     const user = userEvent.setup()
     const calls = mockHome({
       extra: {
-        'GET /api/home/layout': Response.json({ tiles: DEFAULT_TILES }),
+        'GET /api/home/layout': Response.json({ tiles: DEFAULT_TILES, week: 'rolling' }),
         'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
         'PUT /api/home/layout': (body) => Response.json(body),
         'POST /api/parent/lock': Response.json(makeMe()),
@@ -426,6 +455,12 @@ describe('Startseite anpassen', () => {
     // Die Vorschau darunter folgt sofort.
     expect(screen.queryByRole('region', { name: 'Wetter' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Morgens' })).not.toBeInTheDocument()
+    // Die Woche von Montag bis Sonntag statt ab heute.
+    const monday = editor.getByRole('button', { name: /^Montag bis Sonntag/ })
+    expect(monday).toHaveAttribute('aria-pressed', 'false')
+    await user.click(monday)
+    expect(monday).toHaveAttribute('aria-pressed', 'true')
+    expect(await screen.findByRole('region', { name: 'Diese Woche' })).toBeVisible()
 
     await user.click(editor.getByRole('button', { name: 'Speichern' }))
 
@@ -439,6 +474,7 @@ describe('Startseite anpassen', () => {
         { id: 'events', visible: true },
         { id: 'meals', visible: true },
       ],
+      week: 'monday',
     })
     expect(calls.some((call) => call.key === 'POST /api/parent/lock')).toBe(true)
   })
@@ -449,7 +485,7 @@ describe('Startseite anpassen', () => {
     const calls = mockHome({
       extra: {
         'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
-        'GET /api/home/layout': Response.json({ tiles }),
+        'GET /api/home/layout': Response.json({ tiles, week: 'rolling' }),
         'POST /api/parent/lock': Response.json(makeMe()),
       },
     })

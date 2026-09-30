@@ -654,7 +654,14 @@
     "no_children": "You can add children in the parents’ area.",
     "week_board": "The next seven days",
     "setup_weather_short": "Set up weather",
-    "setup_calendar_short": "Connect a calendar"
+    "setup_calendar_short": "Connect a calendar",
+    "week_mode": "Week on the start page",
+    "week_rolling": "From today",
+    "week_rolling_hint": "Today always comes first, then the next six days.",
+    "week_monday": "Monday to Sunday",
+    "week_monday_hint": "Like a weekly planner: Monday first, Sunday last.",
+    "week_board_monday": "This week",
+    "more_events": "More events: swipe down"
   },
   "weather": {
     "now": "Now",

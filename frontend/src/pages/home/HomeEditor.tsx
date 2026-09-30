@@ -2,9 +2,11 @@ import { type CSSProperties, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import EyeIcon from '~icons/fluent-emoji-flat/eye'
 import LockedIcon from '~icons/fluent-emoji-flat/locked'
+import RollingIcon from '~icons/fluent-emoji-flat/repeat-button'
+import MondayIcon from '~icons/fluent-emoji-flat/tear-off-calendar'
 
 import { useUnlockParent } from '../../api/auth'
-import { TILE_IDS, type Tile } from '../../api/home'
+import { type HomeLayout, TILE_IDS, type Tile, WEEK_MODES, type WeekMode } from '../../api/home'
 import { DemoPinHint } from '../../components/DemoPinHint'
 import { PinPad } from '../../components/PinPad'
 import { Alert, Button } from '../../components/ui'
@@ -58,12 +60,18 @@ export function PinDialog({
   )
 }
 
+const WEEK_ICONS: Record<WeekMode, typeof RollingIcon> = {
+  rolling: RollingIcon,
+  monday: MondayIcon,
+}
+
 /**
- * Aufbau der Startseite bearbeiten: Bereiche ein- und ausblenden (die Anordnung ist fest).
- * Darunter zeigt die Seite sofort, wie es aussieht; gespeichert wird erst mit „Speichern“.
+ * Aufbau der Startseite bearbeiten: Bereiche ein- und ausblenden (die Anordnung ist fest) und
+ * wählen, ob die Woche mit heute oder mit Montag beginnt. Darunter zeigt die Seite sofort, wie es
+ * aussieht; gespeichert wird erst mit „Speichern“.
  */
 export function HomeEditor({
-  tiles,
+  layout,
   onChange,
   onSave,
   onReset,
@@ -71,8 +79,8 @@ export function HomeEditor({
   busy,
   error,
 }: {
-  tiles: Tile[]
-  onChange: (tiles: Tile[]) => void
+  layout: HomeLayout
+  onChange: (layout: HomeLayout) => void
   onSave: () => void
   onReset: () => void
   onCancel: () => void
@@ -81,8 +89,12 @@ export function HomeEditor({
 }) {
   const { t } = useTranslation()
 
+  const { tiles } = layout
   const toggle = (id: Tile['id']) =>
-    onChange(tiles.map((tile) => (tile.id === id ? { ...tile, visible: !tile.visible } : tile)))
+    onChange({
+      ...layout,
+      tiles: tiles.map((tile) => (tile.id === id ? { ...tile, visible: !tile.visible } : tile)),
+    })
   // In der Reihenfolge, in der die Bereiche auf der Seite stehen.
   const ordered = [...tiles].sort((a, b) => TILE_IDS.indexOf(a.id) - TILE_IDS.indexOf(b.id))
 
@@ -143,6 +155,29 @@ export function HomeEditor({
           )
         })}
       </ol>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-xl font-bold text-slate-800">{t('home.week_mode')}</legend>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {WEEK_MODES.map((mode) => {
+            const Icon = WEEK_ICONS[mode]
+            return (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={layout.week === mode}
+                onClick={() => onChange({ ...layout, week: mode })}
+                className="flex items-center gap-3 rounded-2xl bg-slate-100 p-3 text-left ring-2 ring-slate-200 focus-visible:outline-4 focus-visible:outline-orange-400 aria-pressed:bg-orange-50 aria-pressed:ring-4 aria-pressed:ring-orange-500"
+              >
+                <Icon className="size-10 shrink-0" aria-hidden="true" />
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-xl font-bold text-slate-800">{t(`home.week_${mode}`)}</span>
+                  <span className="text-base text-slate-600">{t(`home.week_${mode}_hint`)}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
       <div className="flex flex-wrap gap-3">
         <Button onClick={onSave} disabled={busy}>
           {t('actions.save')}

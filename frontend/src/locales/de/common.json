@@ -654,7 +654,14 @@
     "no_children": "Im Elternbereich könnt ihr Kinder anlegen.",
     "week_board": "Die nächsten sieben Tage",
     "setup_weather_short": "Wetter einrichten",
-    "setup_calendar_short": "Kalender verbinden"
+    "setup_calendar_short": "Kalender verbinden",
+    "week_mode": "Woche auf der Startseite",
+    "week_rolling": "Ab heute",
+    "week_rolling_hint": "Heute steht immer vorne, dann die nächsten sechs Tage.",
+    "week_monday": "Montag bis Sonntag",
+    "week_monday_hint": "Wie ein Wochenplan: vorne Montag, hinten Sonntag.",
+    "week_board_monday": "Diese Woche",
+    "more_events": "Weitere Termine: nach unten wischen"
   },
   "weather": {
     "now": "Jetzt",

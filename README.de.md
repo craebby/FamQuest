@@ -81,7 +81,7 @@ docker compose up -d --build
 ```
 
 `main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
-[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.0.1`,
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.0.2`,
 danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
@@ -242,11 +242,17 @@ Die Startseite ist ein Wochen-Dashboard fürs Wanddisplay (auf schmalen Bildschi
   Termine in der Personenfarbe (ein Tipp öffnet die Details) und **unten das Essen** mit Foto oder
   Symbol und Namen, z. B. „Ofengemüse mit Würstchen“. Ein Tipp aufs Essen oder aufs **+** trägt
   direkt ein (siehe [Essensplan](#essensplan)). Ohne Kalender steht dort „Kalender verbinden“,
-  das Essen erscheint trotzdem.
+  das Essen erscheint trotzdem. Am Wanddisplay passt die Seite genau auf den Bildschirm: Das Essen
+  bleibt immer unten sichtbar, an vollen Tagen scrollen nur die Termine dieses Tages (ein
+  Ausblenden und ein kleiner Pfeil zeigen, dass es weitergeht). Ganztägige Termine brauchen nur eine
+  Zeile, heute schon vorbei gegangene Termine schrumpfen auf Uhrzeit und Titel.
 
 **Startseite anpassen:** Das Zahnrad auf „Heute“ fragt die Eltern-PIN ab und zeigt dann die
 Bereiche Wetter, Routine der Kinder, Einkauf, Termine und Essen. Jeder lässt sich ein- und
-ausschalten, die Anordnung ist fest; „Standard wiederherstellen“ schaltet alles wieder ein. Die
+ausschalten, die Anordnung ist fest. Darunter wählt ihr, wie die Woche läuft: **Ab heute** (heute
+steht immer vorne, dann die nächsten sechs Tage) oder **Montag bis Sonntag** wie ein Wochenplan,
+vergangene Tage bleiben blass sichtbar. „Standard wiederherstellen“ schaltet alles wieder ein und
+die Woche auf „Ab heute“. Die
 Einstellung wird auf dem Server gespeichert und gilt für alle Displays der Familie. Die Wochen-
 übersicht der Aufgaben (Ringe je Person) gibt es im Aufgabenbereich unter „Woche“.
 
@@ -1040,6 +1046,8 @@ Die Mahlzeiten der Woche direkt am Display planen.
   Tody) und echte Todos zum Dran-Denken, getrennt von Routinen und Punkten der Kinder; für jede Person
   abschaltbar, weil manche ihre Todos woanders pflegen
 
+- Symbole oder feste Farben für Wochentage (z. B. Montag immer grün, wie in vielen Kitas), damit
+  sich Kinder, die noch nicht lesen können, in der Woche zurechtfinden
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst
   genau eine Familie pro Installation.

@@ -4,9 +4,10 @@ import GearIcon from '~icons/fluent-emoji-flat/gear'
 
 import { useLockParent, useMe } from '../api/auth'
 import {
-  DEFAULT_TILES,
-  type Tile,
+  DEFAULT_LAYOUT,
+  type HomeLayout,
   type TileId,
+  type WeekMode,
   useHomeLayout,
   useSaveHomeLayout,
   visibleTiles,
@@ -40,18 +41,21 @@ export function TodayPage() {
     timeZone: me?.family.timezone,
   }).format(now)
   // null: normale Ansicht; 'pin': PIN-Abfrage; sonst der Entwurf im Bearbeitungsmodus.
-  const [editing, setEditing] = useState<Tile[] | 'pin' | null>(null)
-
-  const shown = visibleTiles(
-    Array.isArray(editing) ? editing : (layout.data?.tiles ?? DEFAULT_TILES),
-  )
+  const [editing, setEditing] = useState<HomeLayout | 'pin' | null>(null)
+  const draft = typeof editing === 'object' && editing !== null ? editing : null
+  const current = draft ?? layout.data ?? DEFAULT_LAYOUT
+  const shown = visibleTiles(current.tiles)
 
   const startEditing = () => {
-    if (layout.data) setEditing(layout.data.tiles)
+    if (layout.data) setEditing(layout.data)
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
+    // Am großen Display genau eine Bildschirmhöhe: Die Woche füllt den Rest, das Essen bleibt
+    // unten sichtbar und nur die Termine scrollen. Beim Bearbeiten darf die Seite scrollen.
+    <main
+      className={`flex flex-1 flex-col gap-4 p-4 sm:p-6 ${draft ? '' : 'lg:max-h-dvh lg:overflow-y-auto'}`}
+    >
       <header className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <h1 className="text-3xl font-extrabold text-orange-600">{me?.family.name}</h1>
         {today && (
@@ -77,10 +81,8 @@ export function TodayPage() {
       {editing === 'pin' && (
         <PinDialog onUnlocked={startEditing} onCancel={() => setEditing(null)} />
       )}
-      {Array.isArray(editing) && (
-        <EditMode draft={editing} onChange={setEditing} onClose={() => setEditing(null)} />
-      )}
-      <Sections shown={shown} today={today?.date} />
+      {draft && <EditMode draft={draft} onChange={setEditing} onClose={() => setEditing(null)} />}
+      <Sections shown={shown} week={current.week} today={today?.date} />
     </main>
   )
 }
@@ -91,8 +93,8 @@ function EditMode({
   onChange,
   onClose,
 }: {
-  draft: Tile[]
-  onChange: (tiles: Tile[]) => void
+  draft: HomeLayout
+  onChange: (layout: HomeLayout) => void
   onClose: () => void
 }) {
   const save = useSaveHomeLayout()
@@ -107,10 +109,10 @@ function EditMode({
   return (
     <>
       <HomeEditor
-        tiles={draft}
+        layout={draft}
         onChange={onChange}
-        onSave={() => save.mutate({ tiles: draft }, { onSuccess: close })}
-        onReset={() => onChange(DEFAULT_TILES)}
+        onSave={() => save.mutate(draft, { onSuccess: close })}
+        onReset={() => onChange(DEFAULT_LAYOUT)}
         onCancel={close}
         busy={save.isPending}
         error={save.error}
@@ -120,7 +122,15 @@ function EditMode({
 }
 
 /** Routine und Einkauf nebeneinander (der Einkauf schmaler), darunter die Woche. */
-function Sections({ shown, today }: { shown: Set<TileId>; today: string | undefined }) {
+function Sections({
+  shown,
+  week,
+  today,
+}: {
+  shown: Set<TileId>
+  week: WeekMode
+  today: string | undefined
+}) {
   const top = shown.has('tasks') || shown.has('shopping')
   const both = shown.has('tasks') && shown.has('shopping')
   return (
@@ -134,7 +144,12 @@ function Sections({ shown, today }: { shown: Set<TileId>; today: string | undefi
         </div>
       )}
       {today && (shown.has('events') || shown.has('meals')) && (
-        <WeekBoard today={today} showEvents={shown.has('events')} showMeals={shown.has('meals')} />
+        <WeekBoard
+          today={today}
+          mode={week}
+          showEvents={shown.has('events')}
+          showMeals={shown.has('meals')}
+        />
       )}
     </>
   )

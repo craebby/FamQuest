@@ -15,9 +15,14 @@ export interface Tile {
   visible: boolean
 }
 
-/** Sichtbarkeit der Bereiche der Startseite; gilt für die ganze Familie. */
+/** Woche auf der Startseite: ab heute sieben Tage oder Montag bis Sonntag. */
+export const WEEK_MODES = ['rolling', 'monday'] as const
+export type WeekMode = (typeof WEEK_MODES)[number]
+
+/** Sichtbarkeit der Bereiche und Beginn der Woche auf der Startseite; gilt für die ganze Familie. */
 export interface HomeLayout {
   tiles: Tile[]
+  week: WeekMode
 }
 
 export const HOME_LAYOUT_KEY = ['home-layout'] as const
@@ -39,6 +44,9 @@ export const useSaveHomeLayout = () =>
 
 /** Standard wie im Backend (api/home.py): alles sichtbar. */
 export const DEFAULT_TILES: Tile[] = TILE_IDS.map((id) => ({ id, visible: true }))
+
+/** Standard wie im Backend: alles sichtbar, die Woche ab heute. */
+export const DEFAULT_LAYOUT: HomeLayout = { tiles: DEFAULT_TILES, week: 'rolling' }
 
 /** Sichtbare Bereiche als Menge; unbekannte (ältere) Einträge zählen nicht. */
 export function visibleTiles(tiles: Tile[]): Set<TileId> {
