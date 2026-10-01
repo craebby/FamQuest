@@ -14,6 +14,10 @@ services and without external CDNs. The full specification (in German) is in
 > weather, the picture frame with night mode, the meal plan and the shopping list. Polish continues
 > in everyday use (see [Roadmap](#roadmap)).
 
+**Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
+"Open the demo"; the parent PIN is shown on the sign-in page. The sample family resets itself on
+the hour. (In German: [demo-de.kaufmann.city](https://demo-de.kaufmann.city/).)
+
 ![“Today” on the fridge display: the children's morning routine, the next seven days with events and dinner](docs/screenshots/en/today.png)
 
 | Tasks this week | Event details | Symbols for events | On the phone |
@@ -586,8 +590,12 @@ Everything can be changed by hand afterwards:
 
 - **Add / edit room:** name and icon are up to you. Deleting a room deletes its chores too.
 - **Add / edit chore:** title, icon, room and **"How often?"** as a number with days, weeks, months
-  or years. For new chores you pick the current state: just done, halfway or due now. A changed
-  interval counts from the last time the chore was done.
+  or years. For new chores you pick the current state: just done, halfway, due now or a date. A
+  changed interval counts from the last time the chore was done.
+- **Last done:** you can set this date by hand at any time, so a chore does not start from zero.
+  Example: windows cleaned ten weeks ago, due every six months → enter the date; the line below
+  shows when it is due again. A day in the future is not allowed. If the date lies before a
+  completion that was already ticked off (say, by mistake), that completion is removed.
 - **Pause:** the switch next to a chore hides it on the display without deleting it (e.g. "Mow the
   lawn" in winter).
 
@@ -793,6 +801,9 @@ The app must run on its own (sub)domain, e.g. `family.example.com`. A sub-path s
 `example.com/family` is not supported.
 
 ## Public demo
+
+The project's own demo runs at [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) (English)
+and [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) (German).
 
 FamQuest can run as a public demo so people can try it without installing it: a German and an
 English instance with the sample family from [`backend/app/demo.py`](backend/app/demo.py), each

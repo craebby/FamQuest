@@ -373,6 +373,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
         chore={editingChore.chore}
         roomId={editingChore.roomId}
         rooms={chores.data?.rooms ?? []}
+        today={chores.data?.date}
         onSaved={(title) => closeWith(t('tasks.saved', { title }))}
         onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
         onCancel={() => setEditingChore(null)}

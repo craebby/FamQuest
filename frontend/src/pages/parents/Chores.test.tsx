@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -185,6 +185,71 @@ describe('Putzplan im Elternbereich', () => {
       interval_days: 2,
       active: true,
     })
+  })
+
+  it('legt eine Aufgabe an, die zuletzt vor zehn Wochen erledigt wurde', async () => {
+    const user = userEvent.setup()
+    const calls = api()
+    renderApp('/parents/household')
+
+    await user.click((await room('Überall')).getByRole('button', { name: 'Aufgabe hinzufügen' }))
+    await user.type(screen.getByRole('textbox', { name: 'Was ist zu tun?' }), 'Fenster putzen')
+    await user.click(screen.getByRole('button', { name: 'Monate' }))
+    for (let count = 2; count < 6; count++) {
+      await user.click(screen.getByRole('button', { name: 'Mehr' }))
+    }
+    expect(screen.queryByLabelText('Zuletzt erledigt')).toBeNull()
+    await user.click(screen.getByRole('radio', { name: 'Datum wählen' }))
+
+    // Ohne Datum geht es nicht weiter.
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    expect(screen.getByText('Bitte ausfüllen')).toBeVisible()
+    expect(calls.map((call) => call.key)).not.toContain('POST /api/chores')
+
+    fireEvent.change(screen.getByLabelText('Zuletzt erledigt'), {
+      target: { value: '2026-07-25' },
+    })
+    expect(screen.getByText('Wieder fällig am 21.01.2027.')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByText('„Fenster putzen“ ist gespeichert.')).toBeVisible()
+    expect(bodyOf(calls, 'POST /api/chores')).toMatchObject({
+      title: 'Fenster putzen',
+      interval_days: 180,
+      counted_from: '2026-07-25',
+    })
+    expect(bodyOf(calls, 'POST /api/chores')).not.toHaveProperty('state')
+  })
+
+  it('legt beim Bearbeiten fest, wann zuletzt erledigt wurde', async () => {
+    const user = userEvent.setup()
+    const done = makeChore({ ...toilet, last_done: '2026-10-01', counted_from: '2026-10-01' })
+    const calls = api({ ...PLAN, chores: [done, windows] })
+    renderApp('/parents/household')
+
+    await user.click(await screen.findByRole('button', { name: 'Toilette putzen bearbeiten' }))
+    const date = screen.getByLabelText('Zuletzt erledigt')
+    expect(date).toHaveValue('2026-10-01')
+    expect(date).toHaveAttribute('max', '2026-10-03')
+    expect(screen.getByText('Wieder fällig am 08.10.2026.')).toBeVisible()
+
+    // Morgen kann noch nichts erledigt sein.
+    fireEvent.change(date, { target: { value: '2026-10-04' } })
+    expect(screen.getByText('Dieser Tag liegt in der Zukunft.')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    expect(calls.map((call) => call.key)).not.toContain('PUT /api/chores/1')
+
+    // Vor dem letzten Abhaken: schon wieder fällig, und die spätere Erledigung fällt weg.
+    fireEvent.change(date, { target: { value: '2026-09-20' } })
+    expect(
+      screen.getByText(
+        'Damit ist sie jetzt dran (fällig seit 27.09.2026). Später abgehakte Erledigungen werden dabei gelöscht.',
+      ),
+    ).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByText('„Toilette putzen“ ist gespeichert.')).toBeVisible()
+    expect(bodyOf(calls, 'PUT /api/chores/1')).toMatchObject({ counted_from: '2026-09-20' })
   })
 
   it('löscht eine Aufgabe erst nach Rückfrage', async () => {

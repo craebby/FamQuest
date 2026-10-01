@@ -472,7 +472,8 @@
     "chore": {
       "not_found": "Diese Hausarbeit gibt es nicht mehr.",
       "room_not_found": "Diesen Raum gibt es nicht mehr.",
-      "room_duplicate": "Einen Raum mit diesem Namen gibt es schon."
+      "room_duplicate": "Einen Raum mit diesem Namen gibt es schon.",
+      "counted_from_future": "Dieser Tag liegt in der Zukunft."
     }
   },
   "rewards": {
@@ -909,6 +910,12 @@
     "state_fresh": "Gerade erledigt",
     "state_half": "Mittendrin",
     "state_due": "Jetzt fällig",
+    "state_date": "Datum wählen",
+    "counted_from": "Zuletzt erledigt",
+    "counted_from_hint": "Zum Beispiel: Fenster vor zehn Wochen geputzt. Der Abstand zählt ab diesem Tag.",
+    "counted_from_due": "Wieder fällig am {{date}}.",
+    "counted_from_due_now": "Damit ist sie jetzt dran (fällig seit {{date}}).",
+    "counted_from_removes": "Später abgehakte Erledigungen werden dabei gelöscht.",
     "active_hint": "Pausierte Aufgaben erscheinen nicht in der Ansicht „Haushalt“.",
     "delete": "Hausarbeit löschen",
     "delete_confirm": "„{{title}}“ wirklich löschen? Das lässt sich nicht rückgängig machen. Wenn ihr sie nur pausieren wollt, schaltet sie aus.",

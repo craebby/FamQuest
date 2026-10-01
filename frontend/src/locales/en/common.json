@@ -472,7 +472,8 @@
     "chore": {
       "not_found": "This chore no longer exists.",
       "room_not_found": "This room no longer exists.",
-      "room_duplicate": "There is already a room with this name."
+      "room_duplicate": "There is already a room with this name.",
+      "counted_from_future": "This day is in the future."
     }
   },
   "rewards": {
@@ -909,6 +910,12 @@
     "state_fresh": "Just done",
     "state_half": "Halfway",
     "state_due": "Due now",
+    "state_date": "Pick a date",
+    "counted_from": "Last done",
+    "counted_from_hint": "For example: windows cleaned ten weeks ago. The interval counts from this day.",
+    "counted_from_due": "Due again on {{date}}.",
+    "counted_from_due_now": "That makes it due now (since {{date}}).",
+    "counted_from_removes": "Completions ticked off after this day will be removed.",
     "active_hint": "Paused chores do not appear in the “Household” view.",
     "delete": "Delete chore",
     "delete_confirm": "Really delete “{{title}}”? This cannot be undone. If you only want to pause it, switch it off.",

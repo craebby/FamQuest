@@ -10,7 +10,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, status
 from pydantic import BaseModel, Field, StringConstraints
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.members import get_member
@@ -56,6 +56,9 @@ class ChoreOut(BaseModel):
     done_today: bool
     # Wer die letzte Erledigung übernommen hat, falls angegeben.
     done_by: int | None
+    # Ab diesem Tag läuft die Uhr: die letzte Erledigung oder der Tag, den die Eltern festgelegt
+    # haben.
+    counted_from: dt.date
     due_date: dt.date
     # Tage bis zur Fälligkeit; 0 = heute, negativ = so viele Tage drüber.
     days_left: int
@@ -92,9 +95,12 @@ class ChoreIn(BaseModel):
     icon: IconName
     interval_days: IntervalDays
     active: bool = True
+    # „Zuletzt erledigt“ von Hand, z. B. Fenster vor zehn Wochen geputzt; None = nicht anfassen.
+    counted_from: dt.date | None = None
 
 
 class ChoreCreateIn(ChoreIn):
+    # Gilt nur ohne `counted_from`.
     state: StartState = "half"
 
 
@@ -150,8 +156,14 @@ def _room_out(room: ChoreRoom) -> RoomOut:
     return RoomOut(id=room.id, name=room.name, icon=room.icon)
 
 
+def _counted_from(chore: Chore, last: ChoreCompletion | None) -> dt.date:
+    """Die letzte Erledigung, außer die Eltern haben danach einen späteren Tag festgelegt."""
+    return max(last.date, chore.anchor_date) if last else chore.anchor_date
+
+
 def _chore_out(chore: Chore, last: ChoreCompletion | None, today: dt.date) -> ChoreOut:
-    state = chore_state(last.date if last else chore.anchor_date, chore.interval_days, today)
+    counted_from = _counted_from(chore, last)
+    state = chore_state(counted_from, chore.interval_days, today)
     return ChoreOut(
         id=chore.id,
         room_id=chore.room_id,
@@ -162,6 +174,7 @@ def _chore_out(chore: Chore, last: ChoreCompletion | None, today: dt.date) -> Ch
         last_done=last.date if last else None,
         done_today=last is not None and last.date >= today,
         done_by=last.member_id if last else None,
+        counted_from=counted_from,
         due_date=state.due_date,
         days_left=state.days_left,
         ratio=state.ratio,
@@ -213,6 +226,11 @@ def _anchor(state: StartState, interval_days: int, today: dt.date) -> dt.date:
     return today - dt.timedelta(days=elapsed)
 
 
+def _check_counted_from(counted_from: dt.date | None, today: dt.date) -> None:
+    if counted_from is not None and counted_from > today:
+        raise ApiError(status.HTTP_422_UNPROCESSABLE_CONTENT, "chore.counted_from_future")
+
+
 def _commit_room(db: DbSession) -> None:
     try:
         db.commit()
@@ -240,13 +258,15 @@ def list_chores(_: CurrentSession, db: DbSession) -> ChoresOut:
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_chore(body: ChoreCreateIn, _: ParentSession, db: DbSession) -> ChoreOut:
     _get_room(db, body.room_id)
+    today = _today(db)
+    _check_counted_from(body.counted_from, today)
     chore = Chore(
         room_id=body.room_id,
         title=body.title,
         icon=body.icon,
         interval_days=body.interval_days,
         active=body.active,
-        anchor_date=_anchor(body.state, body.interval_days, _today(db)),
+        anchor_date=body.counted_from or _anchor(body.state, body.interval_days, today),
     )
     db.add(chore)
     db.commit()
@@ -326,9 +346,23 @@ def setup_chores(body: SetupIn, _: ParentSession, db: DbSession) -> SetupOut:
 
 @router.put("/{chore_id}")
 def update_chore(chore_id: int, body: ChoreIn, _: ParentSession, db: DbSession) -> ChoreOut:
-    """Ändert eine Aufgabe; ein neuer Abstand zählt ab der letzten Erledigung."""
+    """Ändert eine Aufgabe; ein neuer Abstand zählt ab der letzten Erledigung.
+
+    Mit `counted_from` legen die Eltern fest, wann sie zuletzt erledigt wurde. Liegt der Tag vor
+    schon abgehakten Erledigungen, werden diese gelöscht: Sonst zählte weiter die jüngste davon.
+    """
     chore = _get_chore(db, chore_id)
     _get_room(db, body.room_id)
+    last = _last_completions(db, [chore.id]).get(chore.id)
+    # Nur ein geänderter Tag greift ein, damit ein unverändert mitgeschickter nichts löscht.
+    if body.counted_from is not None and body.counted_from != _counted_from(chore, last):
+        _check_counted_from(body.counted_from, _today(db))
+        chore.anchor_date = body.counted_from
+        db.execute(
+            delete(ChoreCompletion).where(
+                ChoreCompletion.chore_id == chore.id, ChoreCompletion.date > body.counted_from
+            )
+        )
     chore.room_id, chore.title, chore.icon = body.room_id, body.title, body.icon
     chore.interval_days, chore.active = body.interval_days, body.active
     db.commit()

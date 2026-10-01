@@ -16,6 +16,7 @@ import {
 import {
   INTERVAL_UNIT_NAMES,
   type IntervalUnit,
+  dueDate,
   intervalDays,
   intervalText,
   maxCount,
@@ -25,6 +26,7 @@ import { TaskIcon } from '../../components/TaskIcon'
 import { Alert, Button, Switch, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { iconId, iconLabel, iconName, suggestIcon } from '../../icons/catalog'
+import { formatDate } from '../../weekdays'
 import { IconPicker } from './IconPicker'
 import { ChoiceTile, Field, FilterChip, NumberStepper } from './formParts'
 
@@ -35,6 +37,8 @@ interface ChoreEditorProps {
   chore?: Chore
   roomId: number
   rooms: ChoreRoom[]
+  /** Heute in der Zeitzone der Familie (`YYYY-MM-DD`); später kann nichts erledigt worden sein. */
+  today?: string
   onSaved: (title: string) => void
   onDeleted: (title: string) => void
   onCancel: () => void
@@ -44,17 +48,20 @@ export function ChoreEditor({
   chore,
   roomId: initialRoomId,
   rooms,
+  today,
   onSaved,
   onDeleted,
   onCancel,
 }: ChoreEditorProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [title, setTitle] = useState(chore?.title ?? '')
   // Bis Eltern selbst ein Symbol wählen, wird es aus dem Titel vorgeschlagen.
   const [chosenIcon, setChosenIcon] = useState<string | null>(chore?.icon ?? null)
   const [roomId, setRoomId] = useState(chore?.room_id ?? initialRoomId)
   const [every, setEvery] = useState(() => splitInterval(chore?.interval_days ?? 14))
-  const [state, setState] = useState<StartState>('half')
+  // Neue Aufgaben starten mit einem groben Stand oder, wie beim Bearbeiten, mit einem Datum.
+  const [state, setState] = useState<StartState | 'date'>(chore ? 'date' : 'half')
+  const [countedFrom, setCountedFrom] = useState(chore?.counted_from ?? '')
   const [active, setActive] = useState(chore?.active ?? true)
   const [pickingIcon, setPickingIcon] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -64,7 +71,11 @@ export function ChoreEditor({
   const days = intervalDays(every.count, every.unit)
   const save = useChoresMutation(() => {
     const data = { room_id: roomId, title: title.trim(), icon, interval_days: days, active }
-    return chore ? updateChore(chore.id, data) : createChore({ ...data, state })
+    if (state !== 'date') return createChore({ ...data, state })
+    if (!chore) return createChore({ ...data, counted_from: countedFrom })
+    // Nur ein geändertes Datum mitschicken: Wer inzwischen am Display abgehakt hat, bleibt stehen.
+    const changed = countedFrom && countedFrom !== chore.counted_from
+    return updateChore(chore.id, changed ? { ...data, counted_from: countedFrom } : data)
   })
   const remove = useChoresMutation((id: number) => deleteChore(id))
   const busy = save.isPending || remove.isPending
@@ -77,13 +88,31 @@ export function ChoreEditor({
         ? errorMessage(t, fieldError)
         : undefined
 
+  const dateError =
+    today && countedFrom > today
+      ? errorMessage(t, 'chore.counted_from_future')
+      : submitted && !chore && state === 'date' && !countedFrom
+        ? errorMessage(t, 'validation.required')
+        : undefined
+  const due = countedFrom ? dueDate(countedFrom, days) : undefined
+  const dateHint = due
+    ? [
+        t(today && due <= today ? 'chores.counted_from_due_now' : 'chores.counted_from_due', {
+          date: formatDate(i18n.resolvedLanguage ?? i18n.language, due),
+        }),
+        chore?.last_done && countedFrom < chore.last_done ? t('chores.counted_from_removes') : '',
+      ]
+        .join(' ')
+        .trim()
+    : t('chores.counted_from_hint')
+
   const setUnit = (unit: IntervalUnit) =>
     setEvery(({ count }) => ({ unit, count: Math.min(count, maxCount(unit)) }))
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     setSubmitted(true)
-    if (!title.trim()) return
+    if (!title.trim() || dateError || (state === 'date' && !chore && !countedFrom)) return
     save.mutate(undefined, { onSuccess: (saved) => onSaved(saved.title) })
   }
 
@@ -171,7 +200,7 @@ export function ChoreEditor({
 
         {!chore && (
           <Field label={t('chores.state')}>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {START_STATES.map((value) => (
                 <ChoiceTile
                   key={value}
@@ -182,8 +211,27 @@ export function ChoreEditor({
                   {t(`chores.state_${value}`)}
                 </ChoiceTile>
               ))}
+              <ChoiceTile
+                name="chore-state"
+                checked={state === 'date'}
+                onChange={() => setState('date')}
+              >
+                {t('chores.state_date')}
+              </ChoiceTile>
             </div>
           </Field>
+        )}
+
+        {state === 'date' && (
+          <TextField
+            label={t('chores.counted_from')}
+            type="date"
+            value={countedFrom}
+            max={today}
+            onChange={(event) => setCountedFrom(event.target.value)}
+            error={dateError}
+            hint={dateHint}
+          />
         )}
 
         <div className="flex flex-col gap-1">

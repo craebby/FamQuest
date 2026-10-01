@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { Chore } from './api/chores'
 import {
   byUrgency,
+  dueDate,
   groupByLevel,
   intervalDays,
   intervalText,
@@ -25,6 +26,11 @@ describe('Abstand', () => {
     expect(splitInterval(90)).toEqual({ count: 3, unit: 'month' })
     expect(splitInterval(730)).toEqual({ count: 2, unit: 'year' })
     expect(intervalDays(3, 'week')).toBe(21)
+  })
+
+  it('rechnet den nächsten Termin über Monats- und Jahresgrenzen', () => {
+    expect(dueDate('2026-07-25', 180)).toBe('2027-01-21')
+    expect(dueDate('2026-10-03', 7)).toBe('2026-10-10')
   })
 
   it('liest sich wie gesprochen', () => {

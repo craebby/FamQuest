@@ -27,6 +27,8 @@ export interface Chore {
   done_today: boolean
   /** Wer die letzte Erledigung übernommen hat, falls angegeben. */
   done_by: number | null
+  /** Ab diesem Tag läuft die Uhr: letzte Erledigung oder von den Eltern festgelegt (ISO-Datum). */
+  counted_from: string
   due_date: string
   /** Tage bis zur Fälligkeit; 0 = heute, negativ = so viele Tage drüber. */
   days_left: number
@@ -57,6 +59,8 @@ export interface ChoreData {
   icon: string
   interval_days: number
   active: boolean
+  /** „Zuletzt erledigt“ von Hand (ISO-Datum); ohne Angabe bleibt der Stand, wie er ist. */
+  counted_from?: string
 }
 
 // Muss zu StartState im Backend passen (backend/app/api/chores.py).
@@ -117,7 +121,7 @@ export const updateRoom = (id: number, data: RoomData) =>
   api<ChoreRoom>('PUT', `/chores/rooms/${id}`, data)
 export const deleteRoom = (id: number) => api<void>('DELETE', `/chores/rooms/${id}`)
 
-export const createChore = (data: ChoreData & { state: StartState }) =>
+export const createChore = (data: ChoreData & { state?: StartState }) =>
   api<Chore>('POST', '/chores', data)
 export const updateChore = (id: number, data: ChoreData) => api<Chore>('PUT', `/chores/${id}`, data)
 export const deleteChore = (id: number) => api<void>('DELETE', `/chores/${id}`)

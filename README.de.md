@@ -13,6 +13,10 @@ ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](doc
 > als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan und die
 > Einkaufsliste. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
 
+**Ausprobieren ohne Installation:** [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) –
+„Demo öffnen“ antippen, die Eltern-PIN steht auf der Anmeldeseite. Die Beispielfamilie setzt sich
+zur vollen Stunde zurück. (Auf Englisch: [demo-en.kaufmann.city](https://demo-en.kaufmann.city/).)
+
 ![„Heute“ am Kühlschrank-Display: Morgenroutine der Kinder, die nächsten sieben Tage mit Terminen und Abendessen](docs/screenshots/de/today.png)
 
 | Aufgaben der Woche | Termindetails | Symbole für Termine | Am Handy |
@@ -601,8 +605,12 @@ Danach lässt sich alles von Hand ändern:
 - **Raum anlegen / bearbeiten:** Name und Symbol frei wählbar. Wer einen Raum löscht, löscht seine
   Aufgaben mit.
 - **Aufgabe hinzufügen / bearbeiten:** Titel, Symbol, Raum und **„Wie oft?“** als Zahl mit Tagen,
-  Wochen, Monaten oder Jahren. Bei neuen Aufgaben wählt ihr den Stand: gerade erledigt, mittendrin
-  oder jetzt fällig. Ein geänderter Abstand zählt ab dem letzten Erledigen.
+  Wochen, Monaten oder Jahren. Bei neuen Aufgaben wählt ihr den Stand: gerade erledigt, mittendrin,
+  jetzt fällig oder ein Datum. Ein geänderter Abstand zählt ab dem letzten Erledigen.
+- **Zuletzt erledigt:** Das Datum lässt sich jederzeit von Hand setzen, damit eine Aufgabe nicht
+  bei null anfängt. Beispiel: Fenster vor zehn Wochen geputzt, dran jedes halbe Jahr → Datum
+  eintragen, darunter steht, wann sie wieder fällig ist. Ein Tag in der Zukunft geht nicht. Liegt
+  das Datum vor einer schon abgehakten Erledigung (etwa versehentlich getippt), wird diese gelöscht.
 - **Pausieren:** Der Schalter an einer Aufgabe blendet sie am Display aus, ohne sie zu löschen
   (z. B. „Rasen mähen“ im Winter).
 
@@ -812,6 +820,9 @@ Die App muss auf einer eigenen (Sub-)Domain laufen, z. B. `familie.example.com`.
 `example.com/familie` wird nicht unterstützt.
 
 ## Öffentliche Demo
+
+Die Demo des Projekts läuft unter [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) (Deutsch)
+und [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) (Englisch).
 
 FamQuest lässt sich als öffentliche Demo betreiben, damit man es ohne Installation ausprobieren
 kann: eine deutsche und eine englische Instanz mit der Beispielfamilie aus

@@ -112,6 +112,7 @@ def test_create_room_and_chore(client, parent, now):
         "last_done": None,
         "done_today": False,
         "done_by": None,
+        "counted_from": "2026-09-26",
         "due_date": "2026-10-10",
         "days_left": 7,
         "ratio": 0.5,
@@ -233,6 +234,7 @@ def test_done_without_parent_pin_resets_the_clock(client, parent, admin, now):
         "id": 0,
         "last_done": SATURDAY,
         "done_today": True,
+        "counted_from": SATURDAY,
         "due_date": "2026-10-17",
         "days_left": 14,
         "ratio": 0,
@@ -314,6 +316,106 @@ def test_changing_the_interval_counts_from_the_last_time(client, parent, now):
     updated = response.json()
     assert (updated["title"], updated["icon"], updated["active"]) == ("Klo putzen", BROOM, False)
     assert (updated["level"], updated["days_left"]) == ("soon", 1)
+
+
+def update(client, me, created, **changes):
+    body = {key: created[key] for key in ("room_id", "title", "icon", "interval_days", "active")}
+    return client.put(f"/api/chores/{created['id']}", json=body | changes, headers=csrf(me))
+
+
+def test_new_chore_was_last_done_weeks_ago(client, parent, now):
+    # Fenster vor zehn Wochen geputzt, dran jedes halbe Jahr: nicht wieder bei null anfangen.
+    room = add_room(client, parent)
+
+    created = add_chore(
+        client, parent, room["id"], interval_days=180, state="due", counted_from="2026-07-25"
+    )
+
+    assert (created["counted_from"], created["due_date"]) == ("2026-07-25", "2027-01-21")
+    assert (created["level"], created["days_left"], created["last_done"]) == ("ok", 110, None)
+
+
+def test_last_done_can_be_set_afterwards(client, parent, now):
+    room = add_room(client, parent)
+    created = add_chore(client, parent, room["id"], interval_days=180, state="due")
+
+    response = update(client, parent, created, counted_from="2026-07-25")
+
+    assert response.status_code == 200, response.text
+    updated = response.json()
+    assert (updated["counted_from"], updated["days_left"]) == ("2026-07-25", 110)
+    assert chore(client, created["id"]) == updated
+    # Ein Tipp am Display zählt danach wieder ab heute.
+    assert done(client, parent, created["id"]).json()["counted_from"] == SATURDAY
+
+
+def test_last_done_before_a_completion_removes_it(client, parent, now):
+    lena = add_member(client, parent)
+    room = add_room(client, parent)
+    created = add_chore(client, parent, room["id"], state="fresh")
+    now["value"] += dt.timedelta(days=3)
+    done(client, parent, created["id"], lena)
+    now["value"] += dt.timedelta(days=1)
+
+    # Versehentlich abgehakt: Eigentlich war es schon am Samstag.
+    updated = update(client, parent, created, counted_from=SATURDAY).json()
+
+    assert (updated["counted_from"], updated["last_done"], updated["days_left"]) == (
+        SATURDAY,
+        None,
+        10,
+    )
+    assert plan(client)["shares"] == []
+
+
+def test_last_done_after_a_completion_keeps_it(client, parent, now):
+    lena = add_member(client, parent)
+    room = add_room(client, parent)
+    created = add_chore(client, parent, room["id"], state="due")
+    done(client, parent, created["id"], lena)
+    now["value"] += dt.timedelta(days=5)
+
+    # Zwischendurch geputzt, ohne am Display zu tippen.
+    updated = update(client, parent, created, counted_from="2026-10-06").json()
+
+    assert (updated["counted_from"], updated["last_done"], updated["days_left"]) == (
+        "2026-10-06",
+        SATURDAY,
+        12,
+    )
+    assert plan(client)["shares"] == [{"member_id": lena, "count": 1}]
+
+
+def test_unchanged_last_done_keeps_completions(client, parent, now):
+    room = add_room(client, parent)
+    created = add_chore(client, parent, room["id"], state="due")
+    before = done(client, parent, created["id"]).json()
+
+    response = update(client, parent, created, title="Klo putzen", counted_from=SATURDAY)
+
+    assert response.json() == before | {"title": "Klo putzen"}
+
+
+def test_last_done_cannot_be_in_the_future(client, parent, now):
+    room = add_room(client, parent)
+    created = add_chore(client, parent, room["id"])
+
+    changed = update(client, parent, created, counted_from="2026-10-04")
+    new = client.post(
+        "/api/chores",
+        json={
+            "room_id": room["id"],
+            "title": "Putzen",
+            "icon": BROOM,
+            "interval_days": 7,
+            "counted_from": "2026-10-04",
+        },
+        headers=csrf(parent),
+    )
+
+    assert (changed.status_code, new.status_code) == (422, 422)
+    assert changed.json()["code"] == new.json()["code"] == "chore.counted_from_future"
+    assert chore(client, created["id"]) == created
 
 
 def test_delete_chore(client, parent, now):

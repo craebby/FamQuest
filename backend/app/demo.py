@@ -547,6 +547,10 @@ class Demo:
                     "icon": ICON + chore_icon,
                     "interval_days": interval_days,
                 }
+                if history:
+                    # Die Uhr läuft ab der ersten Erledigung, nicht erst ab heute.
+                    first = self.today - dt.timedelta(days=max(back for back, _ in history))
+                    body["counted_from"] = first.isoformat()
                 chore = self.call("POST", "/chores", 201, json=body)
                 done += [(back, chore["id"], who) for back, who in history]
         # Erledigt wird immer „heute“, deshalb läuft die Uhr die Tage der Reihe nach ab.

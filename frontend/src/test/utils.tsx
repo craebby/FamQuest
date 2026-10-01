@@ -145,6 +145,7 @@ export function makeChore(overrides: Partial<Chore> = {}): Chore {
     last_done: null,
     done_today: false,
     done_by: null,
+    counted_from: '2026-09-26',
     due_date: '2026-10-10',
     days_left: 7,
     ratio: 0.5,

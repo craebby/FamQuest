@@ -27,6 +27,12 @@ export function intervalText(t: TFunction, days: number): string {
   return t(`chores.every_${unit}`, { count })
 }
 
+/** Tag, an dem eine am `countedFrom` (`YYYY-MM-DD`) erledigte Aufgabe wieder fällig ist. */
+export function dueDate(countedFrom: string, days: number): string {
+  const [year, month, day] = countedFrom.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10)
+}
+
 /** Ab so vielen Tagen steht die Zeit in Wochen bzw. Monaten da („in etwa 3 Wochen“). */
 const WEEKS_FROM = 14
 const MONTHS_FROM = 60
