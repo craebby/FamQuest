@@ -1,4 +1,5 @@
 import asyncio
+import mimetypes
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 from datetime import timedelta
@@ -110,6 +111,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _mount_frontend(app, settings.static_dir)
 
     return app
+
+
+# Python 3.12 kennt `.webp` nur, wenn das System eine mime.types mitbringt; im schlanken Image
+# fehlt sie, und das Logo käme sonst als `application/octet-stream`.
+mimetypes.add_type("image/webp", ".webp")
 
 
 def _mount_frontend(app: FastAPI, static_dir: Path) -> None:

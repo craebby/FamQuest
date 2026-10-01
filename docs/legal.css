@@ -22,6 +22,7 @@ h2 { margin-top: 2rem; font-size: 1.2rem; }
 p { line-height: 1.7; }
 a { color: #176b52; }
 .eyebrow { margin: 0; color: #176b52; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.logo { display: block; width: min(60%, 16rem); height: auto; margin: 0 auto 1.5rem; }
 .updated { color: #64746d; font-size: .9rem; }
 nav { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
 nav a { padding: .75rem 1rem; border: 1px solid #cddbd2; border-radius: .75rem; text-decoration: none; font-weight: 650; }

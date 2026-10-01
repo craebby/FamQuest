@@ -12,6 +12,7 @@ def spa_client(tmp_path):
     (static / "index.html").write_text("<html>index</html>")
     (static / "assets" / "app.js").write_text("console.log(1)")
     (static / "favicon.svg").write_text("<svg/>")
+    (static / "logo.webp").write_bytes(b"RIFF")
     (tmp_path / "secret.txt").write_text("secret")
 
     settings = Settings(static_dir=static, upload_dir=tmp_path / "uploads")
@@ -28,6 +29,11 @@ def test_serves_index_for_root_and_client_routes(spa_client):
 def test_serves_static_files(spa_client):
     assert spa_client.get("/assets/app.js").text == "console.log(1)"
     assert spa_client.get("/favicon.svg").text == "<svg/>"
+
+
+def test_logo_is_served_as_an_image(spa_client):
+    # Im schlanken Image kennt Python die Endung nicht von selbst.
+    assert spa_client.get("/logo.webp").headers["content-type"] == "image/webp"
 
 
 def test_does_not_serve_files_outside_static_dir(spa_client):

@@ -1,10 +1,10 @@
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 
 import { type SetupData, useSetup } from '../api/auth'
 import { ApiError } from '../api/client'
+import { Logo } from '../components/Logo'
 import { PinPad } from '../components/PinPad'
 import { Alert, Button, CenteredCard, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
@@ -115,7 +115,7 @@ export function SetupPage() {
 
   return (
     <CenteredCard>
-      <StarIcon className="mx-auto size-20" aria-hidden="true" />
+      <Logo />
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold text-orange-600">{t('setup.title')}</h1>
         <p className="text-lg text-slate-600">{t('setup.intro')}</p>

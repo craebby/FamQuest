@@ -1,10 +1,9 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import KeyIcon from '~icons/fluent-emoji-flat/key'
-import WavingHandIcon from '~icons/fluent-emoji-flat/waving-hand'
 
 import { type DemoInfo, useDemo, useDemoLogin, useLogin } from '../api/auth'
+import { Logo } from '../components/Logo'
 import { Alert, Button, CenteredCard, TextField } from '../components/ui'
 import { errorMessage } from '../errors'
 import { applyFamilyLanguage } from '../i18n'
@@ -28,7 +27,7 @@ function PasswordLogin() {
 
   return (
     <CenteredCard>
-      <KeyIcon className="mx-auto size-20" aria-hidden="true" />
+      <Logo />
       <h1 className="text-3xl font-extrabold text-orange-600">{t('login.title')}</h1>
       <form className="flex flex-col gap-4" onSubmit={submit}>
         {login.isError && <Alert>{errorMessage(t, login.error)}</Alert>}
@@ -66,7 +65,7 @@ function DemoLogin({ demo }: { demo: DemoInfo }) {
 
   return (
     <CenteredCard>
-      <WavingHandIcon className="mx-auto size-20" aria-hidden="true" />
+      <Logo />
       <h1 className="text-3xl font-extrabold text-orange-600">{t('demo.title')}</h1>
       <p className="text-lg text-slate-700">{t('demo.intro')}</p>
       <p className="text-lg text-slate-700">

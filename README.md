@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/logo.png" alt="FamQuest" width="300"></p>
+
 # FamQuest
 
 **English** · [Deutsch](README.de.md)
