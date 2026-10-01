@@ -90,7 +90,7 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 - Optional eine Menge oder ein Hinweis („2 ×“, „laktosefrei“), gilt nur für diesen Einkauf.
 - Ein Tipp hakt ab, ein weiterer nimmt es zurück. Abgehakte bleiben durchgestrichen sichtbar bis zum Ende des Tages in der Zeitzone der Familie, danach sind sie von der Liste; „Abgehakte entfernen“ räumt sie sofort weg.
 - Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
-- Später: PWA mit Offline-Nutzung im Laden (Version 1.2), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+- Später: PWA mit Offline-Nutzung im Laden (Version 1.3), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
 
 **Haushalt** *(Phase 7, entschieden am 2026-10-01)*
 

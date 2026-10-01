@@ -124,7 +124,7 @@ Wünsche der Kinder später (Roadmap, Ideen ohne Version).
 ## Etappen (Phase 6: Einkaufsliste)
 
 Entschieden: eigene Liste statt fremdem Dienst; eintragen und abhaken ohne Eltern-PIN; Menge/Hinweis
-optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kommt mit 1.2;
+optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kommt mit 1.3;
 mehrere Listen, Sortierung (evtl. KI), Zutaten aus dem Essensplan und Obsidian-Export stehen unter „Ideen“.
 
 1. Einkaufsliste am Display und im Browser: Ansicht „Einkauf“ in der Navigationsleiste, Artikel mit

@@ -10,10 +10,11 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Version 1.0. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
+> **Status:** Version 1.1. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
 > Belohnungen, Kontrolle durch die Eltern), den Google Kalender (nur lesend), die Startseite „Heute“
-> als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan und die
-> Einkaufsliste. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
+> als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan, die
+> Einkaufsliste und den Haushalt (Putzplan mit Ampel, „Zu erledigen“). Der Feinschliff läuft im
+> Alltag weiter (siehe [Roadmap](#roadmap)).
 
 **Ausprobieren ohne Installation:** [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) –
 „Demo öffnen“ antippen, die Eltern-PIN steht auf der Anmeldeseite. Die Beispielfamilie setzt sich
@@ -91,7 +92,7 @@ docker compose up -d --build
 ```
 
 `main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
-[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.0.2`,
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.1.0`,
 danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
@@ -560,10 +561,12 @@ Symbolen.
 
 **Am Handy:** FamQuest im Browser öffnen. Unterwegs muss FamQuest dafür von außen erreichbar sein,
 z. B. per HTTPS hinter einem Reverse Proxy (siehe [Hinter einem Reverse Proxy](#hinter-einem-reverse-proxy))
-oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.2
+oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.3
 geplant.
 
 ## Haushalt
+
+![Haushalt am Display: oben „Zu erledigen“, darunter der Putzplan mit Ampel und die faire Verteilung](docs/screenshots/de/household.png)
 
 Unter **Haushalt** (Besen) in der Navigationsleiste steht der Putzplan: wiederkehrende Hausarbeit
 ohne festen Termin. Jede Aufgabe hat ihren eigenen Abstand („alle 2 Wochen“, „alle 3 Monate“), und
@@ -1020,8 +1023,12 @@ einziges App-Image, das als unprivilegierter Benutzer läuft.
 
 ## Roadmap
 
-Aktueller Stand: **1.0** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
-nach 1.0 sind ein erster Plan und können sich noch ändern.
+Aktueller Stand: **1.1** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
+nach 1.1 sind ein erster Plan und können sich noch ändern.
+
+**1.1: veröffentlicht.** Der Haushalt (Phase 7 unten): Putzplan mit Ampel statt der Aufgaben der
+Erwachsenen, Einrichtungs-Assistent und „Zu erledigen“. Beim Update von 1.0 löscht die Migration
+die Aufgaben, die nur Erwachsenen zugeordnet sind; vorher ein [Backup](#backup-und-restore) machen.
 
 **1.0: veröffentlicht.** Alles unter [Features](#features), also die Phasen 1 bis 6 unten. Ihr
 restlicher Feinschliff kommt aus dem Alltag als Updates 1.0.x.
@@ -1094,7 +1101,7 @@ erzeugt mit Demodaten (`npm run screenshots`).
 **Demoversion:** fertig. Eine deutsche und eine englische öffentliche Instanz mit der
 Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche Demo](#öffentliche-demo)).
 
-**1.1: Anpassen**
+**1.2: Anpassen**
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
   ergänzen und entfernen (in der Datenbank statt im Code); überarbeitete Beispiel-Vorlagen
@@ -1105,7 +1112,7 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 - Mehr als sieben Personen (mehr Farben)
 - About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
 
-**1.2: Unterwegs**
+**1.3: Unterwegs**
 
 - Installierbare Web-App (PWA) fürs Smartphone der Eltern: Aufgaben prüfen, Punkte buchen und
   Aufgaben anlegen von unterwegs; die Einkaufsliste auch ohne Netz im Laden, abgeglichen, sobald
@@ -1134,7 +1141,7 @@ Die Mahlzeiten der Woche direkt am Display planen.
   bleiben bis zum Ende des Tages; die Kachel „Einkauf“ auf „Heute“ zeigt, was fehlt
 - [ ] 2. Feinschliff im Alltag
 
-**In Arbeit: Haushalt (Phase 7)**
+**Haushalt (Phase 7):** veröffentlicht mit 1.1, Feinschliff läuft im Alltag.
 
 Die Aufgaben der Erwachsenen hat im Alltag niemand abgehakt. Sie werden durch einen Putzplan mit
 Ampel ersetzt; die Routinen der Kinder bleiben.

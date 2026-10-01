@@ -11,10 +11,11 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 1.0. Contains the task system (routines, family view, points, rewards,
+> **Status:** version 1.1. Contains the task system (routines, family view, points, rewards,
 > parent checks), Google Calendar (read-only), the start page "Today" as a week dashboard with
-> weather, the picture frame with night mode, the meal plan and the shopping list. Polish continues
-> in everyday use (see [Roadmap](#roadmap)).
+> weather, the picture frame with night mode, the meal plan, the shopping list and the household
+> (cleaning plan with a traffic light, "To do"). Polish continues in everyday use (see
+> [Roadmap](#roadmap)).
 
 **Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
 "Open the demo"; the parent PIN is shown on the sign-in page. The sample family resets itself on
@@ -90,7 +91,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.0.2`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.1.0`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -546,9 +547,11 @@ icon. Meals you switch off stay stored.
 
 **On the phone:** open FamQuest in the browser. Away from home this needs FamQuest to be reachable
 from outside, e.g. over HTTPS behind a reverse proxy (see [Behind a reverse proxy](#behind-a-reverse-proxy))
-or via a VPN. An installable app that also works offline in the shop is planned for 1.2.
+or via a VPN. An installable app that also works offline in the shop is planned for 1.3.
 
 ## Household
+
+![Household on the display: "To do" at the top, below the cleaning plan with its traffic light and the fair sharing bar](docs/screenshots/en/household.png)
 
 **Household** (broom) in the navigation bar holds the cleaning plan: recurring housework without a
 fixed date. Every chore has its own interval ("every 2 weeks", "every 3 months"), and a traffic
@@ -993,8 +996,12 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **1.0** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
-1.0 are a first plan and may still change.
+Current state: **1.1** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.1 are a first plan and may still change.
+
+**1.1: released.** The household (phase 7 below): a cleaning plan with a traffic light instead of
+the adults' tasks, a setup assistant and "To do". When updating from 1.0 the migration deletes
+tasks that are assigned to adults only; make a [backup](#backup-and-restore) first.
 
 **1.0: released.** Everything listed under [Features](#features), i.e. phases 1 to 6 below. Their
 remaining polish comes as 1.0.x updates from everyday use.
@@ -1063,7 +1070,7 @@ generated with demo data (`npm run screenshots`).
 **Demo version:** done. A German and an English public instance with the sample family that
 resets itself on the hour (see [Public demo](#public-demo)).
 
-**1.1: make it your own**
+**1.2: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
@@ -1075,7 +1082,7 @@ resets itself on the hour (see [Public demo](#public-demo)).
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
 
-**1.2: on the go**
+**1.3: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
   anywhere; the shopping list also offline in the shop, synced once there's a connection again
@@ -1104,7 +1111,7 @@ Plan the week's meals right on the display.
   until the end of the day; the "Shopping" tile on "Today" shows what's missing
 - [ ] 2. Polish in everyday use
 
-**In progress: household (phase 7)**
+**Household (phase 7):** released with 1.1, polish continues in everyday use.
 
 Nobody ticked off the adults' tasks in everyday life. A cleaning plan with a traffic light replaces
 them; the children's routines stay.
