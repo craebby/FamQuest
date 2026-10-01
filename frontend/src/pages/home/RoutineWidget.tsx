@@ -19,7 +19,7 @@ import { SetupHint, Widget } from './Widget'
 /**
  * Was die Kinder gerade zu tun haben: die Routine des aktuellen Tagesabschnitts, ein Tipp erledigt
  * eine Aufgabe. Ist sie geschafft (oder gerade keine dran), steht dort nur „Alles erledigt“.
- * Erwachsene stehen hier nicht; ihre Aufgaben gibt es unter „Aufgaben“.
+ * Erwachsene stehen hier nicht; ihre Hausarbeit zeigt die Kachel „Haushalt“ daneben.
  */
 export function RoutineWidget({ className }: { className?: string }) {
   const { t } = useTranslation()

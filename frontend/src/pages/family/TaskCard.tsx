@@ -87,19 +87,8 @@ export function PointsFeedback({
 /** Aufgabenkarte: ein Tipp erledigt sie für diese Person, ein weiterer nimmt es zurück. */
 export function TaskCard({ task, member, date, size }: TaskCardProps) {
   const { t } = useTranslation()
-  const {
-    done,
-    doneByOther,
-    pending,
-    optional,
-    dueIn,
-    showPoints,
-    tapped,
-    feedback,
-    error,
-    label,
-    toggle,
-  } = useTaskToggle(task, member, date)
+  const { done, doneByOther, pending, optional, dueIn, tapped, feedback, error, label, toggle } =
+    useTaskToggle(task, member, date)
   const tokens = colorTokens(task.color ?? member.color)
   const sizes = SIZES[size]
 
@@ -125,12 +114,10 @@ export function TaskCard({ task, member, date, size }: TaskCardProps) {
           >
             {task.title}
           </span>
-          {showPoints && (
-            <span className={`flex items-center gap-1 font-bold text-slate-600 ${sizes.points}`}>
-              <StarIcon className="size-[1.25em]" aria-hidden="true" />
-              {task.points}
-            </span>
-          )}
+          <span className={`flex items-center gap-1 font-bold text-slate-600 ${sizes.points}`}>
+            <StarIcon className="size-[1.25em]" aria-hidden="true" />
+            {task.points}
+          </span>
           {dueIn !== null && dueIn < 0 && (
             <span className="inline-flex w-fit items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-base font-bold text-red-800">
               <AlarmIcon className="size-5" aria-hidden="true" />

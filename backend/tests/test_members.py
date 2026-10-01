@@ -290,3 +290,27 @@ def test_reorder_needs_every_member_once(client, parent):
 
     assert response.status_code == 422
     assert response.json() == {"code": "member.order_invalid"}
+
+
+def test_child_with_tasks_cannot_become_an_adult(client, parent):
+    from tests.test_routines import add_task, new_routine
+
+    lena = add_member(client, parent)
+    tom = add_member(client, parent, "Tom", "green")
+    task = add_task(client, parent, [lena])
+    routine = new_routine(client, parent, tom, [1])
+
+    def grow_up(member_id, name, color):
+        return client.put(
+            f"/api/members/{member_id}",
+            json={"name": name, "role": "parent", "color": color},
+            headers=csrf(parent),
+        )
+
+    for response in (grow_up(lena, "Lena", "purple"), grow_up(tom, "Tom", "green")):
+        assert (response.status_code, response.json()["code"]) == (409, "member.has_tasks")
+
+    client.delete(f"/api/tasks/{task}", headers=csrf(parent))
+    client.delete(f"/api/routines/{routine['id']}", headers=csrf(parent))
+    assert grow_up(lena, "Lena", "purple").json()["role"] == "parent"
+    assert grow_up(tom, "Tom", "green").json()["role"] == "parent"

@@ -57,6 +57,7 @@ const MEMBER_COLOR_GRADIENT = `conic-gradient(${MEMBER_COLORS.map((color) => COL
 interface TaskEditorProps {
   /** Ohne `task` wird eine neue Aufgabe angelegt. */
   task?: Task
+  /** Die Kinder der Familie; Aufgaben gibt es nur für sie. */
   members: Member[]
   /** Vorauswahl der Personen bei neuen Aufgaben (z. B. aus dem Filter der Liste). */
   initialMemberIds?: number[]
@@ -220,7 +221,6 @@ export function TaskEditor({
     setPoints(template.points)
     setBlock(template.extra ? 'extra' : template.time_of_day)
     setNeedsApproval(template.needs_approval ?? false)
-    setShared(template.shared ?? false)
     setKind(template.recurrence.kind)
     if (template.recurrence.kind === 'weekly') setWeekdays(template.recurrence.weekdays)
     if (template.recurrence.kind === 'flexible') {
@@ -229,10 +229,6 @@ export function TaskEditor({
     }
     setPickingTemplate(false)
   }
-  // Nur Erwachsene gewählt: Haushaltsvorlagen zuerst zeigen.
-  const onlyAdults =
-    memberIds.length > 0 &&
-    memberIds.every((id) => members.find((member) => member.id === id)?.role === 'parent')
   const iconText = iconLabel(t, iconName(icon) ?? '')
 
   return (
@@ -583,11 +579,7 @@ export function TaskEditor({
         ))}
 
       {pickingTemplate && (
-        <TaskTemplatePicker
-          initialGroup={onlyAdults ? 'household' : 'kids'}
-          onSelect={applyTemplate}
-          onClose={() => setPickingTemplate(false)}
-        />
+        <TaskTemplatePicker onSelect={applyTemplate} onClose={() => setPickingTemplate(false)} />
       )}
 
       {pickingIcon && (

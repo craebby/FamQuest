@@ -109,10 +109,7 @@ test('Display', async ({ page }) => {
 test('Elternbereich', async ({ page }) => {
   await shoot(page, 'parents-review', '/parents/review', TABLET)
   await shoot(page, 'parents-routines', '/parents/routines', TABLET)
-  // Haushalt der Erwachsenen statt der Kinderroutinen, die unter „Routinen“ zu sehen sind.
-  await shoot(page, 'parents-tasks', '/parents/tasks', TABLET, {
-    prepare: () => page.getByText('Anna', { exact: true }).first().click(),
-  })
+  await shoot(page, 'parents-tasks', '/parents/tasks', TABLET)
   // Nur der Abschnitt: Ohne Google-Zugangsdaten stünde darüber ein Einrichtungshinweis.
   await shoot(page, 'parents-symbols', '/parents/connections', TABLET, {
     element: () => page.locator('section').filter({ has: page.getByTestId('event-symbol') }),

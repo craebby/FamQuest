@@ -17,6 +17,7 @@ import { useIdleTimeout } from '../useIdleTimeout'
 import { useNow } from '../useNow'
 import { formatLongDate } from '../weekdays'
 import { PARENT_IDLE_TIMEOUT_MS } from './ParentsPage'
+import { ChoresWidget } from './home/ChoresWidget'
 import { HomeEditor, PinDialog } from './home/HomeEditor'
 import { RoutineWidget } from './home/RoutineWidget'
 import { ShoppingWidget } from './home/ShoppingWidget'
@@ -25,7 +26,7 @@ import { WeekBoard } from './home/WeekBoard'
 
 /**
  * Startseite „Heute“ als Wochen-Dashboard: im Kopf Datum, Wetter und Uhr; darunter die aktuelle
- * Routine der Kinder und der Einkauf; unten über die ganze Breite die nächsten sieben Tage mit
+ * Routine der Kinder, der Haushalt und der Einkauf; unten über die ganze Breite die nächsten sieben Tage mit
  * Terminen und Essen. Welche Bereiche sichtbar sind, legen die Eltern über das Zahnrad fest.
  */
 export function TodayPage() {
@@ -121,7 +122,17 @@ function EditMode({
   )
 }
 
-/** Routine und Einkauf nebeneinander (der Einkauf schmaler), darunter die Woche. */
+/** Kacheln der oberen Reihe, in ihrer Reihenfolge von links nach rechts. */
+const TOP_TILES = ['tasks', 'chores', 'shopping'] as const
+
+/** Spalten der oberen Reihe: Die Routine der Kinder ist doppelt so breit wie die anderen Kacheln. */
+const TOP_COLUMNS: Record<string, string> = {
+  'tasks-2': 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]',
+  'tasks-3': 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]',
+  'other-2': 'lg:grid-cols-2',
+}
+
+/** Routine, Haushalt und Einkauf nebeneinander, darunter die Woche. */
 function Sections({
   shown,
   week,
@@ -131,15 +142,14 @@ function Sections({
   week: WeekMode
   today: string | undefined
 }) {
-  const top = shown.has('tasks') || shown.has('shopping')
-  const both = shown.has('tasks') && shown.has('shopping')
+  const top = TOP_TILES.filter((id) => shown.has(id))
+  const columns = TOP_COLUMNS[`${shown.has('tasks') ? 'tasks' : 'other'}-${top.length}`] ?? ''
   return (
     <>
-      {top && (
-        <div
-          className={`grid grid-cols-1 items-start gap-4 ${both ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''}`}
-        >
+      {top.length > 0 && (
+        <div className={`grid grid-cols-1 items-start gap-4 ${columns}`}>
           {shown.has('tasks') && <RoutineWidget />}
+          {shown.has('chores') && <ChoresWidget />}
           {shown.has('shopping') && <ShoppingWidget />}
         </div>
       )}

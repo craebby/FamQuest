@@ -6,6 +6,7 @@ import type { ChorePlan, SetupRoom } from '../../api/chores'
 import i18n from '../../i18n'
 import {
   makeChore,
+  makeChorePlan,
   makeMe,
   makeMember,
   makeToday,
@@ -27,16 +28,15 @@ const windows = makeChore({
   active: false,
 })
 
-const PLAN: ChorePlan = {
-  date: '2026-10-03',
+const PLAN = makeChorePlan({
   rooms: [
     { id: 1, name: 'Bad', icon: 'fluent-emoji-flat:bathtub' },
     { id: 2, name: 'Überall', icon: 'fluent-emoji-flat:broom' },
   ],
   chores: [toilet, windows],
-}
+})
 
-const EMPTY: ChorePlan = { date: '2026-10-03', rooms: [], chores: [] }
+const EMPTY = makeChorePlan()
 
 function api(plan: ChorePlan = PLAN, members = [lena, mama]) {
   return mockApi({

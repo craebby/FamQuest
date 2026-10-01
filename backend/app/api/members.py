@@ -16,7 +16,7 @@ from app.avatars import (
 from app.calendar_sync import unselect_member_calendars
 from app.demo_mode import NotInDemo
 from app.errors import ApiError
-from app.models import FamilyMember
+from app.models import FamilyMember, Routine, TaskAssignment
 from app.schemas import MemberIn, MemberOrderIn, MemberOut
 
 router = APIRouter(tags=["members"])
@@ -46,6 +46,17 @@ def check_color_free(db: DbSession, color: str, member_id: int | None = None) ->
     query = select(exists().where(FamilyMember.color == color, FamilyMember.id != member_id))
     if db.scalar(query):
         raise ApiError(status.HTTP_409_CONFLICT, "member.color_taken")
+
+
+def _has_tasks(db: DbSession, member_id: int) -> bool:
+    return bool(
+        db.scalar(
+            select(
+                exists().where(TaskAssignment.member_id == member_id)
+                | exists().where(Routine.member_id == member_id)
+            )
+        )
+    )
 
 
 def commit_member(db: DbSession) -> None:
@@ -97,6 +108,9 @@ def reorder_members(body: MemberOrderIn, _: ParentSession, db: DbSession) -> lis
 def update_member(member_id: int, body: MemberIn, _: ParentSession, db: DbSession) -> MemberOut:
     member = get_member(db, member_id)
     check_color_free(db, body.color, member_id)
+    if member.role == "child" and body.role != "child" and _has_tasks(db, member_id):
+        # Aufgaben und Routinen gibt es nur für Kinder; nichts davon geht stillschweigend verloren.
+        raise ApiError(status.HTTP_409_CONFLICT, "member.has_tasks")
     member.name, member.role, member.color = body.name, body.role, body.color
     if body.event_symbols is not None:
         member.event_symbols = body.event_symbols

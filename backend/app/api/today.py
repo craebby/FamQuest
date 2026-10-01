@@ -85,18 +85,6 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
     earned, total = earned_on(db, day), totals(db)
     dues = due_dates(db, tasks, day)
     week_start = day - dt.timedelta(days=day.weekday())
-    week_done = {
-        member_id: count
-        for member_id, count in db.execute(
-            select(TaskCompletion.member_id, func.count())
-            .where(
-                TaskCompletion.date >= week_start,
-                TaskCompletion.date <= day,
-                TaskCompletion.approved_at.is_not(None),
-            )
-            .group_by(TaskCompletion.member_id)
-        )
-    }
 
     return TodayOut(
         date=day,
@@ -132,7 +120,6 @@ def get_today(_: CurrentSession, db: DbSession) -> TodayOut:
                 member_id=member_id,
                 today=earned.get(member_id, 0),
                 total=total.get(member_id, 0),
-                week_done=week_done.get(member_id, 0),
             )
             for member_id in db.scalars(select(FamilyMember.id).order_by(FamilyMember.id))
         ],

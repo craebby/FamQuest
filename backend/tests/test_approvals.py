@@ -117,14 +117,6 @@ def test_earlier_days_stay_approvable(client, parent, lena, now):
     assert history(client, lena)["transactions"][0]["task_date"] == "2026-10-03"
 
 
-def test_week_counts_only_approved(client, parent, lena, now):
-    task = room_task(client, parent, [lena])
-    complete(client, parent, task, lena)
-
-    week_done = {p["member_id"]: p["week_done"] for p in today(client)["points"]}
-    assert week_done[lena] == 0
-
-
 def test_approvals_need_parent_pin(client, parent, lena, now):
     task = room_task(client, parent, [lena])
     complete(client, parent, task, lena)

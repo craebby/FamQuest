@@ -33,9 +33,9 @@ const tomsReward = makeReward({ id: 4, member_id: 2, name: 'Zoo', cost: 5 })
 function routes(extra: Record<string, Response | ((body: unknown) => Response)> = {}) {
   let today: Today = makeToday({
     points: [
-      { member_id: 1, today: 0, total: 10, week_done: 0 },
-      { member_id: 2, today: 0, total: 3, week_done: 0 },
-      { member_id: 3, today: 0, total: 0, week_done: 0 },
+      { member_id: 1, today: 0, total: 10 },
+      { member_id: 2, today: 0, total: 3 },
+      { member_id: 3, today: 0, total: 0 },
     ],
   })
   return {
@@ -171,12 +171,13 @@ describe('Belohnungen am Display', () => {
     expect(await screen.findByRole('button', { name: 'Ein Eis einlösen' })).toBeVisible()
   })
 
-  it('zeigt Erwachsenen keine Belohnungen', async () => {
+  it('hat für Erwachsene keine Personenansicht', async () => {
     mockApi(routes())
     renderApp('/member/3')
 
-    await screen.findByRole('heading', { name: 'Mama', level: 1 })
-    expect(screen.queryByRole('heading', { name: 'Belohnungen' })).toBeNull()
+    // Aufgaben, Punkte und Belohnungen gibt es nur für Kinder: zurück zu „Aufgaben“.
+    expect(await screen.findByRole('region', { name: 'Aufgaben von Lena' })).toBeVisible()
+    expect(screen.queryByRole('heading', { name: 'Mama', level: 1 })).toBeNull()
   })
 
   it('leitet bei Erwachsenen zur Auswahl der Kinder', async () => {

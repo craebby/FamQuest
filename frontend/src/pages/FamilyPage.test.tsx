@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import i18n from '../i18n'
 import {
+  makeChore,
+  makeChorePlan,
   makeMe,
   makeMember,
   makeToday,
@@ -18,6 +20,30 @@ import { COLLAPSE_DELAY_MS } from './family/TaskGroups'
 
 const lena = makeMember({ id: 1, name: 'Lena', color: 'purple' })
 const tom = makeMember({ id: 2, name: 'Tom', color: 'green' })
+const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
+const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'orange' })
+
+const bathroom = makeChore({
+  id: 1,
+  title: 'Bad putzen',
+  interval_days: 7,
+  days_left: -2,
+  ratio: 1.29,
+  level: 'due',
+})
+const householdPlan = makeChorePlan({
+  rooms: [{ id: 1, name: 'Bad oben', icon: 'fluent-emoji-flat:bathtub' }],
+  chores: [
+    bathroom,
+    makeChore({ id: 2, title: 'Staubsaugen', days_left: 2, ratio: 0.71, level: 'soon' }),
+    makeChore({ id: 3, title: 'Fenster putzen', interval_days: 180, days_left: 150 }),
+    makeChore({ id: 4, title: 'Rasen mähen', level: 'due', active: false }),
+  ],
+  shares: [
+    { member_id: 3, count: 6 },
+    { member_id: 4, count: 9 },
+  ],
+})
 
 const teeth = makeTodayTask({ id: 10, member_ids: [1, 2] })
 const bed = makeTodayTask({
@@ -44,8 +70,8 @@ const anytime = makeTodayTask({
 
 /** API wie der Server: Erledigungen verändern, was GET /api/today danach liefert. */
 const initialPoints = [
-  { member_id: 1, today: 0, total: 10, week_done: 0 },
-  { member_id: 2, today: 0, total: 0, week_done: 0 },
+  { member_id: 1, today: 0, total: 10 },
+  { member_id: 2, today: 0, total: 0 },
 ]
 
 function familyRoutes(
@@ -165,8 +191,8 @@ describe('Familienansicht', () => {
         makeToday({
           tasks: [{ ...teeth, done_member_ids: [1] }, bed, homework, anytime],
           points: [
-            { member_id: 1, today: 2, total: 12, week_done: 0 },
-            { member_id: 2, today: 0, total: 1, week_done: 0 },
+            { member_id: 1, today: 2, total: 12 },
+            { member_id: 2, today: 0, total: 1 },
           ],
         }),
       ),
@@ -311,37 +337,88 @@ describe('Familienansicht', () => {
     )
   })
 
-  it('zeigt Erwachsenen ihren Anteil an der Woche statt Punkten', async () => {
-    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
-    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'orange' })
-    const cook = makeTodayTask({ id: 20, title: 'Kochen', points: 1, member_ids: [3] })
+  it('zeigt statt der Erwachsenen den Haushalt als Spalte: nur was rot oder gelb ist', async () => {
     mockApi({
-      ...familyRoutes(
-        makeToday({
-          tasks: [cook],
-          points: [
-            { member_id: 1, today: 0, total: 10, week_done: 3 },
-            { member_id: 3, today: 0, total: 0, week_done: 6 },
-            { member_id: 4, today: 0, total: 0, week_done: 9 },
-          ],
-        }),
-      ),
+      ...familyRoutes(),
       'GET /api/members': Response.json([lena, mama, papa]),
+      'GET /api/chores': Response.json(householdPlan),
     })
     renderApp('/tasks')
 
-    const mamaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Mama' }))
+    const household = within(await screen.findByRole('region', { name: 'Haushalt' }))
+    expect(screen.getByRole('region', { name: 'Aufgaben von Lena' })).toBeVisible()
+    expect(screen.queryByRole('region', { name: 'Aufgaben von Mama' })).toBeNull()
+
+    const due = within(household.getByRole('region', { name: 'Jetzt dran' }))
     expect(
-      mamaColumn.getByRole('img', {
-        name: 'Diese Woche 40 % der Aufgaben der Erwachsenen (6 erledigt)',
+      due.getByRole('button', { name: /Bad putzen.*Bad oben.*Seit 2 Tagen fällig/ }),
+    ).toBeVisible()
+    const soon = within(household.getByRole('region', { name: 'Bald dran' }))
+    expect(soon.getByRole('button', { name: /Staubsaugen/ })).toBeVisible()
+    // Grünes und Pausiertes steht nur in der Ansicht „Haushalt“.
+    expect(household.queryByRole('button', { name: /Fenster putzen/ })).toBeNull()
+    expect(household.queryByRole('button', { name: /Rasen mähen/ })).toBeNull()
+    // Faire Verteilung aus „Wer war's?“ im Putzplan.
+    expect(
+      household.getByRole('img', {
+        name: 'Wer hat’s gemacht? (letzte 30 Tage): Mama: 40 % (6-mal); Papa: 60 % (9-mal)',
       }),
     ).toBeVisible()
-    expect(mamaColumn.queryByText(/Insgesamt/)).toBeNull()
-    // Aufgabenkarten von Erwachsenen zeigen keine Punkte.
-    expect(mamaColumn.getByRole('button', { name: 'Kochen' })).toBeVisible()
-    expect(within(column('Papa')).getByText('60 %')).toBeInTheDocument()
-    // Kinder behalten ihre Punkte.
-    expect(within(column('Lena')).getByText('Insgesamt 10 Punkte')).toBeInTheDocument()
+    expect(household.getByRole('link', { name: 'Haushalt öffnen' })).toHaveAttribute(
+      'href',
+      '/household',
+    )
+  })
+
+  it('erledigt Hausarbeit mit einem Tipp und fragt, wer es war', async () => {
+    const user = userEvent.setup()
+    let plan = householdPlan
+    const calls = mockApi({
+      ...familyRoutes(),
+      'GET /api/members': Response.json([lena, mama, papa]),
+      'GET /api/chores': () => Response.json(plan),
+      'PUT /api/chores/1/done': (body) => {
+        const done = {
+          ...bathroom,
+          done_today: true,
+          done_by: (body as { member_id: number | null }).member_id,
+          level: 'ok' as const,
+        }
+        plan = { ...plan, chores: plan.chores.map((chore) => (chore.id === 1 ? done : chore)) }
+        return Response.json(done)
+      },
+    })
+    renderApp('/tasks')
+
+    const household = within(await screen.findByRole('region', { name: 'Haushalt' }))
+    await user.click(household.getByRole('button', { name: /Bad putzen/ }))
+
+    const who = within(await screen.findByRole('region', { name: 'Wer war’s?' }))
+    await user.click(who.getByRole('button', { name: 'Mama' }))
+
+    const writes = calls.filter((call) => call.key === 'PUT /api/chores/1/done')
+    expect(writes.map((call) => call.body)).toEqual([{ member_id: null }, { member_id: 3 }])
+    const finished = within(await household.findByRole('region', { name: 'Heute erledigt' }))
+    expect(finished.getByRole('button', { name: /Bad putzen/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(finished.getByRole('img', { name: 'Erledigt von Mama' })).toBeVisible()
+  })
+
+  it('zeigt ohne Kinder nur den Haushalt, ohne beides den Weg in den Elternbereich', async () => {
+    mockApi({
+      ...familyRoutes(),
+      'GET /api/members': Response.json([mama, papa]),
+      'GET /api/chores': Response.json(householdPlan),
+    })
+    const view = renderApp('/tasks')
+    expect(await screen.findByRole('region', { name: 'Haushalt' })).toBeVisible()
+    view.unmount()
+
+    mockApi({ ...familyRoutes(), 'GET /api/members': Response.json([mama, papa]) })
+    renderApp('/tasks')
+    expect(await screen.findByRole('heading', { name: 'Noch keine Aufgaben' })).toBeVisible()
   })
 
   it('zeigt flexible Aufgaben überfällig oder unter „Demnächst“', async () => {
@@ -373,34 +450,32 @@ describe('Familienansicht', () => {
   })
 
   it('zeigt „Einer für alle“ bei allen als erledigt, mit Avatar', async () => {
-    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
-    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'orange' })
-    const bath = makeTodayTask({
+    const table = makeTodayTask({
       id: 30,
-      title: 'Bad putzen',
-      member_ids: [3, 4],
+      title: 'Tisch decken',
+      member_ids: [1, 2],
       shared: true,
-      done_member_ids: [4],
+      done_member_ids: [2],
     })
-    mockApi({
+    mockApi(
       // Eine offene Aufgabe, damit der Abschnitt nicht zuklappt.
-      ...familyRoutes(
+      familyRoutes(
         makeToday({
-          tasks: [bath, makeTodayTask({ id: 31, title: 'Kochen', member_ids: [3, 4] })],
+          tasks: [table, makeTodayTask({ id: 31, title: 'Anziehen', member_ids: [1, 2] })],
         }),
       ),
-      'GET /api/members': Response.json([mama, papa]),
-    })
+    )
     renderApp('/tasks')
 
-    const mamaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Mama' }))
-    const card = mamaColumn.getByRole('button', { name: 'Bad putzen, erledigt von Papa' })
+    const lenaColumn = within(await screen.findByRole('region', { name: 'Aufgaben von Lena' }))
+    const card = lenaColumn.getByRole('button', {
+      name: 'Tisch decken, 2 Punkte, erledigt von Tom',
+    })
     expect(card).toHaveAttribute('aria-pressed', 'true')
     expect(within(card).getByTestId('done-by')).toBeInTheDocument()
-    expect(within(column('Papa')).getByRole('button', { name: 'Bad putzen' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(
+      within(column('Tom')).getByRole('button', { name: 'Tisch decken, 2 Punkte' }),
+    ).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('hat eine Navigationsleiste mit Heute, Aufgaben und Einstellungen', async () => {

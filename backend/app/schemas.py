@@ -294,8 +294,6 @@ class MemberPointsOut(BaseModel):
     # Heute mit Aufgaben verdiente Punkte (Tag in der Zeitzone der Familie).
     today: int
     total: int
-    # Seit Wochenbeginn (Montag) erledigte Aufgaben; Grundlage der fairen Verteilung.
-    week_done: int
 
 
 class TodayOut(BaseModel):

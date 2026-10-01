@@ -74,7 +74,13 @@ def test_done_in_the_future_counts_as_today():
 
 
 def test_empty_plan(client, admin, now):
-    assert plan(client) == {"date": SATURDAY, "rooms": [], "chores": []}
+    assert plan(client) == {
+        "date": SATURDAY,
+        "rooms": [],
+        "chores": [],
+        "share_days": 30,
+        "shares": [],
+    }
 
 
 def test_needs_login(client):
@@ -111,7 +117,13 @@ def test_create_room_and_chore(client, parent, now):
         "ratio": 0.5,
         "level": "ok",
     }
-    assert plan(client) == {"date": SATURDAY, "rooms": [room], "chores": [created]}
+    assert plan(client) == {
+        "date": SATURDAY,
+        "rooms": [room],
+        "chores": [created],
+        "share_days": 30,
+        "shares": [],
+    }
 
 
 @pytest.mark.parametrize(
@@ -171,7 +183,13 @@ def test_delete_room_takes_its_chores_along(client, parent, now):
     response = client.delete(f"/api/chores/rooms/{room['id']}", headers=csrf(parent))
 
     assert response.status_code == 204
-    assert plan(client) == {"date": SATURDAY, "rooms": [], "chores": []}
+    assert plan(client) == {
+        "date": SATURDAY,
+        "rooms": [],
+        "chores": [],
+        "share_days": 30,
+        "shares": [],
+    }
 
 
 def test_chore_needs_an_existing_room(client, parent):
@@ -384,3 +402,29 @@ def test_wizard_can_run_again_without_duplicates(client, parent, now):
 
 def test_wizard_needs_parent_pin(client, admin):
     assert run_setup_wizard(client, admin).status_code == 403
+
+
+def test_shares_count_who_did_it_in_the_last_30_days(client, parent, now):
+    lena = add_member(client, parent)
+    tom = add_member(client, parent, "Tom", "green")
+    room = add_room(client, parent)
+    toilet = add_chore(client, parent, room["id"])
+    floor = add_chore(client, parent, room["id"], title="Boden wischen")
+
+    done(client, parent, toilet["id"], lena)
+    now["value"] += dt.timedelta(days=29)
+    done(client, parent, toilet["id"], tom)
+    done(client, parent, floor["id"], tom)
+    # Ohne „Wer war's?“ zählt die Erledigung für niemanden.
+    anonymous = add_chore(client, parent, room["id"], title="Handtücher wechseln")
+    done(client, parent, anonymous["id"])
+
+    assert plan(client)["shares"] == [
+        {"member_id": lena, "count": 1},
+        {"member_id": tom, "count": 2},
+    ]
+
+    # Zurückgenommenes zählt nicht mehr, und nach 30 Tagen fällt Lenas Erledigung heraus.
+    client.delete(f"/api/chores/{floor['id']}/done", headers=csrf(parent))
+    now["value"] += dt.timedelta(days=1)
+    assert plan(client)["shares"] == [{"member_id": tom, "count": 1}]

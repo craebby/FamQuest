@@ -39,20 +39,16 @@ export function useTaskToggle(task: TodayTask, member: Member, date: string) {
   const pending = isPendingFor(task, member.id)
   // Flexible Aufgaben: negativ = überfällig, positiv = demnächst.
   const dueIn = daysUntilDue(task, member.id, date)
-  // Erwachsene sammeln keine Punkte; bei ihnen zählt nur, dass es erledigt ist.
-  const showPoints = member.role !== 'parent'
   // Ein Tageswechsel wird still behoben: die Ansicht lädt den neuen Tag.
   const error =
     setDone.error instanceof ApiError && setDone.error.code === 'completion.day_changed'
       ? null
       : setDone.error
   const label = [
-    showPoints
-      ? t('family.task_label', {
-          title: task.title,
-          points: t('tasks.points_count', { count: task.points }),
-        })
-      : task.title,
+    t('family.task_label', {
+      title: task.title,
+      points: t('tasks.points_count', { count: task.points }),
+    }),
     ...(optional ? [t('family.optional')] : []),
     ...(pending ? [t('family.pending')] : []),
     ...(doneByOther ? [t('family.done_by', { name: doneByOther.name })] : []),
@@ -62,7 +58,7 @@ export function useTaskToggle(task: TodayTask, member: Member, date: string) {
 
   const toggle = () => {
     setTapped(true)
-    if (!done && showPoints && task.points > 0) setFeedback((count) => count + 1)
+    if (!done && task.points > 0) setFeedback((count) => count + 1)
     setDone.mutate({ date, taskId: task.id, memberId: member.id, done: !done })
   }
 
@@ -72,7 +68,6 @@ export function useTaskToggle(task: TodayTask, member: Member, date: string) {
     pending,
     optional,
     dueIn,
-    showPoints,
     tapped,
     feedback,
     error,

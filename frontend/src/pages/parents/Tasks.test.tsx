@@ -8,6 +8,7 @@ import { makeMe, makeMember, mockApi, renderApp, setupDone } from '../../test/ut
 
 const lena = makeMember()
 const tom = makeMember({ id: 2, name: 'Tom', color: 'green' })
+const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
 
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {
@@ -49,16 +50,11 @@ afterEach(() => {
 })
 
 describe('Aufgaben im Elternbereich', () => {
-  it('bittet zuerst um Familienmitglieder', async () => {
-    mockApi({
-      'GET /api/setup/status': setupDone,
-      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
-      'GET /api/members': Response.json([]),
-      'GET /api/tasks': Response.json([]),
-    })
+  it('bittet zuerst um Kinder; Erwachsene bekommen keine Aufgaben', async () => {
+    api([], { 'GET /api/members': Response.json([mama]) })
     renderApp('/parents/tasks')
 
-    expect(await screen.findByText(/Legt zuerst Familienmitglieder an/)).toBeVisible()
+    expect(await screen.findByText(/Legt zuerst unter „Familie“ Kinder an/)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Aufgabe hinzufügen' })).not.toBeInTheDocument()
   })
 
@@ -168,19 +164,27 @@ describe('Aufgaben im Elternbereich', () => {
     })
   })
 
-  it('zeigt Haushaltsvorlagen für Erwachsene', async () => {
+  it('bietet nur Kinder zur Auswahl und verweist für Hausarbeit auf den Putzplan', async () => {
     const user = userEvent.setup()
-    api([], {
-      'GET /api/members': Response.json([makeMember({ id: 3, name: 'Mama', role: 'parent' })]),
-    })
+    api([makeTask()], { 'GET /api/members': Response.json([lena, tom, mama]) })
     renderApp('/parents/tasks')
 
-    await user.click(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' }))
-    await user.click(screen.getByRole('checkbox', { name: /Mama/ }))
+    expect(await screen.findByRole('link', { name: 'zum Bereich „Haushalt“' })).toHaveAttribute(
+      'href',
+      '/parents/household',
+    )
+    // Weder im Filter noch im Editor stehen Erwachsene.
+    const filter = within(await screen.findByRole('group', { name: 'Nach Person filtern' }))
+    expect(filter.getByRole('button', { name: 'Tom' })).toBeVisible()
+    expect(filter.queryByRole('button', { name: 'Mama' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Aufgabe hinzufügen' }))
+    expect(screen.getByRole('checkbox', { name: /Lena/ })).toBeVisible()
+    expect(screen.queryByRole('checkbox', { name: /Mama/ })).toBeNull()
+    // Vorlagen gibt es nur noch für Kinder, ohne Gruppen.
     await user.click(screen.getByRole('button', { name: 'Aus Vorlagen wählen' }))
-
-    expect(screen.getByRole('button', { name: 'Haushalt' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: /Kinder ins Bett bringen/ })).toBeVisible()
+    const dialog = within(screen.getByRole('dialog', { name: 'Vorlage wählen' }))
+    expect(dialog.getByRole('button', { name: /Rucksack aufhängen/ })).toBeVisible()
+    expect(dialog.queryByRole('button', { name: /Kinder ins Bett bringen/ })).toBeNull()
   })
 
   it('legt eine flexible Aufgabe für alle an', async () => {
@@ -372,93 +376,5 @@ describe('Aufgaben im Elternbereich', () => {
     const row = await screen.findByRole('button', { name: 'Edit Zähne putzen' })
     expect(within(row).getByText('At the weekend')).toBeVisible()
     expect(within(row).getByText('Morning')).toBeVisible()
-  })
-
-  it('übernimmt mehrere Haushaltsaufgaben auf einmal für die Erwachsenen', async () => {
-    const user = userEvent.setup()
-    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
-    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'red' })
-    let nextId = 10
-    const calls = mockApi({
-      'GET /api/setup/status': setupDone,
-      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
-      'GET /api/members': Response.json([lena, mama, papa]),
-      'GET /api/tasks': Response.json([
-        makeTask({ title: 'Brotdose packen', member_ids: [3], time_of_day: 'morning' }),
-      ]),
-      'POST /api/tasks': (body) =>
-        Response.json({ ...makeTask(), ...(body as object), id: nextId++ }),
-    })
-    renderApp('/parents/tasks')
-
-    await user.click(await screen.findByRole('button', { name: 'Haushalt: mehrere auswählen' }))
-    expect(screen.getByRole('heading', { name: 'Haushaltsaufgaben auswählen' })).toBeVisible()
-    // Vorhandenes ist schon abgehakt und nicht wählbar; Kinder stehen nicht zur Wahl.
-    const lunchbox = screen.getByRole('checkbox', { name: /^Brotdose packen/ })
-    expect(lunchbox).toBeChecked()
-    expect(lunchbox).toBeDisabled()
-    expect(screen.queryByRole('button', { name: 'Lena' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Mama' })).toHaveAttribute('aria-pressed', 'true')
-
-    await user.click(screen.getByRole('checkbox', { name: /^Kochen/ }))
-    await user.click(screen.getByRole('checkbox', { name: /^Müll rausbringen/ }))
-    await user.click(screen.getByRole('button', { name: '2 Aufgaben hinzufügen' }))
-
-    expect(await screen.findByText('2 Aufgaben hinzugefügt.')).toBeVisible()
-    const created = calls.filter((call) => call.key === 'POST /api/tasks').map((call) => call.body)
-    expect(created).toEqual([
-      expect.objectContaining({
-        title: 'Kochen',
-        icon: 'fluent-emoji-flat:cooking',
-        time_of_day: 'evening',
-        recurrence: { kind: 'daily' },
-        shared: true,
-        member_ids: [3, 4],
-      }),
-      expect.objectContaining({
-        title: 'Müll rausbringen',
-        recurrence: {
-          kind: 'flexible',
-          interval_days: 2,
-          date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-        },
-        member_ids: [3, 4],
-      }),
-    ])
-  })
-
-  it('ohne „Einer für alle“, wenn nur eine Person gewählt ist', async () => {
-    const user = userEvent.setup()
-    const mama = makeMember({ id: 3, name: 'Mama', role: 'parent', color: 'blue' })
-    const papa = makeMember({ id: 4, name: 'Papa', role: 'parent', color: 'red' })
-    const calls = mockApi({
-      'GET /api/setup/status': setupDone,
-      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: true })),
-      'GET /api/members': Response.json([mama, papa]),
-      'GET /api/tasks': Response.json([]),
-      'POST /api/tasks': (body) => Response.json({ ...makeTask(), ...(body as object) }),
-    })
-    renderApp('/parents/tasks')
-
-    await user.click(await screen.findByRole('button', { name: 'Haushalt: mehrere auswählen' }))
-    await user.click(screen.getByRole('button', { name: 'Papa' }))
-    await user.click(screen.getByRole('checkbox', { name: /^Kochen/ }))
-    await user.click(screen.getByRole('button', { name: '1 Aufgabe hinzufügen' }))
-
-    await screen.findByText('1 Aufgabe hinzugefügt.')
-    expect(calls.find((call) => call.key === 'POST /api/tasks')?.body).toMatchObject({
-      shared: false,
-      member_ids: [3],
-    })
-  })
-
-  it('zeigt die Mehrfachauswahl nur, wenn es Erwachsene gibt', async () => {
-    api([])
-    renderApp('/parents/tasks')
-
-    expect(await screen.findByRole('button', { name: 'Aufgabe hinzufügen' })).toBeVisible()
-    expect(
-      screen.queryByRole('button', { name: 'Haushalt: mehrere auswählen' }),
-    ).not.toBeInTheDocument()
   })
 })

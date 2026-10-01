@@ -300,3 +300,15 @@ def test_extra_task(client, parent, lena):
     task = create(client, parent, task_data([lena], extra=True, time_of_day=None)).json()
     assert task["extra"] is True
     assert client.get("/api/today").json()["tasks"][0]["extra"] is True
+
+
+def test_tasks_are_only_for_children(client, parent, lena):
+    """Hausarbeit der Erwachsenen steht im Putzplan, nicht bei den Aufgaben."""
+    from tests.test_rewards import add_parent_member
+
+    mama = add_parent_member(client, parent)
+
+    response = create(client, parent, task_data([lena, mama]))
+
+    assert (response.status_code, response.json()["code"]) == (409, "task.child_only")
+    assert client.get("/api/tasks").json() == []

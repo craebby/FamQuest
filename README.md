@@ -26,14 +26,14 @@ The screenshots show a sample family (demo data, see [Development](#development)
 
 - "Today" as a week dashboard: clock and weather, the children's current routine and the next seven
   days with events and meals
-- Family view with one column per person; complete a task with a single tap
+- Tasks with one column per child and the household next to them; one tap marks a task done
 - Routines (daily, specific weekdays, Mon–Fri, once, flexible "about every X days") and times of day
 - Routines in a fixed order per person, optional extra tasks in their own block
-- "One for all" tasks: done by one adult, done for everyone
+- "One for all" tasks: done by one child, done for everyone (e.g. setting the table)
 - Points as ledger entries, daily progress, manual credits
 - Rewards per child from a list of suggestions, redeemed on the display
 - Parent checks for selected tasks
-- Fair sharing: each adult's share of the week's tasks
+- Fair sharing: who did how much of the cleaning plan
 - Google Calendar (read-only): week view on the display, events in each person's colour, symbols
   for children's events (e.g. judo, riding, playdate) so they recognise them without reading
 - Weather for your town (Open-Meteo, no API key needed)
@@ -44,7 +44,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
   note), tick it off in the shop
 - Household: a cleaning plan with a traffic light instead of dates (every chore with its own
-  interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home
+  interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home;
+  what is due also shows on "Today" and next to the children under "Tasks"
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -137,10 +138,11 @@ Under "Tasks" in the parents' area you decide who does what and when. A task has
   yourself, the app suggests one that matches the title.
 - **Title** and an optional description
 - **Points**: 0 to 1000
-- **For whom**: one or more people; each person completes the task and earns the points for
-  themselves. With **"One for all"** (two or more people) it counts as done for everyone as soon
-  as one person has done it, e.g. "Clean the bathroom" for Mum and Dad. The other columns show the
-  avatar of whoever did it; points and the weekly share count for that person.
+- **For whom**: one or more children; each child completes the task and earns the points for
+  themselves. With **"One for all"** (two or more children) it counts as done for everyone as soon
+  as one child has done it, e.g. "Set the table" for siblings. The other columns show the avatar of
+  whoever did it; the points go to that child. Adults don't get tasks: their housework lives in the
+  cleaning plan (see [Household](#household)).
 - **How often**: every day, on specific weekdays (with shortcuts Mon–Fri or weekend), once on a
   date, or **flexible** (see below)
 - **When**: morning, midday, afternoon, evening, anytime or **Extra**. Tasks of one time of day
@@ -153,17 +155,13 @@ Under "Tasks" in the parents' area you decide who does what and when. A task has
 - **Parents check**: points are only given once you have confirmed the task (see
   [Parent checks](#parent-checks))
 
-When creating a task, **"Choose from templates"** fills in the form with one tap. There are two
-groups: "Children" with short everyday routines (morning: brush teeth, get dressed, breakfast;
-after nursery or school: hang up the backpack, unpack the lunchbox; evening: put toys away, pyjamas,
-brush teeth, off to bed) plus optional extras (set the table, help with cooking …), and "Household"
-for the adults' care work, including the mental load (cooking, dishwasher, laundry, shopping,
-cleaning, bills and filing, tech, tax return …). Household templates are "One for all" and mostly
-flexible with realistic intervals (rubbish every 2 days, bathroom weekly, bed linen every 2 weeks,
-windows every 3 months, tax return yearly). Everything can be changed afterwards.
-**"Household: pick several"** adds many household tasks at once: tick them, choose the adults
-(default: all), done; tasks you already have are marked. The templates live
-in `frontend/src/pools/tasks.ts`, their titles in `frontend/src/locales/<language>/pool.json`.
+When creating a task, **"Choose from templates"** fills in the form with one tap: short everyday
+routines for children (morning: brush teeth, get dressed, breakfast; after nursery or school: hang
+up the backpack, unpack the lunchbox; evening: put toys away, pyjamas, brush teeth, off to bed)
+plus optional extras (set the table, help with cooking …). Everything can be changed afterwards.
+The templates live in `frontend/src/pools/tasks.ts`, their titles in
+`frontend/src/locales/<language>/pool.json`. Templates for housework come with the setup assistant
+in the [Household](#household) area.
 
 The reward suggestions (`frontend/src/pools/rewards.ts`) only contain things a child doesn't get
 anyway, e.g. a special breakfast wish, screen time, picking a movie, a special activity, money for
@@ -214,7 +212,7 @@ a routine for it). Tap a child at the top; the chosen child is always highlighte
   earns points separately). On those days it replaces the sibling's current routine.
 
 For a child, a task that is a routine step is due exactly on the routine's days; its own "How
-often" only applies to other people (e.g. an adult who has the same task). Extras, "anytime" and
+often" only applies to other children who have the same task. Extras, "anytime" and
 one-off or flexible tasks are not part of a routine; they stay in the "Tasks" section. When
 updating, existing children's tasks are turned into routines automatically: weekdays with the same
 steps become one version, the order is kept.
@@ -231,7 +229,12 @@ The start page is a week dashboard for the wall display (stacked on narrow scree
   afternoon, evening) with its tasks as icons. **One tap** completes a task, just like in the family
   view (with "+2", hourglass for parent checks); tap again to undo. When everything is done, or no
   routine is due right now, the child just shows **"All done"**. The avatar opens the person view,
-  the arrow opens the tasks. Adults' tasks are not on the start page but under **Tasks**.
+  the arrow opens the tasks.
+- **Household** next to it: whatever is **red or yellow** in the cleaning plan, most urgent first
+  (six at most, the rest as "+3 more"). **One tap** marks a chore done, then the "Who did it?" bar
+  appears just like in the Household view; done chores stay crossed out until the end of the day,
+  another tap takes it back. If nothing is due it says "All in the green". The arrow opens the
+  whole cleaning plan (see [Household](#household)).
 - **Shopping** next to it: what's missing, as icons with names (and amount or note). "Add" opens
   the same dialog as the shopping list (see [Shopping list](#shopping-list)); the arrow opens the
   list.
@@ -255,11 +258,13 @@ person) lives in the tasks area under "Week".
 
 ## Family view
 
-![Family view: one column per person with today's tasks](docs/screenshots/en/tasks.png)
+![Family view: one column per child with today's tasks, the household next to them](docs/screenshots/en/tasks.png)
 
-The family view ("Tasks", star icon) shows all family members side by side, each with a large
-avatar and today's tasks. Nobody has to sign in or switch users: whose task it is follows from the
-column.
+The family view ("Tasks", star icon) shows the children side by side, each with a large avatar and
+today's tasks. Nobody has to sign in or switch users: whose task it is follows from the column.
+Adults have no column of their own; to the right there is the **Household** column (broom) with
+whatever is red or yellow in the cleaning plan right now (see [Household](#household)). It appears
+as soon as there is a cleaning plan.
 
 - **One tap** on a task card completes it for that person (tick, card in the person's colour).
   **Tap again** to undo. Each task can be done only once per person and day, even with double
@@ -317,7 +322,8 @@ In the parents' area, the **"Points"** section shows each person's balance. Tapp
 their **history** (newest first, older ones via "Load older transactions") and a form to **credit or
 deduct** points with a reason (1 to 1000). A deduction may not take the balance below 0.
 
-Adults don't collect points (see [Fair sharing](#fair-sharing)); their cards show no point values.
+Adults don't collect points and have no tasks of their own; their housework lives in the cleaning
+plan (see [Household](#household) and [Fair sharing](#fair-sharing)).
 
 ## Parent checks
 
@@ -367,11 +373,16 @@ changed or deleted. The suggestions live in `frontend/src/pools/rewards.ts`.
 
 ## Fair sharing
 
-Adults don't get rewards. Instead, their column shows their **share** of the tasks that adults
-completed this week (Monday to Sunday, family time zone), e.g. 40 % and 60 %, as a split bar in the
-people's colours. The person view additionally shows all shares with the number of tasks. What
-counts is the number of completed tasks; point values don't matter. This is deliberately not a
-competition but a way to share the work fairly. With only one adult, the display is hidden.
+Adults get neither points nor rewards. Instead, FamQuest shows how the housework is shared:
+**"Who did it?"** counts the chores done in the cleaning plan over the last 30 days for which
+someone tapped an avatar in the "Who did it?" bar, and shows the shares (e.g. 40 % and 60 %) as a
+split bar in the people's colours. You find it at the bottom of the **Household** view (with names
+and counts) and in compact form above the Household column under **Tasks**.
+
+Adults are always listed, children only if they helped. What counts is the number of chores, not
+the effort; chores done without naming anyone count for nobody. This is deliberately not a
+competition but a way to share the work fairly. As long as nobody has been tapped, or only one
+person would be listed, the display is hidden.
 
 ## Google Calendar
 
@@ -545,6 +556,10 @@ light shows how urgent it is.
   faded below; another tap takes it back.
 - **Sorting:** "Most urgent first" (Due now, Due soon, Can wait) or "By room".
 - Housework belongs to the household, not to one person. Whoever has time does it.
+- **Also on "Today" and under "Tasks":** whatever is red or yellow appears as the "Household" tile
+  on the start page and as a "Household" column of its own next to the children under **Tasks**,
+  each with one tap to mark it done. Green chores only show in this view. Above the column you see
+  the traffic light in numbers and the [fair sharing](#fair-sharing) bar.
 
 ### Setting up the cleaning plan
 
@@ -579,8 +594,11 @@ Everything can be changed by hand afterwards:
 The templates live in `frontend/src/pools/chores.ts`, their names in
 `frontend/src/locales/<language>/pool.json`.
 
-The cleaning plan replaces the adults' tasks (see [Roadmap](#roadmap)); until then both exist side
-by side.
+The cleaning plan has replaced the former adults' tasks: tasks now exist for children only. **When
+updating**, tasks assigned exclusively to adults are deleted (with their completions); tasks for
+both children and adults only lose the adults' assignment. Point entries are kept. Make a
+[backup](#backup-and-restore) first if you want to look up the old tasks later. A child can only be
+turned into an adult once it has no tasks and routines left.
 
 ## Photos (picture frame)
 
@@ -1064,8 +1082,9 @@ them; the children's routines stay.
   intervals
 - [ ] 3. "To do": a shared list for one-off things without a person or date (e.g. "buy chicken
   feed"); whoever does it ticks it off
-- [ ] 4. "Household" tile on "Today"; the adults' columns under "Tasks" go away, fair sharing is
-  fed by the cleaning plan
+- [x] 4. "Household" tile on "Today" (only red and yellow, one tap marks it done); under "Tasks" a
+  "Household" column replaces the adults' columns, fair sharing is fed by the cleaning plan (done
+  ahead of step 3)
 - [ ] 5. Polish in everyday use
 
 **Ideas without a version yet**

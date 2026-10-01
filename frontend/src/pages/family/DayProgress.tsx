@@ -6,15 +6,13 @@ import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 
 import type { Member } from '../../api/members'
 import { type MemberPoints, type TodayTask, isDoneFor } from '../../api/today'
-import type { CareSegment } from '../../care'
 import { colorTokens } from '../../memberColors'
-import { CareShare } from './CareShare'
 
 /** Bis zu so vielen Aufgaben zeigt der Fortschritt Sterne, darüber einen Balken. */
 export const MAX_STARS = 8
 
 // Feste Zeilenhöhen (rows), damit die Aufgabenlisten aller Spalten auf gleicher Höhe beginnen,
-// egal ob Sterne oder Balken, Punkte oder Anteil der Woche darunter stehen.
+// egal ob Sterne oder ein Balken über den Punkten stehen.
 const SIZES = {
   md: {
     star: 'size-6',
@@ -39,16 +37,11 @@ interface DayProgressProps {
   /** Heutige Aufgaben dieser Person, ohne „Demnächst“. */
   tasks: TodayTask[]
   points: MemberPoints
-  /** Anteile der Erwachsenen an dieser Woche; null bei weniger als zwei Erwachsenen. */
-  care: CareSegment[] | null
   size: 'md' | 'lg'
 }
 
-/**
- * Tagesfortschritt als Sterne-Reihe, darunter bei Kindern heute verdiente Punkte und
- * Punktestand, bei Erwachsenen statt Punkten ihr Anteil an der Woche.
- */
-export function DayProgress({ member, tasks, points, care, size }: DayProgressProps) {
+/** Tagesfortschritt als Sterne-Reihe, darunter heute verdiente Punkte und Punktestand. */
+export function DayProgress({ member, tasks, points, size }: DayProgressProps) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
   const sizes = SIZES[size]
@@ -86,32 +79,24 @@ export function DayProgress({ member, tasks, points, care, size }: DayProgressPr
           )}
         </div>
       )}
-      {member.role === 'parent' ? (
-        care ? (
-          <CareShare member={member} shares={care} size={size} />
-        ) : (
-          <span aria-hidden="true" />
-        )
-      ) : (
-        <div className="flex flex-wrap justify-center gap-2">
-          <PointsBadge
-            icon={<GlowingStarIcon className={sizes.icon} aria-hidden="true" />}
-            value={points.today}
-            caption={t('points.today')}
-            label={t('points.today_label', { count: points.today })}
-            background={tokens.soft}
-            sizes={sizes}
-          />
-          <PointsBadge
-            icon={<TrophyIcon className={sizes.icon} aria-hidden="true" />}
-            value={points.total}
-            caption={t('points.total')}
-            label={t('points.total_label', { count: points.total })}
-            background="#ffffff"
-            sizes={sizes}
-          />
-        </div>
-      )}
+      <div className="flex flex-wrap justify-center gap-2">
+        <PointsBadge
+          icon={<GlowingStarIcon className={sizes.icon} aria-hidden="true" />}
+          value={points.today}
+          caption={t('points.today')}
+          label={t('points.today_label', { count: points.today })}
+          background={tokens.soft}
+          sizes={sizes}
+        />
+        <PointsBadge
+          icon={<TrophyIcon className={sizes.icon} aria-hidden="true" />}
+          value={points.total}
+          caption={t('points.total')}
+          label={t('points.total_label', { count: points.total })}
+          background="#ffffff"
+          sizes={sizes}
+        />
+      </div>
     </div>
   )
 }

@@ -55,9 +55,28 @@ export function groupByLevel(chores: Chore[]): Record<ChoreLevel, Chore[]> {
   ) as Record<ChoreLevel, Chore[]>
 }
 
-/** Farben der Ampel: Punkt bzw. Balken und die Schrift für den Stand. */
-export const LEVEL_COLORS: Record<ChoreLevel, { fill: string; text: string }> = {
-  due: { fill: 'bg-red-500', text: 'text-red-700' },
-  soon: { fill: 'bg-amber-400', text: 'text-amber-700' },
-  ok: { fill: 'bg-emerald-500', text: 'text-emerald-700' },
+/** Was dran ist: fällige und bald fällige Aufgaben, die dringendste zuerst. */
+export function urgentChores(chores: Chore[]): Chore[] {
+  const groups = groupByLevel(chores)
+  return [...groups.due, ...groups.soon]
+}
+
+/** Farben der Ampel: Punkt bzw. Balken, Schrift für den Stand, linker Rand und heller Grund. */
+export const LEVEL_COLORS: Record<
+  ChoreLevel,
+  { fill: string; text: string; edge: string; soft: string }
+> = {
+  due: { fill: 'bg-red-500', text: 'text-red-700', edge: 'border-l-red-500', soft: 'bg-red-50' },
+  soon: {
+    fill: 'bg-amber-400',
+    text: 'text-amber-700',
+    edge: 'border-l-amber-400',
+    soft: 'bg-amber-50',
+  },
+  ok: {
+    fill: 'bg-emerald-500',
+    text: 'text-emerald-700',
+    edge: 'border-l-emerald-500',
+    soft: 'bg-emerald-50',
+  },
 }

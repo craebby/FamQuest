@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import ExtraIcon from '~icons/fluent-emoji-flat/flexed-biceps'
-import HouseholdIcon from '~icons/fluent-emoji-flat/broom'
 import SparklesIcon from '~icons/fluent-emoji-flat/sparkles'
 import SharedIcon from '~icons/fluent-emoji-flat/handshake'
 import ReviewIcon from '~icons/fluent-emoji-flat/magnifying-glass-tilted-left'
@@ -25,10 +25,12 @@ import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { Alert, Button, Section, Switch } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { recurrenceSummary } from '../../recurrence'
+import { areaPath } from './areas'
 import { FilterChip } from './formParts'
 
 interface TasksSectionProps {
   tasks: Task[] | undefined
+  /** Die Kinder der Familie; Aufgaben gibt es nur für sie. */
   members: Member[]
   error: unknown
   /** Id der Person, nach der gefiltert wird; null = alle. */
@@ -36,8 +38,6 @@ interface TasksSectionProps {
   onFilter: (memberId: number | null) => void
   onEdit: (task: Task) => void
   onAdd: () => void
-  /** Mehrere Haushaltsaufgaben aus den Vorlagen übernehmen (nur mit Erwachsenen). */
-  onPickHousehold: () => void
 }
 
 /** Sortierung für alle: nach Block (Tagesabschnitte, „Jederzeit“, Extras), dann nach Titel. */
@@ -64,7 +64,6 @@ export function TasksSection({
   onFilter,
   onEdit,
   onAdd,
-  onPickHousehold,
 }: TasksSectionProps) {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
@@ -96,6 +95,15 @@ export function TasksSection({
 
   return (
     <Section title={t('tasks.section')}>
+      <p className="text-lg text-slate-600">
+        {t('tasks.kids_only')}{' '}
+        <Link
+          to={areaPath('household')}
+          className="font-bold text-orange-700 underline underline-offset-4 focus-visible:outline-4 focus-visible:outline-orange-400"
+        >
+          {t('tasks.kids_only_link')}
+        </Link>
+      </p>
       {error ? <Alert>{errorMessage(t, error)}</Alert> : null}
       {toggleActive.isError && <Alert>{errorMessage(t, toggleActive.error)}</Alert>}
 
@@ -166,18 +174,10 @@ export function TasksSection({
             </>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={onAdd} disabled={tasks === undefined}>
-              <PlusIcon className="size-6" aria-hidden="true" />
-              {t('tasks.add')}
-            </Button>
-            {members.some((member) => member.role === 'parent') && (
-              <Button variant="secondary" onClick={onPickHousehold} disabled={tasks === undefined}>
-                <HouseholdIcon className="size-6" aria-hidden="true" />
-                {t('tasks.from_pool')}
-              </Button>
-            )}
-          </div>
+          <Button className="self-start" onClick={onAdd} disabled={tasks === undefined}>
+            <PlusIcon className="size-6" aria-hidden="true" />
+            {t('tasks.add')}
+          </Button>
         </>
       )}
     </Section>

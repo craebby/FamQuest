@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import StarIcon from '~icons/fluent-emoji-flat/star'
 import CloseIcon from '~icons/lucide/x'
@@ -8,27 +8,21 @@ import { TIME_OF_DAY_ICONS } from '../../components/TimeOfDayIcon'
 import { Button } from '../../components/ui'
 import {
   TASK_POOL,
-  TASK_TEMPLATE_GROUPS,
   type TaskTemplate,
-  type TaskTemplateGroup,
   taskTemplateIcon,
   taskTemplateTitle,
 } from '../../pools/tasks'
 import { flexibleSummary, recurrenceSummary } from '../../recurrence'
-import { FilterChip } from './formParts'
 
 interface TaskTemplatePickerProps {
-  /** Gruppe beim Öffnen, z. B. „Haushalt“, wenn nur Erwachsene gewählt sind. */
-  initialGroup: TaskTemplateGroup
   onSelect: (template: TaskTemplate, title: string) => void
   onClose: () => void
 }
 
 /** Vorlage für eine neue Aufgabe wählen; sie füllt den Editor vor. */
-export function TaskTemplatePicker({ initialGroup, onSelect, onClose }: TaskTemplatePickerProps) {
+export function TaskTemplatePicker({ onSelect, onClose }: TaskTemplatePickerProps) {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
-  const [group, setGroup] = useState(initialGroup)
   const dialog = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -65,15 +59,8 @@ export function TaskTemplatePicker({ initialGroup, onSelect, onClose }: TaskTemp
             <CloseIcon className="size-7" aria-hidden="true" />
           </Button>
         </div>
-        <div role="group" aria-label={t('tasks.template_groups')} className="flex gap-2">
-          {TASK_TEMPLATE_GROUPS.map((value) => (
-            <FilterChip key={value} pressed={group === value} onClick={() => setGroup(value)}>
-              {t(`tasks.template_group_${value}`)}
-            </FilterChip>
-          ))}
-        </div>
         <ul className="grid min-h-0 flex-1 auto-rows-min grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3 overflow-y-auto p-1">
-          {TASK_POOL.filter((template) => template.group === group).map((template) => {
+          {TASK_POOL.map((template) => {
             const title = taskTemplateTitle(t, template)
             const TimeIcon = template.time_of_day ? TIME_OF_DAY_ICONS[template.time_of_day] : null
             return (

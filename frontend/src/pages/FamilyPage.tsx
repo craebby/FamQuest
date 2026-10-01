@@ -4,23 +4,33 @@ import { Link } from 'react-router'
 import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
 
 import { useMe } from '../api/auth'
+import { type ChorePlan, useChores } from '../api/chores'
 import type { Member } from '../api/members'
 import { type Today, pointsFor } from '../api/today'
 import { Avatar } from '../components/Avatar'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { formatLongDate } from '../weekdays'
-import { type CareSegment, careShares } from '../care'
+import { WhoBar } from './chores/WhoBar'
+import { useChoreDone } from './chores/useChoreDone'
 import { DayProgress } from './family/DayProgress'
+import { HouseholdAvatar, HouseholdColumn } from './family/HouseholdColumn'
 import { TaskGroups } from './family/TaskGroups'
 import { ViewToggle } from './family/ViewToggle'
 import { currentTasks, tasksFor, useFamilyToday } from './family/useFamilyToday'
 
-/** Familienansicht: eine Spalte pro Person mit ihren heutigen Aufgaben. */
+/**
+ * Aufgaben heute: eine Spalte je Kind mit seinen Aufgaben, daneben der Haushalt mit dem, was im
+ * Putzplan dran ist. Erwachsene haben keine eigenen Aufgaben mehr.
+ */
 export function FamilyPage() {
   const { t, i18n } = useTranslation()
   const { data: me } = useMe()
   const { members, today, isPending, error, refetch } = useFamilyToday()
+  // Der Putzplan kommt dazu, sobald er geladen ist; ohne ihn stehen nur die Kinder da.
+  const chores = useChores().data
+  const children = members?.filter((member) => member.role === 'child') ?? []
+  const household = chores?.chores.some((chore) => chore.active) ? chores : undefined
 
   const language = i18n.resolvedLanguage ?? i18n.language
 
@@ -44,21 +54,41 @@ export function FamilyPage() {
           <Alert>{errorMessage(t, error)}</Alert>
           <Button onClick={() => void refetch()}>{t('actions.retry')}</Button>
         </div>
-      ) : members.length === 0 ? (
-        <NoMembers />
+      ) : children.length === 0 && !household ? (
+        <NoColumns anyMembers={members.length > 0} />
       ) : (
-        <Columns members={members} today={today} />
+        <Columns members={members} kids={children} today={today} household={household} />
       )}
     </main>
   )
 }
 
-function Columns({ members, today }: { members: Member[]; today: Today }) {
+type Selection = number | 'household'
+
+function Columns({
+  members,
+  kids,
+  today,
+  household,
+}: {
+  /** Alle Personen, für „Wer war's?“ und die faire Verteilung im Haushalt. */
+  members: Member[]
+  kids: Member[]
+  today: Today
+  household: ChorePlan | undefined
+}) {
   const { t } = useTranslation()
-  const [selectedId, setSelectedId] = useState<number | null>(null)
-  // Am Smartphone ist genau eine Person sichtbar; Standard ist die erste.
-  const selected = members.find((member) => member.id === selectedId) ?? members[0]
-  const care = careShares(members, today)
+  const [selectedId, setSelectedId] = useState<Selection | null>(null)
+  const done = useChoreDone(household?.chores ?? [])
+  // Am Smartphone ist genau eine Spalte sichtbar; Standard ist das erste Kind.
+  const available: Selection[] = [
+    ...kids.map((child) => child.id),
+    ...(household ? (['household'] as const) : []),
+  ]
+  const selected = available.find((id) => id === selectedId) ?? available[0]
+  const shown = (id: Selection) => (id === selected ? 'flex' : 'hidden sm:flex')
+  const chooser = (id: Selection) =>
+    `shrink-0 rounded-full focus-visible:outline-4 focus-visible:outline-orange-400 ${id === selected ? '' : 'opacity-50'}`
 
   return (
     <>
@@ -67,35 +97,48 @@ function Columns({ members, today }: { members: Member[]; today: Today }) {
         aria-label={t('family.choose_person')}
         className="-mx-1 flex gap-3 overflow-x-auto px-1 py-1 sm:hidden"
       >
-        {members.map((member) => (
+        {kids.map((child) => (
           <button
-            key={member.id}
+            key={child.id}
             type="button"
-            aria-pressed={member.id === selected?.id}
-            onClick={() => setSelectedId(member.id)}
-            className={`shrink-0 rounded-full focus-visible:outline-4 focus-visible:outline-orange-400 ${member.id === selected?.id ? '' : 'opacity-50'}`}
+            aria-pressed={child.id === selected}
+            onClick={() => setSelectedId(child.id)}
+            className={chooser(child.id)}
           >
             <Avatar
-              name={member.name}
-              color={member.color}
-              src={member.avatar_url}
-              label={member.name}
+              name={child.name}
+              color={child.color}
+              src={child.avatar_url}
+              label={child.name}
             />
           </button>
         ))}
+        {household && (
+          <button
+            type="button"
+            aria-pressed={selected === 'household'}
+            onClick={() => setSelectedId('household')}
+            className={chooser('household')}
+          >
+            <HouseholdAvatar label={t('chores.title')} />
+          </button>
+        )}
       </div>
-      {/* Viele Personen: Spalten sind waagerecht wischbar. */}
+      {/* Viele Spalten: waagerecht wischbar. */}
       <div className="-mx-4 flex flex-1 snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
-        {members.map((member) => (
-          <MemberColumn
-            key={member.id}
-            member={member}
-            today={today}
-            care={care}
-            className={member.id === selected?.id ? 'flex' : 'hidden sm:flex'}
-          />
+        {kids.map((child) => (
+          <MemberColumn key={child.id} member={child} today={today} className={shown(child.id)} />
         ))}
+        {household && (
+          <HouseholdColumn
+            plan={household}
+            members={members}
+            done={done}
+            className={shown('household')}
+          />
+        )}
       </div>
+      <WhoBar done={done} />
     </>
   )
 }
@@ -103,12 +146,10 @@ function Columns({ members, today }: { members: Member[]; today: Today }) {
 function MemberColumn({
   member,
   today,
-  care,
   className,
 }: {
   member: Member
   today: Today
-  care: CareSegment[] | null
   className: string
 }) {
   const { t } = useTranslation()
@@ -132,7 +173,6 @@ function MemberColumn({
         member={member}
         tasks={currentTasks(tasks, member.id, today.date)}
         points={pointsFor(today, member.id)}
-        care={care}
         size="md"
       />
       <TaskGroups
@@ -146,13 +186,18 @@ function MemberColumn({
   )
 }
 
-function NoMembers() {
+/** Weder Kinder noch Putzplan: Hinweis mit Weg in den Elternbereich. */
+function NoColumns({ anyMembers }: { anyMembers: boolean }) {
   const { t } = useTranslation()
   return (
     <section className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
       <HouseIcon className="size-32" aria-hidden="true" />
-      <h2 className="text-3xl font-extrabold text-slate-800">{t('family.no_members')}</h2>
-      <p className="max-w-xl text-xl text-slate-600">{t('family.no_members_hint')}</p>
+      <h2 className="text-3xl font-extrabold text-slate-800">
+        {t(anyMembers ? 'family.no_children' : 'family.no_members')}
+      </h2>
+      <p className="max-w-xl text-xl text-slate-600">
+        {t(anyMembers ? 'family.no_children_hint' : 'family.no_members_hint')}
+      </p>
       <Link
         to="/parents/family"
         className="inline-flex min-h-14 items-center rounded-2xl bg-orange-500 px-6 py-3 text-lg font-bold text-white hover:bg-orange-600 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-400"

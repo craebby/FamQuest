@@ -53,12 +53,41 @@ TEXT = {
         "read": "Buch lesen",
         "table": "Tisch decken",
         "dog": "Hund füttern",
-        "trash": "Müll rausbringen",
-        "shopping": "Wocheneinkauf",
-        "bathroom": "Bad putzen",
-        "laundry": "Wäsche waschen",
-        "plants": "Blumen gießen",
         "manual": "Beim Kochen geholfen",
+        # Putzplan: Raum, Symbol und Aufgaben (Titel, Symbol, Abstand in Tagen, Erledigungen als
+        # „vor so vielen Tagen, wer“); ohne Erledigung startet die Aufgabe mittendrin.
+        "chores": [
+            (
+                "Bad",
+                "bathtub",
+                [
+                    ("Bad putzen", "shower", 7, [(15, "tom"), (8, "anna")]),
+                    ("Handtücher wechseln", "soap", 7, [(12, "anna"), (5, "tom")]),
+                ],
+            ),
+            (
+                "Küche",
+                "cooking",
+                [
+                    ("Küche gründlich putzen", "sponge", 14, [(20, "anna"), (6, "tom")]),
+                    ("Kühlschrank auswischen", "snowflake", 30, [(24, "anna")]),
+                ],
+            ),
+            (
+                "Wohnen und Schlafen",
+                "couch-and-lamp",
+                [
+                    ("Staubsaugen", "broom", 7, [(16, "tom"), (9, "anna"), (2, "tom")]),
+                    ("Bettwäsche wechseln", "bed", 14, [(15, "anna")]),
+                    ("Fenster putzen", "window", 180, []),
+                ],
+            ),
+            (
+                "Balkon",
+                "potted-plant",
+                [("Blumen gießen", "droplet", 3, [(6, "ben"), (3, "ben")])],
+            ),
+        ],
         "rewards": [
             ("Eis essen gehen", "ice-cream", 60),
             ("15 Minuten Tablet", "mobile-phone", 20),
@@ -132,12 +161,39 @@ TEXT = {
         "read": "Read a book",
         "table": "Set the table",
         "dog": "Feed the dog",
-        "trash": "Take out the bins",
-        "shopping": "Weekly shopping",
-        "bathroom": "Clean the bathroom",
-        "laundry": "Do the laundry",
-        "plants": "Water the plants",
         "manual": "Helped with cooking",
+        "chores": [
+            (
+                "Bathroom",
+                "bathtub",
+                [
+                    ("Clean the bathroom", "shower", 7, [(15, "tom"), (8, "anna")]),
+                    ("Change the towels", "soap", 7, [(12, "anna"), (5, "tom")]),
+                ],
+            ),
+            (
+                "Kitchen",
+                "cooking",
+                [
+                    ("Deep-clean the kitchen", "sponge", 14, [(20, "anna"), (6, "tom")]),
+                    ("Wipe out the fridge", "snowflake", 30, [(24, "anna")]),
+                ],
+            ),
+            (
+                "Living and bedrooms",
+                "couch-and-lamp",
+                [
+                    ("Vacuum", "broom", 7, [(16, "tom"), (9, "anna"), (2, "tom")]),
+                    ("Change the bed linen", "bed", 14, [(15, "anna")]),
+                    ("Clean the windows", "window", 180, []),
+                ],
+            ),
+            (
+                "Balcony",
+                "potted-plant",
+                [("Water the plants", "droplet", 3, [(6, "ben"), (3, "ben")])],
+            ),
+        ],
         "rewards": [
             ("Go out for ice cream", "ice-cream", 60),
             ("15 minutes of tablet", "mobile-phone", 20),
@@ -336,6 +392,7 @@ class Demo:
         self.members()
         self.tasks()
         self.history()
+        self.chores()
         self.rewards()
         self.meals()
         self.shopping()
@@ -364,7 +421,6 @@ class Demo:
 
     def tasks(self) -> None:
         t, mia, ben = self.text, self.ids["mia"], self.ids["ben"]
-        anna, tom = self.ids["anna"], self.ids["tom"]
 
         brush_mia = self.routine(
             mia,
@@ -424,46 +480,6 @@ class Demo:
         self.task(t["table"], "fork-and-knife", [mia], 2, extra=True)
         self.task(t["dog"], "dog-face", [ben], 2, extra=True)
 
-        # Haushalt der Erwachsenen.
-        self.task(
-            t["trash"],
-            "wastebasket",
-            [anna, tom],
-            3,
-            shared=True,
-            recurrence={"kind": "weekly", "weekdays": [2, 5]},
-        )
-        self.task(
-            t["shopping"],
-            "shopping-cart",
-            [anna, tom],
-            5,
-            shared=True,
-            recurrence={"kind": "weekly", "weekdays": [6]},
-        )
-        start = (self.today - dt.timedelta(days=3)).isoformat()
-        self.task(
-            t["bathroom"],
-            "bathtub",
-            [anna],
-            5,
-            recurrence={"kind": "flexible", "interval_days": 7, "date": start},
-        )
-        self.task(
-            t["laundry"],
-            "bubbles",
-            [tom],
-            3,
-            recurrence={"kind": "weekly", "weekdays": [1, 4]},
-        )
-        self.task(
-            t["plants"],
-            "potted-plant",
-            [tom],
-            2,
-            recurrence={"kind": "flexible", "interval_days": 3, "date": self.today.isoformat()},
-        )
-
     def complete_day(self, day: dt.date, share: float, until: str | None = None) -> None:
         """Erledigt an `day` einen Teil der anstehenden Aufgaben, höchstens bis `until`."""
         order = ["morning", "midday", "afternoon", "evening"]
@@ -518,6 +534,26 @@ class Demo:
             201,
             json={"amount": 5, "reason": self.text["manual"]},
         )
+
+    def chores(self) -> None:
+        """Putzplan mit Vorgeschichte: manches ist fällig, manches bald dran, der Rest hat Zeit."""
+        done: list[tuple[int, int, str]] = []
+        for name, icon, chores in self.text["chores"]:
+            room = self.call("POST", "/chores/rooms", 201, json={"name": name, "icon": ICON + icon})
+            for title, chore_icon, interval_days, history in chores:
+                body = {
+                    "room_id": room["id"],
+                    "title": title,
+                    "icon": ICON + chore_icon,
+                    "interval_days": interval_days,
+                }
+                chore = self.call("POST", "/chores", 201, json=body)
+                done += [(back, chore["id"], who) for back, who in history]
+        # Erledigt wird immer „heute“, deshalb läuft die Uhr die Tage der Reihe nach ab.
+        for back, chore_id, who in sorted(done, reverse=True):
+            set_clock(self.at(self.today - dt.timedelta(days=back), 18).astimezone(dt.UTC))
+            self.call("PUT", f"/chores/{chore_id}/done", json={"member_id": self.ids[who]})
+        set_clock(self.now)
 
     def rewards(self) -> None:
         for member in ("mia", "ben"):

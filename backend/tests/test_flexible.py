@@ -2,7 +2,7 @@ import datetime as dt
 
 from tests.conftest import csrf
 from tests.test_points import points_of
-from tests.test_rewards import add_parent_member
+from tests.test_tasks import add_member
 from tests.test_today import add_task, complete, today, undo
 
 # SATURDAY (2026-10-03) ist „heute“ laut conftest.
@@ -53,43 +53,39 @@ def test_flexible_task_can_be_done_early(client, parent, lena, now):
 
 
 def test_shared_task_counts_once_for_everyone(client, parent, lena, now):
-    mama = add_parent_member(client, parent)
-    papa = add_parent_member(client, parent, "Papa", "orange")
+    tom = add_member(client, parent, "Tom", "green")
     task = add_task(
         client,
         parent,
-        [mama, papa],
-        title="Bad putzen",
+        [lena, tom],
+        title="Tisch decken",
         points=1,
         shared=True,
         recurrence=WEEKLY_FROM_SATURDAY,
     )
 
-    complete(client, parent, task, papa)
-    # Ein zweiter Tipp in Mamas Spalte legt keine zweite Erledigung an.
-    complete(client, parent, task, mama)
+    complete(client, parent, task, tom)
+    # Ein zweiter Tipp in Lenas Spalte legt keine zweite Erledigung an.
+    complete(client, parent, task, lena)
 
     [entry] = today(client)["tasks"]
     assert entry["shared"] is True
-    assert entry["done_member_ids"] == [papa]
-    week = {p["member_id"]: p["week_done"] for p in today(client)["points"]}
-    assert (week[mama], week[papa]) == (0, 1)
+    assert entry["done_member_ids"] == [tom]
+    assert (points_of(client, lena)["total"], points_of(client, tom)["total"]) == (0, 1)
 
-    # Mama kann Papas Erledigung zurücknehmen; die Gegenbuchung trifft Papa.
-    undo(client, parent, task, mama)
+    # Lena kann Toms Erledigung zurücknehmen; die Gegenbuchung trifft Tom.
+    undo(client, parent, task, lena)
     assert today(client)["tasks"][0]["done_member_ids"] == []
-    assert points_of(client, papa)["total"] == 0
+    assert points_of(client, tom)["total"] == 0
 
-    complete(client, parent, task, papa)
+    complete(client, parent, task, tom)
     now["value"] += dt.timedelta(days=1)
-    # Fälligkeit gilt für alle, auch wenn nur Papa es gemacht hat.
-    assert due_of(client, task, mama) == day(7)
-    assert due_of(client, task, papa) == day(7)
+    # Fälligkeit gilt für alle, auch wenn nur Tom es gemacht hat.
+    assert due_of(client, task, lena) == day(7)
+    assert due_of(client, task, tom) == day(7)
 
 
 def test_not_shared_tasks_stay_per_member(client, parent, lena, now):
-    from tests.test_tasks import add_member
-
     tom = add_member(client, parent, "Tom", "green")
     task = add_task(client, parent, [lena, tom], recurrence=WEEKLY_FROM_SATURDAY)
 

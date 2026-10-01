@@ -1,39 +1,39 @@
 import { describe, expect, it } from 'vitest'
 
 import { careShares } from './care'
-import { makeMember, makeToday } from './test/utils'
+import { makeMember } from './test/utils'
 
 const mama = makeMember({ id: 1, name: 'Mama', role: 'parent', color: 'blue' })
 const papa = makeMember({ id: 2, name: 'Papa', role: 'parent', color: 'orange' })
 const oma = makeMember({ id: 3, name: 'Oma', role: 'parent', color: 'teal' })
 const lena = makeMember({ id: 4, name: 'Lena' })
+const tom = makeMember({ id: 5, name: 'Tom', color: 'green' })
 
-const today = (weekDone: Record<number, number>) =>
-  makeToday({
-    points: Object.entries(weekDone).map(([id, done]) => ({
-      member_id: Number(id),
-      today: 0,
-      total: 0,
-      week_done: done,
-    })),
-  })
+const shares = (counts: Record<number, number>) =>
+  Object.entries(counts).map(([id, count]) => ({ member_id: Number(id), count }))
 
 describe('Faire Verteilung', () => {
-  it('teilt die Aufgaben der Erwachsenen auf, Kinder zählen nicht', () => {
-    const shares = careShares([mama, papa, lena], today({ 1: 6, 2: 9, 4: 20 }))
-    expect(shares?.map((share) => [share.member.name, share.done, share.percent])).toEqual([
-      ['Mama', 6, 40],
-      ['Papa', 9, 60],
+  it('teilt den Putzplan unter denen auf, die etwas erledigt haben', () => {
+    const result = careShares([mama, papa, lena, tom], shares({ 1: 6, 2: 9, 4: 5 }))
+    // Tom hat nichts gemacht und ist ein Kind: Er steht nicht dabei.
+    expect(result?.map((share) => [share.member.name, share.done, share.percent])).toEqual([
+      ['Mama', 6, 30],
+      ['Papa', 9, 45],
+      ['Lena', 5, 25],
     ])
   })
 
-  it('ergibt zusammen immer 100 Prozent', () => {
-    const shares = careShares([mama, papa, oma], today({ 1: 1, 2: 1, 3: 1 }))
-    expect(shares?.map((share) => share.percent)).toEqual([34, 33, 33])
+  it('zeigt Erwachsene auch mit 0 und ergibt zusammen immer 100 Prozent', () => {
+    expect(
+      careShares([mama, papa, oma], shares({ 1: 1, 2: 1, 3: 1 }))?.map((share) => share.percent),
+    ).toEqual([34, 33, 33])
+    expect(careShares([mama, papa], shares({ 1: 2 }))?.map((share) => share.percent)).toEqual([
+      100, 0,
+    ])
   })
 
-  it('zeigt ohne Erledigungen 0 und mit nur einem Erwachsenen nichts', () => {
-    expect(careShares([mama, papa], today({}))?.map((share) => share.percent)).toEqual([0, 0])
-    expect(careShares([mama, lena], today({ 1: 5 }))).toBeNull()
+  it('zeigt nichts, solange niemand angetippt wurde oder nur eine Person dabei ist', () => {
+    expect(careShares([mama, papa], shares({}))).toBeNull()
+    expect(careShares([mama, lena], shares({ 1: 5 }))).toBeNull()
   })
 })

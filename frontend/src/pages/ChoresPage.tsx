@@ -1,65 +1,40 @@
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import BroomIcon from '~icons/fluent-emoji-flat/broom'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
-import CloseIcon from '~icons/lucide/x'
 
-import {
-  CHORE_LEVELS,
-  type Chore,
-  type ChoreRoom,
-  useChores,
-  useMarkDone,
-  useUndoDone,
-} from '../api/chores'
+import { CHORE_LEVELS, type Chore, type ChoreRoom, useChores } from '../api/chores'
 import { type Member, useMembers } from '../api/members'
+import { careShares } from '../care'
 import { LEVEL_COLORS, byUrgency, groupByLevel, intervalText, statusText } from '../chores'
 import { Avatar } from '../components/Avatar'
 import { TaskIcon } from '../components/TaskIcon'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
+import { ChoreShare } from './chores/ChoreShare'
+import { WhoBar } from './chores/WhoBar'
+import { useChoreDone } from './chores/useChoreDone'
 import { areaPath } from './parents/areas'
-
-/** So lange bleibt die Frage „Wer war's?“ nach dem Erledigen stehen. */
-export const WHO_TIMEOUT_MS = 12 * 1000
 
 type Grouping = 'urgency' | 'rooms'
 
 /**
  * Putzplan: jede Hausarbeit mit Ampel statt festem Termin. Ein Tipp erledigt und stellt die Uhr
- * zurück; danach lässt sich freiwillig antippen, wer es war. Ohne Eltern-PIN.
+ * zurück; danach lässt sich freiwillig antippen, wer es war. Daraus entsteht unten die faire
+ * Verteilung. Ohne Eltern-PIN.
  */
 export function ChoresPage() {
   const { t } = useTranslation()
   const plan = useChores()
   const members = useMembers()
-  const markDone = useMarkDone()
-  const undoDone = useUndoDone()
   const [grouping, setGrouping] = useState<Grouping>('urgency')
-  // Gerade erledigte Aufgabe, zu der noch gefragt wird, wer es war.
-  const [askingId, setAskingId] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (askingId === null) return
-    const timer = window.setTimeout(() => setAskingId(null), WHO_TIMEOUT_MS)
-    return () => window.clearTimeout(timer)
-  }, [askingId])
 
   const rooms = plan.data?.rooms ?? []
   const chores = (plan.data?.chores ?? []).filter((chore) => chore.active)
+  const done = useChoreDone(chores)
   const roomOf = (chore: Chore) => rooms.find((room) => room.id === chore.room_id)
-  const asking = chores.find((chore) => chore.id === askingId && chore.done_today)
-  const error = markDone.error ?? undoDone.error
-
-  const toggle = (chore: Chore) => {
-    if (chore.done_today) {
-      setAskingId(null)
-      undoDone.mutate(chore.id)
-    } else {
-      markDone.mutate({ id: chore.id, memberId: null }, { onSuccess: () => setAskingId(chore.id) })
-    }
-  }
+  const shares = plan.data && careShares(members.data ?? [], plan.data.shares)
 
   const row = (chore: Chore, showRoom: boolean) => (
     <ChoreRow
@@ -67,7 +42,7 @@ export function ChoresPage() {
       chore={chore}
       room={showRoom ? roomOf(chore) : undefined}
       doneBy={members.data?.find((member) => member.id === chore.done_by)}
-      onToggle={() => toggle(chore)}
+      onToggle={() => done.toggle(chore)}
     />
   )
 
@@ -96,7 +71,7 @@ export function ChoresPage() {
         )}
       </header>
 
-      {error ? <Alert>{errorMessage(t, error)}</Alert> : null}
+      {done.error ? <Alert>{errorMessage(t, done.error)}</Alert> : null}
 
       {plan.isPending ? (
         <p role="status" className="text-xl text-slate-600">
@@ -129,18 +104,9 @@ export function ChoresPage() {
         ))
       )}
 
-      {asking && (
-        <WhoBar
-          chore={asking}
-          members={members.data ?? []}
-          onPick={(member) => {
-            markDone.mutate({ id: asking.id, memberId: member.id })
-            setAskingId(null)
-          }}
-          onUndo={() => toggle(asking)}
-          onClose={() => setAskingId(null)}
-        />
-      )}
+      {plan.data && shares && <ChoreShare shares={shares} days={plan.data.share_days} />}
+
+      <WhoBar done={done} />
     </main>
   )
 }
@@ -296,66 +262,5 @@ function ChoreRow({
         )}
       </button>
     </li>
-  )
-}
-
-/** Nach dem Erledigen: freiwillig antippen, wer es war, oder den Tipp zurücknehmen. */
-function WhoBar({
-  chore,
-  members,
-  onPick,
-  onUndo,
-  onClose,
-}: {
-  chore: Chore
-  members: Member[]
-  onPick: (member: Member) => void
-  onUndo: () => void
-  onClose: () => void
-}) {
-  const { t } = useTranslation()
-  // Erwachsene zuerst; Kinder dürfen auch mithelfen.
-  const sorted = [...members].sort(
-    (a, b) => Number(a.role !== 'parent') - Number(b.role !== 'parent'),
-  )
-  return (
-    <section
-      aria-label={t('chores.who')}
-      className="fixed inset-x-2 bottom-30 z-20 mx-auto flex max-w-3xl flex-wrap items-center gap-3 rounded-3xl bg-slate-800 p-3 text-white shadow-xl sm:bottom-4 sm:left-32"
-    >
-      <p role="status" className="min-w-0 flex-1 basis-48 text-lg font-bold break-words">
-        {t('chores.done_notice', { title: chore.title })}{' '}
-        {sorted.length > 0 && <span className="font-normal">{t('chores.who')}</span>}
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
-        {sorted.map((member) => (
-          <button
-            key={member.id}
-            type="button"
-            aria-label={member.name}
-            title={member.name}
-            onClick={() => onPick(member)}
-            className="rounded-full focus-visible:outline-4 focus-visible:outline-orange-400"
-          >
-            <Avatar name={member.name} color={member.color} src={member.avatar_url} size="sm" />
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={onUndo}
-          className="min-h-12 rounded-2xl px-4 text-lg font-bold underline focus-visible:outline-4 focus-visible:outline-orange-400"
-        >
-          {t('chores.undo')}
-        </button>
-        <button
-          type="button"
-          aria-label={t('chores.who_close')}
-          onClick={onClose}
-          className="flex size-12 items-center justify-center rounded-2xl hover:bg-slate-700 focus-visible:outline-4 focus-visible:outline-orange-400"
-        >
-          <CloseIcon className="size-7" aria-hidden="true" />
-        </button>
-      </div>
-    </section>
   )
 }

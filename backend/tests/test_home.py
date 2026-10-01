@@ -8,6 +8,7 @@ DEFAULT = [
     {"id": "tasks", "visible": True},
     {"id": "meals", "visible": True},
     {"id": "shopping", "visible": True},
+    {"id": "chores", "visible": True},
 ]
 
 
@@ -28,6 +29,7 @@ def test_parents_change_order_and_visibility(client, parent):
         {"id": "events", "visible": True},
         {"id": "meals", "visible": False},
         {"id": "shopping", "visible": False},
+        {"id": "chores", "visible": False},
     ]
     response = client.put("/api/home/layout", json={"tiles": tiles}, headers=csrf(parent))
 
@@ -47,6 +49,7 @@ def test_missing_tiles_are_added_at_the_end(client, parent):
         "weather",
         "meals",
         "shopping",
+        "chores",
     ]
     assert get_layout(client)[0] == {"id": "events", "visible": False}
 

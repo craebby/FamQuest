@@ -71,7 +71,9 @@ def get_task(db: DbSession, task_id: int) -> Task:
 
 def apply_task(db: DbSession, task: Task, body: TaskIn) -> None:
     for member_id in body.member_ids:
-        get_member(db, member_id)
+        if get_member(db, member_id).role != "child":
+            # Hausarbeit der Erwachsenen steht im Putzplan (api/chores), nicht bei den Aufgaben.
+            raise ApiError(status.HTTP_409_CONFLICT, "task.child_only")
     in_routines = routine_members(db, [task.id]).get(task.id, set()) if task.id else set()
     if in_routines and (body.time_of_day != task.time_of_day or body.extra):
         # Routinenschritte haben den Tagesabschnitt ihrer Routine und sind keine Extras.

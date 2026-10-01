@@ -9,6 +9,8 @@ import type { ShoppingList } from '../api/shopping'
 import type { Weather } from '../api/weather'
 import i18n from '../i18n'
 import {
+  makeChore,
+  makeChorePlan,
   makeMe,
   makeMember,
   makeToday,
@@ -166,7 +168,7 @@ function mockHome({
           tasks: tasks.map((task) =>
             task.id === teeth.id && teethDone ? { ...task, done_member_ids: [1] } : task,
           ),
-          points: [{ member_id: 1, today: 1, total: 10, week_done: 1 }],
+          points: [{ member_id: 1, today: 1, total: 10 }],
         }),
       ),
     'GET /api/weather': Response.json(weather),
@@ -177,6 +179,7 @@ function mockHome({
     'GET /api/dishes': Response.json([]),
     'GET /api/shopping/list': Response.json(SHOPPING),
     'GET /api/shopping/items': Response.json([]),
+    'GET /api/chores': Response.json(makeChorePlan()),
     'PUT /api/today/tasks/10/members/1': () => {
       teethDone = true
       return new Response(null, { status: 204 })
@@ -186,6 +189,11 @@ function mockHome({
 }
 
 const region = async (name: string) => within(await screen.findByRole('region', { name }))
+
+function renderWith(extra: Parameters<typeof mockApi>[0]) {
+  mockHome({ extra })
+  return renderApp('/')
+}
 
 describe('Startseite „Heute“', () => {
   it('ist die Startseite und hat ein eigenes Symbol in der Navigation', async () => {
@@ -364,6 +372,84 @@ describe('Startseite „Heute“', () => {
     })
   })
 
+  it('zeigt im Haushalt nur Rotes und Gelbes; ein Tipp erledigt und fragt, wer es war', async () => {
+    const user = userEvent.setup()
+    const bathroom = makeChore({
+      id: 1,
+      title: 'Bad putzen',
+      days_left: -2,
+      ratio: 1.29,
+      level: 'due',
+    })
+    let plan = makeChorePlan({
+      rooms: [{ id: 1, name: 'Bad oben', icon: 'fluent-emoji-flat:bathtub' }],
+      chores: [
+        makeChore({ id: 2, title: 'Staubsaugen', days_left: 2, ratio: 0.71, level: 'soon' }),
+        makeChore({ id: 3, title: 'Fenster putzen', interval_days: 180, days_left: 150 }),
+        bathroom,
+      ],
+    })
+    const calls = mockHome({
+      extra: {
+        'GET /api/chores': () => Response.json(plan),
+        'PUT /api/chores/1/done': (body) => {
+          const done = {
+            ...bathroom,
+            done_today: true,
+            done_by: (body as { member_id: number | null }).member_id,
+            level: 'ok' as const,
+          }
+          plan = { ...plan, chores: plan.chores.map((chore) => (chore.id === 1 ? done : chore)) }
+          return Response.json(done)
+        },
+      },
+    })
+    renderApp('/')
+
+    const household = await region('Haushalt')
+    const due = within(await household.findByRole('list', { name: 'Im Haushalt dran' }))
+    // Das Dringendste zuerst; Grünes steht nur in der Ansicht „Haushalt“.
+    expect(due.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Bad putzen',
+      'Staubsaugen',
+    ])
+    expect(household.getByRole('link', { name: 'Haushalt öffnen' })).toHaveAttribute(
+      'href',
+      '/household',
+    )
+
+    await user.click(due.getByRole('button', { name: 'Bad putzen, Bad oben, Seit 2 Tagen fällig' }))
+    const who = within(await screen.findByRole('region', { name: 'Wer war’s?' }))
+    await user.click(who.getByRole('button', { name: 'Papa' }))
+
+    const writes = calls.filter((call) => call.key === 'PUT /api/chores/1/done')
+    expect(writes.map((call) => call.body)).toEqual([{ member_id: null }, { member_id: 2 }])
+    // Erledigtes bleibt durchgestrichen stehen und rückt hinter das Offene.
+    expect(due.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Staubsaugen',
+      'Bad putzen',
+    ])
+    expect(due.getByRole('button', { name: /Bad putzen/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('lobt im Haushalt, wenn nichts dran ist, und führt ohne Putzplan zur Einrichtung', async () => {
+    const view = renderWith({
+      'GET /api/chores': Response.json(
+        makeChorePlan({ chores: [makeChore({ title: 'Fenster putzen' })] }),
+      ),
+    })
+    expect(await (await region('Haushalt')).findByText('Alles im grünen Bereich')).toBeVisible()
+    view.unmount()
+
+    renderWith({})
+    const household = await region('Haushalt')
+    expect(await household.findByText(/Noch kein Putzplan/)).toBeVisible()
+    expect(household.getByRole('link', { name: 'Einrichten' })).toHaveAttribute(
+      'href',
+      '/parents/household',
+    )
+  })
+
   it('zeigt auf Wunsch die Woche von Montag bis Sonntag, vergangene Tage blass', async () => {
     mockHome({
       extra: { 'GET /api/home/layout': Response.json({ tiles: DEFAULT_TILES, week: 'monday' }) },
@@ -470,6 +556,7 @@ describe('Startseite anpassen', () => {
       tiles: [
         { id: 'weather', visible: false },
         { id: 'tasks', visible: false },
+        { id: 'chores', visible: true },
         { id: 'shopping', visible: true },
         { id: 'events', visible: true },
         { id: 'meals', visible: true },

@@ -34,8 +34,6 @@ export interface MemberPoints {
   today: number
   /** Punktestand (Summe aller Buchungen). */
   total: number
-  /** Seit Montag erledigte Aufgaben; Grundlage der fairen Verteilung unter Erwachsenen. */
-  week_done: number
 }
 
 export interface Today {
@@ -84,17 +82,12 @@ function withDone(today: Today, { taskId, memberId, done }: SetDoneVariables): T
   // Wessen Erledigung sich ändert: beim Zurücknehmen von „Einer für alle“ die der Person,
   // die sie erledigt hatte.
   const target = done ? memberId : (by ?? memberId)
-  // Ungeprüfte Erledigungen bringen noch keine Punkte und zählen noch nicht für die Woche.
+  // Ungeprüfte Erledigungen bringen noch keine Punkte.
   const wasPending = task.pending_member_ids.includes(target)
   const counts = done ? !task.needs_approval : !wasPending
   const delta = counts ? (done ? task.points : -task.points) : 0
   const before = pointsFor(today, target)
-  const after = {
-    ...before,
-    today: before.today + delta,
-    total: before.total + delta,
-    week_done: before.week_done + (counts ? (done ? 1 : -1) : 0),
-  }
+  const after = { ...before, today: before.today + delta, total: before.total + delta }
   const pendingNow = done && task.needs_approval
   return {
     ...today,
@@ -151,7 +144,6 @@ export function pointsFor(today: Today, memberId: number): MemberPoints {
       member_id: memberId,
       today: 0,
       total: 0,
-      week_done: 0,
     }
   )
 }

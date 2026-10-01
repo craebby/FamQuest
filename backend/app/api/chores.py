@@ -34,6 +34,9 @@ StartState = Literal["fresh", "half", "due"]
 _SPREAD = 0.618034
 _SPREAD_MAX = 0.9
 
+# Die faire Verteilung zählt die Erledigungen der letzten Tage, heute eingeschlossen.
+SHARE_DAYS = 30
+
 
 class RoomOut(BaseModel):
     id: int
@@ -62,11 +65,20 @@ class ChoreOut(BaseModel):
     level: str
 
 
+class ShareOut(BaseModel):
+    member_id: int
+    count: int
+
+
 class ChoresOut(BaseModel):
     # Heute in der Zeitzone der Familie.
     date: dt.date
     rooms: list[RoomOut]
     chores: list[ChoreOut]
+    # Faire Verteilung: wer in den letzten `share_days` Tagen wie oft etwas erledigt hat. Es zählt
+    # nur, wozu jemand „Wer war's?“ angetippt hat.
+    share_days: int
+    shares: list[ShareOut]
 
 
 class RoomIn(BaseModel):
@@ -177,6 +189,21 @@ def _last_completions(db: DbSession, chore_ids: list[int]) -> dict[int, ChoreCom
     return {completion.chore_id: completion for completion in completions}
 
 
+def _shares(db: DbSession, today: dt.date) -> list[ShareOut]:
+    since = today - dt.timedelta(days=SHARE_DAYS - 1)
+    counts = db.execute(
+        select(ChoreCompletion.member_id, func.count())
+        .where(
+            ChoreCompletion.member_id.is_not(None),
+            ChoreCompletion.date >= since,
+            ChoreCompletion.date <= today,
+        )
+        .group_by(ChoreCompletion.member_id)
+        .order_by(ChoreCompletion.member_id)
+    )
+    return [ShareOut(member_id=member_id, count=count) for member_id, count in counts]
+
+
 def _one_out(db: DbSession, chore: Chore) -> ChoreOut:
     return _chore_out(chore, _last_completions(db, [chore.id]).get(chore.id), _today(db))
 
@@ -205,6 +232,8 @@ def list_chores(_: CurrentSession, db: DbSession) -> ChoresOut:
         date=today,
         rooms=[_room_out(room) for room in rooms],
         chores=[_chore_out(chore, last.get(chore.id), today) for chore in chores],
+        share_days=SHARE_DAYS,
+        shares=_shares(db, today),
     )
 
 

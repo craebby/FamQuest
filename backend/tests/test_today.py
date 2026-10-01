@@ -200,26 +200,8 @@ def test_deleting_task_removes_completions(client, parent, lena, now):
     assert today(client)["tasks"] == []
 
 
-def test_week_counts_completions_since_monday(client, parent, lena, now):
-    from tests.test_rewards import add_parent_member
+def test_week_starts_on_monday_in_the_family_timezone(client, parent, lena, now):
+    assert today(client)["week_start"] == "2026-09-28"
 
-    mama = add_parent_member(client, parent)
-    papa = add_parent_member(client, parent, "Papa", "orange")
-    task = add_task(client, parent, [mama, papa], points=1)
-
-    def week_done() -> dict[int, int]:
-        return {p["member_id"]: p["week_done"] for p in today(client)["points"]}
-
-    complete(client, parent, task, mama)
-    complete(client, parent, task, papa)
-    now["value"] += dt.timedelta(days=1)
-    complete(client, parent, task, mama, date="2026-10-04")
-
-    data = today(client)
-    assert data["week_start"] == "2026-09-28"
-    assert week_done() == {lena: 0, mama: 2, papa: 1}
-
-    # Neue Woche ab Montag in der Zeitzone der Familie.
-    now["value"] += dt.timedelta(days=1)
+    now["value"] += dt.timedelta(days=2)
     assert today(client)["week_start"] == "2026-10-05"
-    assert week_done() == {lena: 0, mama: 0, papa: 0}

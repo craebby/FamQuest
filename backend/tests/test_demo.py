@@ -36,6 +36,11 @@ def test_demo_family(client, restore_clock, lang):
     # Erwachsene bekommen keine Symbole.
     assert icons[demo.TEXT[lang]["events"]["lunch"]] is None
 
+    chores = client.get("/api/chores").json()
+    levels = [chore["level"] for chore in chores["chores"]]
+    assert (levels.count("due"), levels.count("soon"), levels.count("ok")) == (3, 2, 3)
+    assert sorted(share["count"] for share in chores["shares"]) == [2, 5, 6]
+
     assert client.get("/api/weather").json()["current"]["temperature"] == 14
     client.post(
         "/api/parent/unlock", json={"pin": demo.PIN}, headers={"X-CSRF-Token": login["csrf_token"]}

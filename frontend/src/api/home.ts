@@ -5,9 +5,10 @@ import { useParentMutation } from './mutations'
 
 /**
  * Bereiche der Startseite in der Reihenfolge auf der Seite: Wetter (im Kopf), Routine der Kinder
- * (tasks) und Einkauf nebeneinander, darunter die Woche mit Terminen (events) und Essen (meals).
+ * (tasks), Haushalt (chores) und Einkauf nebeneinander, darunter die Woche mit Terminen (events)
+ * und Essen (meals).
  */
-export const TILE_IDS = ['weather', 'tasks', 'shopping', 'events', 'meals'] as const
+export const TILE_IDS = ['weather', 'tasks', 'chores', 'shopping', 'events', 'meals'] as const
 export type TileId = (typeof TILE_IDS)[number]
 
 export interface Tile {

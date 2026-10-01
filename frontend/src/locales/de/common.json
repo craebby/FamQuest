@@ -79,7 +79,9 @@
     "due_in_one": "morgen fällig",
     "due_in_other": "in {{count}} Tagen fällig",
     "extras": "Extras",
-    "optional": "optional"
+    "optional": "optional",
+    "no_children": "Noch keine Aufgaben",
+    "no_children_hint": "Im Elternbereich könnt ihr Kinder mit ihren Aufgaben anlegen und den Putzplan für den Haushalt einrichten."
   },
   "parents": {
     "title": "Elternbereich",
@@ -175,7 +177,7 @@
   "tasks": {
     "section": "Aufgaben",
     "empty": "Noch keine Aufgaben. Legt eine erste an, zum Beispiel Zähne putzen.",
-    "need_members": "Legt zuerst Familienmitglieder an, dann könnt ihr ihnen Aufgaben geben.",
+    "need_members": "Legt zuerst unter „Familie“ Kinder an, dann könnt ihr ihnen Aufgaben geben.",
     "add": "Aufgabe hinzufügen",
     "filter": "Nach Person filtern",
     "filter_all": "Alle",
@@ -220,9 +222,6 @@
     "deleted": "„{{title}}“ ist gelöscht.",
     "from_template": "Aus Vorlagen wählen",
     "templates": "Vorlage wählen",
-    "template_groups": "Vorlagen-Gruppen",
-    "template_group_kids": "Kinder",
-    "template_group_household": "Haushalt",
     "needs_approval": "Eltern prüfen",
     "needs_approval_hint": "Punkte gibt es erst, wenn ihr die Erledigung im Elternbereich bestätigt habt.",
     "kind_flexible": "Flexibel",
@@ -235,7 +234,7 @@
     "days_other": "Tage",
     "first_due": "Erstmals fällig am",
     "shared": "Einer für alle",
-    "shared_hint": "Wer die Aufgabe erledigt, erledigt sie für alle Gewählten. Punkte und der Anteil an der Woche zählen für diese Person.",
+    "shared_hint": "Wer die Aufgabe erledigt, erledigt sie für alle Gewählten. Die Punkte bekommt diese Person.",
     "summary_flexible_days_one": "Flexibel, jeden Tag",
     "summary_flexible_days_other": "Flexibel, alle {{count}} Tage",
     "summary_flexible_weeks_one": "Flexibel, etwa jede Woche",
@@ -254,15 +253,8 @@
     "order_hint": "So sieht {{name}} die Aufgaben am Display. Die Reihenfolge der Routinen legt ihr im Abschnitt „Routinen“ fest.",
     "move_up": "{{title}} nach oben",
     "move_down": "{{title}} nach unten",
-    "from_pool": "Haushalt: mehrere auswählen",
-    "pool_title": "Haushaltsaufgaben auswählen",
-    "pool_intro": "Tippt alle Aufgaben an, die bei euch anfallen. Punkte, Wiederholung und Personen könnt ihr danach je Aufgabe noch ändern.",
-    "pool_for": "Für",
-    "pool_need_member": "Mindestens eine Person wählen.",
-    "pool_add_one": "{{count}} Aufgabe hinzufügen",
-    "pool_add_other": "{{count}} Aufgaben hinzufügen",
-    "pool_added_one": "{{count}} Aufgabe hinzugefügt.",
-    "pool_added_other": "{{count}} Aufgaben hinzugefügt."
+    "kids_only": "Aufgaben sind für die Kinder. Was im Haushalt anfällt, steht im Putzplan:",
+    "kids_only_link": "zum Bereich „Haushalt“"
   },
   "routines": {
     "section": "Routinen",
@@ -403,7 +395,8 @@
     "member": {
       "not_found": "Diese Person gibt es nicht mehr",
       "color_taken": "Diese Farbe ist schon vergeben. Bitte eine andere wählen.",
-      "order_invalid": "Die Reihenfolge passt nicht zu den Personen. Bitte neu laden."
+      "order_invalid": "Die Reihenfolge passt nicht zu den Personen. Bitte neu laden.",
+      "has_tasks": "Diese Person hat noch Aufgaben oder Routinen, und die gibt es nur für Kinder. Entfernt sie zuerst, dann lässt sich die Rolle ändern."
     },
     "avatar": {
       "too_large": "Das Bild ist zu groß (höchstens 5 MB)",
@@ -412,7 +405,8 @@
     "task": {
       "not_found": "Diese Aufgabe gibt es nicht mehr",
       "not_due": "Diese Aufgabe steht heute nicht an.",
-      "in_routine": "Diese Aufgabe ist ein Schritt in einer Routine. Tageszeit und „Extra“ lassen sich hier nicht ändern."
+      "in_routine": "Diese Aufgabe ist ein Schritt in einer Routine. Tageszeit und „Extra“ lassen sich hier nicht ändern.",
+      "child_only": "Aufgaben gibt es nur für Kinder. Hausarbeit der Erwachsenen steht im Putzplan unter „Haushalt“."
     },
     "routine": {
       "not_found": "Diese Routine gibt es nicht mehr. Bitte neu laden.",
@@ -529,11 +523,12 @@
     "pool_added_other": "{{name}} hat {{count}} neue Belohnungen."
   },
   "care": {
-    "label_one": "Diese Woche {{percent}} % der Aufgaben der Erwachsenen ({{count}} erledigt)",
-    "label_other": "Diese Woche {{percent}} % der Aufgaben der Erwachsenen ({{count}} erledigt)",
-    "this_week": "diese Woche",
-    "legend_one": "{{name}}: {{percent}} % ({{count}} Aufgabe)",
-    "legend_other": "{{name}}: {{percent}} % ({{count}} Aufgaben)",
+    "title": "Wer hat’s gemacht?",
+    "period": "letzte {{days}} Tage",
+    "legend_one": "{{name}}: {{percent}} % ({{count}}-mal)",
+    "legend_other": "{{name}}: {{percent}} % ({{count}}-mal)",
+    "count_one": "{{count}}-mal",
+    "count_other": "{{count}}-mal",
     "percent": "{{percent}} %"
   },
   "approvals": {
@@ -668,7 +663,12 @@
     "week_monday": "Montag bis Sonntag",
     "week_monday_hint": "Wie ein Wochenplan: vorne Montag, hinten Sonntag.",
     "week_board_monday": "Diese Woche",
-    "more_events": "Weitere Termine: nach unten wischen"
+    "more_events": "Weitere Termine: nach unten wischen",
+    "chores": "Haushalt",
+    "open_chores": "Haushalt öffnen",
+    "chores_setup": "Noch kein Putzplan. Der Assistent im Elternbereich macht Vorschläge.",
+    "chores_all_good": "Alles im grünen Bereich",
+    "chores_due": "Im Haushalt dran"
   },
   "weather": {
     "now": "Jetzt",

@@ -79,7 +79,9 @@
     "due_in_one": "due tomorrow",
     "due_in_other": "due in {{count}} days",
     "extras": "Extras",
-    "optional": "optional"
+    "optional": "optional",
+    "no_children": "No tasks yet",
+    "no_children_hint": "In the parents' area you can add children with their tasks and set up the cleaning plan for the household."
   },
   "parents": {
     "title": "Parent area",
@@ -175,7 +177,7 @@
   "tasks": {
     "section": "Tasks",
     "empty": "No tasks yet. Add your first one, for example brushing teeth.",
-    "need_members": "Add your family members first, then you can give them tasks.",
+    "need_members": "Add children under “Family” first, then you can give them tasks.",
     "add": "Add task",
     "filter": "Filter by person",
     "filter_all": "All",
@@ -220,9 +222,6 @@
     "deleted": "“{{title}}” has been deleted.",
     "from_template": "Choose from templates",
     "templates": "Choose a template",
-    "template_groups": "Template groups",
-    "template_group_kids": "Children",
-    "template_group_household": "Household",
     "needs_approval": "Parents check",
     "needs_approval_hint": "Points are only given once you confirm it in the parents' area.",
     "kind_flexible": "Flexible",
@@ -235,7 +234,7 @@
     "days_other": "days",
     "first_due": "First due on",
     "shared": "One for all",
-    "shared_hint": "Whoever does the task does it for everyone selected. Points and the weekly share go to that person.",
+    "shared_hint": "Whoever does the task does it for everyone selected. The points go to that person.",
     "summary_flexible_days_one": "Flexible, every day",
     "summary_flexible_days_other": "Flexible, every {{count}} days",
     "summary_flexible_weeks_one": "Flexible, about once a week",
@@ -254,15 +253,8 @@
     "order_hint": "This is how {{name}} sees the tasks on the display. You set the order of the routines in the \"Routines\" section.",
     "move_up": "Move {{title}} up",
     "move_down": "Move {{title}} down",
-    "from_pool": "Household: pick several",
-    "pool_title": "Choose household tasks",
-    "pool_intro": "Tap every task that comes up in your home. You can still change points, repeats and people for each task afterwards.",
-    "pool_for": "For",
-    "pool_need_member": "Choose at least one person.",
-    "pool_add_one": "Add {{count}} task",
-    "pool_add_other": "Add {{count}} tasks",
-    "pool_added_one": "{{count}} task added.",
-    "pool_added_other": "{{count}} tasks added."
+    "kids_only": "Tasks are for the children. Household chores live in the cleaning plan:",
+    "kids_only_link": "go to “Household”"
   },
   "routines": {
     "section": "Routines",
@@ -403,7 +395,8 @@
     "member": {
       "not_found": "This person no longer exists",
       "color_taken": "This colour is already taken. Please pick another one.",
-      "order_invalid": "The order doesn't match the family members. Please reload."
+      "order_invalid": "The order doesn't match the family members. Please reload.",
+      "has_tasks": "This person still has tasks or routines, and those exist for children only. Remove them first, then the role can be changed."
     },
     "avatar": {
       "too_large": "The image is too large (5 MB max)",
@@ -412,7 +405,8 @@
     "task": {
       "not_found": "This task no longer exists",
       "not_due": "This task isn't due today.",
-      "in_routine": "This task is a step in a routine. Its time of day and \"Extra\" can't be changed here."
+      "in_routine": "This task is a step in a routine. Its time of day and \"Extra\" can't be changed here.",
+      "child_only": "Tasks are for children only. Household chores for adults live in the cleaning plan under “Household”."
     },
     "routine": {
       "not_found": "This routine no longer exists. Please reload.",
@@ -529,11 +523,12 @@
     "pool_added_other": "{{name}} has {{count}} new rewards."
   },
   "care": {
-    "label_one": "This week {{percent}}% of the adults' tasks ({{count}} done)",
-    "label_other": "This week {{percent}}% of the adults' tasks ({{count}} done)",
-    "this_week": "this week",
-    "legend_one": "{{name}}: {{percent}}% ({{count}} task)",
-    "legend_other": "{{name}}: {{percent}}% ({{count}} tasks)",
+    "title": "Who did it?",
+    "period": "last {{days}} days",
+    "legend_one": "{{name}}: {{percent}}% ({{count}} time)",
+    "legend_other": "{{name}}: {{percent}}% ({{count}} times)",
+    "count_one": "{{count}} time",
+    "count_other": "{{count}} times",
     "percent": "{{percent}}%"
   },
   "approvals": {
@@ -658,7 +653,7 @@
     "reset_layout": "Restore default",
     "routine": "Children's routine",
     "all_done": "All done",
-    "no_children": "You can add children in the parents’ area.",
+    "no_children": "You can add children in the parents' area.",
     "week_board": "The next seven days",
     "setup_weather_short": "Set up weather",
     "setup_calendar_short": "Connect a calendar",
@@ -668,7 +663,12 @@
     "week_monday": "Monday to Sunday",
     "week_monday_hint": "Like a weekly planner: Monday first, Sunday last.",
     "week_board_monday": "This week",
-    "more_events": "More events: swipe down"
+    "more_events": "More events: swipe down",
+    "chores": "Household",
+    "open_chores": "Open household",
+    "chores_setup": "No cleaning plan yet. The assistant in the parents' area makes suggestions.",
+    "chores_all_good": "All in the green",
+    "chores_due": "Household chores due"
   },
   "weather": {
     "now": "Now",
@@ -835,7 +835,7 @@
     "grouping_urgency": "Most urgent first",
     "grouping_rooms": "By room",
     "empty": "No cleaning plan yet",
-    "empty_hint": "Tap here to set it up in the parents’ area. The assistant makes suggestions.",
+    "empty_hint": "Tap here to set it up in the parents' area. The assistant makes suggestions.",
     "all_good": "All good. Nothing is due right now.",
     "level_due": "Due now",
     "level_soon": "Due soon",

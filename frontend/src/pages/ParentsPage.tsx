@@ -43,7 +43,6 @@ import { PointsEditor } from './parents/PointsEditor'
 import { PointsSection } from './parents/PointsSection'
 import { RewardEditor } from './parents/RewardEditor'
 import { RewardPoolPicker } from './parents/RewardPoolPicker'
-import { TaskPoolPicker } from './parents/TaskPoolPicker'
 import { RewardsSection } from './parents/RewardsSection'
 import { RoutinesSection } from './parents/RoutinesSection'
 import { TaskEditor } from './parents/TaskEditor'
@@ -232,7 +231,6 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
     null,
   )
   const [poolMember, setPoolMember] = useState<Member | null>(null)
-  const [pickingHousehold, setPickingHousehold] = useState(false)
   const [editingChore, setEditingChore] = useState<{ chore?: Chore; roomId: number } | null>(null)
   const [editingRoom, setEditingRoom] = useState<ChoreRoom | 'new' | null>(null)
   const [choreWizard, setChoreWizard] = useState(false)
@@ -245,7 +243,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
       ? 'task'
       : editingReward
         ? 'reward'
-        : poolMember || pickingHousehold
+        : poolMember
           ? 'pool'
           : editingChore
             ? 'chore'
@@ -309,7 +307,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
     return (
       <TaskEditor
         task={editingTask && editingTask !== 'new' ? editingTask : undefined}
-        members={members.data ?? []}
+        members={childrenOf(members.data ?? [])}
         initialMemberIds={taskFilter === null ? [] : [taskFilter]}
         routineStep={
           newStep
@@ -361,21 +359,6 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
           setNotice(t('rewards.pool_added', { count, name: poolMember.name }))
         }}
         onCancel={() => setPoolMember(null)}
-      />
-    )
-  }
-
-  if (pickingHousehold) {
-    return (
-      <TaskPoolPicker
-        adults={(members.data ?? []).filter((member) => member.role === 'parent')}
-        existing={tasks.data ?? []}
-        timeZone={me.family.timezone}
-        onDone={(count) => {
-          setPickingHousehold(false)
-          setNotice(t('tasks.pool_added', { count }))
-        }}
-        onCancel={() => setPickingHousehold(false)}
       />
     )
   }
@@ -514,17 +497,13 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
           <>
             <TasksSection
               tasks={tasks.data}
-              members={members.data ?? []}
+              members={childMembers}
               error={tasks.error}
               filter={taskFilter}
               onFilter={setTaskFilter}
               onEdit={(task) => {
                 setNotice(undefined)
                 setEditingTask(task)
-              }}
-              onPickHousehold={() => {
-                setNotice(undefined)
-                setPickingHousehold(true)
               }}
               onAdd={() => {
                 setNotice(undefined)

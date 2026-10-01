@@ -4,7 +4,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Chore, ChorePlan } from '../api/chores'
 import i18n from '../i18n'
-import { makeChore, makeMe, makeMember, mockApi, renderApp, setupDone } from '../test/utils'
+import {
+  makeChore,
+  makeChorePlan,
+  makeMe,
+  makeMember,
+  mockApi,
+  renderApp,
+  setupDone,
+} from '../test/utils'
 
 beforeEach(async () => {
   await i18n.changeLanguage('de')
@@ -58,14 +66,13 @@ const vacuumed = makeChore({
 })
 const paused = makeChore({ id: 5, room_id: 2, title: 'Rasen mähen', active: false })
 
-const PLAN: ChorePlan = {
-  date: '2026-10-03',
+const PLAN = makeChorePlan({
   rooms: [
     { id: 1, name: 'Bad oben', icon: 'fluent-emoji-flat:bathtub' },
     { id: 2, name: 'Überall', icon: 'fluent-emoji-flat:broom' },
   ],
   chores: [windows, vacuumed, paused, floor, toilet],
-}
+})
 
 /** Merkt sich wie der Server, was erledigt ist; das Display lädt nach jedem Tipp neu. */
 function mockChores(plan: ChorePlan = PLAN) {
@@ -199,6 +206,33 @@ describe('Haushalt', () => {
     expect(calls.map((call) => call.key)).toContain('DELETE /api/chores/4/done')
   })
 
+  it('zeigt die faire Verteilung aus „Wer war’s?“', async () => {
+    mockChores({
+      ...PLAN,
+      shares: [
+        { member_id: 3, count: 3 },
+        { member_id: 1, count: 1 },
+      ],
+    })
+    renderApp('/household')
+
+    const share = within(await screen.findByRole('region', { name: /Wer hat’s gemacht/ }))
+    expect(share.getByText('letzte 30 Tage')).toBeVisible()
+    // Reihenfolge wie in der Familie; Kinder stehen dabei, wenn sie mitgeholfen haben.
+    expect(share.getAllByText(/-mal\)$/).map((item) => item.textContent)).toEqual([
+      'Lena: 25 % (1-mal)',
+      'Mama: 75 % (3-mal)',
+    ])
+  })
+
+  it('zeigt keine Verteilung, solange niemand „Wer war’s?“ angetippt hat', async () => {
+    mockChores()
+    renderApp('/household')
+
+    await screen.findByRole('button', { name: /Toilette putzen/ })
+    expect(screen.queryByRole('region', { name: /Wer hat’s gemacht/ })).toBeNull()
+  })
+
   it('lobt, wenn nichts dran ist', async () => {
     mockChores({ ...PLAN, chores: [windows] })
     renderApp('/household')
@@ -210,7 +244,7 @@ describe('Haushalt', () => {
   })
 
   it('führt ohne Putzplan zur Einrichtung im Elternbereich', async () => {
-    mockChores({ date: '2026-10-03', rooms: [], chores: [] })
+    mockChores(makeChorePlan())
     renderApp('/household')
 
     const link = await screen.findByRole('link', { name: /Noch kein Putzplan/ })

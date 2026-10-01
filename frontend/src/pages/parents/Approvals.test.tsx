@@ -125,7 +125,7 @@ describe('Aufgaben mit Kontrolle am Display', () => {
     })
     let today = makeToday({
       tasks: [room],
-      points: [{ member_id: 1, today: 0, total: 10, week_done: 0 }],
+      points: [{ member_id: 1, today: 0, total: 10 }],
     })
     mockApi({
       'GET /api/setup/status': setupDone,

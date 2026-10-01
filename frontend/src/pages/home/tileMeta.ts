@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from 'react'
+import BroomIcon from '~icons/fluent-emoji-flat/broom'
 import MealIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
@@ -13,6 +14,7 @@ type Icon = ComponentType<SVGProps<SVGSVGElement>>
 export const TILES: Record<TileId, { title: string; icon: Icon }> = {
   weather: { title: 'home.weather', icon: SunCloudIcon },
   tasks: { title: 'home.routine', icon: StarIcon },
+  chores: { title: 'home.chores', icon: BroomIcon },
   shopping: { title: 'home.shopping', icon: CartIcon },
   events: { title: 'home.events', icon: CalendarIcon },
   meals: { title: 'home.meals', icon: MealIcon },

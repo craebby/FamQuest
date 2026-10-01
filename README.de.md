@@ -25,15 +25,15 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 
 - Startseite „Heute“ als Wochen-Dashboard: Uhr und Wetter, die aktuelle Routine der Kinder und die
   nächsten sieben Tage mit Terminen und Essen
-- Familienansicht mit einer Spalte pro Person, Aufgaben mit einem Tipp erledigen
+- Aufgaben mit einer Spalte je Kind, daneben der Haushalt; ein Tipp erledigt
 - Routinen (täglich, bestimmte Wochentage, Mo–Fr, einmalig, flexibel „etwa alle X Tage“) und
   Tagesabschnitte
 - Routinen in fester Reihenfolge je Person, freiwillige Extra-Aufgaben im eigenen Block
-- „Einer für alle“: von einem Erwachsenen erledigt, für alle erledigt
+- „Einer für alle“: von einem Kind erledigt, für alle erledigt (z. B. Tisch decken)
 - Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
-- Faire Verteilung: Anteil jedes Erwachsenen an den Aufgaben der Woche
+- Faire Verteilung: wer wie viel vom Putzplan erledigt hat
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person, Symbole
   für Termine der Kinder (z. B. Judo, Reiten, Verabredung), damit sie sie ohne Lesen erkennen
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
@@ -44,7 +44,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
   Hinweis), im Laden abhaken
 - Haushalt: Putzplan mit Ampel statt Terminen (jede Hausarbeit mit eigenem Abstand, je Raum), ein
-  Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor
+  Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor; was
+  dran ist, steht auch auf „Heute“ und neben den Kindern unter „Aufgaben“
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -138,10 +139,11 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
   schlägt die App eins passend zum Titel vor.
 - **Titel** und optional eine Beschreibung
 - **Punkte**: 0 bis 1000
-- **Für wen**: eine oder mehrere Personen; jede Person erledigt die Aufgabe und bekommt die Punkte
-  für sich. Mit **„Einer für alle“** (ab zwei Personen) gilt sie dagegen für alle als erledigt,
-  sobald eine Person sie erledigt hat, etwa „Bad putzen“ bei Mama und Papa. Die anderen Spalten
-  zeigen den Avatar der Person, die es war; Punkte und der Anteil an der Woche zählen für sie.
+- **Für wen**: ein oder mehrere Kinder; jedes erledigt die Aufgabe und bekommt die Punkte für
+  sich. Mit **„Einer für alle“** (ab zwei Kindern) gilt sie dagegen für alle als erledigt, sobald
+  ein Kind sie erledigt hat, etwa „Tisch decken“ bei Geschwistern. Die anderen Spalten zeigen den
+  Avatar des Kindes, das es war; die Punkte bekommt dieses Kind. Erwachsene bekommen keine
+  Aufgaben: Ihre Hausarbeit steht im Putzplan (siehe [Haushalt](#haushalt)).
 - **Wie oft**: jeden Tag, an bestimmten Wochentagen (mit Schnellauswahl Mo–Fr oder Wochenende),
   einmal an einem Datum oder **flexibel** (siehe unten)
 - **Wann**: morgens, mittags, nachmittags, abends, jederzeit oder **Extra**. Die Aufgaben eines
@@ -154,18 +156,13 @@ Im Elternbereich unter „Aufgaben“ legt ihr fest, wer was wann erledigt. Eine
 - **Eltern prüfen**: Punkte gibt es erst, wenn ihr die Erledigung bestätigt habt (siehe
   [Kontrolle durch die Eltern](#kontrolle-durch-die-eltern))
 
-Beim Anlegen füllt **„Aus Vorlagen wählen“** das Formular mit einem Tipp vor. Es gibt zwei
-Gruppen: „Kinder“ mit kurzen Alltagsroutinen (morgens Zähne putzen, Anziehen, Frühstücken; nach
-Kita oder Schule Rucksack aufhängen, Brotdose ausräumen; abends Spielsachen aufräumen, Schlafanzug,
-Zähne putzen, ab ins Bett) plus freiwilligen Extras (Tisch decken, beim Kochen helfen …) und
-„Haushalt“ für die Care-Arbeit der Erwachsenen samt Mental Load (Kochen, Spülmaschine, Wäsche,
-Einkaufen, Putzen, Post und Rechnungen, Ablage, Technik, Steuererklärung …). Haushaltsvorlagen sind
-„Einer für alle“ und meist flexibel mit alltagsnahen Abständen (Müll alle 2 Tage, Bad wöchentlich,
-Bettwäsche alle 2 Wochen, Fenster alle 3 Monate, Steuer jährlich). Alles bleibt danach änderbar.
-Mit **„Haushalt: mehrere auswählen“** übernehmt ihr viele Haushaltsaufgaben auf einmal: abhaken,
-Erwachsene wählen (Standard: alle), fertig; schon vorhandene Aufgaben sind markiert. Die
-Vorlagen stehen in `frontend/src/pools/tasks.ts`, ihre Titel in
-`frontend/src/locales/<sprache>/pool.json`.
+Beim Anlegen füllt **„Aus Vorlagen wählen“** das Formular mit einem Tipp vor: kurze
+Alltagsroutinen der Kinder (morgens Zähne putzen, Anziehen, Frühstücken; nach Kita oder Schule
+Rucksack aufhängen, Brotdose ausräumen; abends Spielsachen aufräumen, Schlafanzug, Zähne putzen, ab
+ins Bett) plus freiwillige Extras (Tisch decken, beim Kochen helfen …). Alles bleibt danach
+änderbar. Die Vorlagen stehen in `frontend/src/pools/tasks.ts`, ihre Titel in
+`frontend/src/locales/<sprache>/pool.json`. Vorlagen für Hausarbeit bringt der
+Einrichtungs-Assistent im Bereich [Haushalt](#haushalt) mit.
 
 Die Belohnungs-Vorschläge (`frontend/src/pools/rewards.ts`) enthalten nur, was es nicht ohnehin
 gibt, z. B. einen besonderen Frühstückswunsch, Bildschirmzeit, einen Film aussuchen, eine besondere
@@ -217,8 +214,7 @@ dort eine Routine gibt). Oben ein Kind antippen; das gewählte Kind ist immer he
   jedes Kind erledigt und punktet getrennt). An diesen Tagen ersetzt sie dessen bisherige Routine.
 
 Ist eine Aufgabe für ein Kind Schritt einer Routine, steht sie für dieses Kind genau an den Tagen
-der Routine an; ihr eigenes „Wie oft?“ gilt nur noch für andere Personen (z. B. einen Erwachsenen
-mit derselben Aufgabe). Extras, „Jederzeit“ sowie einmalige und flexible Aufgaben gehören zu keiner
+der Routine an; ihr eigenes „Wie oft?“ gilt nur noch für andere Kinder mit derselben Aufgabe. Extras, „Jederzeit“ sowie einmalige und flexible Aufgaben gehören zu keiner
 Routine; sie bleiben im Abschnitt „Aufgaben“. Beim Update werden bestehende Aufgaben der Kinder
 automatisch zu Routinen: Wochentage mit denselben Schritten werden eine Version, die Reihenfolge
 bleibt.
@@ -235,8 +231,12 @@ Die Startseite ist ein Wochen-Dashboard fürs Wanddisplay (auf schmalen Bildschi
   nachmittags, abends) mit seinen Aufgaben als Symbole. **Ein Tipp** erledigt eine Aufgabe wie in
   der Familienansicht (mit „+2“, Sanduhr bei Kontrolle durch die Eltern); nochmal tippen macht es
   rückgängig. Ist alles geschafft oder gerade keine Routine dran, steht beim Kind nur **„Alles
-  erledigt“**. Der Avatar öffnet die Personenansicht, der Pfeil die Aufgaben. Die Aufgaben der
-  Erwachsenen stehen nicht auf der Startseite, sondern unter **Aufgaben**.
+  erledigt“**. Der Avatar öffnet die Personenansicht, der Pfeil die Aufgaben.
+- **Haushalt** daneben: was im Putzplan **rot oder gelb** ist, das Dringendste zuerst (höchstens
+  sechs, der Rest als „+3 weitere“). **Ein Tipp** erledigt, danach fragt die Leiste „Wer war's?“
+  wie in der Ansicht Haushalt; Erledigtes bleibt bis zum Tagesende durchgestrichen stehen, ein
+  weiterer Tipp nimmt es zurück. Ist nichts dran, steht dort „Alles im grünen Bereich“. Der Pfeil
+  öffnet den ganzen Putzplan (siehe [Haushalt](#haushalt)).
 - **Einkauf** daneben: was fehlt, als Symbole mit Namen (und Menge oder Hinweis). „Eintragen“
   öffnet denselben Dialog wie die Einkaufsliste (siehe [Einkaufsliste](#einkaufsliste)), der Pfeil
   die Liste.
@@ -260,11 +260,13 @@ Einstellung wird auf dem Server gespeichert und gilt für alle Displays der Fami
 
 ## Familienansicht
 
-![Familienansicht: eine Spalte pro Person mit den heutigen Aufgaben](docs/screenshots/de/tasks.png)
+![Familienansicht: eine Spalte je Kind mit den heutigen Aufgaben, daneben der Haushalt](docs/screenshots/de/tasks.png)
 
-Die Familienansicht („Aufgaben“, Stern) zeigt alle Familienmitglieder nebeneinander, jede Person
-mit großem Avatar und ihren heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe
-gehört, ergibt sich aus der Spalte.
+Die Familienansicht („Aufgaben“, Stern) zeigt die Kinder nebeneinander, jedes mit großem Avatar und
+seinen heutigen Aufgaben. Niemand muss sich an- oder ummelden: Wem eine Aufgabe gehört, ergibt sich
+aus der Spalte. Erwachsene haben keine eigene Spalte; rechts daneben steht die Spalte **Haushalt**
+(Besen) mit dem, was im Putzplan gerade rot oder gelb ist (siehe [Haushalt](#haushalt)). Sie
+erscheint, sobald es einen Putzplan gibt.
 
 - **Ein Tipp** auf eine Aufgabenkarte erledigt sie für diese Person (Haken, Einfärbung in der
   Personenfarbe). **Nochmal tippen** macht es rückgängig. Jede Aufgabe kann pro Person und Tag nur
@@ -326,8 +328,8 @@ Im Elternbereich zeigt der Abschnitt **„Punkte“** den Stand jeder Person. Ei
 Formular, um Punkte mit Begründung **gutzuschreiben oder abzuziehen** (1 bis 1000). Ein Abzug darf
 den Punktestand nicht unter 0 drücken.
 
-Erwachsene sammeln keine Punkte (siehe [Faire Verteilung](#faire-verteilung)); ihre Karten zeigen
-keine Punktwerte.
+Erwachsene sammeln keine Punkte und haben keine eigenen Aufgaben; ihre Hausarbeit steht im
+Putzplan (siehe [Haushalt](#haushalt) und [Faire Verteilung](#faire-verteilung)).
 
 ## Kontrolle durch die Eltern
 
@@ -376,12 +378,16 @@ später geändert oder gelöscht wird. Die Vorschläge stehen in `frontend/src/p
 
 ## Faire Verteilung
 
-Erwachsene bekommen keine Belohnungen. Ihre Spalte zeigt stattdessen, welchen **Anteil** der in
-dieser Woche (Montag bis Sonntag, Zeitzone der Familie) von Erwachsenen erledigten Aufgaben sie
-übernommen haben, z. B. 40 % und 60 %, als geteilten Balken in den Personenfarben. Die
-Personenansicht zeigt zusätzlich alle Anteile mit der Zahl der Aufgaben. Gezählt wird die Anzahl
-erledigter Aufgaben, Punktwerte spielen keine Rolle. Das ist bewusst kein Wettbewerb, sondern soll
-helfen, die Arbeit fair zu verteilen. Mit nur einem Erwachsenen entfällt die Anzeige.
+Erwachsene bekommen keine Punkte und keine Belohnungen. Stattdessen zeigt FamQuest, wie sich die
+Hausarbeit verteilt: **„Wer hat's gemacht?“** zählt die Erledigungen im Putzplan der letzten 30
+Tage, zu denen jemand bei „Wer war's?“ einen Avatar angetippt hat, und zeigt die Anteile (z. B.
+40 % und 60 %) als geteilten Balken in den Personenfarben. Er steht unten in der Ansicht
+**Haushalt** (mit Namen und Anzahl) und kompakt über der Haushalt-Spalte unter **Aufgaben**.
+
+Erwachsene stehen immer dabei, Kinder nur, wenn sie mitgeholfen haben. Gezählt wird die Anzahl,
+nicht der Aufwand; Erledigungen ohne Angabe zählen für niemanden. Das ist bewusst kein Wettbewerb,
+sondern soll helfen, die Arbeit fair zu verteilen. Solange niemand etwas angetippt hat oder nur
+eine Person dabei wäre, entfällt die Anzeige.
 
 ## Google Kalender
 
@@ -564,6 +570,10 @@ eine Ampel zeigt, wie dringend sie ist.
   Erledigtes steht blass darunter; ein weiterer Tipp nimmt es zurück.
 - **Sortierung:** „Dringend zuerst“ (Jetzt dran, Bald dran, Hat noch Zeit) oder „Nach Raum“.
 - Hausarbeit gehört dem Haushalt, nicht einer Person. Wer gerade Zeit hat, macht es.
+- **Auch auf „Heute“ und unter „Aufgaben“:** Was rot oder gelb ist, steht als Kachel „Haushalt“
+  auf der Startseite und als eigene Spalte „Haushalt“ neben den Kindern unter **Aufgaben**, jeweils
+  zum Abhaken mit einem Tipp. Grünes zeigt nur diese Ansicht. Über der Spalte stehen die Ampel in
+  Zahlen und die [faire Verteilung](#faire-verteilung).
 
 ### Putzplan einrichten
 
@@ -599,8 +609,12 @@ Danach lässt sich alles von Hand ändern:
 Die Vorlagen stehen in `frontend/src/pools/chores.ts`, ihre Namen in
 `frontend/src/locales/<sprache>/pool.json`.
 
-Der Putzplan löst die bisherigen Aufgaben der Erwachsenen ab (siehe [Roadmap](#roadmap)); bis dahin
-gibt es beides nebeneinander.
+Der Putzplan hat die früheren Aufgaben der Erwachsenen abgelöst: Aufgaben gibt es nur noch für
+Kinder. **Beim Update** werden Aufgaben gelöscht, die ausschließlich Erwachsenen zugeordnet waren
+(mit ihren Erledigungen); bei Aufgaben für Kinder und Erwachsene fällt nur die Zuordnung der
+Erwachsenen weg. Punktebuchungen bleiben erhalten. Legt vorher ein [Backup](#backup-und-restore)
+an, wenn ihr die alten Aufgaben noch nachschlagen wollt. Ein Kind lässt sich erst zum Erwachsenen
+machen, wenn es keine Aufgaben und Routinen mehr hat.
 
 ## Fotos (Bilderrahmen)
 
@@ -1095,8 +1109,9 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
   Abstände
 - [ ] 3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B.
   „Hühnerfutter holen“); wer es macht, hakt ab
-- [ ] 4. Kachel „Haushalt“ auf „Heute“; die Spalten der Erwachsenen unter „Aufgaben“ entfallen, die
-  faire Verteilung speist sich aus dem Putzplan
+- [x] 4. Kachel „Haushalt“ auf „Heute“ (nur Rotes und Gelbes, ein Tipp erledigt); unter „Aufgaben“
+  ersetzt die Spalte „Haushalt“ die Spalten der Erwachsenen, die faire Verteilung speist sich aus
+  dem Putzplan (vorgezogen vor Etappe 3)
 - [ ] 5. Feinschliff im Alltag
 
 **Ideen ohne Version**

@@ -149,8 +149,10 @@ Erwachsenen-Aufgaben werden nicht übernommen. Gearbeitet wird auf dem Branch `p
    → Vorschlag für Räume, Aufgaben und Abstände zum An- und Abwählen
 3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B. „Hühnerfutter
    holen“), wer es macht, hakt ab; auf Wunsch „kommt wieder“ → wandert in den Putzplan
-4. Kachel „Haushalt“ auf „Heute“ (nur Gelbes und Rotes); Erwachsenen-Aufgaben aus „Aufgaben“
-   entfernen, faire Verteilung aus den Erledigungen im Putzplan
+4. Kachel „Haushalt“ auf „Heute“ (nur Gelbes und Rotes, ein Tipp erledigt); unter „Aufgaben“
+   ersetzt eine Spalte „Haushalt“ die Erwachsenen-Spalten, Aufgaben gibt es nur noch für Kinder
+   (alte Erwachsenen-Aufgaben löscht die Migration), faire Verteilung aus den Erledigungen im
+   Putzplan (letzte 30 Tage); vorgezogen und vor Etappe 3 umgesetzt
 5. Feinschliff
 
 ## Befehle

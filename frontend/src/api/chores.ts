@@ -40,6 +40,10 @@ export interface ChorePlan {
   date: string
   rooms: ChoreRoom[]
   chores: Chore[]
+  /** So viele Tage zählt die faire Verteilung zurück (heute eingeschlossen). */
+  share_days: number
+  /** Wer in dieser Zeit wie oft etwas erledigt hat; nur mit Angabe „Wer war's?“. */
+  shares: { member_id: number; count: number }[]
 }
 
 export interface RoomData {

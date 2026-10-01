@@ -1,9 +1,9 @@
 """Aufbau der Startseite „Heute“: welche Bereiche sichtbar sind und wie die Woche beginnt, für die
 ganze Familie.
 
-Die Anordnung ist fest (Kopf mit Wetter, Routine und Einkauf, unten die Woche mit Terminen und
-Essen); die gespeicherte Reihenfolge spielt keine Rolle mehr. Die frühere Kachel „week“ (Ringe je
-Person) gibt es nicht mehr, gespeicherte Einträge dazu fallen weg.
+Die Anordnung ist fest (Kopf mit Wetter, Routine, Haushalt und Einkauf, unten die Woche mit
+Terminen und Essen); die gespeicherte Reihenfolge spielt keine Rolle mehr. Die frühere Kachel
+„week“ (Ringe je Person) gibt es nicht mehr, gespeicherte Einträge dazu fallen weg.
 """
 
 from typing import Literal
@@ -17,8 +17,8 @@ from app.models import Family
 
 router = APIRouter(prefix="/home", tags=["home"])
 
-# tasks: die aktuelle Routine der Kinder.
-TileId = Literal["weather", "events", "tasks", "meals", "shopping"]
+# tasks: die aktuelle Routine der Kinder; chores: was im Putzplan gelb oder rot ist.
+TileId = Literal["weather", "events", "tasks", "meals", "shopping", "chores"]
 # rolling: ab heute sieben Tage; monday: die aktuelle Woche von Montag bis Sonntag.
 WeekMode = Literal["rolling", "monday"]
 
@@ -29,6 +29,7 @@ DEFAULT_TILES: list[tuple[TileId, bool]] = [
     ("tasks", True),
     ("meals", True),
     ("shopping", True),
+    ("chores", True),
 ]
 
 
