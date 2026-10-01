@@ -16,6 +16,7 @@ import {
   useDemo,
   useUnlockParent,
 } from '../api/auth'
+import { type Chore, type ChoreRoom, useChores } from '../api/chores'
 import { type Member, childrenOf, useMembers } from '../api/members'
 import { type Reward, useRewards } from '../api/rewards'
 import { type Routine, useRoutines } from '../api/routines'
@@ -28,6 +29,10 @@ import { errorMessage } from '../errors'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { ApprovalsSection } from './parents/ApprovalsSection'
 import { CalendarSection } from './parents/CalendarSection'
+import { ChoreEditor } from './parents/ChoreEditor'
+import { ChoreRoomEditor } from './parents/ChoreRoomEditor'
+import { ChoreWizard } from './parents/ChoreWizard'
+import { ChoresSection } from './parents/ChoresSection'
 import { EventSymbolsSection } from './parents/EventSymbolsSection'
 import { DeviceSection } from './parents/DeviceSection'
 import { FamilySection } from './parents/FamilySection'
@@ -213,6 +218,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   const routines = useRoutines()
   const today = useToday()
   const rewards = useRewards()
+  const chores = useChores()
   const [editingPin, setEditingPin] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | 'new' | null>(null)
   const [editingTask, setEditingTask] = useState<Task | 'new' | null>(null)
@@ -227,6 +233,9 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   )
   const [poolMember, setPoolMember] = useState<Member | null>(null)
   const [pickingHousehold, setPickingHousehold] = useState(false)
+  const [editingChore, setEditingChore] = useState<{ chore?: Chore; roomId: number } | null>(null)
+  const [editingRoom, setEditingRoom] = useState<ChoreRoom | 'new' | null>(null)
+  const [choreWizard, setChoreWizard] = useState(false)
 
   // Jede Unteransicht (Editor, Vorschläge, Punkte, PIN) beginnt oben, nicht an der Stelle,
   // an der man in der Übersicht gerade war.
@@ -238,11 +247,17 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
         ? 'reward'
         : poolMember || pickingHousehold
           ? 'pool'
-          : pointsMember
-            ? 'points'
-            : editingPin
-              ? 'pin'
-              : 'overview'
+          : editingChore
+            ? 'chore'
+            : editingRoom
+              ? 'room'
+              : choreWizard
+                ? 'wizard'
+                : pointsMember
+                  ? 'points'
+                  : editingPin
+                    ? 'pin'
+                    : 'overview'
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [view, area])
@@ -361,6 +376,56 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
           setNotice(t('tasks.pool_added', { count }))
         }}
         onCancel={() => setPickingHousehold(false)}
+      />
+    )
+  }
+
+  if (editingChore) {
+    const closeWith = (message: string) => {
+      setEditingChore(null)
+      setNotice(message)
+    }
+    return (
+      <ChoreEditor
+        chore={editingChore.chore}
+        roomId={editingChore.roomId}
+        rooms={chores.data?.rooms ?? []}
+        onSaved={(title) => closeWith(t('tasks.saved', { title }))}
+        onDeleted={(title) => closeWith(t('tasks.deleted', { title }))}
+        onCancel={() => setEditingChore(null)}
+      />
+    )
+  }
+
+  if (editingRoom) {
+    const room = editingRoom === 'new' ? undefined : editingRoom
+    const closeWith = (message: string) => {
+      setEditingRoom(null)
+      setNotice(message)
+    }
+    return (
+      <ChoreRoomEditor
+        room={room}
+        choreCount={
+          (chores.data?.chores ?? []).filter((chore) => chore.room_id === room?.id).length
+        }
+        onSaved={(name) => closeWith(t('chores.room_saved', { name }))}
+        onDeleted={(name) => closeWith(t('chores.room_deleted', { name }))}
+        onCancel={() => setEditingRoom(null)}
+      />
+    )
+  }
+
+  if (choreWizard && chores.data) {
+    return (
+      <ChoreWizard
+        plan={chores.data}
+        hasChildren={childMembers.length > 0}
+        onDone={({ chores: count }) => {
+          setChoreWizard(false)
+          setNotice(t('chores.wizard_added', { count }))
+        }}
+        onCancel={() => setChoreWizard(false)}
       />
     )
   }
@@ -486,6 +551,34 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
                 setNewStep({ routine, label })
               }}
               onMessage={setNotice}
+            />
+          </>
+        )}
+        {area === 'household' && (
+          <>
+            <ChoresSection
+              plan={chores.data}
+              error={chores.error}
+              onWizard={() => {
+                setNotice(undefined)
+                setChoreWizard(true)
+              }}
+              onAddRoom={() => {
+                setNotice(undefined)
+                setEditingRoom('new')
+              }}
+              onEditRoom={(room) => {
+                setNotice(undefined)
+                setEditingRoom(room)
+              }}
+              onAddChore={(room) => {
+                setNotice(undefined)
+                setEditingChore({ roomId: room.id })
+              }}
+              onEditChore={(chore) => {
+                setNotice(undefined)
+                setEditingChore({ chore, roomId: chore.room_id })
+              }}
             />
           </>
         )}

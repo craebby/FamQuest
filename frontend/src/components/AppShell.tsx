@@ -1,6 +1,7 @@
 import { type ComponentType, type SVGProps, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
+import BroomIcon from '~icons/fluent-emoji-flat/broom'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import PhotoIcon from '~icons/fluent-emoji-flat/framed-picture'
@@ -114,6 +115,12 @@ export function AppShell() {
           label={t('nav.shopping')}
           icon={CartIcon}
           active={pathname.startsWith('/shopping')}
+        />
+        <NavItem
+          to="/household"
+          label={t('nav.household')}
+          icon={BroomIcon}
+          active={pathname.startsWith('/household')}
         />
         {hasPhotos && (
           <NavItem to="/frame" label={t('nav.frame')} icon={PhotoIcon} active={false} />

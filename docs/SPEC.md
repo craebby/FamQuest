@@ -92,6 +92,20 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 - Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
 - Später: PWA mit Offline-Nutzung im Laden (Version 1.2), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
 
+**Haushalt** *(Phase 7, entschieden am 2026-10-01)*
+
+Die Aufgaben der Erwachsenen (eigene Spalten in „Aufgaben“, „Einer für alle“, Haushaltsvorlagen) hat im Alltag niemand abgehakt: Sie standen nur noch unter „Aufgaben“, und „heute fällig je Person“ passt nicht zu Hausarbeit. Sie werden durch einen Putzplan abgelöst; die Routinen der Kinder bleiben, wie sie sind.
+
+- Putzplan: Jede Hausarbeit gehört dem Haushalt, nicht einer Person, und liegt in einem Raum, den die Eltern frei benennen („Bad oben“, „Bad unten“, „Garten“). Sie hat keinen Termin, sondern einen eigenen Abstand (Tage, Wochen, Monate, Jahre; bis drei Jahre). Die Uhr läuft ab der letzten Erledigung; ein geänderter Abstand zählt ebenfalls ab dort.
+- Ampel: grün, solange weniger als 70 % des Abstands um sind; gelb ab 70 %, aber frühestens 14 Tage vor der Fälligkeit; rot, sobald der Abstand um ist. Überfälliges stapelt sich nicht: Eine Aufgabe ist einmal fällig („seit 5 Tagen“), nicht mehrfach verpasst. „Heute“ gilt in der Zeitzone der Familie.
+- Ansicht „Haushalt“ (Besen) in der Navigationsleiste, **ohne Eltern-PIN** wie Essensplan und Einkaufsliste: sortiert nach Dringlichkeit („Jetzt dran“, „Bald dran“, „Hat noch Zeit“, „Heute erledigt“) oder nach Raum. Ein Tipp erledigt, ein weiterer am selben Tag nimmt es zurück.
+- „Wer war's?“: Nach dem Erledigen erscheint für einige Sekunden eine Leiste mit den Avataren (Erwachsene zuerst) und „Rückgängig“. Die Angabe ist freiwillig; ohne sie gilt die Aufgabe trotzdem als erledigt. Sie ist die Grundlage für die faire Verteilung (Etappe 4).
+- Verwaltung im Elternbereich (Bereich „Haushalt“): Räume und Aufgaben anlegen, ändern, pausieren, löschen. Beim Anlegen wählen die Eltern den Stand („gerade erledigt“, „mittendrin“, „jetzt fällig“).
+- Einrichtungs-Assistent: Fragen zum Zuhause (Wohnung oder Haus, Zahl der Bäder, Garten, Balkon/Terrasse, Saugroboter, Spülmaschine, Trockner, Haustiere, Auto, Kamin/Ofen, Kinderzimmer, Papierkram und Technik) und zum Tempo (locker, normal, gründlich: streckt oder staucht alle Abstände auf gut lesbare Werte). Daraus entsteht ein Vorschlag aus rund 80 Vorlagen, in dem die Eltern abwählen, was nicht passt. Mit Saugroboter wird aus „Staubsaugen“ das Leeren und Pflegen des Roboters plus „Ecken und Treppe saugen“. Der Assistent verteilt den Start über die Abstände, damit nicht alles am selben Tag fällig wird, und lässt sich erneut ausführen: Vorhandene Räume und Aufgaben bleiben unangetastet.
+- Alte Erwachsenen-Aufgaben werden nicht in den Putzplan übernommen; sie entfallen mit Etappe 4.
+- Noch offen in dieser Phase: „Zu erledigen“ (gemeinsame Liste für Einmaliges wie „Hühnerfutter holen“), Kachel auf „Heute“, faire Verteilung aus dem Putzplan.
+- Bewusst nicht: Zuweisung an Personen, Aufwandspunkte, Tägliches wie Kochen. Später denkbar: saisonale Aufgaben (Rasen nur im Sommer), Urlaubsmodus, Reihenfolge der Räume.
+
 **Symbole für Termine** *(Einschub zu Phase 2, entschieden am 2026-09-28)*
 
 Kinder, die nicht lesen können, erkennen ihre Termine im Kalender sonst nicht. Deshalb bekommen Termine ein Symbol, wenn ein festgelegter Begriff im Titel steht (z. B. „Judo“ → Judoanzug, „Kinderturnen“ → Turnen).

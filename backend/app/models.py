@@ -547,3 +547,68 @@ class ShoppingItem(Base):
 
 # Gleicher Name in anderer Schreibweise ist derselbe Artikel („milch“ = „Milch“).
 Index("uq_shopping_items_name_lower", func.lower(ShoppingItem.name), unique=True)
+
+
+class ChoreRoom(Base):
+    """Raum oder Bereich im Putzplan, frei benannt (z. B. „Bad oben“, „Garten“)."""
+
+    __tablename__ = "chore_rooms"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(60))
+    # Iconify-Name wie bei Aufgaben.
+    icon: Mapped[str] = mapped_column(String(100))
+    # Reihenfolge in Ansicht und Verwaltung (aufsteigend).
+    position: Mapped[int] = mapped_column(default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# Gleicher Name in anderer Schreibweise ist derselbe Raum („bad“ = „Bad“).
+Index("uq_chore_rooms_name_lower", func.lower(ChoreRoom.name), unique=True)
+
+
+class Chore(Base):
+    """Wiederkehrende Hausarbeit im Putzplan. Sie gehört dem Haushalt, nicht einer Person, und hat
+    keinen festen Termin: Wie dringend sie ist, ergibt sich aus dem Abstand und der letzten
+    Erledigung (siehe app.chores)."""
+
+    __tablename__ = "chores"
+    __table_args__ = (CheckConstraint("interval_days > 0", name="interval_positive"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    room_id: Mapped[int] = mapped_column(
+        ForeignKey("chore_rooms.id", ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(100))
+    # Iconify-Name wie bei Aufgaben.
+    icon: Mapped[str] = mapped_column(String(100))
+    # So viele Tage nach der letzten Erledigung ist sie wieder fällig.
+    interval_days: Mapped[int] = mapped_column(SmallInteger)
+    # Gilt als letzte Erledigung, solange es keine echte gibt (Stand beim Anlegen).
+    anchor_date: Mapped[dt.date] = mapped_column(Date)
+    # Pausierte Aufgaben bleiben gespeichert, erscheinen aber nicht im Putzplan.
+    active: Mapped[bool] = mapped_column(default=True, server_default="true")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ChoreCompletion(Base):
+    """Erledigung einer Hausarbeit an einem Kalendertag der Familie; wer es war, ist freiwillig.
+
+    Rückgängig machen löscht die Zeile. Höchstens eine Erledigung je Tag, auch bei Doppel-Tipps.
+    """
+
+    __tablename__ = "chore_completions"
+    # Der Unique-Constraint (chore_id, date) dient zugleich als Index für chore_id.
+    __table_args__ = (UniqueConstraint("chore_id", "date"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id", ondelete="CASCADE"))
+    # Bleibt als Erledigung erhalten, wenn die Person gelöscht wird.
+    member_id: Mapped[int | None] = mapped_column(
+        ForeignKey("family_members.id", ondelete="SET NULL"), index=True
+    )
+    # Kalendertag in der Zeitzone der Familie, nicht in UTC.
+    date: Mapped[dt.date] = mapped_column(Date)
+    completed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

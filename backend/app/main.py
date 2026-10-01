@@ -13,6 +13,7 @@ from app.api import (
     auth,
     calendar,
     calendar_week,
+    chores,
     demo,
     event_symbols,
     frame,
@@ -94,6 +95,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         frame,
         meals,
         shopping,
+        chores,
     ):
         api.include_router(module.router)
     app.include_router(api)

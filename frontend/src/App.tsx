@@ -9,6 +9,7 @@ import { Button, FullScreenMessage } from './components/ui'
 import { errorMessage } from './errors'
 import { applyFamilyLanguage } from './i18n'
 import { CalendarPage } from './pages/CalendarPage'
+import { ChoresPage } from './pages/ChoresPage'
 import { FamilyPage } from './pages/FamilyPage'
 import { FramePage } from './pages/FramePage'
 import { LoginPage } from './pages/LoginPage'
@@ -96,6 +97,7 @@ export default function App() {
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/meals" element={<MealsPage />} />
             <Route path="/shopping" element={<ShoppingPage />} />
+            <Route path="/household" element={<ChoresPage />} />
           </Route>
           <Route path="/frame" element={<FramePage />} />
           <Route path="/parents/:area?" element={<ParentsPage />} />

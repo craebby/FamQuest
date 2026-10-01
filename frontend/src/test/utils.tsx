@@ -5,6 +5,7 @@ import { vi } from 'vitest'
 
 import App from '../App'
 import type { Me } from '../api/auth'
+import type { Chore } from '../api/chores'
 import type { Member } from '../api/members'
 import type { Photo } from '../api/photos'
 import type { Reward } from '../api/rewards'
@@ -129,6 +130,25 @@ export function makePhoto(overrides: Partial<Photo> = {}): Photo {
     taken_at: '2025-12-24T18:30:05',
     visible: true,
     created_at: '2026-09-28T12:00:00Z',
+    ...overrides,
+  }
+}
+
+export function makeChore(overrides: Partial<Chore> = {}): Chore {
+  return {
+    id: 1,
+    room_id: 1,
+    title: 'Toilette putzen',
+    icon: 'fluent-emoji-flat:toilet',
+    interval_days: 14,
+    active: true,
+    last_done: null,
+    done_today: false,
+    done_by: null,
+    due_date: '2026-10-10',
+    days_left: 7,
+    ratio: 0.5,
+    level: 'ok',
     ...overrides,
   }
 }

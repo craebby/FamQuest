@@ -43,6 +43,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Meal plan: type the week's dishes right on the display, with suggestions and icons
 - Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
   note), tick it off in the shop
+- Household: a cleaning plan with a traffic light instead of dates (every chore with its own
+  interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -528,6 +530,54 @@ icon. Meals you switch off stay stored.
 from outside, e.g. over HTTPS behind a reverse proxy (see [Behind a reverse proxy](#behind-a-reverse-proxy))
 or via a VPN. An installable app that also works offline in the shop is planned for 1.2.
 
+## Household
+
+**Household** (broom) in the navigation bar holds the cleaning plan: recurring housework without a
+fixed date. Every chore has its own interval ("every 2 weeks", "every 3 months"), and a traffic
+light shows how urgent it is.
+
+- **Traffic light:** green means "can wait", yellow "due soon" (from 70% of the interval, two weeks
+  ahead at most), red "due now". The bar under each row fills up until the chore is due. The clock
+  runs **from the last time it was done**, not by the calendar; missed chores don't pile up, a
+  chore is simply "due for 5 days".
+- **Done:** one tap on the row, **without the parents' PIN**. A bar then briefly asks
+  **"Who did it?"**: tap an avatar, choose "Undo", or just do nothing. Chores done today are listed
+  faded below; another tap takes it back.
+- **Sorting:** "Most urgent first" (Due now, Due soon, Can wait) or "By room".
+- Housework belongs to the household, not to one person. Whoever has time does it.
+
+### Setting up the cleaning plan
+
+In the parents' area under **Household**. The quickest way is **"Start assistant"**:
+
+1. A few questions: flat or house, how many bathrooms, plus switches for garden, balcony or patio,
+   robot vacuum, dishwasher, tumble dryer, pets, car, fireplace or stove, kids' room, and paperwork
+   and tech. **"How thorough should it be?"** (relaxed, normal, thorough) makes all intervals
+   longer or shorter.
+2. The suggestion shows rooms with chores and intervals. Untick what doesn't fit, then
+   "Add chores".
+
+Two bathrooms in a house are called "Upstairs bathroom" and "Downstairs bathroom" and have separate
+chores, so you can clean the rarely used one less often; a third counts as a guest toilet. With a
+robot vacuum the assistant suggests emptying and cleaning the robot and "Vacuum corners, stairs and
+under furniture" instead of "Vacuum". So that not everything is due on the same day, it spreads the
+start across the intervals. You can run it again later: what is already there stays untouched.
+
+Everything can be changed by hand afterwards:
+
+- **Add / edit room:** name and icon are up to you. Deleting a room deletes its chores too.
+- **Add / edit chore:** title, icon, room and **"How often?"** as a number with days, weeks, months
+  or years. For new chores you pick the current state: just done, halfway or due now. A changed
+  interval counts from the last time the chore was done.
+- **Pause:** the switch next to a chore hides it on the display without deleting it (e.g. "Mow the
+  lawn" in winter).
+
+The templates live in `frontend/src/pools/chores.ts`, their names in
+`frontend/src/locales/<language>/pool.json`.
+
+The cleaning plan replaces the adults' tasks (see [Roadmap](#roadmap)); until then both exist side
+by side.
+
 ## Photos (picture frame)
 
 ![Picture frame with clock, date, next event and weather](docs/screenshots/en/frame.jpg)
@@ -999,6 +1049,21 @@ Plan the week's meals right on the display.
   until the end of the day; the "Shopping" tile on "Today" shows what's missing
 - [ ] 2. Polish in everyday use
 
+**In progress: household (phase 7)**
+
+Nobody ticked off the adults' tasks in everyday life. A cleaning plan with a traffic light replaces
+them; the children's routines stay.
+
+- [x] 1. Cleaning plan: rooms, chores with their own interval, a "Household" view with a traffic
+  light, one tap marks a chore done, optional "Who did it?"; management in the parents' area
+- [x] 2. Setup assistant: questions about your home turn into a suggestion for rooms, chores and
+  intervals
+- [ ] 3. "To do": a shared list for one-off things without a person or date (e.g. "buy chicken
+  feed"); whoever does it ticks it off
+- [ ] 4. "Household" tile on "Today"; the adults' columns under "Tasks" go away, fair sharing is
+  fed by the cleaning plan
+- [ ] 5. Polish in everyday use
+
 **Ideas without a version yet**
 
 - Create and edit events from FamQuest (needs write access to Google Calendar instead of read-only)
@@ -1010,9 +1075,8 @@ Plan the week's meals right on the display.
   with AI help), ingredients from the meal plan, export to Obsidian (Markdown checklist)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
-- More independent adults: a cleaning plan (recurring housework with "how urgent", similar to Tody)
-  and real to-dos to remember, separate from the children's routines and points; optional per
-  person, since some people keep their to-dos elsewhere
+- Household: seasonal chores (e.g. mowing the lawn only from April to October), changing the order
+  of rooms, personal to-dos per person
 
 - Symbols or fixed colours for weekdays (e.g. Monday always green, as in many nurseries) so children
   who can't read yet find their way around the week

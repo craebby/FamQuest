@@ -43,6 +43,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen
 - Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
   Hinweis), im Laden abhaken
+- Haushalt: Putzplan mit Ampel statt Terminen (jede Hausarbeit mit eigenem Abstand, je Raum), ein
+  Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -547,6 +549,55 @@ z. B. per HTTPS hinter einem Reverse Proxy (siehe [Hinter einem Reverse Proxy](#
 oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.2
 geplant.
 
+## Haushalt
+
+Unter **Haushalt** (Besen) in der Navigationsleiste steht der Putzplan: wiederkehrende Hausarbeit
+ohne festen Termin. Jede Aufgabe hat ihren eigenen Abstand („alle 2 Wochen“, „alle 3 Monate“), und
+eine Ampel zeigt, wie dringend sie ist.
+
+- **Ampel:** grün heißt „hat noch Zeit“, gelb „bald dran“ (ab 70 % des Abstands, frühestens zwei
+  Wochen vorher), rot „jetzt dran“. Der Balken unter jeder Zeile füllt sich bis zur Fälligkeit.
+  Die Uhr läuft **ab dem letzten Erledigen**, nicht nach Kalender; Verpasstes stapelt sich nicht,
+  eine Aufgabe ist einfach „seit 5 Tagen fällig“.
+- **Erledigen:** ein Tipp auf die Zeile, **ohne Eltern-PIN**. Danach fragt eine Leiste kurz
+  **„Wer war's?“**: einen Avatar antippen, „Rückgängig“ wählen oder einfach nichts tun. Heute
+  Erledigtes steht blass darunter; ein weiterer Tipp nimmt es zurück.
+- **Sortierung:** „Dringend zuerst“ (Jetzt dran, Bald dran, Hat noch Zeit) oder „Nach Raum“.
+- Hausarbeit gehört dem Haushalt, nicht einer Person. Wer gerade Zeit hat, macht es.
+
+### Putzplan einrichten
+
+Im Elternbereich unter **Haushalt**. Am schnellsten geht es mit **„Assistent starten“**:
+
+1. Ein paar Fragen: Wohnung oder Haus, wie viele Bäder, dazu Schalter für Garten, Balkon oder
+   Terrasse, Saugroboter, Spülmaschine, Trockner, Haustiere, Auto, Kamin oder Ofen, Kinderzimmer
+   sowie Papierkram und Technik. Mit **„Wie gründlich soll es sein?“** (locker, normal, gründlich)
+   werden alle Abstände länger oder kürzer.
+2. Der Vorschlag zeigt Räume mit Aufgaben und Abständen. Abwählen, was nicht passt, dann
+   „Aufgaben übernehmen“.
+
+Zwei Bäder im Haus heißen „Bad oben“ und „Bad unten“ und haben getrennte Aufgaben, damit ihr das
+selten genutzte Bad seltener putzen könnt; ein drittes zählt als Gäste-WC. Mit Saugroboter schlägt
+der Assistent statt „Staubsaugen“ das Leeren und Reinigen des Roboters und „Ecken, Treppe und unter
+Möbeln saugen“ vor. Damit nicht alles am selben Tag fällig wird, verteilt er den Start über die
+Abstände. Ihr könnt ihn später erneut starten: Vorhandenes bleibt, wie es ist.
+
+Danach lässt sich alles von Hand ändern:
+
+- **Raum anlegen / bearbeiten:** Name und Symbol frei wählbar. Wer einen Raum löscht, löscht seine
+  Aufgaben mit.
+- **Aufgabe hinzufügen / bearbeiten:** Titel, Symbol, Raum und **„Wie oft?“** als Zahl mit Tagen,
+  Wochen, Monaten oder Jahren. Bei neuen Aufgaben wählt ihr den Stand: gerade erledigt, mittendrin
+  oder jetzt fällig. Ein geänderter Abstand zählt ab dem letzten Erledigen.
+- **Pausieren:** Der Schalter an einer Aufgabe blendet sie am Display aus, ohne sie zu löschen
+  (z. B. „Rasen mähen“ im Winter).
+
+Die Vorlagen stehen in `frontend/src/pools/chores.ts`, ihre Namen in
+`frontend/src/locales/<sprache>/pool.json`.
+
+Der Putzplan löst die bisherigen Aufgaben der Erwachsenen ab (siehe [Roadmap](#roadmap)); bis dahin
+gibt es beides nebeneinander.
+
 ## Fotos (Bilderrahmen)
 
 ![Bilderrahmen mit Uhr, Datum, nächstem Termin und Wetter](docs/screenshots/de/frame.jpg)
@@ -1029,6 +1080,21 @@ Die Mahlzeiten der Woche direkt am Display planen.
   bleiben bis zum Ende des Tages; die Kachel „Einkauf“ auf „Heute“ zeigt, was fehlt
 - [ ] 2. Feinschliff im Alltag
 
+**In Arbeit: Haushalt (Phase 7)**
+
+Die Aufgaben der Erwachsenen hat im Alltag niemand abgehakt. Sie werden durch einen Putzplan mit
+Ampel ersetzt; die Routinen der Kinder bleiben.
+
+- [x] 1. Putzplan: Räume, Aufgaben mit eigenem Abstand, Ansicht „Haushalt“ mit Ampel, ein Tipp
+  erledigt, optional „Wer war's?“; Verwaltung im Elternbereich
+- [x] 2. Einrichtungs-Assistent: Fragen zum Zuhause, daraus ein Vorschlag für Räume, Aufgaben und
+  Abstände
+- [ ] 3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B.
+  „Hühnerfutter holen“); wer es macht, hakt ab
+- [ ] 4. Kachel „Haushalt“ auf „Heute“; die Spalten der Erwachsenen unter „Aufgaben“ entfallen, die
+  faire Verteilung speist sich aus dem Putzplan
+- [ ] 5. Feinschliff im Alltag
+
 **Ideen ohne Version**
 
 - Termine in FamQuest anlegen und bearbeiten (braucht Schreibzugriff auf den Google Kalender statt nur lesend)
@@ -1042,9 +1108,8 @@ Die Mahlzeiten der Woche direkt am Display planen.
   (Markdown-Checkliste)
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
-- Erwachsene eigenständiger: ein Putzplan (wiederkehrende Hausarbeit mit „wie dringend“, ähnlich
-  Tody) und echte Todos zum Dran-Denken, getrennt von Routinen und Punkten der Kinder; für jede Person
-  abschaltbar, weil manche ihre Todos woanders pflegen
+- Haushalt: saisonale Aufgaben (z. B. Rasen mähen nur von April bis Oktober), Reihenfolge der Räume
+  ändern, persönliche Todos je Person
 
 - Symbole oder feste Farben für Wochentage (z. B. Montag immer grün, wie in vielen Kitas), damit
   sich Kinder, die noch nicht lesen können, in der Woche zurechtfinden

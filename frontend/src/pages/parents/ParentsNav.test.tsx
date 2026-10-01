@@ -38,7 +38,7 @@ describe('Menü im Elternbereich', () => {
 
     expect(await screen.findByRole('heading', { name: 'Punkte' })).toBeVisible()
     expect(screen.queryByRole('heading', { name: 'Aufgaben' })).toBeNull()
-    expect(within(sidebar()).getAllByRole('link')).toHaveLength(8)
+    expect(within(sidebar()).getAllByRole('link')).toHaveLength(9)
 
     await user.click(within(sidebar()).getByRole('link', { name: 'Aufgaben' }))
     expect(await screen.findByRole('heading', { name: 'Aufgaben' })).toBeVisible()

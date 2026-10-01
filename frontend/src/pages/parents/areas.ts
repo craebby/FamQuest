@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from 'react'
+import BroomIcon from '~icons/fluent-emoji-flat/broom'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
@@ -16,6 +17,7 @@ export const PARENT_AREAS = [
   'family',
   'tasks',
   'routines',
+  'household',
   'rewards',
   'photos',
   'connections',
@@ -34,6 +36,7 @@ export const AREA_ICONS: Record<ParentArea, Icon> = {
   family: FamilyIcon,
   tasks: StarIcon,
   routines: SunriseIcon,
+  household: BroomIcon,
   rewards: GiftIcon,
   photos: PhotoIcon,
   connections: CalendarIcon,

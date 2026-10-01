@@ -132,6 +132,27 @@ mehrere Listen, Sortierung (evtl. KI), Zutaten aus dem Essensplan und Obsidian-E
    Kachel „Einkauf“ auf „Heute“
 2. Feinschliff
 
+## Etappen (Phase 7: Haushalt)
+
+Entschieden: Die Aufgaben der Erwachsenen (Spalten in „Aufgaben“, „Einer für alle“) werden abgelöst,
+weil sie im Alltag niemand abgehakt hat; die Routinen der Kinder bleiben unverändert. Stattdessen ein
+Putzplan nach dem Vorbild von Tody: Hausarbeit gehört dem Haushalt, nicht einer Person, hat einen
+eigenen Abstand statt eines Termins und eine Ampel (grün → gelb → rot). Erledigen ohne Eltern-PIN;
+„Wer war's?“ ist ein freiwilliger zweiter Tipp. Verwaltung im Elternbereich. Alte
+Erwachsenen-Aufgaben werden nicht übernommen. Gearbeitet wird auf dem Branch `phase-7-haushalt`.
+
+1. Putzplan: Räume (frei benannt, z. B. „Bad oben“), Aufgaben mit Abstand in Tagen/Wochen/Monaten/
+   Jahren, Ansicht „Haushalt“ (Besen) mit Ampel nach Dringlichkeit oder nach Raum, ein Tipp
+   erledigt, Bereich „Haushalt“ im Elternbereich
+2. Einrichtungs-Assistent: Fragen zum Zuhause (Wohnung/Haus, Bäder, Garten, Balkon, Saugroboter,
+   Spülmaschine, Trockner, Haustiere, Auto, Kamin, Kinderzimmer, Papierkram; locker/normal/gründlich)
+   → Vorschlag für Räume, Aufgaben und Abstände zum An- und Abwählen
+3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B. „Hühnerfutter
+   holen“), wer es macht, hakt ab; auf Wunsch „kommt wieder“ → wandert in den Putzplan
+4. Kachel „Haushalt“ auf „Heute“ (nur Gelbes und Rotes); Erwachsenen-Aufgaben aus „Aufgaben“
+   entfernen, faire Verteilung aus den Erledigungen im Putzplan
+5. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt
