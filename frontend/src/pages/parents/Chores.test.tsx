@@ -235,14 +235,18 @@ describe('Einrichtungs-Assistent', () => {
     expect(screen.getByRole('heading', { name: 'Euer Vorschlag', level: 1 })).toBeVisible()
     const upstairs = within(screen.getByRole('region', { name: 'Bad oben' }))
     // „Locker“ streckt die Abstände: aus jeder Woche werden 10 Tage.
-    expect(upstairs.getByRole('checkbox', { name: /Toilette putzen\s*alle 10 Tage/ })).toBeChecked()
+    expect(upstairs.getByRole('checkbox', { name: /Bad putzen\s*alle 10 Tage/ })).toBeChecked()
+    // Nur das Mindeste ist angehakt, der Rest steht zum Dazuwählen bereit.
+    const towels = upstairs.getByRole('checkbox', { name: /Handtücher wechseln/ })
+    expect(towels).not.toBeChecked()
     expect(screen.getByRole('region', { name: 'Bad unten' })).toBeVisible()
     const everywhere = within(screen.getByRole('region', { name: 'Überall' }))
     expect(everywhere.getByRole('checkbox', { name: /Saugroboter leeren/ })).toBeChecked()
     expect(everywhere.queryByRole('checkbox', { name: /^Staubsaugen/ })).toBeNull()
 
-    // Abwählen, was nicht passt.
+    // Abwählen, was nicht passt, und dazuwählen, was fehlt.
     await user.click(upstairs.getByRole('checkbox', { name: /Abflüsse reinigen/ }))
+    await user.click(towels)
     await user.click(screen.getByRole('button', { name: /Aufgaben übernehmen/ }))
 
     expect(await screen.findByText(/Aufgaben sind im Putzplan\./)).toBeVisible()
@@ -255,18 +259,17 @@ describe('Einrichtungs-Assistent', () => {
       'Schlafzimmer',
       'Kinderzimmer',
       'Überall',
-      'Wäsche',
       'Garten',
       'Rund ums Haus',
       'Papierkram und Technik',
     ])
     const titles = (name: string) =>
       rooms.find((sent) => sent.name === name)?.chores.map((chore) => chore.title)
-    expect(titles('Bad oben')).not.toContain('Abflüsse reinigen')
-    expect(titles('Bad unten')).toContain('Abflüsse reinigen')
+    expect(titles('Bad oben')).toEqual(['Bad putzen', 'Handtücher wechseln'])
+    expect(titles('Bad unten')).toEqual(['Bad putzen', 'Abflüsse reinigen'])
     expect(rooms[1].chores[0]).toEqual({
-      title: 'Toilette putzen',
-      icon: 'fluent-emoji-flat:toilet',
+      title: 'Bad putzen',
+      icon: 'fluent-emoji-flat:shower',
       interval_days: 10,
     })
   })
@@ -280,15 +283,15 @@ describe('Einrichtungs-Assistent', () => {
     expect(screen.getByRole('switch', { name: 'Kinderzimmer' })).not.toBeChecked()
     await user.click(screen.getByRole('button', { name: 'Vorschlag ansehen' }))
 
-    const bath = within(screen.getByRole('region', { name: 'Bad' }))
-    const present = bath.getByRole('checkbox', { name: /Toilette putzen/ })
+    const everywhere = within(screen.getByRole('region', { name: 'Überall' }))
+    const present = everywhere.getByRole('checkbox', { name: /Fenster putzen/ })
     expect(present).toBeDisabled()
     expect(present).toBeChecked()
     await user.click(screen.getByRole('button', { name: /Aufgaben übernehmen/ }))
 
-    const sent = sentRooms(calls).find((candidate) => candidate.name === 'Bad')
-    expect(sent?.chores.map((chore) => chore.title)).not.toContain('Toilette putzen')
-    expect(sent?.chores.map((chore) => chore.title)).toContain('Boden wischen')
+    const sent = sentRooms(calls).find((candidate) => candidate.name === 'Überall')
+    expect(sent?.chores.map((chore) => chore.title)).not.toContain('Fenster putzen')
+    expect(sent?.chores.map((chore) => chore.title)).toContain('Staubsaugen')
   })
 
   it('führt vom Vorschlag zurück zu den Fragen, die Antworten bleiben', async () => {

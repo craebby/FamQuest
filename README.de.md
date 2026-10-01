@@ -573,8 +573,12 @@ Im Elternbereich unter **Haushalt**. Am schnellsten geht es mit **„Assistent s
    Terrasse, Saugroboter, Spülmaschine, Trockner, Haustiere, Auto, Kamin oder Ofen, Kinderzimmer
    sowie Papierkram und Technik. Mit **„Wie gründlich soll es sein?“** (locker, normal, gründlich)
    werden alle Abstände länger oder kürzer.
-2. Der Vorschlag zeigt Räume mit Aufgaben und Abständen. Abwählen, was nicht passt, dann
-   „Aufgaben übernehmen“.
+2. Der Vorschlag zeigt Räume mit Aufgaben und Abständen. Angehakt ist nur das Mindeste (je nach
+   Zuhause etwa 10 bis 20 Aufgaben), damit der Plan am Anfang überschaubar bleibt. Antippen, was
+   ihr zusätzlich möchtet, abwählen, was nicht passt, dann „Aufgaben übernehmen“.
+
+Geputzt wird je Raum am Stück („Bad putzen“, „Küche gründlich putzen“); eigene Aufgaben gibt es nur
+für das, was seltener dran ist, etwa „Abflüsse reinigen“ oder „Backofen reinigen“.
 
 Zwei Bäder im Haus heißen „Bad oben“ und „Bad unten“ und haben getrennte Aufgaben, damit ihr das
 selten genutzte Bad seltener putzen könnt; ein drittes zählt als Gäste-WC. Mit Saugroboter schlägt

@@ -33,14 +33,14 @@ const HOME_ICONS = { flat: ApartmentIcon, house: HouseIcon }
 
 /**
  * Einrichtungs-Assistent: ein paar Fragen zum Zuhause, daraus ein Vorschlag für Räume, Aufgaben
- * und Abstände. Übernommen wird nur, was angehakt bleibt; alles lässt sich danach ändern.
+ * und Abstände. Angehakt ist nur das Mindeste, der Rest lässt sich dazuwählen und später ändern.
  */
 export function ChoreWizard({ plan, hasChildren, onDone, onCancel }: ChoreWizardProps) {
   const { t } = useTranslation()
   const [profile, setProfile] = useState<HomeProfile>({ ...DEFAULT_PROFILE, kids: hasChildren })
   const [step, setStep] = useState<'questions' | 'review'>('questions')
-  // Abgewählte Vorschläge (Schlüssel „raum.aufgabe“); alles andere wird übernommen.
-  const [skipped, setSkipped] = useState<string[]>([])
+  // Umgeschaltete Vorschläge (Schlüssel „raum.aufgabe“): Vorgewähltes abgewählt, anderes dazugewählt.
+  const [toggled, setToggled] = useState<string[]>([])
   const add = useChoresMutation(setupChores)
 
   // Der Vorschlag beginnt oben, nicht auf Höhe des Knopfs, der zu ihm geführt hat.
@@ -62,6 +62,7 @@ export function ChoreWizard({ plan, hasChildren, onDone, onCancel }: ChoreWizard
     chores: room.chores.map((chore) => ({
       ...chore,
       present: existing.has(`${normalize(room.name)}/${normalize(chore.title)}`),
+      selected: chore.preselected !== toggled.includes(chore.key),
     })),
   }))
   const chosen = rooms
@@ -69,14 +70,14 @@ export function ChoreWizard({ plan, hasChildren, onDone, onCancel }: ChoreWizard
       name: room.name,
       icon: room.icon,
       chores: room.chores
-        .filter((chore) => !chore.present && !skipped.includes(chore.key))
+        .filter((chore) => !chore.present && chore.selected)
         .map(({ title, icon, interval_days }) => ({ title, icon, interval_days })),
     }))
     .filter((room) => room.chores.length > 0)
   const count = chosen.reduce((sum, room) => sum + room.chores.length, 0)
 
   const toggle = (key: string) =>
-    setSkipped((keys) =>
+    setToggled((keys) =>
       keys.includes(key) ? keys.filter((item) => item !== key) : [...keys, key],
     )
 
@@ -183,7 +184,7 @@ export function ChoreWizard({ plan, hasChildren, onDone, onCancel }: ChoreWizard
           </h2>
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3">
             {room.chores.map((chore) => {
-              const checked = chore.present || !skipped.includes(chore.key)
+              const checked = chore.present || chore.selected
               return (
                 <li key={chore.key}>
                   <label className={chore.present ? 'cursor-not-allowed' : 'cursor-pointer'}>

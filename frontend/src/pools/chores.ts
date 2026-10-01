@@ -66,6 +66,8 @@ interface ChoreTemplate {
   icon: string
   /** Abstand in Tagen bei normalem Tempo. */
   days: number
+  /** Gehört zum Mindesten und ist im Vorschlag schon angehakt; alles andere wählt man dazu. */
+  core?: boolean
   /** Nur vorschlagen, wenn die Antworten dazu passen. */
   when?: Condition
 }
@@ -78,22 +80,18 @@ interface RoomTemplate {
   chores: readonly ChoreTemplate[]
 }
 
+// Ein Bad wird am Stück geputzt; eigene Aufgaben gibt es nur für das, was seltener dran ist.
 const BATHROOM_CHORES: readonly ChoreTemplate[] = [
-  { id: 'toilet', icon: 'toilet', days: 7 },
-  { id: 'washbasin', icon: 'soap', days: 7 },
+  { id: 'bath_clean', icon: 'shower', days: 7, core: true },
   { id: 'towels', icon: 'bubbles', days: 7 },
-  { id: 'shower', icon: 'shower', days: 14 },
-  { id: 'bath_floor', icon: 'bucket', days: 14 },
-  { id: 'drains', icon: 'plunger', days: 90 },
+  { id: 'drains', icon: 'plunger', days: 90, core: true },
   { id: 'tiles', icon: 'sponge', days: 180 },
 ]
 
-// Wird seltener benutzt, also seltener geputzt; ohne Dusche.
+// Wird seltener benutzt, also seltener geputzt.
 const GUEST_WC_CHORES: readonly ChoreTemplate[] = [
-  { id: 'toilet', icon: 'toilet', days: 14 },
-  { id: 'washbasin', icon: 'soap', days: 14 },
+  { id: 'bath_clean', icon: 'toilet', days: 14, core: true },
   { id: 'towels', icon: 'bubbles', days: 14 },
-  { id: 'bath_floor', icon: 'bucket', days: 30 },
 ]
 
 /** Bäder nach Anzahl und Wohnform: im Haus „oben“ und „unten“, das dritte ist das Gäste-WC. */
@@ -115,12 +113,7 @@ const KITCHEN: RoomTemplate = {
   id: 'kitchen',
   icon: 'cooking',
   chores: [
-    { id: 'trash', icon: 'wastebasket', days: 3 },
-    { id: 'recycling', icon: 'recycling-symbol', days: 7 },
-    { id: 'stove', icon: 'shallow-pan-of-food', days: 7 },
-    { id: 'sink', icon: 'droplet', days: 7 },
-    { id: 'kitchen_floor', icon: 'bucket', days: 7 },
-    { id: 'dishcloths', icon: 'sponge', days: 7 },
+    { id: 'kitchen_clean', icon: 'sponge', days: 7, core: true },
     { id: 'fridge', icon: 'snowflake', days: 30 },
     { id: 'dishwasher_clean', icon: 'bubbles', days: 30, when: (p) => p.dishwasher },
     { id: 'descale', icon: 'hot-beverage', days: 60 },
@@ -136,8 +129,7 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     icon: 'couch-and-lamp',
     chores: [
       { id: 'ashes', icon: 'candle', days: 7, when: (p) => p.fireplace },
-      { id: 'plants', icon: 'potted-plant', days: 7 },
-      { id: 'dust', icon: 'sparkles', days: 14 },
+      { id: 'dust', icon: 'sparkles', days: 14, core: true },
       { id: 'sofa', icon: 'couch-and-lamp', days: 60 },
       { id: 'blankets', icon: 'basket', days: 90 },
     ],
@@ -146,7 +138,7 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     id: 'bedroom',
     icon: 'bed',
     chores: [
-      { id: 'bedding', icon: 'bed', days: 14 },
+      { id: 'bedding', icon: 'bed', days: 14, core: true },
       { id: 'dust', icon: 'sparkles', days: 30 },
       { id: 'mattress', icon: 'zzz', days: 180 },
       { id: 'wardrobe', icon: 'coat', days: 180 },
@@ -157,7 +149,7 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     icon: 'teddy-bear',
     when: (p) => p.kids,
     chores: [
-      { id: 'bedding', icon: 'bed', days: 14 },
+      { id: 'bedding', icon: 'bed', days: 14, core: true },
       { id: 'dust', icon: 'sparkles', days: 30 },
       { id: 'toys_sort', icon: 'puzzle-piece', days: 90 },
       { id: 'kids_clothes', icon: 't-shirt', days: 180 },
@@ -168,15 +160,16 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     icon: 'broom',
     chores: [
       // Mit Saugroboter verschiebt sich die Arbeit: leeren und pflegen statt selbst saugen.
-      { id: 'vacuum', icon: 'broom', days: 7, when: (p) => !p.robot },
+      { id: 'vacuum', icon: 'broom', days: 7, core: true, when: (p) => !p.robot },
       { id: 'stairs', icon: 'broom', days: 7, when: (p) => p.home === 'house' && !p.robot },
-      { id: 'robot_empty', icon: 'robot', days: 7, when: (p) => p.robot },
+      { id: 'robot_empty', icon: 'robot', days: 7, core: true, when: (p) => p.robot },
       { id: 'vacuum_corners', icon: 'broom', days: 14, when: (p) => p.robot },
       { id: 'robot_clean', icon: 'wrench', days: 30, when: (p) => p.robot },
-      { id: 'mop', icon: 'bucket', days: 14 },
+      { id: 'mop', icon: 'bucket', days: 14, core: true },
+      { id: 'plants', icon: 'potted-plant', days: 7 },
       { id: 'hallway', icon: 'running-shoe', days: 14 },
       { id: 'doors', icon: 'door', days: 90 },
-      { id: 'windows', icon: 'window', days: 180 },
+      { id: 'windows', icon: 'window', days: 180, core: true },
       { id: 'lamps', icon: 'light-bulb', days: 180 },
       { id: 'smoke_detectors', icon: 'bell', days: 365 },
     ],
@@ -196,8 +189,8 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     when: (p) => p.garden,
     chores: [
       { id: 'water_beds', icon: 'droplet', days: 3 },
-      { id: 'mow', icon: 'seedling', days: 10 },
-      { id: 'weeds', icon: 'herb', days: 21 },
+      { id: 'mow', icon: 'seedling', days: 14, core: true },
+      { id: 'weeds', icon: 'herb', days: 21, core: true },
       { id: 'terrace', icon: 'broom', days: 30 },
       { id: 'hedge', icon: 'evergreen-tree', days: 180 },
       { id: 'gutters', icon: 'umbrella', days: 365, when: (p) => p.home === 'house' },
@@ -210,7 +203,7 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     when: (p) => p.balcony,
     chores: [
       { id: 'balcony_plants', icon: 'tulip', days: 3 },
-      { id: 'balcony_sweep', icon: 'broom', days: 30 },
+      { id: 'balcony_sweep', icon: 'broom', days: 30, core: true },
       { id: 'balcony_furniture', icon: 'chair', days: 180 },
     ],
   },
@@ -219,8 +212,7 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     icon: 'house-with-garden',
     when: (p) => p.home === 'house',
     chores: [
-      { id: 'bins', icon: 'litter-in-bin-sign', days: 7 },
-      { id: 'sidewalk', icon: 'broom', days: 14 },
+      { id: 'sidewalk', icon: 'broom', days: 14, core: true },
       { id: 'bins_clean', icon: 'bucket', days: 180 },
       { id: 'heating', icon: 'wrench', days: 365 },
       { id: 'basement', icon: 'package', days: 365 },
@@ -231,8 +223,9 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     icon: 'paw-prints',
     when: (p) => p.pets,
     chores: [
-      { id: 'pet_home', icon: 'bird', days: 7 },
-      { id: 'pet_bowls', icon: 'bowl-with-spoon', days: 7 },
+      { id: 'pet_home', icon: 'bird', days: 7, core: true },
+      { id: 'pet_feeders', icon: 'bowl-with-spoon', days: 7, core: true },
+      { id: 'pet_bowls', icon: 'soap', days: 14 },
       { id: 'pet_food', icon: 'bone', days: 30 },
       { id: 'vet', icon: 'stethoscope', days: 365 },
     ],
@@ -253,7 +246,7 @@ const ROOMS_AFTER_BATHROOMS: readonly RoomTemplate[] = [
     icon: 'card-file-box',
     when: (p) => p.paperwork,
     chores: [
-      { id: 'mail', icon: 'envelope', days: 7 },
+      { id: 'mail', icon: 'envelope', days: 7, core: true },
       { id: 'filing', icon: 'card-file-box', days: 30 },
       { id: 'backup', icon: 'laptop', days: 30 },
       { id: 'phone_photos', icon: 'mobile-phone', days: 90 },
@@ -293,7 +286,11 @@ export function paceInterval(days: number, pace: Pace): number {
 export interface SuggestedRoom extends SetupRoom {
   /** Stabiler Schlüssel der Vorlage, z. B. „bathroom_up“. */
   key: string
-  chores: (SetupRoom['chores'][number] & { key: string })[]
+  chores: (SetupRoom['chores'][number] & {
+    key: string
+    /** Schon angehakt: das Mindeste, mit dem sich gut anfangen lässt. */
+    preselected: boolean
+  })[]
 }
 
 /** Vorschlag für den Putzplan: Räume und Aufgaben passend zu den Antworten, in der Sprache von `t`. */
@@ -311,6 +308,7 @@ export function suggestPlan(t: TFunction, profile: HomeProfile): SuggestedRoom[]
           title: t(`chores.${chore.id}`, { ns: 'pool' }),
           icon: iconId(chore.icon),
           interval_days: paceInterval(chore.days, profile.pace),
+          preselected: chore.core ?? false,
         })),
     }))
 }

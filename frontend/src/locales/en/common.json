@@ -941,7 +941,7 @@
     "wizard_pace_thorough_hint": "shorter intervals",
     "wizard_show": "Show suggestion",
     "wizard_review_title": "Your suggestion",
-    "wizard_review_intro": "Untick what does not fit. Names, rooms and intervals can be changed at any time afterwards.",
+    "wizard_review_intro": "The essentials are already ticked. Tap what you want on top and untick what does not fit. Everything can be changed at any time afterwards.",
     "wizard_add_one": "Add {{count}} chore",
     "wizard_add_other": "Add {{count}} chores",
     "wizard_added_one": "{{count}} chore is in the cleaning plan.",

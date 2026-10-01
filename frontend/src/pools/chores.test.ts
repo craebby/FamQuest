@@ -74,13 +74,11 @@ describe('Vorschlag aus den Antworten', () => {
     expect(roomNames({ home: 'flat', bathrooms: 2 })).toEqual(
       expect.arrayContaining(['Bad', 'Zweites Bad']),
     )
-    // Das Gäste-WC wird seltener geputzt und hat keine Dusche.
+    // Das Gäste-WC wird seltener geputzt.
     const guest = plan({ bathrooms: 3 }).find((room) => room.name === 'Gäste-WC')
     expect(guest?.chores.map((chore) => [chore.title, chore.interval_days])).toEqual([
-      ['Toilette putzen', 14],
-      ['Waschbecken und Spiegel putzen', 14],
+      ['Bad putzen', 14],
       ['Handtücher wechseln', 14],
-      ['Boden wischen', 30],
     ])
   })
 
@@ -121,11 +119,78 @@ describe('Vorschlag aus den Antworten', () => {
     )
   })
 
+  it('fasst das Putzen je Raum zusammen und lässt weg, was sich von allein ergibt', () => {
+    const everything = plan({ home: 'house', garden: true }).flatMap((room) =>
+      room.chores.map((chore) => chore.title),
+    )
+
+    expect(titles({}, 'Bad')).toEqual([
+      'Bad putzen',
+      'Handtücher wechseln',
+      'Abflüsse reinigen',
+      'Fliesen und Fugen gründlich reinigen',
+    ])
+    expect(titles({}, 'Küche')[0]).toBe('Küche gründlich putzen')
+    expect(everything).not.toContain('Müll rausbringen')
+    expect(everything).not.toContain('Mülltonnen rausstellen')
+    // Zimmerpflanzen stehen im ganzen Haus, nicht nur im Wohnzimmer.
+    expect(titles({}, 'Wohnzimmer')).not.toContain('Zimmerpflanzen gießen')
+    expect(titles({}, 'Überall')).toContain('Zimmerpflanzen gießen')
+  })
+
   it('vergibt eindeutige Schlüssel', () => {
     const keys = plan({ home: 'house', bathrooms: 3, garden: true }).flatMap((room) =>
       room.chores.map((chore) => chore.key),
     )
     expect(new Set(keys).size).toBe(keys.length)
+  })
+})
+
+describe('Vorauswahl', () => {
+  const preselected = (overrides: Partial<HomeProfile> = {}) =>
+    plan(overrides).flatMap((room) =>
+      room.chores.filter((chore) => chore.preselected).map((chore) => chore.title),
+    )
+
+  it('hakt für eine einfache Wohnung nur das Mindeste an', () => {
+    expect(preselected()).toEqual([
+      'Küche gründlich putzen',
+      'Bad putzen',
+      'Abflüsse reinigen',
+      'Staub wischen',
+      'Bettwäsche wechseln',
+      'Staubsaugen',
+      'Böden wischen',
+      'Fenster putzen',
+      'Post und Rechnungen erledigen',
+    ])
+  })
+
+  it('erschlägt auch ein großes Zuhause nicht', () => {
+    const everything: Partial<HomeProfile> = {
+      home: 'house',
+      bathrooms: 3,
+      garden: true,
+      balcony: true,
+      robot: true,
+      dryer: true,
+      pets: true,
+      car: true,
+      fireplace: true,
+      kids: true,
+    }
+
+    expect(preselected(everything).length).toBeLessThanOrEqual(20)
+    expect(plan(everything).flatMap((room) => room.chores).length).toBeGreaterThan(50)
+  })
+
+  it('wählt Gießen, Wäsche und Auto nicht vor', () => {
+    const chosen = preselected({ garden: true, balcony: true, car: true })
+
+    expect(chosen).toEqual(expect.arrayContaining(['Rasen mähen', 'Unkraut jäten']))
+    expect(chosen).not.toContain('Beete und Kübel gießen')
+    expect(chosen).not.toContain('Wäsche waschen')
+    expect(chosen).not.toContain('Auto waschen')
   })
 })
 
@@ -144,11 +209,11 @@ describe('Tempo', () => {
   })
 
   it('wirkt auf den ganzen Vorschlag', () => {
-    const toilet = (pace: HomeProfile['pace']) =>
+    const bath = (pace: HomeProfile['pace']) =>
       plan({ pace })
         .find((room) => room.name === 'Bad')
-        ?.chores.find((chore) => chore.title === 'Toilette putzen')?.interval_days
+        ?.chores.find((chore) => chore.title === 'Bad putzen')?.interval_days
 
-    expect([toilet('relaxed'), toilet('normal'), toilet('thorough')]).toEqual([10, 7, 5])
+    expect([bath('relaxed'), bath('normal'), bath('thorough')]).toEqual([10, 7, 5])
   })
 })

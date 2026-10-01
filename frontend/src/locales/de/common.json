@@ -941,7 +941,7 @@
     "wizard_pace_thorough_hint": "kürzere Abstände",
     "wizard_show": "Vorschlag ansehen",
     "wizard_review_title": "Euer Vorschlag",
-    "wizard_review_intro": "Abwählen, was nicht passt. Namen, Räume und Abstände lassen sich danach jederzeit ändern.",
+    "wizard_review_intro": "Das Wichtigste ist schon angehakt. Tippt an, was ihr zusätzlich möchtet, und wählt ab, was nicht passt. Alles lässt sich danach jederzeit ändern.",
     "wizard_add_one": "{{count}} Aufgabe übernehmen",
     "wizard_add_other": "{{count}} Aufgaben übernehmen",
     "wizard_added_one": "{{count}} Aufgabe ist im Putzplan.",

@@ -554,8 +554,12 @@ In the parents' area under **Household**. The quickest way is **"Start assistant
    robot vacuum, dishwasher, tumble dryer, pets, car, fireplace or stove, kids' room, and paperwork
    and tech. **"How thorough should it be?"** (relaxed, normal, thorough) makes all intervals
    longer or shorter.
-2. The suggestion shows rooms with chores and intervals. Untick what doesn't fit, then
-   "Add chores".
+2. The suggestion shows rooms with chores and intervals. Only the essentials are ticked (roughly 10
+   to 20 chores, depending on your home), so the plan stays manageable at the start. Tap what you
+   want on top, untick what doesn't fit, then "Add chores".
+
+Each room is cleaned in one go ("Clean the bathroom", "Deep-clean the kitchen"); separate chores
+only exist for what is due less often, such as "Clean the drains" or "Clean the oven".
 
 Two bathrooms in a house are called "Upstairs bathroom" and "Downstairs bathroom" and have separate
 chores, so you can clean the rarely used one less often; a third counts as a guest toilet. With a
