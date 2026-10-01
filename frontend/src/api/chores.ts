@@ -37,14 +37,27 @@ export interface Chore {
   level: ChoreLevel
 }
 
+/** Einmaliges aus „Zu erledigen“, ohne Person und Termin. */
+export interface Todo {
+  id: number
+  title: string
+  icon: string
+  /** Heute abgehakt; bleibt bis zum Ende des Tages auf der Liste. */
+  done: boolean
+  /** Wer es erledigt hat, falls angegeben. */
+  done_by: number | null
+}
+
 export interface ChorePlan {
   /** Heute in der Zeitzone der Familie. */
   date: string
   rooms: ChoreRoom[]
   chores: Chore[]
+  /** „Zu erledigen“: Offenes in der Reihenfolge des Eintragens, danach das heute Abgehakte. */
+  todos: Todo[]
   /** So viele Tage zählt die faire Verteilung zurück (heute eingeschlossen). */
   share_days: number
-  /** Wer in dieser Zeit wie oft etwas erledigt hat; nur mit Angabe „Wer war's?“. */
+  /** Wer in dieser Zeit wie oft etwas erledigt hat (Putzplan und Liste); nur mit „Wer war's?“. */
   shares: { member_id: number; count: number }[]
 }
 
@@ -88,18 +101,24 @@ export function useChores() {
   })
 }
 
-/** Erledigen und zurücknehmen am Display, ohne Eltern-PIN; die Antwort ersetzt die Aufgabe sofort. */
-function useDoneMutation<TVariables>(request: (variables: TVariables) => Promise<Chore>) {
+/**
+ * Erledigen und zurücknehmen am Display, ohne Eltern-PIN; die Antwort ersetzt den Eintrag in
+ * `list` (Aufgaben des Putzplans oder „Zu erledigen“) sofort.
+ */
+function useDoneMutation<TVariables, TItem extends { id: number }>(
+  list: 'chores' | 'todos',
+  request: (variables: TVariables) => Promise<TItem>,
+) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: request,
-    onSuccess: (chore) => {
+    onSuccess: (result) => {
       queryClient.setQueryData<ChorePlan>(
         CHORES_KEY,
         (plan) =>
           plan && {
             ...plan,
-            chores: plan.chores.map((item) => (item.id === chore.id ? chore : item)),
+            [list]: plan[list].map((item) => (item.id === result.id ? result : item)),
           },
       )
     },
@@ -109,19 +128,46 @@ function useDoneMutation<TVariables>(request: (variables: TVariables) => Promise
 
 /** Heute erledigt; ein zweiter Aufruf trägt nach, wer es war (`memberId` null = keine Angabe). */
 export const useMarkDone = () =>
-  useDoneMutation(({ id, memberId }: { id: number; memberId: number | null }) =>
+  useDoneMutation('chores', ({ id, memberId }: { id: number; memberId: number | null }) =>
     api<Chore>('PUT', `/chores/${id}/done`, { member_id: memberId }),
   )
 
 export const useUndoDone = () =>
-  useDoneMutation((id: number) => api<Chore>('DELETE', `/chores/${id}/done`))
+  useDoneMutation('chores', (id: number) => api<Chore>('DELETE', `/chores/${id}/done`))
+
+/** Wie im Putzplan: abhaken, ein zweiter Aufruf trägt nach, wer es war. */
+export const useTodoDone = () =>
+  useDoneMutation('todos', ({ id, memberId }: { id: number; memberId: number | null }) =>
+    api<Todo>('PUT', `/todos/${id}/done`, { member_id: memberId }),
+  )
+
+export const useTodoUndo = () =>
+  useDoneMutation('todos', (id: number) => api<Todo>('DELETE', `/todos/${id}/done`))
+
+/** Eintragen und streichen in „Zu erledigen“, ohne Eltern-PIN; danach den Haushalt neu laden. */
+function useTodoMutation<TVariables, TResult>(
+  request: (variables: TVariables) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: request,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: CHORES_KEY }),
+  })
+}
+
+export const useAddTodo = () =>
+  useTodoMutation((todo: { title: string; icon: string }) => api<Todo>('POST', '/todos', todo))
+
+export const useRemoveTodo = () =>
+  useTodoMutation((id: number) => api<null>('DELETE', `/todos/${id}`))
 
 export const createRoom = (data: RoomData) => api<ChoreRoom>('POST', '/chores/rooms', data)
 export const updateRoom = (id: number, data: RoomData) =>
   api<ChoreRoom>('PUT', `/chores/rooms/${id}`, data)
 export const deleteRoom = (id: number) => api<void>('DELETE', `/chores/rooms/${id}`)
 
-export const createChore = (data: ChoreData & { state?: StartState }) =>
+/** `todo_id`: „kommt wieder“, der Eintrag aus „Zu erledigen“ wird zu dieser Aufgabe. */
+export const createChore = (data: ChoreData & { state?: StartState; todo_id?: number }) =>
   api<Chore>('POST', '/chores', data)
 export const updateChore = (id: number, data: ChoreData) => api<Chore>('PUT', `/chores/${id}`, data)
 export const deleteChore = (id: number) => api<void>('DELETE', `/chores/${id}`)

@@ -11,6 +11,7 @@ import i18n from '../i18n'
 import {
   makeChore,
   makeChorePlan,
+  makeTodo,
   makeMe,
   makeMember,
   makeToday,
@@ -430,6 +431,49 @@ describe('Startseite „Heute“', () => {
       'Bad putzen',
     ])
     expect(due.getByRole('button', { name: /Bad putzen/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('zeigt im Haushalt zuerst, was offen in „Zu erledigen“ steht, auch ohne Putzplan', async () => {
+    const user = userEvent.setup()
+    const feed = makeTodo({ id: 7 })
+    let plan = makeChorePlan({
+      todos: [feed, makeTodo({ id: 8, title: 'Glühbirne wechseln', done: true })],
+    })
+    const calls = mockHome({
+      extra: {
+        'GET /api/chores': () => Response.json(plan),
+        'PUT /api/todos/7/done': (body) => {
+          const done = {
+            ...feed,
+            done: true,
+            done_by: (body as { member_id: number | null }).member_id,
+          }
+          plan = { ...plan, todos: plan.todos.map((todo) => (todo.id === 7 ? done : todo)) }
+          return Response.json(done)
+        },
+      },
+    })
+    renderApp('/')
+
+    const household = await region('Haushalt')
+    const due = within(await household.findByRole('list', { name: 'Im Haushalt dran' }))
+    expect(due.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Hühnerfutter holen',
+      'Glühbirne wechseln',
+    ])
+    expect(household.queryByText('Alles im grünen Bereich')).toBeNull()
+
+    await user.click(due.getByRole('button', { name: 'Hühnerfutter holen' }))
+    const who = within(await screen.findByRole('region', { name: 'Wer war’s?' }))
+    await user.click(who.getByRole('button', { name: 'Papa' }))
+
+    const writes = calls.filter((call) => call.key === 'PUT /api/todos/7/done')
+    expect(writes.map((call) => call.body)).toEqual([{ member_id: null }, { member_id: 2 }])
+    expect(await household.findByText('Alles im grünen Bereich')).toBeVisible()
+    expect(due.getByRole('button', { name: 'Hühnerfutter holen' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 
   it('lobt im Haushalt, wenn nichts dran ist, und führt ohne Putzplan zur Einrichtung', async () => {

@@ -88,6 +88,11 @@ TEXT = {
                 [("Blumen gießen", "droplet", 3, [(6, "ben"), (3, "ben")])],
             ),
         ],
+        # „Zu erledigen“: Einmaliges ohne Person und Termin.
+        "todos": [
+            ("Paket zur Post bringen", "package"),
+            ("Glühbirne im Flur wechseln", "light-bulb"),
+        ],
         "rewards": [
             ("Eis essen gehen", "ice-cream", 60),
             ("15 Minuten Tablet", "mobile-phone", 20),
@@ -193,6 +198,10 @@ TEXT = {
                 "potted-plant",
                 [("Water the plants", "droplet", 3, [(6, "ben"), (3, "ben")])],
             ),
+        ],
+        "todos": [
+            ("Take the parcel to the post office", "package"),
+            ("Change the hallway light bulb", "light-bulb"),
         ],
         "rewards": [
             ("Go out for ice cream", "ice-cream", 60),
@@ -558,6 +567,8 @@ class Demo:
             set_clock(self.at(self.today - dt.timedelta(days=back), 18).astimezone(dt.UTC))
             self.call("PUT", f"/chores/{chore_id}/done", json={"member_id": self.ids[who]})
         set_clock(self.now)
+        for title, icon in self.text["todos"]:
+            self.call("POST", "/todos", 201, json={"title": title, "icon": ICON + icon})
 
     def rewards(self) -> None:
         for member in ("mia", "ben"):

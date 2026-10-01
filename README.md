@@ -37,7 +37,7 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Points as ledger entries, daily progress, manual credits
 - Rewards per child from a list of suggestions, redeemed on the display
 - Parent checks for selected tasks
-- Fair sharing: who did how much of the cleaning plan
+- Fair sharing: who did how much of the housework
 - Google Calendar (read-only): week view on the display, events in each person's colour, symbols
   for children's events (e.g. judo, riding, playdate) so they recognise them without reading
 - Weather for your town (Open-Meteo, no API key needed)
@@ -49,7 +49,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
   note), tick it off in the shop
 - Household: a cleaning plan with a traffic light instead of dates (every chore with its own
   interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home;
-  what is due also shows on "Today" and next to the children under "Tasks"
+  what is due also shows on "Today" and next to the children under "Tasks". Plus "To do": a
+  shared list for one-off things like "Get chicken feed"
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -378,10 +379,10 @@ changed or deleted. The suggestions live in `frontend/src/pools/rewards.ts`.
 ## Fair sharing
 
 Adults get neither points nor rewards. Instead, FamQuest shows how the housework is shared:
-**"Who did it?"** counts the chores done in the cleaning plan over the last 30 days for which
-someone tapped an avatar in the "Who did it?" bar, and shows the shares (e.g. 40 % and 60 %) as a
-split bar in the people's colours. You find it at the bottom of the **Household** view (with names
-and counts) and in compact form above the Household column under **Tasks**.
+**"Who did it?"** counts what was done in the cleaning plan and in "To do" over the last 30 days for
+which someone tapped an avatar in the "Who did it?" bar, and shows the shares (e.g. 40 % and 60 %)
+as a split bar in the people's colours. You find it at the bottom of the **Household** view (with
+names and counts) and in compact form above the Household column under **Tasks**.
 
 Adults are always listed, children only if they helped. What counts is the number of chores, not
 the effort; chores done without naming anyone count for nobody. This is deliberately not a
@@ -564,6 +565,25 @@ light shows how urgent it is.
   on the start page and as a "Household" column of its own next to the children under **Tasks**,
   each with one tap to mark it done. Green chores only show in this view. Above the column you see
   the traffic light in numbers and the [fair sharing](#fair-sharing) bar.
+
+### To do
+
+At the very top of the **Household** view you find **"To do"**: a shared list for one-off things
+without a person or a date, such as "Get chicken feed" or "Change the light bulb". It needs no
+parents' PIN.
+
+- **Add:** type the text and tap "Add". The icon is suggested from the text; tap it to pick
+  another one. The same thing is never open on the list twice.
+- **Tick off:** one tap on the row. As in the cleaning plan, the **"Who did it?"** bar then asks
+  briefly; the answer counts towards [fair sharing](#fair-sharing). Ticked entries stay crossed
+  out until the end of the day, another tap takes it back.
+- **Remove:** the ✕ on an open entry takes it off the list without doing it.
+- **Comes back:** if something turns out to be recurring, the button with the two arrows turns it
+  into a chore in the cleaning plan. It leads to the parents' area (parents' PIN); title and icon
+  are already filled in, you pick the room and the interval. There has to be at least one room.
+- **Also on "Today" and under "Tasks":** open entries appear in the "Household" tile ahead of the
+  cleaning plan and at the top of the Household column, each with one tap to tick them off. Both
+  show up even without a cleaning plan as soon as something is on the list.
 
 ### Setting up the cleaning plan
 
@@ -1091,8 +1111,9 @@ them; the children's routines stay.
   light, one tap marks a chore done, optional "Who did it?"; management in the parents' area
 - [x] 2. Setup assistant: questions about your home turn into a suggestion for rooms, chores and
   intervals
-- [ ] 3. "To do": a shared list for one-off things without a person or date (e.g. "buy chicken
-  feed"); whoever does it ticks it off
+- [x] 3. "To do": a shared list for one-off things without a person or date (e.g. "get chicken
+  feed") at the top of the "Household" view, also on "Today" and under "Tasks"; whoever does it
+  ticks it off; "comes back" turns it into a chore in the cleaning plan
 - [x] 4. "Household" tile on "Today" (only red and yellow, one tap marks it done); under "Tasks" a
   "Household" column replaces the adults' columns, fair sharing is fed by the cleaning plan (done
   ahead of step 3)

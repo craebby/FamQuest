@@ -10,6 +10,7 @@ import {
   makeMe,
   makeMember,
   makeToday,
+  makeTodo,
   mockApi,
   renderApp,
   setupDone,
@@ -250,6 +251,59 @@ describe('Putzplan im Elternbereich', () => {
 
     expect(await screen.findByText('„Toilette putzen“ ist gespeichert.')).toBeVisible()
     expect(bodyOf(calls, 'PUT /api/chores/1')).toMatchObject({ counted_from: '2026-09-20' })
+  })
+
+  it('macht aus „Zu erledigen“ eine Aufgabe im Putzplan („kommt wieder“)', async () => {
+    const user = userEvent.setup()
+    const feed = makeTodo({ id: 7 })
+    const calls = api({ ...PLAN, todos: [feed] })
+    renderApp('/parents/household?todo=7')
+
+    expect(await screen.findByRole('heading', { name: 'Neue Hausarbeit', level: 1 })).toBeVisible()
+    expect(screen.getByText(/Kommt wieder: Wählt Raum und Abstand/)).toBeVisible()
+    expect(screen.getByRole('textbox', { name: 'Was ist zu tun?' })).toHaveValue(
+      'Hühnerfutter holen',
+    )
+    // Was noch offen auf der Liste steht, ist jetzt dran.
+    expect(screen.getByRole('radio', { name: 'Jetzt fällig' })).toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Überall' }))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(await screen.findByText('„Hühnerfutter holen“ ist gespeichert.')).toBeVisible()
+    expect(bodyOf(calls, 'POST /api/chores')).toEqual({
+      room_id: 2,
+      title: 'Hühnerfutter holen',
+      icon: 'fluent-emoji-flat:chicken',
+      interval_days: 14,
+      active: true,
+      state: 'due',
+      todo_id: 7,
+    })
+    // Zurück in der Übersicht, nicht wieder im Editor.
+    expect(screen.getByRole('heading', { name: 'Putzplan', level: 2 })).toBeVisible()
+  })
+
+  it('bricht „kommt wieder“ ab, ohne etwas anzulegen', async () => {
+    const user = userEvent.setup()
+    const calls = api({ ...PLAN, todos: [makeTodo({ id: 7 })] })
+    renderApp('/parents/household?todo=7')
+
+    await user.click(await screen.findByRole('button', { name: 'Abbrechen' }))
+
+    expect(await screen.findByRole('heading', { name: 'Putzplan', level: 2 })).toBeVisible()
+    expect(calls.map((call) => call.key)).not.toContain('POST /api/chores')
+  })
+
+  it('verlangt für „kommt wieder“ zuerst einen Raum', async () => {
+    api(makeChorePlan({ todos: [makeTodo({ id: 7 })] }))
+    renderApp('/parents/household?todo=7')
+
+    expect(
+      await screen.findByText(
+        '„Hühnerfutter holen“ kommt wieder? Dafür braucht der Putzplan zuerst einen Raum.',
+      ),
+    ).toBeVisible()
+    expect(screen.queryByRole('heading', { name: 'Neue Hausarbeit' })).toBeNull()
   })
 
   it('löscht eine Aufgabe erst nach Rückfrage', async () => {

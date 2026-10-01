@@ -13,6 +13,7 @@ import { TaskIcon } from '../components/TaskIcon'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { ChoreShare } from './chores/ChoreShare'
+import { TodoSection } from './chores/TodoSection'
 import { WhoBar } from './chores/WhoBar'
 import { useChoreDone } from './chores/useChoreDone'
 import { areaPath } from './parents/areas'
@@ -20,9 +21,9 @@ import { areaPath } from './parents/areas'
 type Grouping = 'urgency' | 'rooms'
 
 /**
- * Putzplan: jede Hausarbeit mit Ampel statt festem Termin. Ein Tipp erledigt und stellt die Uhr
- * zurück; danach lässt sich freiwillig antippen, wer es war. Daraus entsteht unten die faire
- * Verteilung. Ohne Eltern-PIN.
+ * Haushalt: oben „Zu erledigen“ für Einmaliges, darunter der Putzplan, jede Hausarbeit mit Ampel
+ * statt festem Termin. Ein Tipp erledigt und stellt die Uhr zurück; danach lässt sich freiwillig
+ * antippen, wer es war. Daraus entsteht unten die faire Verteilung. Ohne Eltern-PIN.
  */
 export function ChoresPage() {
   const { t } = useTranslation()
@@ -32,7 +33,8 @@ export function ChoresPage() {
 
   const rooms = plan.data?.rooms ?? []
   const chores = (plan.data?.chores ?? []).filter((chore) => chore.active)
-  const done = useChoreDone(chores)
+  const todos = plan.data?.todos ?? []
+  const done = useChoreDone(chores, todos)
   const roomOf = (chore: Chore) => rooms.find((room) => room.id === chore.room_id)
   const shares = plan.data && careShares(members.data ?? [], plan.data.shares)
 
@@ -82,7 +84,11 @@ export function ChoresPage() {
           <Alert>{errorMessage(t, plan.error)}</Alert>
           <Button onClick={() => void plan.refetch()}>{t('actions.retry')}</Button>
         </div>
-      ) : chores.length === 0 ? (
+      ) : (
+        <TodoSection todos={todos} members={members.data ?? []} done={done} />
+      )}
+
+      {!plan.data ? null : chores.length === 0 ? (
         <Link
           to={areaPath('household')}
           className="flex flex-col items-center gap-3 rounded-3xl border-4 border-dashed border-slate-200 p-8 text-center hover:bg-white focus-visible:outline-4 focus-visible:outline-orange-400"

@@ -234,6 +234,11 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   const [editingChore, setEditingChore] = useState<{ chore?: Chore; roomId: number } | null>(null)
   const [editingRoom, setEditingRoom] = useState<ChoreRoom | 'new' | null>(null)
   const [choreWizard, setChoreWizard] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  // „Kommt wieder“: Aus der Ansicht „Haushalt“ kommt ein Eintrag, der zur Aufgabe im Putzplan wird.
+  const comingBackId = area === 'household' ? Number(searchParams.get('todo')) : NaN
+  const comingBack = chores.data?.todos.find((todo) => todo.id === comingBackId)
+  const firstRoom = chores.data?.rooms[0]
 
   // Jede Unteransicht (Editor, Vorschläge, Punkte, PIN) beginnt oben, nicht an der Stelle,
   // an der man in der Übersicht gerade war.
@@ -245,7 +250,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
         ? 'reward'
         : poolMember
           ? 'pool'
-          : editingChore
+          : editingChore || (comingBack && firstRoom)
             ? 'chore'
             : editingRoom
               ? 'room'
@@ -261,7 +266,6 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
   }, [view, area])
   const [confirmDisable, setConfirmDisable] = useState(false)
   // Rückkehr von der Google-Anmeldung: Ergebnis anzeigen und danach die Adresse aufräumen.
-  const [searchParams, setSearchParams] = useSearchParams()
   // Hinweise („… ist gespeichert“) gehören zu dem Bereich, in dem sie entstanden sind.
   const [noticeState, setNoticeState] = useState<{ area: ParentArea; text: string } | null>(() =>
     searchParams.get('calendar') === 'connected'
@@ -359,6 +363,24 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
           setNotice(t('rewards.pool_added', { count, name: poolMember.name }))
         }}
         onCancel={() => setPoolMember(null)}
+      />
+    )
+  }
+
+  if (comingBack && firstRoom) {
+    const close = (message?: string) => {
+      setSearchParams({}, { replace: true })
+      setNotice(message)
+    }
+    return (
+      <ChoreEditor
+        todo={comingBack}
+        roomId={firstRoom.id}
+        rooms={chores.data?.rooms ?? []}
+        today={chores.data?.date}
+        onSaved={(title) => close(t('tasks.saved', { title }))}
+        onDeleted={() => close()}
+        onCancel={() => close()}
       />
     )
   }
@@ -536,6 +558,14 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
         )}
         {area === 'household' && (
           <>
+            {comingBack && !firstRoom && (
+              <p
+                role="status"
+                className="rounded-2xl bg-amber-100 px-4 py-3 text-lg font-semibold text-amber-900"
+              >
+                {t('todos.need_room', { title: comingBack.title })}
+              </p>
+            )}
             <ChoresSection
               plan={chores.data}
               error={chores.error}

@@ -31,6 +31,7 @@ from app.api import (
     task_week,
     tasks,
     today,
+    todos,
     weather,
 )
 from app.calendar_sync import run_periodically
@@ -96,6 +97,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         meals,
         shopping,
         chores,
+        todos,
     ):
         api.include_router(module.router)
     app.include_router(api)

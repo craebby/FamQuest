@@ -474,6 +474,9 @@
       "room_not_found": "Diesen Raum gibt es nicht mehr.",
       "room_duplicate": "Einen Raum mit diesem Namen gibt es schon.",
       "counted_from_future": "Dieser Tag liegt in der Zukunft."
+    },
+    "todo": {
+      "not_found": "Diesen Eintrag gibt es nicht mehr."
     }
   },
   "rewards": {
@@ -953,5 +956,16 @@
     "wizard_add_other": "{{count}} Aufgaben übernehmen",
     "wizard_added_one": "{{count}} Aufgabe ist im Putzplan.",
     "wizard_added_other": "{{count}} Aufgaben sind im Putzplan."
+  },
+  "todos": {
+    "title": "Zu erledigen",
+    "new": "Neuer Eintrag",
+    "placeholder": "Was ist zu erledigen?",
+    "add": "Eintragen",
+    "empty": "Gerade steht nichts an. Tragt ein, was einmal zu tun ist, z. B. „Hühnerfutter holen“.",
+    "remove": "„{{title}}“ streichen",
+    "repeat": "„{{title}}“ kommt wieder: in den Putzplan übernehmen",
+    "repeat_hint": "Kommt wieder: Wählt Raum und Abstand. Der Eintrag wandert damit von „Zu erledigen“ in den Putzplan.",
+    "need_room": "„{{title}}“ kommt wieder? Dafür braucht der Putzplan zuerst einen Raum."
   }
 }

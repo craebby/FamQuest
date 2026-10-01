@@ -1,14 +1,15 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Chore, ChorePlan } from '../api/chores'
+import type { Chore, ChorePlan, Todo } from '../api/chores'
 import i18n from '../i18n'
 import {
   makeChore,
   makeChorePlan,
   makeMe,
   makeMember,
+  makeTodo,
   mockApi,
   renderApp,
   setupDone,
@@ -250,5 +251,152 @@ describe('Haushalt', () => {
     const link = await screen.findByRole('link', { name: /Noch kein Putzplan/ })
     expect(link).toHaveAttribute('href', '/parents/household')
     expect(screen.queryByRole('button', { name: 'Nach Raum' })).toBeNull()
+  })
+})
+
+describe('Zu erledigen', () => {
+  const feed = makeTodo({ id: 7 })
+  const bulb = makeTodo({
+    id: 8,
+    title: 'Glühbirne wechseln',
+    icon: 'fluent-emoji-flat:light-bulb',
+    done: true,
+    done_by: 3,
+  })
+
+  /** Merkt sich wie der Server, was auf der Liste steht. */
+  function mockTodos(initial: Todo[] = [feed, bulb], plan: ChorePlan = PLAN) {
+    let todos = initial
+    const replace = (todo: Todo) => {
+      todos = todos.map((item) => (item.id === todo.id ? todo : item))
+      return Response.json(todo)
+    }
+    return mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe()),
+      'GET /api/members': Response.json([lena, mama]),
+      'GET /api/chores': () => Response.json({ ...plan, todos }),
+      'POST /api/todos': (body) => {
+        const todo = makeTodo({ id: 9, ...(body as { title: string; icon: string }) })
+        todos = [...todos, todo]
+        return Response.json(todo, { status: 201 })
+      },
+      'PUT /api/todos/7/done': (body) =>
+        replace({
+          ...feed,
+          done: true,
+          done_by: (body as { member_id: number | null }).member_id,
+        }),
+      'DELETE /api/todos/8/done': () => replace({ ...bulb, done: false, done_by: null }),
+      'DELETE /api/todos/7': () => {
+        todos = todos.filter((todo) => todo.id !== 7)
+        return new Response(null, { status: 204 })
+      },
+    })
+  }
+
+  const list = async () => within(await screen.findByRole('region', { name: 'Zu erledigen' }))
+
+  it('steht über dem Putzplan: Offenes zum Abhaken, heute Erledigtes durchgestrichen', async () => {
+    mockTodos()
+    renderApp('/household')
+
+    const todos = await list()
+    expect(todos.getByRole('button', { name: 'Hühnerfutter holen' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(todos.getByRole('button', { name: /Glühbirne wechseln/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(todos.getByRole('img', { name: 'Erledigt von Mama' })).toBeVisible()
+    // Der Putzplan steht weiter darunter.
+    expect(screen.getByRole('region', { name: 'Jetzt dran' })).toBeVisible()
+  })
+
+  it('lädt ohne Einträge zum Eintragen ein, auch ohne Putzplan', async () => {
+    mockTodos([], makeChorePlan())
+    renderApp('/household')
+
+    expect(await (await list()).findByText(/Gerade steht nichts an/)).toBeVisible()
+    expect(screen.getByText('Noch kein Putzplan')).toBeVisible()
+  })
+
+  it('trägt ohne Eltern-PIN etwas ein, das Symbol folgt dem Text', async () => {
+    const user = userEvent.setup()
+    const calls = mockTodos([])
+    renderApp('/household')
+
+    const todos = await list()
+    const add = todos.getByRole('button', { name: 'Eintragen' })
+    expect(add).toBeDisabled()
+    await user.type(todos.getByRole('textbox', { name: 'Neuer Eintrag' }), 'Paket wegbringen')
+    await user.click(add)
+
+    expect(await todos.findByRole('button', { name: 'Paket wegbringen' })).toBeVisible()
+    expect(bodiesOf(calls, 'POST /api/todos')).toEqual([
+      { title: 'Paket wegbringen', icon: 'fluent-emoji-flat:package' },
+    ])
+    expect(todos.getByRole('textbox', { name: 'Neuer Eintrag' })).toHaveValue('')
+  })
+
+  it('hakt per Tipp ab und fragt danach, wer es war', async () => {
+    const user = userEvent.setup()
+    const calls = mockTodos()
+    renderApp('/household')
+
+    const todos = await list()
+    await user.click(todos.getByRole('button', { name: 'Hühnerfutter holen' }))
+
+    const who = within(await screen.findByRole('region', { name: 'Wer war’s?' }))
+    expect(who.getByRole('status')).toHaveTextContent('„Hühnerfutter holen“ ist erledigt.')
+    await user.click(who.getByRole('button', { name: 'Lena' }))
+
+    expect(bodiesOf(calls, 'PUT /api/todos/7/done')).toEqual([
+      { member_id: null },
+      { member_id: 1 },
+    ])
+    expect(await todos.findByRole('img', { name: 'Erledigt von Lena' })).toBeVisible()
+    expect(screen.queryByRole('region', { name: 'Wer war’s?' })).toBeNull()
+  })
+
+  it('nimmt Abgehaktes mit einem weiteren Tipp zurück', async () => {
+    const user = userEvent.setup()
+    const calls = mockTodos()
+    renderApp('/household')
+
+    const todos = await list()
+    await user.click(todos.getByRole('button', { name: /Glühbirne wechseln/ }))
+
+    expect(calls.map((call) => call.key)).toContain('DELETE /api/todos/8/done')
+    await waitFor(() =>
+      expect(todos.getByRole('button', { name: 'Glühbirne wechseln' })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      ),
+    )
+  })
+
+  it('streicht Offenes und führt mit „kommt wieder“ in den Putzplan', async () => {
+    const user = userEvent.setup()
+    const calls = mockTodos()
+    renderApp('/household')
+
+    const todos = await list()
+    expect(
+      todos.getByRole('link', {
+        name: '„Hühnerfutter holen“ kommt wieder: in den Putzplan übernehmen',
+      }),
+    ).toHaveAttribute('href', '/parents/household?todo=7')
+    // Abgehaktes lässt sich nicht mehr streichen, nur zurücknehmen.
+    expect(todos.queryByRole('button', { name: '„Glühbirne wechseln“ streichen' })).toBeNull()
+
+    await user.click(todos.getByRole('button', { name: '„Hühnerfutter holen“ streichen' }))
+
+    expect(calls.map((call) => call.key)).toContain('DELETE /api/todos/7')
+    await waitFor(() =>
+      expect(todos.queryByRole('button', { name: 'Hühnerfutter holen' })).toBeNull(),
+    )
   })
 })

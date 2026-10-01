@@ -78,6 +78,7 @@ def test_empty_plan(client, admin, now):
         "date": SATURDAY,
         "rooms": [],
         "chores": [],
+        "todos": [],
         "share_days": 30,
         "shares": [],
     }
@@ -122,6 +123,7 @@ def test_create_room_and_chore(client, parent, now):
         "date": SATURDAY,
         "rooms": [room],
         "chores": [created],
+        "todos": [],
         "share_days": 30,
         "shares": [],
     }
@@ -188,6 +190,7 @@ def test_delete_room_takes_its_chores_along(client, parent, now):
         "date": SATURDAY,
         "rooms": [],
         "chores": [],
+        "todos": [],
         "share_days": 30,
         "shares": [],
     }

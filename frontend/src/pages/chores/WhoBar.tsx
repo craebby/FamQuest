@@ -9,8 +9,8 @@ import type { ChoreDone } from './useChoreDone'
 export function WhoBar({ done }: { done: ChoreDone }) {
   const { t } = useTranslation()
   const members = useMembers().data ?? []
-  const chore = done.asking
-  if (!chore) return null
+  const asking = done.asking
+  if (!asking) return null
   // Erwachsene zuerst; Kinder dürfen auch mithelfen.
   const sorted = [...members].sort(
     (a, b) => Number(a.role !== 'parent') - Number(b.role !== 'parent'),
@@ -21,7 +21,7 @@ export function WhoBar({ done }: { done: ChoreDone }) {
       className="fixed inset-x-2 bottom-30 z-20 mx-auto flex max-w-3xl flex-wrap items-center gap-3 rounded-3xl bg-slate-800 p-3 text-white shadow-xl sm:bottom-4 sm:left-32"
     >
       <p role="status" className="min-w-0 flex-1 basis-48 text-lg font-bold break-words">
-        {t('chores.done_notice', { title: chore.title })}{' '}
+        {t('chores.done_notice', { title: asking.title })}{' '}
         {sorted.length > 0 && <span className="font-normal">{t('chores.who')}</span>}
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -31,7 +31,7 @@ export function WhoBar({ done }: { done: ChoreDone }) {
             type="button"
             aria-label={member.name}
             title={member.name}
-            onClick={() => done.pick(chore, member.id)}
+            onClick={() => asking.pick(member.id)}
             className="rounded-full focus-visible:outline-4 focus-visible:outline-orange-400"
           >
             <Avatar name={member.name} color={member.color} src={member.avatar_url} size="sm" />
@@ -39,7 +39,7 @@ export function WhoBar({ done }: { done: ChoreDone }) {
         ))}
         <button
           type="button"
-          onClick={() => done.toggle(chore)}
+          onClick={asking.undo}
           className="min-h-12 rounded-2xl px-4 text-lg font-bold underline focus-visible:outline-4 focus-visible:outline-orange-400"
         >
           {t('chores.undo')}

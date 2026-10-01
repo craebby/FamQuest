@@ -148,7 +148,9 @@ Erwachsenen-Aufgaben werden nicht übernommen. Gearbeitet wird auf dem Branch `p
    Spülmaschine, Trockner, Haustiere, Auto, Kamin, Kinderzimmer, Papierkram; locker/normal/gründlich)
    → Vorschlag für Räume, Aufgaben und Abstände zum An- und Abwählen
 3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B. „Hühnerfutter
-   holen“), wer es macht, hakt ab; auf Wunsch „kommt wieder“ → wandert in den Putzplan
+   holen“) oben in der Ansicht „Haushalt“, auch in der Kachel auf „Heute“ und in der Haushalt-Spalte
+   unter „Aufgaben“; wer es macht, hakt ab (ohne Eltern-PIN, „Wer war's?“ zählt in die faire
+   Verteilung); auf Wunsch „kommt wieder“ → wandert mit Eltern-PIN in den Putzplan
 4. Kachel „Haushalt“ auf „Heute“ (nur Gelbes und Rotes, ein Tipp erledigt); unter „Aufgaben“
    ersetzt eine Spalte „Haushalt“ die Erwachsenen-Spalten, Aufgaben gibt es nur noch für Kinder
    (alte Erwachsenen-Aufgaben löscht die Migration), faire Verteilung aus den Erledigungen im

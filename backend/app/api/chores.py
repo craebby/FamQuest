@@ -2,7 +2,8 @@
 
 Erledigen geht am Display ohne Eltern-PIN, wie bei Essensplan und Einkaufsliste; wer es war, ist
 freiwillig. Räume und Aufgaben verwalten die Eltern im Elternbereich, von Hand oder über den
-Einrichtungs-Assistenten (`POST /chores/setup`).
+Einrichtungs-Assistenten (`POST /chores/setup`). Zum Haushalt gehört auch die Liste „Zu erledigen“
+(siehe api/todos); sie kommt hier mit, damit alle Ansichten denselben Stand zeigen.
 """
 
 import datetime as dt
@@ -14,10 +15,11 @@ from sqlalchemy import and_, delete, func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.members import get_member
+from app.api.todos import TodoOut, todo_out, todo_shares, visible_todos
 from app.auth import CurrentSession, DbSession, ParentSession, get_family
 from app.chores import chore_state
 from app.errors import ApiError
-from app.models import Chore, ChoreCompletion, ChoreRoom
+from app.models import Chore, ChoreCompletion, ChoreRoom, Todo
 from app.schemas import IconName, TaskTitle
 from app.today import family_now
 
@@ -78,8 +80,10 @@ class ChoresOut(BaseModel):
     date: dt.date
     rooms: list[RoomOut]
     chores: list[ChoreOut]
-    # Faire Verteilung: wer in den letzten `share_days` Tagen wie oft etwas erledigt hat. Es zählt
-    # nur, wozu jemand „Wer war's?“ angetippt hat.
+    # „Zu erledigen“: Offenes in der Reihenfolge des Eintragens, danach das heute Abgehakte.
+    todos: list[TodoOut]
+    # Faire Verteilung: wer in den letzten `share_days` Tagen wie oft etwas erledigt hat, im
+    # Putzplan und von der Liste. Es zählt nur, wozu jemand „Wer war's?“ angetippt hat.
     share_days: int
     shares: list[ShareOut]
 
@@ -102,6 +106,8 @@ class ChoreIn(BaseModel):
 class ChoreCreateIn(ChoreIn):
     # Gilt nur ohne `counted_from`.
     state: StartState = "half"
+    # „Kommt wieder“: Der Eintrag aus „Zu erledigen“ wird zu dieser Aufgabe und verlässt die Liste.
+    todo_id: int | None = None
 
 
 class DoneIn(BaseModel):
@@ -212,9 +218,11 @@ def _shares(db: DbSession, today: dt.date) -> list[ShareOut]:
             ChoreCompletion.date <= today,
         )
         .group_by(ChoreCompletion.member_id)
-        .order_by(ChoreCompletion.member_id)
     )
-    return [ShareOut(member_id=member_id, count=count) for member_id, count in counts]
+    totals = todo_shares(db, since, today)
+    for member_id, count in counts:
+        totals[member_id] = totals.get(member_id, 0) + count
+    return [ShareOut(member_id=member_id, count=totals[member_id]) for member_id in sorted(totals)]
 
 
 def _one_out(db: DbSession, chore: Chore) -> ChoreOut:
@@ -250,6 +258,7 @@ def list_chores(_: CurrentSession, db: DbSession) -> ChoresOut:
         date=today,
         rooms=[_room_out(room) for room in rooms],
         chores=[_chore_out(chore, last.get(chore.id), today) for chore in chores],
+        todos=[todo_out(todo) for todo in visible_todos(db, today)],
         share_days=SHARE_DAYS,
         shares=_shares(db, today),
     )
@@ -269,6 +278,10 @@ def create_chore(body: ChoreCreateIn, _: ParentSession, db: DbSession) -> ChoreO
         anchor_date=body.counted_from or _anchor(body.state, body.interval_days, today),
     )
     db.add(chore)
+    todo = db.get(Todo, body.todo_id) if body.todo_id is not None else None
+    # Schon Abgehaktes bleibt bis zum Tagesende stehen und zählt weiter für die faire Verteilung.
+    if todo is not None and todo.done_date is None:
+        db.delete(todo)
     db.commit()
     return _one_out(db, chore)
 

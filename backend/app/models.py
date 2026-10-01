@@ -612,3 +612,23 @@ class ChoreCompletion(Base):
     completed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class Todo(Base):
+    """Einmaliges für den Haushalt ohne Person und Termin („Hühnerfutter holen“). Wer es macht,
+    hakt ab; Abgehaktes bleibt bis zum Ende des Tages sichtbar und zählt danach nur noch für die
+    faire Verteilung."""
+
+    __tablename__ = "todos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(100))
+    # Iconify-Name wie bei Aufgaben.
+    icon: Mapped[str] = mapped_column(String(100))
+    # Kalendertag der Erledigung in der Zeitzone der Familie; None = noch offen.
+    done_date: Mapped[dt.date | None] = mapped_column(Date, index=True)
+    # Wer es war, falls angegeben; bleibt als Erledigung erhalten, wenn die Person gelöscht wird.
+    done_by: Mapped[int | None] = mapped_column(
+        ForeignKey("family_members.id", ondelete="SET NULL"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

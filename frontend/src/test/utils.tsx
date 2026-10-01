@@ -5,7 +5,7 @@ import { vi } from 'vitest'
 
 import App from '../App'
 import type { Me } from '../api/auth'
-import type { Chore, ChorePlan } from '../api/chores'
+import type { Chore, ChorePlan, Todo } from '../api/chores'
 import type { Member } from '../api/members'
 import type { Photo } from '../api/photos'
 import type { Reward } from '../api/rewards'
@@ -154,11 +154,23 @@ export function makeChore(overrides: Partial<Chore> = {}): Chore {
   }
 }
 
+export function makeTodo(overrides: Partial<Todo> = {}): Todo {
+  return {
+    id: 1,
+    title: 'Hühnerfutter holen',
+    icon: 'fluent-emoji-flat:chicken',
+    done: false,
+    done_by: null,
+    ...overrides,
+  }
+}
+
 export function makeChorePlan(overrides: Partial<ChorePlan> = {}): ChorePlan {
   return {
     date: '2026-10-03',
     rooms: [],
     chores: [],
+    todos: [],
     share_days: 30,
     shares: [],
     ...overrides,

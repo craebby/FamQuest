@@ -3,13 +3,14 @@ import { Link } from 'react-router'
 import BroomIcon from '~icons/fluent-emoji-flat/broom'
 import GoodIcon from '~icons/fluent-emoji-flat/check-mark-button'
 
-import type { Chore, ChorePlan } from '../../api/chores'
+import type { Chore, ChorePlan, Todo } from '../../api/chores'
 import type { Member } from '../../api/members'
 import { careShares } from '../../care'
 import { LEVEL_COLORS, byUrgency, groupByLevel } from '../../chores'
 import { errorMessage } from '../../errors'
 import { ChoreCard } from '../chores/ChoreCard'
 import { ChoreShare } from '../chores/ChoreShare'
+import { TodoCard } from '../chores/TodoCard'
 import type { ChoreDone } from '../chores/useChoreDone'
 
 /** Rundes Symbol für den Haushalt, so groß wie ein Avatar. */
@@ -25,9 +26,10 @@ export function HouseholdAvatar({ label }: { label?: string }) {
 }
 
 /**
- * Der Haushalt als Spalte neben den Kindern: was im Putzplan rot und gelb ist, zum Abhaken wie
- * eine Aufgabe. Darüber, wo bei den Kindern Sterne und Punkte stehen, die Ampel in Zahlen und die
- * faire Verteilung. Grünes steht nur in der Ansicht „Haushalt“.
+ * Der Haushalt als Spalte neben den Kindern: was offen in „Zu erledigen“ steht und was im
+ * Putzplan rot und gelb ist, zum Abhaken wie eine Aufgabe. Darüber, wo bei den Kindern Sterne und
+ * Punkte stehen, die Ampel in Zahlen und die faire Verteilung. Grünes steht nur in der Ansicht
+ * „Haushalt“.
  */
 export function HouseholdColumn({
   plan,
@@ -44,6 +46,8 @@ export function HouseholdColumn({
   const chores = plan.chores.filter((chore) => chore.active)
   const groups = groupByLevel(chores)
   const finished = chores.filter((chore) => chore.done_today).sort(byUrgency)
+  const openTodos = plan.todos.filter((todo) => !todo.done)
+  const doneTodos = plan.todos.filter((todo) => todo.done)
   const shares = careShares(members, plan.shares)
 
   const card = (chore: Chore) => (
@@ -53,6 +57,15 @@ export function HouseholdColumn({
       room={plan.rooms.find((room) => room.id === chore.room_id)}
       doneBy={members.find((member) => member.id === chore.done_by)}
       onToggle={() => done.toggle(chore)}
+    />
+  )
+
+  const todoCard = (todo: Todo) => (
+    <TodoCard
+      key={todo.id}
+      todo={todo}
+      doneBy={members.find((member) => member.id === todo.done_by)}
+      onToggle={() => done.toggleTodo(todo)}
     />
   )
 
@@ -97,7 +110,15 @@ export function HouseholdColumn({
         </p>
       ) : null}
       <div className="flex flex-col gap-2">
-        {groups.due.length === 0 && groups.soon.length === 0 && (
+        {openTodos.length > 0 && (
+          <section aria-label={t('todos.title')} className="flex flex-col gap-2 px-1">
+            <h3 className="flex min-h-9 items-center text-lg font-extrabold text-slate-700">
+              {t('todos.title')}
+            </h3>
+            <ul className="flex flex-col gap-2">{openTodos.map(todoCard)}</ul>
+          </section>
+        )}
+        {groups.due.length === 0 && groups.soon.length === 0 && openTodos.length === 0 && (
           <p className="flex flex-col items-center gap-3 py-8 text-center text-2xl font-bold text-slate-600">
             <GoodIcon className="size-24" aria-hidden="true" />
             {t('home.chores_all_good')}
@@ -122,12 +143,15 @@ export function HouseholdColumn({
               </section>
             ),
         )}
-        {finished.length > 0 && (
+        {finished.length + doneTodos.length > 0 && (
           <section aria-label={t('chores.done_title')} className="flex flex-col gap-2 px-1">
             <h3 className="flex min-h-9 items-center text-lg font-extrabold text-slate-500">
               {t('chores.done_title')}
             </h3>
-            <ul className="flex flex-col gap-2">{finished.map(card)}</ul>
+            <ul className="flex flex-col gap-2">
+              {doneTodos.map(todoCard)}
+              {finished.map(card)}
+            </ul>
           </section>
         )}
       </div>

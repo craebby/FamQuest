@@ -20,8 +20,8 @@ import { ViewToggle } from './family/ViewToggle'
 import { currentTasks, tasksFor, useFamilyToday } from './family/useFamilyToday'
 
 /**
- * Aufgaben heute: eine Spalte je Kind mit seinen Aufgaben, daneben der Haushalt mit dem, was im
- * Putzplan dran ist. Erwachsene haben keine eigenen Aufgaben mehr.
+ * Aufgaben heute: eine Spalte je Kind mit seinen Aufgaben, daneben der Haushalt mit dem, was in
+ * „Zu erledigen“ steht und im Putzplan dran ist. Erwachsene haben keine eigenen Aufgaben mehr.
  */
 export function FamilyPage() {
   const { t, i18n } = useTranslation()
@@ -30,7 +30,10 @@ export function FamilyPage() {
   // Der Putzplan kommt dazu, sobald er geladen ist; ohne ihn stehen nur die Kinder da.
   const chores = useChores().data
   const children = members?.filter((member) => member.role === 'child') ?? []
-  const household = chores?.chores.some((chore) => chore.active) ? chores : undefined
+  const household =
+    chores && (chores.chores.some((chore) => chore.active) || chores.todos.length > 0)
+      ? chores
+      : undefined
 
   const language = i18n.resolvedLanguage ?? i18n.language
 
@@ -79,7 +82,7 @@ function Columns({
 }) {
   const { t } = useTranslation()
   const [selectedId, setSelectedId] = useState<Selection | null>(null)
-  const done = useChoreDone(household?.chores ?? [])
+  const done = useChoreDone(household?.chores ?? [], household?.todos)
   // Am Smartphone ist genau eine Spalte sichtbar; Standard ist das erste Kind.
   const available: Selection[] = [
     ...kids.map((child) => child.id),

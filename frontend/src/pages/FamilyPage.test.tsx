@@ -6,6 +6,7 @@ import i18n from '../i18n'
 import {
   makeChore,
   makeChorePlan,
+  makeTodo,
   makeMe,
   makeMember,
   makeToday,
@@ -404,6 +405,44 @@ describe('Familienansicht', () => {
       'true',
     )
     expect(finished.getByRole('img', { name: 'Erledigt von Mama' })).toBeVisible()
+  })
+
+  it('zeigt in der Haushalt-Spalte oben, was zu erledigen ist, auch ohne Putzplan', async () => {
+    const user = userEvent.setup()
+    const feed = makeTodo({ id: 7 })
+    let plan = makeChorePlan({
+      todos: [feed, makeTodo({ id: 8, title: 'Glühbirne wechseln', done: true, done_by: 3 })],
+    })
+    const calls = mockApi({
+      ...familyRoutes(),
+      'GET /api/members': Response.json([lena, mama, papa]),
+      'GET /api/chores': () => Response.json(plan),
+      'PUT /api/todos/7/done': (body) => {
+        const done = { ...feed, done: true, done_by: (body as { member_id: number }).member_id }
+        plan = { ...plan, todos: plan.todos.map((todo) => (todo.id === 7 ? done : todo)) }
+        return Response.json(done)
+      },
+    })
+    renderApp('/tasks')
+
+    const household = within(await screen.findByRole('region', { name: 'Haushalt' }))
+    const todos = within(household.getByRole('region', { name: 'Zu erledigen' }))
+    const finished = within(household.getByRole('region', { name: 'Heute erledigt' }))
+    expect(finished.getByRole('button', { name: /Glühbirne wechseln/ })).toBeVisible()
+    expect(finished.getByRole('img', { name: 'Erledigt von Mama' })).toBeVisible()
+    expect(household.queryByText('Alles im grünen Bereich')).toBeNull()
+
+    await user.click(todos.getByRole('button', { name: 'Hühnerfutter holen' }))
+    const who = within(await screen.findByRole('region', { name: 'Wer war’s?' }))
+    await user.click(who.getByRole('button', { name: 'Papa' }))
+
+    const writes = calls.filter((call) => call.key === 'PUT /api/todos/7/done')
+    expect(writes.map((call) => call.body)).toEqual([{ member_id: null }, { member_id: 4 }])
+    expect(await finished.findByRole('button', { name: /Hühnerfutter holen/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(household.queryByRole('region', { name: 'Zu erledigen' })).toBeNull()
   })
 
   it('zeigt ohne Kinder nur den Haushalt, ohne beides den Weg in den Elternbereich', async () => {

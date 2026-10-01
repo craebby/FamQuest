@@ -474,6 +474,9 @@
       "room_not_found": "This room no longer exists.",
       "room_duplicate": "There is already a room with this name.",
       "counted_from_future": "This day is in the future."
+    },
+    "todo": {
+      "not_found": "This entry no longer exists."
     }
   },
   "rewards": {
@@ -953,5 +956,16 @@
     "wizard_add_other": "Add {{count}} chores",
     "wizard_added_one": "{{count}} chore is in the cleaning plan.",
     "wizard_added_other": "{{count}} chores are in the cleaning plan."
+  },
+  "todos": {
+    "title": "To do",
+    "new": "New entry",
+    "placeholder": "What needs to be done?",
+    "add": "Add",
+    "empty": "Nothing to do right now. Add one-off things here, e.g. “Get chicken feed”.",
+    "remove": "Remove “{{title}}”",
+    "repeat": "“{{title}}” comes back: move it to the cleaning plan",
+    "repeat_hint": "Comes back: pick a room and an interval. This moves the entry from “To do” to the cleaning plan.",
+    "need_room": "“{{title}}” comes back? The cleaning plan needs a room first."
   }
 }

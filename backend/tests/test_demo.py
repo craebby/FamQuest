@@ -40,6 +40,7 @@ def test_demo_family(client, restore_clock, lang):
     levels = [chore["level"] for chore in chores["chores"]]
     assert (levels.count("due"), levels.count("soon"), levels.count("ok")) == (3, 2, 3)
     assert sorted(share["count"] for share in chores["shares"]) == [2, 5, 6]
+    assert [todo["done"] for todo in chores["todos"]] == [False, False]
 
     assert client.get("/api/weather").json()["current"]["temperature"] == 14
     client.post(

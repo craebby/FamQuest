@@ -37,7 +37,7 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Punkte als Buchungen, Tagesfortschritt, manuelle Gutschriften
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
-- Faire Verteilung: wer wie viel vom Putzplan erledigt hat
+- Faire Verteilung: wer wie viel im Haushalt erledigt hat
 - Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person, Symbole
   für Termine der Kinder (z. B. Judo, Reiten, Verabredung), damit sie sie ohne Lesen erkennen
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
@@ -49,7 +49,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
   Hinweis), im Laden abhaken
 - Haushalt: Putzplan mit Ampel statt Terminen (jede Hausarbeit mit eigenem Abstand, je Raum), ein
   Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor; was
-  dran ist, steht auch auf „Heute“ und neben den Kindern unter „Aufgaben“
+  dran ist, steht auch auf „Heute“ und neben den Kindern unter „Aufgaben“. Dazu „Zu erledigen“:
+  eine gemeinsame Liste für Einmaliges wie „Hühnerfutter holen“
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -383,10 +384,11 @@ später geändert oder gelöscht wird. Die Vorschläge stehen in `frontend/src/p
 ## Faire Verteilung
 
 Erwachsene bekommen keine Punkte und keine Belohnungen. Stattdessen zeigt FamQuest, wie sich die
-Hausarbeit verteilt: **„Wer hat's gemacht?“** zählt die Erledigungen im Putzplan der letzten 30
-Tage, zu denen jemand bei „Wer war's?“ einen Avatar angetippt hat, und zeigt die Anteile (z. B.
-40 % und 60 %) als geteilten Balken in den Personenfarben. Er steht unten in der Ansicht
-**Haushalt** (mit Namen und Anzahl) und kompakt über der Haushalt-Spalte unter **Aufgaben**.
+Hausarbeit verteilt: **„Wer hat's gemacht?“** zählt die Erledigungen im Putzplan und in
+„Zu erledigen“ der letzten 30 Tage, zu denen jemand bei „Wer war's?“ einen Avatar angetippt hat,
+und zeigt die Anteile (z. B. 40 % und 60 %) als geteilten Balken in den Personenfarben. Er steht
+unten in der Ansicht **Haushalt** (mit Namen und Anzahl) und kompakt über der Haushalt-Spalte unter
+**Aufgaben**.
 
 Erwachsene stehen immer dabei, Kinder nur, wenn sie mitgeholfen haben. Gezählt wird die Anzahl,
 nicht der Aufwand; Erledigungen ohne Angabe zählen für niemanden. Das ist bewusst kein Wettbewerb,
@@ -578,6 +580,27 @@ eine Ampel zeigt, wie dringend sie ist.
   auf der Startseite und als eigene Spalte „Haushalt“ neben den Kindern unter **Aufgaben**, jeweils
   zum Abhaken mit einem Tipp. Grünes zeigt nur diese Ansicht. Über der Spalte stehen die Ampel in
   Zahlen und die [faire Verteilung](#faire-verteilung).
+
+### Zu erledigen
+
+Ganz oben in der Ansicht **Haushalt** steht **„Zu erledigen“**: eine gemeinsame Liste für alles
+Einmalige ohne Person und Termin, etwa „Hühnerfutter holen“ oder „Glühbirne wechseln“. Sie braucht
+keine Eltern-PIN.
+
+- **Eintragen:** Text eintippen und „Eintragen“ antippen. Das Symbol wird aus dem Text
+  vorgeschlagen; ein Tipp darauf öffnet die Symbolauswahl. Dasselbe steht nicht zweimal offen auf
+  der Liste.
+- **Abhaken:** ein Tipp auf die Zeile. Wie im Putzplan fragt danach kurz die Leiste
+  **„Wer war's?“**; die Angabe zählt in die [faire Verteilung](#faire-verteilung). Abgehaktes
+  bleibt bis zum Ende des Tages durchgestrichen stehen, ein weiterer Tipp nimmt es zurück.
+- **Streichen:** Das ✕ an einem offenen Eintrag nimmt ihn von der Liste, ohne ihn zu erledigen.
+- **Kommt wieder:** Stellt sich heraus, dass etwas regelmäßig anfällt, macht der Knopf mit den
+  zwei Pfeilen daraus eine Aufgabe im Putzplan. Er führt in den Elternbereich (Eltern-PIN); Titel
+  und Symbol sind schon eingetragen, ihr wählt Raum und Abstand. Dafür muss es mindestens einen
+  Raum geben.
+- **Auch auf „Heute“ und unter „Aufgaben“:** Offenes steht in der Kachel „Haushalt“ vor dem
+  Putzplan und oben in der Haushalt-Spalte, jeweils zum Abhaken. Beides erscheint auch ohne
+  Putzplan, sobald etwas auf der Liste steht.
 
 ### Putzplan einrichten
 
@@ -1118,8 +1141,9 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
   erledigt, optional „Wer war's?“; Verwaltung im Elternbereich
 - [x] 2. Einrichtungs-Assistent: Fragen zum Zuhause, daraus ein Vorschlag für Räume, Aufgaben und
   Abstände
-- [ ] 3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B.
-  „Hühnerfutter holen“); wer es macht, hakt ab
+- [x] 3. „Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin (z. B.
+  „Hühnerfutter holen“) oben in der Ansicht „Haushalt“, auch auf „Heute“ und unter „Aufgaben“; wer
+  es macht, hakt ab; „kommt wieder“ macht daraus eine Aufgabe im Putzplan
 - [x] 4. Kachel „Haushalt“ auf „Heute“ (nur Rotes und Gelbes, ein Tipp erledigt); unter „Aufgaben“
   ersetzt die Spalte „Haushalt“ die Spalten der Erwachsenen, die faire Verteilung speist sich aus
   dem Putzplan (vorgezogen vor Etappe 3)

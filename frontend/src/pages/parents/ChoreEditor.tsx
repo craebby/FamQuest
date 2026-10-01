@@ -8,6 +8,7 @@ import {
   type ChoreRoom,
   START_STATES,
   type StartState,
+  type Todo,
   createChore,
   deleteChore,
   updateChore,
@@ -35,6 +36,8 @@ const DEFAULT_CHORE_ICON = iconId('broom')
 interface ChoreEditorProps {
   /** Ohne `chore` wird eine neue Aufgabe im Raum `roomId` angelegt. */
   chore?: Chore
+  /** „Kommt wieder“: Eintrag aus „Zu erledigen“, der zur neuen Aufgabe wird. */
+  todo?: Todo
   roomId: number
   rooms: ChoreRoom[]
   /** Heute in der Zeitzone der Familie (`YYYY-MM-DD`); später kann nichts erledigt worden sein. */
@@ -46,6 +49,7 @@ interface ChoreEditorProps {
 
 export function ChoreEditor({
   chore,
+  todo,
   roomId: initialRoomId,
   rooms,
   today,
@@ -54,13 +58,16 @@ export function ChoreEditor({
   onCancel,
 }: ChoreEditorProps) {
   const { t, i18n } = useTranslation()
-  const [title, setTitle] = useState(chore?.title ?? '')
+  const [title, setTitle] = useState(chore?.title ?? todo?.title ?? '')
   // Bis Eltern selbst ein Symbol wählen, wird es aus dem Titel vorgeschlagen.
-  const [chosenIcon, setChosenIcon] = useState<string | null>(chore?.icon ?? null)
+  const [chosenIcon, setChosenIcon] = useState<string | null>(chore?.icon ?? todo?.icon ?? null)
   const [roomId, setRoomId] = useState(chore?.room_id ?? initialRoomId)
   const [every, setEvery] = useState(() => splitInterval(chore?.interval_days ?? 14))
   // Neue Aufgaben starten mit einem groben Stand oder, wie beim Bearbeiten, mit einem Datum.
-  const [state, setState] = useState<StartState | 'date'>(chore ? 'date' : 'half')
+  // Was noch offen auf der Liste steht, ist jetzt dran; schon Abgehaktes ist gerade erledigt.
+  const [state, setState] = useState<StartState | 'date'>(
+    chore ? 'date' : todo ? (todo.done ? 'fresh' : 'due') : 'half',
+  )
   const [countedFrom, setCountedFrom] = useState(chore?.counted_from ?? '')
   const [active, setActive] = useState(chore?.active ?? true)
   const [pickingIcon, setPickingIcon] = useState(false)
@@ -71,8 +78,8 @@ export function ChoreEditor({
   const days = intervalDays(every.count, every.unit)
   const save = useChoresMutation(() => {
     const data = { room_id: roomId, title: title.trim(), icon, interval_days: days, active }
-    if (state !== 'date') return createChore({ ...data, state })
-    if (!chore) return createChore({ ...data, counted_from: countedFrom })
+    if (state !== 'date') return createChore({ ...data, state, todo_id: todo?.id })
+    if (!chore) return createChore({ ...data, counted_from: countedFrom, todo_id: todo?.id })
     // Nur ein geändertes Datum mitschicken: Wer inzwischen am Display abgehakt hat, bleibt stehen.
     const changed = countedFrom && countedFrom !== chore.counted_from
     return updateChore(chore.id, changed ? { ...data, counted_from: countedFrom } : data)
@@ -127,6 +134,7 @@ export function ChoreEditor({
         onSubmit={submit}
         noValidate
       >
+        {todo && <p className="text-lg text-slate-600">{t('todos.repeat_hint')}</p>}
         {save.isError && !fieldError && <Alert>{errorMessage(t, save.error)}</Alert>}
         {remove.isError && <Alert>{errorMessage(t, remove.error)}</Alert>}
 
