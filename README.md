@@ -11,10 +11,10 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 1.1. Contains the task system (routines, family view, points, rewards,
+> **Status:** version 1.2. Contains the task system (routines, family view, points, rewards,
 > parent checks), Google Calendar (read-only), the start page "Today" as a week dashboard with
-> weather, the picture frame with night mode, the meal plan, the shopping list and the household
-> (cleaning plan with a traffic light, "To do"). Polish continues in everyday use (see
+> weather, the picture frame with night mode, the meal plan, the shopping list, the household
+> (cleaning plan with a traffic light, "To do") and the kitchen view for a small tablet. Polish continues in everyday use (see
 > [Roadmap](#roadmap)).
 
 **Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
@@ -93,7 +93,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.1.1`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.2.0`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -1024,8 +1024,11 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **1.1** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
-1.1 are a first plan and may still change.
+Current state: **1.2** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.2 are a first plan and may still change.
+
+**1.2: released.** The kitchen view (phase 8 below) for a small tablet in the kitchen, plus a
+"Photo for …" button right at the planned dish in the meal plan.
 
 **1.1: released.** The household (phase 7 below): a cleaning plan with a traffic light instead of
 the adults' tasks, a setup assistant and "To do". When updating from 1.0 the migration deletes
@@ -1098,7 +1101,7 @@ generated with demo data (`npm run screenshots`).
 **Demo version:** done. A German and an English public instance with the sample family that
 resets itself on the hour (see [Public demo](#public-demo)).
 
-**1.2: kitchen view (phase 8), in progress**
+**Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
 - [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
   days, swipe for the children's routine, household and shopping, header with date, weather and

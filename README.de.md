@@ -10,11 +10,11 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Version 1.1. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
+> **Status:** Version 1.2. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
 > Belohnungen, Kontrolle durch die Eltern), den Google Kalender (nur lesend), die Startseite „Heute“
 > als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan, die
-> Einkaufsliste und den Haushalt (Putzplan mit Ampel, „Zu erledigen“). Der Feinschliff läuft im
-> Alltag weiter (siehe [Roadmap](#roadmap)).
+> Einkaufsliste, den Haushalt (Putzplan mit Ampel, „Zu erledigen“) und die Küchenansicht fürs
+> kleine Tablet. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
 
 **Ausprobieren ohne Installation:** [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) –
 „Demo öffnen“ antippen, die Eltern-PIN steht auf der Anmeldeseite. Die Beispielfamilie setzt sich
@@ -94,7 +94,7 @@ docker compose up -d --build
 ```
 
 `main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
-[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.1.1`,
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.2.0`,
 danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
@@ -1052,8 +1052,11 @@ einziges App-Image, das als unprivilegierter Benutzer läuft.
 
 ## Roadmap
 
-Aktueller Stand: **1.1** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
-nach 1.1 sind ein erster Plan und können sich noch ändern.
+Aktueller Stand: **1.2** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
+nach 1.2 sind ein erster Plan und können sich noch ändern.
+
+**1.2: veröffentlicht.** Die Küchenansicht (Phase 8 unten) für ein kleines Tablet in der Küche,
+dazu im Essensplan der Knopf „Foto für …“ direkt beim geplanten Gericht.
 
 **1.1: veröffentlicht.** Der Haushalt (Phase 7 unten): Putzplan mit Ampel statt der Aufgaben der
 Erwachsenen, Einrichtungs-Assistent und „Zu erledigen“. Beim Update von 1.0 löscht die Migration
@@ -1130,7 +1133,7 @@ erzeugt mit Demodaten (`npm run screenshots`).
 **Demoversion:** fertig. Eine deutsche und eine englische öffentliche Instanz mit der
 Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche Demo](#öffentliche-demo)).
 
-**1.2: Küchenansicht (Phase 8), in Arbeit**
+**Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 
 - [x] 1. Küchenansicht unter `/kitchen` für ein 8-Zoll-Tablet im Querformat: Termine und Essen der
   nächsten Tage, per Wisch Routine der Kinder, Haushalt und Einkauf, Kopf mit Datum, Wetter und
