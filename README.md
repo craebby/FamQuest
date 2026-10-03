@@ -91,7 +91,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.1.0`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.1.1`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -568,8 +568,10 @@ light shows how urgent it is.
 - Housework belongs to the household, not to one person. Whoever has time does it.
 - **Also on "Today" and under "Tasks":** whatever is red or yellow appears as the "Household" tile
   on the start page and as a "Household" column of its own next to the children under **Tasks**,
-  each with one tap to mark it done. Green chores only show in this view. Above the column you see
-  the traffic light in numbers and the [fair sharing](#fair-sharing) bar.
+  each with one tap to mark it done. Green chores only show in this view. The tile stays small to
+  leave room for the week: it shows the two most urgent entries, the rest is counted as "+3 more", and whatever is done
+  disappears (take it back with "Undo" in the "Who did it?" bar or in this view).
+  Above the column you see the traffic light in numbers and the [fair sharing](#fair-sharing) bar.
 
 ### To do
 
@@ -582,6 +584,8 @@ parents' PIN.
 - **Tick off:** one tap on the row. As in the cleaning plan, the **"Who did it?"** bar then asks
   briefly; the answer counts towards [fair sharing](#fair-sharing). Ticked entries stay crossed
   out until the end of the day, another tap takes it back.
+- **Change:** the pencil on an open entry lets you change text and icon; the check mark saves,
+  the ✕ cancels.
 - **Remove:** the ✕ on an open entry takes it off the list without doing it.
 - **Comes back:** if something turns out to be recurring, the button with the two arrows turns it
   into a chore in the cleaning plan. It leads to the parents' area (parents' PIN); title and icon

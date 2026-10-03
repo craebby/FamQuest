@@ -373,6 +373,52 @@ describe('Startseite „Heute“', () => {
     })
   })
 
+  it('hält Einkauf und Haushalt kompakt und zählt den Rest als „weitere“', async () => {
+    const names = ['Milch', 'Brot', 'Butter', 'Käse', 'Äpfel', 'Nudeln', 'Reis']
+    mockHome({
+      extra: {
+        'GET /api/shopping/list': Response.json({
+          items: names.map((name, index) => ({
+            id: index + 1,
+            name,
+            icon: 'fluent-emoji-flat:bread',
+            note: null,
+            checked: false,
+          })),
+        }),
+        'GET /api/chores': Response.json(
+          makeChorePlan({
+            todos: [makeTodo({ id: 7 })],
+            chores: [
+              makeChore({ id: 1, title: 'Bad putzen', days_left: -2, ratio: 1.29, level: 'due' }),
+              makeChore({ id: 2, title: 'Staubsaugen', days_left: 2, ratio: 0.71, level: 'soon' }),
+              makeChore({ id: 3, title: 'Müll', days_left: -1, ratio: 1.1, level: 'due' }),
+            ],
+          }),
+        ),
+      },
+    })
+    renderApp('/')
+
+    const shopping = await region('Einkauf')
+    const items = within(await shopping.findByRole('list', { name: 'Einkaufsliste' }))
+    expect(items.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Milch',
+      'Brot',
+      'Butter',
+      'Käse',
+      '+3 weitere',
+    ])
+
+    const household = await region('Haushalt')
+    const due = within(await household.findByRole('list', { name: 'Im Haushalt dran' }))
+    expect(due.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Hühnerfutter holen',
+      'Bad putzen',
+      '+2 weitere',
+    ])
+  })
+
   it('zeigt im Haushalt nur Rotes und Gelbes; ein Tipp erledigt und fragt, wer es war', async () => {
     const user = userEvent.setup()
     const bathroom = makeChore({
@@ -425,12 +471,8 @@ describe('Startseite „Heute“', () => {
 
     const writes = calls.filter((call) => call.key === 'PUT /api/chores/1/done')
     expect(writes.map((call) => call.body)).toEqual([{ member_id: null }, { member_id: 2 }])
-    // Erledigtes bleibt durchgestrichen stehen und rückt hinter das Offene.
-    expect(due.getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Staubsaugen',
-      'Bad putzen',
-    ])
-    expect(due.getByRole('button', { name: /Bad putzen/ })).toHaveAttribute('aria-pressed', 'true')
+    // Erledigtes verschwindet aus der Kachel; es steht nur noch in der Ansicht „Haushalt“.
+    expect(due.getAllByRole('button').map((button) => button.textContent)).toEqual(['Staubsaugen'])
   })
 
   it('zeigt im Haushalt zuerst, was offen in „Zu erledigen“ steht, auch ohne Putzplan', async () => {
@@ -457,9 +499,9 @@ describe('Startseite „Heute“', () => {
 
     const household = await region('Haushalt')
     const due = within(await household.findByRole('list', { name: 'Im Haushalt dran' }))
+    // Schon Abgehaktes („Glühbirne wechseln“) steht nicht in der Kachel.
     expect(due.getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Hühnerfutter holen',
-      'Glühbirne wechseln',
     ])
     expect(household.queryByText('Alles im grünen Bereich')).toBeNull()
 
@@ -470,10 +512,7 @@ describe('Startseite „Heute“', () => {
     const writes = calls.filter((call) => call.key === 'PUT /api/todos/7/done')
     expect(writes.map((call) => call.body)).toEqual([{ member_id: null }, { member_id: 2 }])
     expect(await household.findByText('Alles im grünen Bereich')).toBeVisible()
-    expect(due.getByRole('button', { name: 'Hühnerfutter holen' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(household.queryByRole('button', { name: 'Hühnerfutter holen' })).toBeNull()
   })
 
   it('lobt im Haushalt, wenn nichts dran ist, und führt ohne Putzplan zur Einrichtung', async () => {

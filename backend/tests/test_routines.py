@@ -5,6 +5,7 @@ from alembic import command
 
 from app.db import SessionLocal
 from tests.conftest import SATURDAY, alembic_config, csrf
+from tests.test_task_week import add_task as add_week_task
 from tests.test_tasks import add_member, task_data
 from tests.test_today import complete, today
 
@@ -240,8 +241,9 @@ def test_routines_need_unlocked_parent_area(client, admin):
 
 
 def test_week_view_uses_routine_positions(client, parent, lena, now):
-    teeth = add_task(client, parent, [lena])
-    dress = add_task(client, parent, [lena], title="Anziehen")
+    # Mit festem Anlegedatum vor der Woche, damit der Test nicht vom echten Datum abhängt.
+    teeth = add_week_task(client, parent, [lena])
+    dress = add_week_task(client, parent, [lena], title="Anziehen")
     week = new_routine(client, parent, lena, WEEKDAYS)
     weekend = new_routine(client, parent, lena, WEEKEND)
     set_steps(client, parent, week["id"], [{"task_id": teeth}, {"task_id": dress}])

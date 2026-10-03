@@ -1,7 +1,7 @@
 """„Zu erledigen“: gemeinsame Liste für Einmaliges ohne Person und Termin.
 
-Gehört zum Haushalt und kommt deshalb mit dem Putzplan (`GET /chores`). Eintragen, abhaken und
-streichen geht am Display ohne Eltern-PIN; wer es war, ist freiwillig. Abgehaktes bleibt bis zum
+Gehört zum Haushalt und kommt deshalb mit dem Putzplan (`GET /chores`). Eintragen, ändern, abhaken
+und streichen geht am Display ohne Eltern-PIN; wer es war, ist freiwillig. Abgehaktes bleibt bis zum
 Ende des Tages (Zeitzone der Familie) stehen, damit sich ein falscher Tipp zurücknehmen lässt.
 """
 
@@ -93,6 +93,24 @@ def add_todo(body: TodoIn, _: CurrentSession, db: DbSession) -> TodoOut:
         todo = Todo(title=body.title, icon=body.icon)
         db.add(todo)
     todo.icon = body.icon
+    db.commit()
+    return todo_out(todo)
+
+
+@router.put("/{todo_id}")
+def update_todo(todo_id: int, body: TodoIn, _: CurrentSession, db: DbSession) -> TodoOut:
+    """Ändert Titel und Symbol. Derselbe Titel darf nicht zweimal offen auf der Liste stehen."""
+    todo = _get(db, todo_id)
+    twin = db.scalar(
+        select(Todo.id).where(
+            Todo.id != todo.id,
+            Todo.done_date.is_(None),
+            func.lower(Todo.title) == body.title.lower(),
+        )
+    )
+    if twin is not None:
+        raise ApiError(status.HTTP_409_CONFLICT, "todo.duplicate")
+    todo.title, todo.icon = body.title, body.icon
     db.commit()
     return todo_out(todo)
 

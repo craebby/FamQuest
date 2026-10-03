@@ -476,7 +476,8 @@
       "counted_from_future": "This day is in the future."
     },
     "todo": {
-      "not_found": "This entry no longer exists."
+      "not_found": "This entry no longer exists.",
+      "duplicate": "That is already on the list."
     }
   },
   "rewards": {
@@ -964,6 +965,8 @@
     "add": "Add",
     "empty": "Nothing to do right now. Add one-off things here, e.g. “Get chicken feed”.",
     "remove": "Remove “{{title}}”",
+    "edit": "Change “{{title}}”",
+    "edit_title": "Change entry",
     "repeat": "“{{title}}” comes back: move it to the cleaning plan",
     "repeat_hint": "Comes back: pick a room and an interval. This moves the entry from “To do” to the cleaning plan.",
     "need_room": "“{{title}}” comes back? The cleaning plan needs a room first."

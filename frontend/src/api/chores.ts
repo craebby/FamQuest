@@ -144,7 +144,7 @@ export const useTodoDone = () =>
 export const useTodoUndo = () =>
   useDoneMutation('todos', (id: number) => api<Todo>('DELETE', `/todos/${id}/done`))
 
-/** Eintragen und streichen in „Zu erledigen“, ohne Eltern-PIN; danach den Haushalt neu laden. */
+/** Eintragen, ändern und streichen in „Zu erledigen“, ohne Eltern-PIN; danach den Haushalt neu laden. */
 function useTodoMutation<TVariables, TResult>(
   request: (variables: TVariables) => Promise<TResult>,
 ) {
@@ -157,6 +157,11 @@ function useTodoMutation<TVariables, TResult>(
 
 export const useAddTodo = () =>
   useTodoMutation((todo: { title: string; icon: string }) => api<Todo>('POST', '/todos', todo))
+
+export const useUpdateTodo = () =>
+  useTodoMutation(({ id, ...todo }: { id: number; title: string; icon: string }) =>
+    api<Todo>('PUT', `/todos/${id}`, todo),
+  )
 
 export const useRemoveTodo = () =>
   useTodoMutation((id: number) => api<null>('DELETE', `/todos/${id}`))

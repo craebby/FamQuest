@@ -92,7 +92,7 @@ docker compose up -d --build
 ```
 
 `main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
-[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.1.0`,
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.1.1`,
 danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
@@ -583,8 +583,10 @@ eine Ampel zeigt, wie dringend sie ist.
 - Hausarbeit gehört dem Haushalt, nicht einer Person. Wer gerade Zeit hat, macht es.
 - **Auch auf „Heute“ und unter „Aufgaben“:** Was rot oder gelb ist, steht als Kachel „Haushalt“
   auf der Startseite und als eigene Spalte „Haushalt“ neben den Kindern unter **Aufgaben**, jeweils
-  zum Abhaken mit einem Tipp. Grünes zeigt nur diese Ansicht. Über der Spalte stehen die Ampel in
-  Zahlen und die [faire Verteilung](#faire-verteilung).
+  zum Abhaken mit einem Tipp. Grünes zeigt nur diese Ansicht. Die Kachel bleibt klein, damit die
+  Woche Platz hat: Sie zeigt die zwei dringendsten Einträge, der Rest steht als „+3 weitere“ dabei, und Erledigtes
+  verschwindet (zurücknehmen über „Rückgängig“ in der Leiste „Wer war's?“ oder in dieser Ansicht).
+  Über der Spalte stehen die Ampel in Zahlen und die [faire Verteilung](#faire-verteilung).
 
 ### Zu erledigen
 
@@ -598,6 +600,8 @@ keine Eltern-PIN.
 - **Abhaken:** ein Tipp auf die Zeile. Wie im Putzplan fragt danach kurz die Leiste
   **„Wer war's?“**; die Angabe zählt in die [faire Verteilung](#faire-verteilung). Abgehaktes
   bleibt bis zum Ende des Tages durchgestrichen stehen, ein weiterer Tipp nimmt es zurück.
+- **Ändern:** Der Stift an einem offenen Eintrag macht Text und Symbol änderbar; der Haken
+  speichert, das ✕ bricht ab.
 - **Streichen:** Das ✕ an einem offenen Eintrag nimmt ihn von der Liste, ohne ihn zu erledigen.
 - **Kommt wieder:** Stellt sich heraus, dass etwas regelmäßig anfällt, macht der Knopf mit den
   zwei Pfeilen daraus eine Aufgabe im Putzplan. Er führt in den Elternbereich (Eltern-PIN); Titel

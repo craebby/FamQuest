@@ -124,6 +124,51 @@ def test_done_disappears_the_next_day_but_open_stays(client, parent, now):
     assert add_todo(client, parent)["id"] != feed["id"]
 
 
+def test_edit_title_and_icon(client, admin, now):
+    created = add_todo(client, admin, "Hünerfutter holen")
+
+    response = client.put(
+        f"/api/todos/{created['id']}",
+        json={"title": "  Hühnerfutter   holen ", "icon": TOILET},
+        headers=csrf(admin),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == created | {"title": "Hühnerfutter holen", "icon": TOILET}
+    assert todos(client) == [response.json()]
+    # Nur die Schreibweise ändern geht; leer oder ohne CSRF nicht.
+    same = client.put(
+        f"/api/todos/{created['id']}",
+        json={"title": "hühnerfutter holen", "icon": TOILET},
+        headers=csrf(admin),
+    )
+    assert same.json()["title"] == "hühnerfutter holen"
+    empty = client.put(
+        f"/api/todos/{created['id']}", json={"title": " ", "icon": FEED}, headers=csrf(admin)
+    )
+    assert empty.status_code == 422
+    unsafe = client.put(f"/api/todos/{created['id']}", json={"title": "Putzen", "icon": FEED})
+    assert unsafe.status_code == 403
+
+
+def test_edit_refuses_a_title_that_is_already_open(client, admin, now):
+    add_todo(client, admin)
+    bulb = add_todo(client, admin, "Glühbirne wechseln")
+
+    response = client.put(
+        f"/api/todos/{bulb['id']}",
+        json={"title": "hühnerfutter HOLEN", "icon": FEED},
+        headers=csrf(admin),
+    )
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "todo.duplicate"
+    missing = client.put(
+        "/api/todos/9999", json={"title": "Putzen", "icon": FEED}, headers=csrf(admin)
+    )
+    assert missing.json()["code"] == "todo.not_found"
+
+
 def test_delete_without_doing_it(client, admin, now):
     created = add_todo(client, admin)
 

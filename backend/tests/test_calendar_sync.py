@@ -1,11 +1,11 @@
 import datetime as dt
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app import calendar_sync
 from app.db import SessionLocal
-from app.models import CalendarEvent
+from app.models import Calendar, CalendarEvent
 from tests.conftest import SATURDAY_NIGHT_UTC, csrf
 from tests.fake_google import all_day, timed
 from tests.test_calendar import connect
@@ -34,6 +34,20 @@ def choose(client, me, name: str, member_id: int | None, selected: bool = True):
         json={"selected": selected, "member_id": member_id},
         headers=csrf(me),
     )
+
+
+def loaded(window_start: dt.date, at: dt.datetime = SATURDAY_NIGHT_UTC) -> None:
+    """Legt fest, welchen Zeitraum die Kalender wann geladen haben.
+
+    Das Auswählen lädt mit der echten Uhr; ohne dies hinge der Test vom echten Datum ab.
+    """
+    with SessionLocal() as db:
+        db.execute(update(Calendar).values(window_start=window_start, window_loaded_at=at))
+        db.commit()
+
+
+# Zeitraum am Samstag, 3.10.: Woche ab 28.9., vier Wochen davor.
+WINDOW_START = dt.date(2026, 8, 31)
 
 
 def stored_titles() -> list[str | None]:
@@ -202,9 +216,10 @@ def test_disconnect_removes_calendars_and_events(client, parent, connected):
 
 def test_sync_loads_window_around_current_week(client, parent, connected):
     choose(client, parent, MAMA, None)
+    loaded(WINDOW_START - dt.timedelta(days=7))
     connected.api_requests.clear()
 
-    # Zeitraum rückt weiter (anderer Tag als beim Auswählen): neu laden.
+    # Zeitraum rückt weiter (andere Woche als beim letzten Laden): neu laden.
     sync()
 
     [window] = connected.api_calls("window")
@@ -236,6 +251,7 @@ def test_sync_only_reloads_after_changes(client, parent, connected):
 
 def test_sync_reloads_regularly_even_without_changes(client, parent, connected):
     choose(client, parent, MAMA, None)
+    loaded(WINDOW_START)
     sync()
     connected.api_requests.clear()
 

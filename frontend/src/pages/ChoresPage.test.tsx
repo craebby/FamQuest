@@ -288,6 +288,11 @@ describe('Zu erledigen', () => {
           done_by: (body as { member_id: number | null }).member_id,
         }),
       'DELETE /api/todos/8/done': () => replace({ ...bulb, done: false, done_by: null }),
+      'PUT /api/todos/7': (body) => {
+        const { title, icon } = body as { title: string; icon: string }
+        if (title === bulb.title) return Response.json({ code: 'todo.duplicate' }, { status: 409 })
+        return replace({ ...feed, title, icon })
+      },
       'DELETE /api/todos/7': () => {
         todos = todos.filter((todo) => todo.id !== 7)
         return new Response(null, { status: 204 })
@@ -359,6 +364,50 @@ describe('Zu erledigen', () => {
     ])
     expect(await todos.findByRole('img', { name: 'Erledigt von Lena' })).toBeVisible()
     expect(screen.queryByRole('region', { name: 'Wer war’s?' })).toBeNull()
+  })
+
+  it('ändert einen offenen Eintrag über den Stift; Abgehaktes hat keinen', async () => {
+    const user = userEvent.setup()
+    const calls = mockTodos()
+    renderApp('/household')
+
+    const todos = await list()
+    expect(todos.queryByRole('button', { name: '„Glühbirne wechseln“ ändern' })).toBeNull()
+    await user.click(todos.getByRole('button', { name: '„Hühnerfutter holen“ ändern' }))
+    const form = within(todos.getByRole('form', { name: 'Eintrag ändern' }))
+    const field = form.getByRole('textbox', { name: 'Eintrag ändern' })
+    expect(field).toHaveValue('Hühnerfutter holen')
+
+    // Was schon auf der Liste steht, lehnt der Server ab; der Eintrag bleibt zum Ändern offen.
+    await user.clear(field)
+    await user.type(field, 'Glühbirne wechseln')
+    await user.click(form.getByRole('button', { name: 'Speichern' }))
+    expect(await todos.findByText('Das steht schon auf der Liste.')).toBeVisible()
+
+    await user.clear(field)
+    await user.type(field, 'Hühnerfutter kaufen')
+    await user.click(form.getByRole('button', { name: 'Speichern' }))
+
+    expect(await todos.findByRole('button', { name: 'Hühnerfutter kaufen' })).toBeVisible()
+    expect(bodiesOf(calls, 'PUT /api/todos/7').at(-1)).toEqual({
+      title: 'Hühnerfutter kaufen',
+      icon: feed.icon,
+    })
+    expect(todos.queryByRole('form', { name: 'Eintrag ändern' })).toBeNull()
+  })
+
+  it('bricht das Ändern ab, ohne zu speichern', async () => {
+    const user = userEvent.setup()
+    const calls = mockTodos()
+    renderApp('/household')
+
+    const todos = await list()
+    await user.click(todos.getByRole('button', { name: '„Hühnerfutter holen“ ändern' }))
+    await user.type(todos.getByRole('textbox', { name: 'Eintrag ändern' }), ' sofort')
+    await user.click(todos.getByRole('button', { name: 'Abbrechen' }))
+
+    expect(todos.getByRole('button', { name: 'Hühnerfutter holen' })).toBeVisible()
+    expect(bodiesOf(calls, 'PUT /api/todos/7')).toEqual([])
   })
 
   it('nimmt Abgehaktes mit einem weiteren Tipp zurück', async () => {

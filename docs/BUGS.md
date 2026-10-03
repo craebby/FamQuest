@@ -4,40 +4,53 @@ Fehler und Lücken aus dem Alltag, die noch behoben werden. Erledigtes wandert m
 
 ## Offen
 
+Gerade nichts.
+
+## Erledigt
+
 ### 1. „Zu erledigen“ lässt sich nach dem Anlegen nicht mehr bearbeiten
 
 - **Gemeldet:** 2026-10-01 (Stand 1.1.0)
+- **Behoben:** 1.1.1
 - **Bereich:** Haushalt → „Zu erledigen“
-- **Ist:** Ein Eintrag kann nach dem Anlegen nur noch abgehakt oder gelöscht werden. Bei einem
-  Tippfehler oder einer Änderung bleibt nur Löschen und neu Anlegen.
-- **Soll:** Einträge lassen sich nachträglich bearbeiten.
-- **Technik:** `backend/app/api/todos.py` kennt nur `POST`, `PUT/DELETE …/done` und `DELETE`; ein
-  Endpunkt zum Ändern fehlt, im Frontend entsprechend der Bearbeiten-Dialog.
+- **War:** Ein Eintrag konnte nach dem Anlegen nur noch abgehakt oder gelöscht werden. Bei einem
+  Tippfehler blieb nur Löschen und neu Anlegen.
+- **Jetzt:** Der Stift an einem offenen Eintrag macht Text und Symbol direkt in der Zeile änderbar
+  (ohne Eltern-PIN). Neuer Endpunkt `PUT /api/todos/{id}`; ein Titel, der schon offen auf der Liste
+  steht, wird mit `todo.duplicate` abgelehnt.
 
 ### 2. „Heute“: Kacheln „Einkauf“ und „Haushalt“ werden zu groß
 
 - **Gemeldet:** 2026-10-01 (Stand 1.1.0)
+- **Behoben:** 1.1.1
 - **Bereich:** „Heute“ → Kacheln „Einkauf“ und „Haushalt“
-- **Ist:** Mit vielen Einträgen wachsen die beiden Kacheln stark in die Höhe. Für die Woche mit den
-  Terminen darunter bleibt wenig Platz.
-- **Soll:** Beide Kacheln bleiben kompakt (feste Obergrenze in der Höhe), der Kalender behält
-  seinen Platz.
-- **Technik:** `ShoppingWidget.tsx` zeigt bis zu 12 Artikel (`WIDGET_MAX_ITEMS`), `ChoresWidget.tsx`
-  bis zu 6 Putzplan-Aufgaben (`WIDGET_MAX_CHORES`) plus „Zu erledigen“; die Höhe ist sonst nicht
-  begrenzt, die Woche (`WeekBoard.tsx`) bekommt nur den Rest der Bildschirmhöhe.
+- **War:** Mit vielen Einträgen wuchsen die beiden Kacheln stark in die Höhe (Haushalt bis zu 6
+  Zeilen, Einkauf bis zu 12 Artikel plus Knopf) und schoben die Woche mit den Terminen nach unten.
+- **Jetzt:** „Haushalt“ zeigt höchstens 2 Einträge, „Einkauf“ höchstens 4 Artikel in 2 Zeilen,
+  lange Namen werden abgeschnitten, der Rest steht als „+N weitere“ dabei. „Eintragen“ ist ein „+“
+  in der Kopfzeile der Einkauf-Kachel. Beide Kacheln sind damit niedriger als die Routine der
+  Kinder.
 
 ### 3. „Heute“: Erledigtes aus dem Haushalt bleibt in der Kachel stehen
 
 - **Gemeldet:** 2026-10-01 (Stand 1.1.0)
+- **Behoben:** 1.1.1
 - **Bereich:** „Heute“ → Kachel „Haushalt“
-- **Ist:** Heute erledigte Putzplan-Aufgaben und abgehakte Einträge aus „Zu erledigen“ bleiben bis
-  zum Tagesende durchgestrichen in der Kachel stehen und nehmen Platz weg (siehe Nr. 2).
-- **Soll:** Erledigtes verschwindet aus der Kachel auf „Heute“.
-- **Technik:** `ChoresWidget.tsx` hängt Erledigtes bewusst hinten an, damit ein zweiter Tipp es
-  zurücknehmen kann. Fällt das weg, braucht das Zurücknehmen einen anderen Weg (z. B. kurz
-  stehen lassen, bis die Leiste „Wer war's?“ verschwindet, oder nur noch in der Ansicht
-  „Haushalt“).
+- **War:** Heute erledigte Putzplan-Aufgaben und abgehakte Einträge aus „Zu erledigen“ blieben bis
+  zum Tagesende durchgestrichen in der Kachel stehen.
+- **Jetzt:** Erledigtes verschwindet aus der Kachel. Ein versehentlicher Tipp lässt sich über
+  „Rückgängig“ in der Leiste „Wer war's?“ zurücknehmen, später in der Ansicht „Haushalt“.
 
-## Erledigt
+### 4. Öffentliche Demo: Zurücksetzen bricht am Wochenende ab
 
-Noch nichts.
+- **Gemeldet:** 2026-10-03 (Stand 1.1.0), beim Testlauf für 1.1.1 aufgefallen
+- **Behoben:** 1.1.1
+- **Bereich:** Demo-Modus (`DEMO_MODE`), stündliches Zurücksetzen
+- **War:** Samstags und sonntags brach das Zurücksetzen mit `StopIteration` ab, weil Ben in den
+  Demodaten keine Morgenroutine fürs Wochenende hat. Die Datenbank war dann schon geleert, die
+  Demodaten aber nur zum Teil angelegt.
+- **Jetzt:** Kinder ohne Morgenroutine am heutigen Tag werden beim Abhaken der ersten Schritte
+  übersprungen (`backend/app/demo.py`).
+- **Dazu:** Drei Backend-Tests hingen vom echten Datum ab (Wochenansicht der Routinen, zwei Tests
+  zum Kalender-Abgleich) und schlugen ab dem 3. Oktober 2026 fehl; sie legen ihr Datum jetzt selbst
+  fest.

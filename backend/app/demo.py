@@ -521,16 +521,20 @@ class Demo:
         for completion in pending[:-1]:
             self.call("POST", f"/approvals/{completion['id']}", 204)
         order = self.call("GET", "/routines")
-        # Heute: je Kind die ersten Morgenschritte erledigt, der Rest steht noch an.
+        # Heute: je Kind die ersten Morgenschritte erledigt, der Rest steht noch an. Am Wochenende
+        # hat nicht jedes Kind eine Morgenroutine.
         for member in ("mia", "ben"):
             routine = next(
-                r
-                for r in order
-                if r["member_id"] == self.ids[member]
-                and r["time_of_day"] == "morning"
-                and self.today.isoweekday() in r["weekdays"]
+                (
+                    r
+                    for r in order
+                    if r["member_id"] == self.ids[member]
+                    and r["time_of_day"] == "morning"
+                    and self.today.isoweekday() in r["weekdays"]
+                ),
+                None,
             )
-            for step in routine["steps"][: 2 if member == "mia" else 1]:
+            for step in routine["steps"][: 2 if member == "mia" else 1] if routine else []:
                 self.call(
                     "PUT",
                     f"/today/tasks/{step['task_id']}/members/{self.ids[member]}",

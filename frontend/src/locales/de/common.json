@@ -476,7 +476,8 @@
       "counted_from_future": "Dieser Tag liegt in der Zukunft."
     },
     "todo": {
-      "not_found": "Diesen Eintrag gibt es nicht mehr."
+      "not_found": "Diesen Eintrag gibt es nicht mehr.",
+      "duplicate": "Das steht schon auf der Liste."
     }
   },
   "rewards": {
@@ -964,6 +965,8 @@
     "add": "Eintragen",
     "empty": "Gerade steht nichts an. Tragt ein, was einmal zu tun ist, z. B. „Hühnerfutter holen“.",
     "remove": "„{{title}}“ streichen",
+    "edit": "„{{title}}“ ändern",
+    "edit_title": "Eintrag ändern",
     "repeat": "„{{title}}“ kommt wieder: in den Putzplan übernehmen",
     "repeat_hint": "Kommt wieder: Wählt Raum und Abstand. Der Eintrag wandert damit von „Zu erledigen“ in den Putzplan.",
     "need_room": "„{{title}}“ kommt wieder? Dafür braucht der Putzplan zuerst einen Raum."

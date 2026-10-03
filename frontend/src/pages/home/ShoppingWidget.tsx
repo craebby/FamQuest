@@ -5,17 +5,19 @@ import PlusIcon from '~icons/lucide/plus'
 
 import { useShoppingList } from '../../api/shopping'
 import { TaskIcon } from '../../components/TaskIcon'
-import { Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { ShoppingAdder } from '../shopping/ShoppingAdder'
 import { Widget } from './Widget'
 
-/** So viele offene Artikel zeigt die Kachel, der Rest steht als „+3 weitere“ dabei. */
-export const WIDGET_MAX_ITEMS = 12
+/**
+ * So viele offene Artikel zeigt die Kachel (zwei Zeilen mit je zwei), der Rest steht als
+ * „+3 weitere“ dabei. Die Kachel bleibt so niedrig, dass die Woche darunter ihren Platz behält.
+ */
+export const WIDGET_MAX_ITEMS = 4
 
 /**
- * Einkauf auf der Startseite: was gerade fehlt, als Symbole mit Namen. „Eintragen“ öffnet
- * denselben Dialog wie die Einkaufsliste, damit am Kühlschrank schnell etwas dazukommt.
+ * Einkauf auf der Startseite: was gerade fehlt, als Symbole mit Namen. Das „+“ in der Kopfzeile
+ * öffnet denselben Dialog wie die Einkaufsliste, damit am Kühlschrank schnell etwas dazukommt.
  */
 export function ShoppingWidget() {
   const { t } = useTranslation()
@@ -29,6 +31,17 @@ export function ShoppingWidget() {
       title={t('home.shopping')}
       icon={CartIcon}
       more={{ to: '/shopping', label: t('shopping.open_list') }}
+      action={
+        <button
+          type="button"
+          aria-label={t('shopping.add_button')}
+          title={t('shopping.add_button')}
+          onClick={() => setAdding(true)}
+          className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-slate-700 hover:bg-orange-100 focus-visible:outline-4 focus-visible:outline-orange-400"
+        >
+          <PlusIcon className="size-8" aria-hidden="true" />
+        </button>
+      }
     >
       {list.isPending ? (
         <p role="status" className="text-lg text-slate-500">
@@ -39,30 +52,29 @@ export function ShoppingWidget() {
       ) : open.length === 0 ? (
         <p className="text-xl font-bold text-slate-600">{t('shopping.empty')}</p>
       ) : (
-        <ul aria-label={t('shopping.title')} className="flex flex-wrap gap-2">
+        <ul aria-label={t('shopping.title')} className="grid grid-cols-2 gap-2">
           {shown.map((item) => (
             <li
               key={item.id}
               className="flex min-w-0 items-center gap-2 rounded-2xl bg-orange-50 py-1 pr-3 pl-1"
             >
               <TaskIcon icon={item.icon} className="size-10" />
-              <span className="min-w-0 text-lg leading-tight font-bold break-words text-slate-800">
+              <span
+                title={item.note ? `${item.name} · ${item.note}` : item.name}
+                className="min-w-0 truncate text-lg leading-tight font-bold text-slate-800"
+              >
                 {item.name}
                 {item.note && <span className="font-normal text-slate-500"> · {item.note}</span>}
               </span>
             </li>
           ))}
           {open.length > shown.length && (
-            <li className="flex items-center px-2 text-lg font-bold text-slate-500">
+            <li className="col-span-2 px-2 text-lg font-bold text-slate-500">
               {t('shopping.more', { count: open.length - shown.length })}
             </li>
           )}
         </ul>
       )}
-      <Button variant="secondary" className="self-start" onClick={() => setAdding(true)}>
-        <PlusIcon className="size-7" aria-hidden="true" />
-        {t('shopping.add_button')}
-      </Button>
       {adding && <ShoppingAdder onClose={() => setAdding(false)} />}
     </Widget>
   )

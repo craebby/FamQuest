@@ -6,11 +6,15 @@ import RightIcon from '~icons/fluent-emoji-flat/right-arrow'
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>
 
-/** Kachel der Startseite: großes Symbol und Titel, optional ein Pfeil zur ganzen Ansicht. */
+/**
+ * Kachel der Startseite: großes Symbol und Titel, optional ein Pfeil zur ganzen Ansicht und davor
+ * ein eigener Knopf (z. B. „Eintragen“).
+ */
 export function Widget({
   title,
   icon: Icon,
   more,
+  action,
   className = '',
   children,
 }: {
@@ -18,6 +22,8 @@ export function Widget({
   icon: Icon
   /** Ziel und Beschriftung des Pfeils oben rechts. */
   more?: { to: string; label: string }
+  /** Knopf in der Kopfzeile, links vom Pfeil. */
+  action?: ReactNode
   className?: string
   children: ReactNode
 }) {
@@ -32,6 +38,7 @@ export function Widget({
         <h2 id={id} className="min-w-0 flex-1 text-2xl font-extrabold text-slate-800">
           {title}
         </h2>
+        {action}
         {more && (
           <Link
             to={more.to}
