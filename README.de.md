@@ -525,7 +525,8 @@ Montag bis Sonntag, heute hervorgehoben. Die Pfeile blättern zu anderen Wochen.
   anderer Schreibweise sind dasselbe Gericht.
 - Ein Tipp auf ein geplantes Gericht ändert es; „Aus dem Plan nehmen“ leert den Tag wieder.
 - **Eigene Gerichte bearbeiten:** Der Stift an einem eigenen Gericht in den Vorschlägen öffnet
-  Name, Symbol und **Foto**. Ein Foto (am Handy auch direkt aus der Kamera) wird quadratisch
+  Name, Symbol und **Foto**. Bei einem schon geplanten Gericht geht es schneller: antippen und
+  unten **„Foto für …“** wählen. Ein Foto (am Handy auch direkt aus der Kamera) wird quadratisch
   zugeschnitten, auf 512 × 512 verkleinert, ohne Metadaten gespeichert und ersetzt dann überall das
   Symbol, auch auf „Heute“. „Gericht löschen“ entfernt es aus den Vorschlägen und aus vergangenen
   Wochen; steht es heute oder später im Plan, muss es dort zuerst heraus.
@@ -1113,6 +1114,7 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
   (z. B. Geburtsjahr je Kind; bei mehreren Kindern je Kind passende Vorschläge)
 - Teenager-Stil: weniger kindliche Darstellung je Person für ältere Kinder
 - Icon-Picker: „Beliebt“ nach tatsächlicher Nutzung; beliebte Icons auch in ihrer Kategorie
+- Mehr Symbole: weitere Icons zur Auswahl für Aufgaben, Hausarbeit, Gerichte, Einkauf und Termine
 - Mehr als sieben Personen (mehr Farben)
 - About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
 

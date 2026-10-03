@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import CameraIcon from '~icons/fluent-emoji-flat/camera'
 import CloseIcon from '~icons/lucide/x'
 import PencilIcon from '~icons/lucide/pencil'
 import SearchIcon from '~icons/lucide/search'
@@ -25,7 +26,8 @@ interface MealEditorProps {
 /**
  * Gericht für einen Tag eintragen: Vorschlag antippen oder Namen eintippen. Das Symbol kommt
  * automatisch und lässt sich per Tipp darauf ändern. Der Stift an einem eigenen Gericht öffnet
- * dessen Bearbeitung (Name, Symbol, Foto, löschen).
+ * dessen Bearbeitung (Name, Symbol, Foto, löschen); beim schon geplanten Gericht führt der Knopf
+ * „Foto für …“ unten direkt dorthin.
  */
 export function MealEditor({ date, meal, title, entry, onClose }: MealEditorProps) {
   const { t } = useTranslation()
@@ -48,6 +50,7 @@ export function MealEditor({ date, meal, title, entry, onClose }: MealEditorProp
   // Ein bekanntes Gericht zeigt beim Eintippen schon sein Foto.
   const typedDish = known.find((dish) => normalize(dish.name) === normalize(typed))
   const editing = known.find((dish) => dish.id === editingId)
+  const planned = entry && known.find((dish) => dish.id === entry.dish_id)
 
   useEffect(() => {
     // Kein Autofokus aufs Textfeld: Am Touchscreen würde sonst sofort die Tastatur aufgehen.
@@ -180,7 +183,15 @@ export function MealEditor({ date, meal, title, entry, onClose }: MealEditorProp
             </div>
 
             {entry && (
-              <div className="flex justify-end">
+              <div className="flex flex-wrap justify-between gap-3">
+                <Button
+                  variant="secondary"
+                  disabled={!planned || planMeal.isPending}
+                  onClick={() => setEditingId(entry.dish_id)}
+                >
+                  <CameraIcon className="size-8" aria-hidden="true" />
+                  {t('meals.dish_photo', { name: entry.name })}
+                </Button>
                 <Button variant="danger" disabled={planMeal.isPending} onClick={() => save(null)}>
                   {t('meals.remove')}
                 </Button>

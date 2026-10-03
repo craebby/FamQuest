@@ -512,7 +512,8 @@ with today highlighted. The arrows browse to other weeks.
   same dish.
 - Tap a planned dish to change it; "Remove from plan" clears the day again.
 - **Editing your own dishes:** the pencil on one of your dishes in the suggestions opens its name,
-  icon and **photo**. A photo (straight from the camera on a phone) is cropped square, scaled to
+  icon and **photo**. For a dish that is already planned it's quicker: tap it and choose
+  **"Photo for …"** at the bottom. A photo (straight from the camera on a phone) is cropped square, scaled to
   512 × 512, stored without metadata and then replaces the icon everywhere, including "Today".
   "Delete dish" removes it from the suggestions and from past weeks; if it's planned for today or
   later, remove it from the plan first.
@@ -1083,6 +1084,7 @@ resets itself on the hour (see [Public demo](#public-demo)).
 - Teen style: a less childlike look per person for older children
 - Icon picker: "Popular" based on what the family actually uses; popular icons also shown in their
   category
+- More icons: additional icons to choose from for tasks, chores, dishes, shopping and events
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
 

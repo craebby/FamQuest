@@ -265,6 +265,23 @@ describe('Essensplan', () => {
     expect(await screen.findByRole('list', { name: 'Vorschläge' })).toBeVisible()
   })
 
+  it('führt beim geplanten Gericht direkt zum Foto', async () => {
+    const user = userEvent.setup()
+    mockMeals()
+    renderApp('/meals')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Abendessen: Fischstäbchen, ändern' }),
+    )
+    await user.click(await screen.findByRole('button', { name: 'Foto für „Fischstäbchen“' }))
+
+    expect(screen.getByRole('heading', { name: 'Fischstäbchen bearbeiten' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Foto wählen' })).toBeVisible()
+    // „Zurück“ führt wieder zum Eintragen.
+    await user.click(screen.getByRole('button', { name: 'Zurück' }))
+    expect(screen.getByRole('button', { name: 'Foto für „Fischstäbchen“' })).toBeVisible()
+  })
+
   it('zeigt Fotos statt Symbolen', async () => {
     mockMeals({
       ...WEEK,

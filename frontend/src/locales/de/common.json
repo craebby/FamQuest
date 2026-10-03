@@ -786,6 +786,7 @@
     "picture": "Bild",
     "picture_hint": "Ein eigenes Foto ersetzt das Symbol überall, auch am Display.",
     "edit_dish": "{{name}} bearbeiten",
+    "dish_photo": "Foto für „{{name}}“",
     "delete_dish": "Gericht löschen",
     "delete_confirm": "„{{name}}“ wirklich löschen? Es verschwindet aus den Vorschlägen und aus vergangenen Wochen."
   },

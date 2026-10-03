@@ -786,6 +786,7 @@
     "picture": "Picture",
     "picture_hint": "Your own photo replaces the icon everywhere, including on the display.",
     "edit_dish": "Edit {{name}}",
+    "dish_photo": "Photo for “{{name}}”",
     "delete_dish": "Delete dish",
     "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from past weeks."
   },
