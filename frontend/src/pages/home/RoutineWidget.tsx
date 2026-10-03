@@ -21,7 +21,17 @@ import { SetupHint, Widget } from './Widget'
  * eine Aufgabe. Ist sie geschafft (oder gerade keine dran), steht dort nur „Alles erledigt“.
  * Erwachsene stehen hier nicht; ihre Hausarbeit zeigt die Kachel „Haushalt“ daneben.
  */
-export function RoutineWidget({ className }: { className?: string }) {
+export function RoutineWidget({
+  className,
+  from = '/',
+  more = true,
+}: {
+  className?: string
+  /** Wohin „Zurück“ in der Personenansicht führt. */
+  from?: string
+  /** Pfeil zur ganzen Aufgabenansicht; die Küchenansicht hat keinen. */
+  more?: boolean
+}) {
   const { t } = useTranslation()
   const { members, today, isPending, error } = useFamilyToday()
   const children = members?.filter((member) => member.role === 'child') ?? []
@@ -31,7 +41,7 @@ export function RoutineWidget({ className }: { className?: string }) {
     <Widget
       title={block ? t(`times_of_day.${block}`) : t('home.routine')}
       icon={block ? TIME_OF_DAY_ICONS[block] : TrophyIcon}
-      more={{ to: '/tasks', label: t('home.open_tasks') }}
+      more={more ? { to: '/tasks', label: t('home.open_tasks') } : undefined}
       className={className}
     >
       {isPending ? (
@@ -45,7 +55,7 @@ export function RoutineWidget({ className }: { className?: string }) {
       ) : (
         <ul className="grid gap-3 xl:grid-cols-2">
           {children.map((child) => (
-            <ChildRoutine key={child.id} child={child} today={today} />
+            <ChildRoutine key={child.id} child={child} today={today} from={from} />
           ))}
         </ul>
       )}
@@ -73,7 +83,7 @@ function useDelayedTrue(value: boolean, delay: number) {
   return value && delayed
 }
 
-function ChildRoutine({ child, today }: { child: Member; today: Today }) {
+function ChildRoutine({ child, today, from }: { child: Member; today: Today; from: string }) {
   const { t } = useTranslation()
   const tokens = colorTokens(child.color)
   // Nur der aktuelle Tagesabschnitt, ohne Extras und „Jederzeit“.
@@ -85,7 +95,7 @@ function ChildRoutine({ child, today }: { child: Member; today: Today }) {
     ALL_DONE_DELAY_MS,
   )
   const points = pointsFor(today, child.id)
-  const state: PersonPageState = { from: '/' }
+  const state: PersonPageState = { from }
 
   return (
     <li

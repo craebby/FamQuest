@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+import KitchenIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import LargeIcon from '~icons/fluent-emoji-flat/magnifying-glass-tilted-right'
 import NormalIcon from '~icons/fluent-emoji-flat/desktop-computer'
 import SmallIcon from '~icons/fluent-emoji-flat/mobile-phone'
@@ -12,6 +14,7 @@ import {
   getFrameIdleMinutes,
   setFrameIdleMinutes,
 } from '../../frameIdle'
+import { KITCHEN_PATH } from '../KitchenPage'
 import { ChoiceTile, Field } from './formParts'
 
 const SIZE_ICONS: Record<DisplaySize, typeof NormalIcon> = {
@@ -41,7 +44,10 @@ function useDisplayInfo(size: DisplaySize) {
   return info
 }
 
-/** Einstellungen, die nur für dieses Gerät gelten: Anzeigegröße, Bilderrahmen, Anzeige-Info. */
+/**
+ * Einstellungen, die nur für dieses Gerät gelten: Anzeigegröße, Bilderrahmen, Anzeige-Info; dazu
+ * der Weg in die Küchenansicht.
+ */
 export function DeviceSection() {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
@@ -94,6 +100,18 @@ export function DeviceSection() {
             </ChoiceTile>
           ))}
         </div>
+      </Field>
+      <Field label={t('kitchen.title')}>
+        <p className="-mt-1 text-base text-slate-500">
+          {t('kitchen.hint', { path: KITCHEN_PATH })}
+        </p>
+        <Link
+          to={KITCHEN_PATH}
+          className="inline-flex min-h-14 items-center gap-2 self-start rounded-2xl bg-orange-100 px-4 py-2 text-lg font-bold text-orange-800 hover:bg-orange-200 focus-visible:outline-4 focus-visible:outline-orange-400"
+        >
+          <KitchenIcon className="size-8" aria-hidden="true" />
+          {t('kitchen.open')}
+        </Link>
       </Field>
       <p className="text-base text-slate-600" data-testid="display-info">
         {t('device.info', {

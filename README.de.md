@@ -54,6 +54,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
   Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor; was
   dran ist, steht auch auf „Heute“ und neben den Kindern unter „Aufgaben“. Dazu „Zu erledigen“:
   eine gemeinsame Liste für Einmaliges wie „Hühnerfutter holen“
+- Küchenansicht für ein kleines Tablet: Termine und Essen der nächsten Tage, per Wisch Aufgaben,
+  Haushalt und Einkauf
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -265,6 +267,28 @@ vergangene Tage bleiben blass sichtbar. „Standard wiederherstellen“ schaltet
 die Woche auf „Ab heute“. Die
 Einstellung wird auf dem Server gespeichert und gilt für alle Displays der Familie. Die Wochen-
 übersicht der Aufgaben (Ringe je Person) gibt es im Aufgabenbereich unter „Woche“.
+
+## Küchenansicht
+
+![Küchenansicht am 8-Zoll-Tablet: heute und die nächsten vier Tage mit Terminen und Essen](docs/screenshots/de/kitchen.png)
+
+Für ein kleines Tablet in der Küche (gedacht für 8 Zoll im Querformat) gibt es eine abgespeckte
+Ansicht unter der Adresse **`/kitchen`**, z. B. `http://famquest.local:8080/kitchen`. Sie hat keine
+Navigationsleiste; legt die Adresse am Tablet als Startseite fest. Im Elternbereich führt unter
+**Einstellungen → Dieses Gerät** der Knopf „Küchenansicht öffnen“ dorthin.
+
+- **Erste Seite:** heute (doppelt so breit) und die nächsten vier Tage, je Tag oben die Termine und
+  unten das Essen. Ein Tipp aufs Essen trägt ein oder ändert es, ein Tipp auf einen Termin zeigt die
+  Details.
+- **Wischen:** nach links folgen die aktuelle Routine der Kinder zum Abhaken, der **Haushalt**
+  („Zu erledigen“ und Putzplan) und die **Einkaufsliste**. Die vier Symbole oben links springen
+  direkt zur Seite und zeigen, wo ihr seid.
+- **Kopfzeile:** Datum, Wetter und Uhr.
+- Nach zwei Minuten ohne Berührung steht wieder die erste Seite da.
+- **Nachtmodus:** Es gilt das Nachtfenster des [Bilderrahmens](#fotos-bilderrahmen) (schwarz oder
+  gedimmte Uhr). Ein Tipp weckt die Ansicht; nach zwei Minuten Ruhe wird es wieder dunkel. Fotos
+  zeigt die Küchenansicht nicht.
+- Läuft die Anmeldung ab, führt das Anmelden zurück in die Küchenansicht.
 
 ## Familienansicht
 
@@ -562,7 +586,7 @@ Symbolen.
 
 **Am Handy:** FamQuest im Browser öffnen. Unterwegs muss FamQuest dafür von außen erreichbar sein,
 z. B. per HTTPS hinter einem Reverse Proxy (siehe [Hinter einem Reverse Proxy](#hinter-einem-reverse-proxy))
-oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.3
+oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.4
 geplant.
 
 ## Haushalt
@@ -1106,7 +1130,14 @@ erzeugt mit Demodaten (`npm run screenshots`).
 **Demoversion:** fertig. Eine deutsche und eine englische öffentliche Instanz mit der
 Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche Demo](#öffentliche-demo)).
 
-**1.2: Anpassen**
+**1.2: Küchenansicht (Phase 8), in Arbeit**
+
+- [x] 1. Küchenansicht unter `/kitchen` für ein 8-Zoll-Tablet im Querformat: Termine und Essen der
+  nächsten Tage, per Wisch Routine der Kinder, Haushalt und Einkauf, Kopf mit Datum, Wetter und
+  Uhr, Nachtmodus; dazu im Essensplan der Knopf „Foto für …“ direkt beim geplanten Gericht
+- [ ] 2. Feinschliff am echten Tablet
+
+**1.3: Anpassen**
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
   ergänzen und entfernen (in der Datenbank statt im Code); überarbeitete Beispiel-Vorlagen
@@ -1118,7 +1149,7 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 - Mehr als sieben Personen (mehr Farben)
 - About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
 
-**1.3: Unterwegs**
+**1.4: Unterwegs**
 
 - Installierbare Web-App (PWA) fürs Smartphone der Eltern: Aufgaben prüfen, Punkte buchen und
   Aufgaben anlegen von unterwegs; die Einkaufsliste auch ohne Netz im Laden, abgeglichen, sobald

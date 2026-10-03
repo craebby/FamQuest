@@ -61,12 +61,21 @@ export function WeekBoard({
   mode,
   showEvents,
   showMeals,
+  days: dayCount = BOARD_DAYS,
+  row = false,
 }: {
   /** Heute in der Zeitzone der Familie (`YYYY-MM-DD`). */
   today: string
   mode: WeekMode
   showEvents: boolean
   showMeals: boolean
+  /** So viele Tage; ohne Angabe eine Woche. */
+  days?: number
+  /**
+   * Küchenansicht: die Tage stehen bei jeder Breite nebeneinander und füllen die Höhe, heute ist
+   * doppelt so breit.
+   */
+  row?: boolean
 }) {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
@@ -92,7 +101,7 @@ export function WeekBoard({
   const entryOf = (date: string, meal: Meal): MealEntry | undefined =>
     mealEntries.find((entry) => entry.date === date && entry.meal === meal)
   const start = firstDay(today, mode)
-  const days = Array.from({ length: BOARD_DAYS }, (_, index) => addDays(start, index))
+  const days = Array.from({ length: dayCount }, (_, index) => addDays(start, index))
 
   const weekday = new Intl.DateTimeFormat(language, { weekday: 'short', timeZone: 'UTC' })
   const longDate = new Intl.DateTimeFormat(language, {
@@ -105,7 +114,7 @@ export function WeekBoard({
   return (
     <section
       aria-label={t(rolling ? 'home.week_board' : 'home.week_board_monday')}
-      className="flex flex-1 flex-col gap-2 lg:min-h-96"
+      className={`flex flex-1 flex-col gap-2 ${row ? 'min-h-0' : 'lg:min-h-96'}`}
     >
       {showEvents && status.data && !status.data.enabled && (
         <Link
@@ -123,7 +132,22 @@ export function WeekBoard({
         </p>
       )}
       {/* Großer Bildschirm: sieben Spalten nebeneinander; schmal: Tage untereinander. */}
-      <div className="grid flex-1 grid-cols-1 gap-3 lg:min-h-0 lg:grid-cols-7 lg:grid-rows-1">
+      <div
+        className={
+          row
+            ? 'grid min-h-0 flex-1 grid-rows-1 gap-2'
+            : 'grid flex-1 grid-cols-1 gap-3 lg:min-h-0 lg:grid-cols-7 lg:grid-rows-1'
+        }
+        style={
+          row
+            ? {
+                gridTemplateColumns: days
+                  .map((day) => `minmax(0, ${day === today ? 2 : 1}fr)`)
+                  .join(' '),
+              }
+            : undefined
+        }
+      >
         {days.map((day) => {
           const date = parseDate(day)
           const isToday = day === today
@@ -150,7 +174,7 @@ export function WeekBoard({
                   <span className="ml-auto text-base font-bold">{t('calendar.today')}</span>
                 )}
               </h2>
-              <EventScroller>
+              <EventScroller always={row}>
                 {(calendarDay?.holidays.length ?? 0) > 0 && (
                   <ul className="flex flex-col gap-1">
                     {calendarDay?.holidays.map((holiday) => (
@@ -226,7 +250,14 @@ export function WeekBoard({
  * Termine eines Tages; am großen Display scrollbar, damit das Essen darunter sichtbar bleibt.
  * Gibt es unten noch mehr, blendet der Rand aus und ein Pfeil zeigt nach unten.
  */
-function EventScroller({ children }: { children: ReactNode }) {
+function EventScroller({
+  children,
+  always = false,
+}: {
+  children: ReactNode
+  /** Auch auf schmalen Bildschirmen scrollen (Küchenansicht), nicht erst am großen Display. */
+  always?: boolean
+}) {
   const { t } = useTranslation()
   const scroller = useRef<HTMLDivElement>(null)
   const content = useRef<HTMLDivElement>(null)
@@ -254,7 +285,7 @@ function EventScroller({ children }: { children: ReactNode }) {
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div
         ref={scroller}
-        className="min-h-0 flex-1 overscroll-contain lg:overflow-y-auto"
+        className={`min-h-0 flex-1 overscroll-contain ${always ? 'overflow-y-auto' : 'lg:overflow-y-auto'}`}
         style={more ? { maskImage: fade, WebkitMaskImage: fade } : undefined}
       >
         <div ref={content} className="flex flex-col gap-1.5">

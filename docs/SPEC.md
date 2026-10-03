@@ -90,7 +90,19 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 - Optional eine Menge oder ein Hinweis („2 ×“, „laktosefrei“), gilt nur für diesen Einkauf.
 - Ein Tipp hakt ab, ein weiterer nimmt es zurück. Abgehakte bleiben durchgestrichen sichtbar bis zum Ende des Tages in der Zeitzone der Familie, danach sind sie von der Liste; „Abgehakte entfernen“ räumt sie sofort weg.
 - Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
-- Später: PWA mit Offline-Nutzung im Laden (Version 1.3), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+- Später: PWA mit Offline-Nutzung im Laden (Version 1.4), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+
+**Küchenansicht** *(Phase 8, entschieden am 2026-10-03)*
+
+Für ein kleines Tablet in der Küche (8 Zoll, Querformat), auf dem „Heute“ zu voll wäre.
+
+- Eigene Adresse `/kitchen`, ohne Navigationsleiste; am Tablet als Startseite festlegen. Im Elternbereich unter „Dieses Gerät“ führt ein Knopf dorthin. Läuft die Anmeldung ab, geht es nach dem Anmelden zurück in die Küchenansicht.
+- Kopfzeile: Symbole der Seiten, Datum, Wetter, Uhr.
+- Erste Seite „Termine und Essen“: heute (doppelt breit) und die nächsten vier Tage nebeneinander, je Tag oben die Termine (scrollen bei vollen Tagen), unten das Essen. Ein Tipp aufs Essen trägt ein oder ändert es, ein Tipp auf einen Termin zeigt die Details, **ohne Eltern-PIN** wie auf „Heute“.
+- Weitere Seiten per Wisch nach links/rechts oder über die Symbole im Kopf: die aktuelle Routine der Kinder zum Abhaken, die Ansicht „Haushalt“ („Zu erledigen“ und Putzplan) und die Einkaufsliste.
+- Nach zwei Minuten ohne Berührung steht wieder die erste Seite da.
+- Kein Bilderrahmen. Im Nachtfenster des Bilderrahmens (Einstellung der Familie) zeigt auch die Küchenansicht den Nachtbildschirm (schwarz oder gedimmte Uhr); ein Tipp weckt sie, nach zwei Minuten Ruhe wird es wieder dunkel.
+- Später denkbar: als App installierbar (Vollbild ohne Adressleiste) zusammen mit der PWA, Auswahl der Seiten je Gerät.
 
 **Haushalt** *(Phase 7, entschieden am 2026-10-01)*
 

@@ -10,6 +10,8 @@ const PIN = '1234'
 const DISPLAY = { width: 1920, height: 1080 }
 const TABLET = { width: 1280, height: 800 }
 const PHONE = { width: 390, height: 844 }
+// 8-Zoll-Tablet im Querformat (1280 × 800 Pixel bei Skalierung 1,33).
+const KITCHEN = { width: 960, height: 600 }
 
 /** DEMO_WEEKDAY dieser Woche um DEMO_TIME in Berlin, passend zur Uhr des Servers. */
 function demoInstant(): Date {
@@ -120,4 +122,8 @@ test('Elternbereich', async ({ page }) => {
 test('Handy', async ({ page }) => {
   await shoot(page, 'phone-today', '/', PHONE)
   await shoot(page, 'phone-shopping', '/shopping', PHONE)
+})
+
+test('Küche', async ({ page }) => {
+  await shoot(page, 'kitchen', '/kitchen', KITCHEN)
 })

@@ -59,6 +59,14 @@
     "shopping": "Shopping",
     "household": "Household"
   },
+  "kitchen": {
+    "title": "Kitchen view",
+    "pages": "Pages of the kitchen view",
+    "week": "Events and meals",
+    "wake": "Wake the screen",
+    "open": "Open kitchen view",
+    "hint": "For a small tablet in the kitchen (landscape): the next days with events and meals, swipe for tasks, household and shopping. No navigation bar; on the tablet, best set the address {{path}} as the start page."
+  },
   "family": {
     "no_members": "No family members yet",
     "no_members_hint": "You can add your family in the parents' area.",

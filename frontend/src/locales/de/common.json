@@ -59,6 +59,14 @@
     "shopping": "Einkauf",
     "household": "Haushalt"
   },
+  "kitchen": {
+    "title": "Küchenansicht",
+    "pages": "Seiten der Küchenansicht",
+    "week": "Termine und Essen",
+    "wake": "Bildschirm aufwecken",
+    "open": "Küchenansicht öffnen",
+    "hint": "Für ein kleines Tablet in der Küche (Querformat): die nächsten Tage mit Terminen und Essen, per Wisch Aufgaben, Haushalt und Einkauf. Ohne Navigationsleiste; am Tablet am besten die Adresse {{path}} als Startseite festlegen."
+  },
   "family": {
     "no_members": "Noch keine Familienmitglieder",
     "no_members_hint": "Im Elternbereich könnt ihr eure Familie anlegen.",

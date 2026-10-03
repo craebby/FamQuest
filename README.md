@@ -54,6 +54,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
   interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home;
   what is due also shows on "Today" and next to the children under "Tasks". Plus "To do": a
   shared list for one-off things like "Get chicken feed"
+- Kitchen view for a small tablet: events and meals of the next days, swipe for tasks, household
+  and shopping
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -263,6 +265,27 @@ past stay visible but faded. "Restore default" switches everything back on and t
 "From today". The setting is stored on
 the server and applies to every display of the family. The week overview of tasks (one ring per
 person) lives in the tasks area under "Week".
+
+## Kitchen view
+
+![Kitchen view on an 8-inch tablet: today and the next four days with events and meals](docs/screenshots/en/kitchen.png)
+
+For a small tablet in the kitchen (meant for 8 inches in landscape) there is a trimmed-down view at
+the address **`/kitchen`**, e.g. `http://famquest.local:8080/kitchen`. It has no navigation bar;
+set the address as the start page on the tablet. In the parents' area, **Settings → This device**
+has an "Open kitchen view" button that takes you there.
+
+- **First page:** today (twice as wide) and the next four days, each with the events at the top and
+  the meal at the bottom. Tap the meal to enter or change it, tap an event for its details.
+- **Swiping:** to the left you find the children's current routine to tick off, the **household**
+  ("To do" and the cleaning plan) and the **shopping list**. The four icons at the top left jump
+  straight to a page and show where you are.
+- **Header:** date, weather and clock.
+- After two minutes without a touch the first page is back.
+- **Night mode:** the night window of the [picture frame](#photos-picture-frame) applies (black or a
+  dimmed clock). A tap wakes the view; after two minutes of rest it goes dark again. The kitchen
+  view shows no photos.
+- If the session expires, signing in takes you back to the kitchen view.
 
 ## Family view
 
@@ -548,7 +571,7 @@ icon. Meals you switch off stay stored.
 
 **On the phone:** open FamQuest in the browser. Away from home this needs FamQuest to be reachable
 from outside, e.g. over HTTPS behind a reverse proxy (see [Behind a reverse proxy](#behind-a-reverse-proxy))
-or via a VPN. An installable app that also works offline in the shop is planned for 1.3.
+or via a VPN. An installable app that also works offline in the shop is planned for 1.4.
 
 ## Household
 
@@ -1075,7 +1098,14 @@ generated with demo data (`npm run screenshots`).
 **Demo version:** done. A German and an English public instance with the sample family that
 resets itself on the hour (see [Public demo](#public-demo)).
 
-**1.2: make it your own**
+**1.2: kitchen view (phase 8), in progress**
+
+- [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
+  days, swipe for the children's routine, household and shopping, header with date, weather and
+  clock, night mode; plus a "Photo for …" button right at the planned dish in the meal plan
+- [ ] 2. Polish on the real tablet
+
+**1.3: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
@@ -1088,7 +1118,7 @@ resets itself on the hour (see [Public demo](#public-demo)).
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
 
-**1.3: on the go**
+**1.4: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
   anywhere; the shopping list also offline in the shop, synced once there's a connection again

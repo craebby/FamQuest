@@ -12,6 +12,7 @@ import { CalendarPage } from './pages/CalendarPage'
 import { ChoresPage } from './pages/ChoresPage'
 import { FamilyPage } from './pages/FamilyPage'
 import { FramePage } from './pages/FramePage'
+import { KITCHEN_PATH, KitchenPage } from './pages/KitchenPage'
 import { LoginPage } from './pages/LoginPage'
 import { MealsPage } from './pages/MealsPage'
 import { ShoppingPage } from './pages/ShoppingPage'
@@ -59,6 +60,7 @@ function SetupGate() {
 /** Seiten, die eine Anmeldung brauchen. Setzt außerdem die Sprache der Familie. */
 function RequireAuth() {
   const me = useMe()
+  const { pathname } = useLocation()
   const familyLanguage = me.data?.family.default_language
 
   useEffect(() => {
@@ -68,7 +70,14 @@ function RequireAuth() {
   if (me.isPending) return <Loading />
   if (me.isError) {
     if (me.error instanceof ApiError && me.error.status === 401)
-      return <Navigate to="/login" replace />
+      // Die Küchenansicht merkt sich ihre Adresse: Nach dem Anmelden geht es dorthin zurück.
+      return (
+        <Navigate
+          to="/login"
+          replace
+          state={pathname === KITCHEN_PATH ? { from: pathname } : null}
+        />
+      )
     return <LoadError error={me.error} onRetry={() => void me.refetch()} />
   }
   return <Outlet />
@@ -76,8 +85,13 @@ function RequireAuth() {
 
 function LoginRoute() {
   const me = useMe()
+  const from = (useLocation().state as { from?: string } | null)?.from
   if (me.isPending) return <Loading />
-  return me.isSuccess ? <Navigate to="/" replace /> : <LoginPage />
+  return me.isSuccess ? (
+    <Navigate to={from === KITCHEN_PATH ? KITCHEN_PATH : '/'} replace />
+  ) : (
+    <LoginPage />
+  )
 }
 
 export default function App() {
@@ -100,6 +114,7 @@ export default function App() {
             <Route path="/household" element={<ChoresPage />} />
           </Route>
           <Route path="/frame" element={<FramePage />} />
+          <Route path={KITCHEN_PATH} element={<KitchenPage />} />
           <Route path="/parents/:area?" element={<ParentsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -124,7 +124,7 @@ Wünsche der Kinder später (Roadmap, Ideen ohne Version).
 ## Etappen (Phase 6: Einkaufsliste)
 
 Entschieden: eigene Liste statt fremdem Dienst; eintragen und abhaken ohne Eltern-PIN; Menge/Hinweis
-optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kommt mit 1.3;
+optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kommt mit 1.4;
 mehrere Listen, Sortierung (evtl. KI), Zutaten aus dem Essensplan und Obsidian-Export stehen unter „Ideen“.
 
 1. Einkaufsliste am Display und im Browser: Ansicht „Einkauf“ in der Navigationsleiste, Artikel mit
@@ -156,6 +156,20 @@ Erwachsenen-Aufgaben werden nicht übernommen. Gearbeitet wird auf dem Branch `p
    (alte Erwachsenen-Aufgaben löscht die Migration), faire Verteilung aus den Erledigungen im
    Putzplan (letzte 30 Tage); vorgezogen und vor Etappe 3 umgesetzt
 5. Feinschliff
+
+## Etappen (Phase 8: Küchenansicht)
+
+Entschieden: eigene Adresse `/kitchen` statt Schalter je Gerät; für ein 8-Zoll-Tablet im Querformat,
+ohne Navigationsleiste; kein Bilderrahmen, aber das Nachtfenster des Bilderrahmens gilt auch hier.
+Erscheint als Version 1.2; „Anpassen“ wird 1.3, „Unterwegs“ (PWA) 1.4. Gearbeitet wird auf dem
+Branch `phase-8-kueche`.
+
+1. Küchenansicht: Kopf mit Datum, Wetter und Uhr; erste Seite heute (doppelt breit) und die
+   nächsten vier Tage mit Terminen und Essen (Essen eintragen per Tipp); per Wisch oder Symbol im
+   Kopf die Routine der Kinder, der Haushalt und die Einkaufsliste; nach zwei Minuten Ruhe wieder
+   die erste Seite; Nachtbildschirm im Nachtfenster, ein Tipp weckt; nach dem Anmelden zurück in
+   die Küchenansicht
+2. Feinschliff am echten Tablet
 
 ## Befehle
 
