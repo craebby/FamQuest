@@ -8,9 +8,13 @@ import { makeMe, makeMember, makeToday, mockApi, renderApp, setupDone } from '..
 
 beforeEach(async () => {
   await i18n.changeLanguage('de')
+  // Samstagmorgen, 3. Oktober: Die Termine des Tages liegen noch vor uns. Ohne feste Uhr hinge
+  // es vom echten Datum ab, ob sie als vergangen (kleiner, ohne Symbol) erscheinen.
+  vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-10-03T06:00:00Z') })
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.unstubAllGlobals()
 })
 

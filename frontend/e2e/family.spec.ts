@@ -453,3 +453,34 @@ test('Routinen: anlegen, Schritte übernehmen und sortieren, die Familienansicht
   ])
   await expect(column.getByRole('button', { name: /^Zähne putzen.*optional/ })).toBeVisible()
 })
+
+test('Küchenansicht: am kleinen Tablet nicht breiter als der Bildschirm, Dialog mittig', async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  await login(page)
+  await expect(page.getByRole('link', { name: 'Heute', exact: true })).toBeVisible()
+  // Mobile Browser vergrößern die Seite, sobald etwas über den Rand ragt; Dialoge verrutschen dann.
+  const tablet = await browser.newContext({
+    baseURL,
+    viewport: { width: 853, height: 533 },
+    deviceScaleFactor: 1.5,
+    isMobile: true,
+    hasTouch: true,
+    storageState: await page.context().storageState(),
+  })
+  const kitchen = await tablet.newPage()
+  await kitchen.goto('/kitchen')
+  const tabs = kitchen.getByRole('navigation', { name: 'Seiten der Küchenansicht' })
+  await tabs.getByRole('button', { name: 'Einkauf' }).tap()
+  await kitchen
+    .getByRole('region', { name: 'Einkauf' })
+    .getByRole('button', { name: 'Eintragen', exact: true })
+    .tap()
+
+  const box = await kitchen.getByRole('dialog', { name: 'Was fehlt?' }).boundingBox()
+  expect(box).toMatchObject({ x: 0, y: 0, width: 853, height: 533 })
+  expect(await kitchen.evaluate('[innerWidth, innerHeight]')).toEqual([853, 533])
+  await tablet.close()
+})

@@ -110,7 +110,9 @@ export function KitchenPage() {
           const { scrollLeft, clientWidth } = event.currentTarget
           if (clientWidth > 0) setPage(Math.round(scrollLeft / clientWidth))
         }}
-        className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none]"
+        // `relative`: Absolut gesetzte Teile der Seiten (z. B. Texte nur für Screenreader) bleiben so im
+        // Wischbereich, statt die ganze Seite am Tablet breiter als den Bildschirm zu machen.
+        className="relative flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none]"
       >
         {PAGES.map(({ id, label }) => (
           <section

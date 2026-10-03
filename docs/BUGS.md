@@ -54,3 +54,17 @@ Gerade nichts.
 - **Dazu:** Drei Backend-Tests hingen vom echten Datum ab (Wochenansicht der Routinen, zwei Tests
   zum Kalender-Abgleich) und schlugen ab dem 3. Oktober 2026 fehl; sie legen ihr Datum jetzt selbst
   fest.
+
+### 5. Küchenansicht: Dialoge verrutschen am Tablet, Seite lässt sich verschieben
+
+- **Gemeldet:** 2026-10-03 (Stand 1.2.0), am echten 8-Zoll-Tablet
+- **Behoben:** 1.2.1
+- **Bereich:** Küchenansicht (`/kitchen`), z. B. „Eintragen“ auf der Einkaufsliste
+- **War:** Der Dialog „Was fehlt?“ saß halb außerhalb des Bildschirms, danach war die ganze
+  Ansicht verschoben. Ursache: Unsichtbare Hilfstexte für Screenreader auf den hinteren Seiten
+  ragten aus dem Wischbereich heraus; der mobile Browser rechnete die Seite dadurch mehr als
+  doppelt so breit und hoch wie den Bildschirm (1974 × 1234 statt 853 × 533).
+- **Jetzt:** Der Wischbereich hält diese Texte fest (`relative` in `KitchenPage.tsx`); die Seite ist
+  wieder genau so groß wie der Bildschirm. Ein End-to-End-Test im Tablet-Format prüft das.
+- **Dazu:** Die Kalender-Tests im Frontend hingen von der echten Uhrzeit ab und schlugen seit dem
+  3. Oktober nachmittags fehl; sie stellen die Uhr jetzt selbst.
