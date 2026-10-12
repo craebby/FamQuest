@@ -79,7 +79,7 @@ Einfach anfangen: festlegen, was es in der Woche gibt.
 - Gerichte verwalten (umbenennen, Symbol, eigenes Foto statt Symbol, löschen) geht ebenfalls ohne PIN über den Stift im Eintrage-Dialog.
 - „Heute“ wird dabei zum Wochen-Dashboard: Kopf mit Uhr und Wetter klein, die aktuelle Routine der Kinder (sonst „Alles erledigt“), Platz für den Einkauf, darunter über die ganze Breite die nächsten sieben Tage mit Terminen und dem Essen am Tagesende (Symbol + Text). Bereiche lassen sich per Zahnrad ein- und ausschalten, die Anordnung ist fest. Aufgaben der Erwachsenen standen zunächst nur noch unter „Aufgaben“; mit Phase 7 sind sie durch den Putzplan abgelöst (siehe „Haushalt“).
 - *Nach dem Praxistest (2026-09-30):* Am großen Display ist „Heute“ genau eine Bildschirmhöhe hoch; das Essen steht immer unten sichtbar, bei vielen Terminen scrollt nur der Terminbereich eines Tages (Ausblendung und Pfeil zeigen, dass es weitergeht). Terminkarten sind kompakter (Avatar in der Zeitzeile, ganztägige Termine einzeilig, vorbei gegangene Termine einzeilig und blass). Über das Zahnrad wählen die Eltern, ob die Woche ab heute rollt (Standard) oder von Montag bis Sonntag geht (vergangene Tage blass); die Wochenansicht unter „Aufgaben“ bleibt rollend.
-- Später: Wünsche der Kinder, Rezepte (z. B. über Mealie), Verbindung zur Einkaufsliste.
+- Später: Wünsche der Kinder, Anbindung von Mealie. Eigene Rezepte gibt es seit Phase 9 (siehe „Rezepte“).
 
 **Einkaufsliste** *(Phase 6, entschieden am 2026-09-29)*
 
@@ -91,6 +91,19 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 - Ein Tipp hakt ab, ein weiterer nimmt es zurück. Abgehakte bleiben durchgestrichen sichtbar bis zum Ende des Tages in der Zeitzone der Familie, danach sind sie von der Liste; „Abgehakte entfernen“ räumt sie sofort weg.
 - Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
 - Später: PWA mit Offline-Nutzung im Laden (Version 1.4), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+
+**Rezepte** *(Phase 9, entschieden am 2026-10-12)*
+
+Aus einer kleinen Rezeptsammlung soll sich der Essensplan füllen lassen.
+
+- Ein Rezept gehört zu einem Gericht des Essensplans: Zutaten (je eine Zeile, Menge im Text, z. B. „ca. 600 g Pellkartoffeln“) und Schritte (je einer Zeile). Gerichte ohne beides sind einfach Gerichte wie bisher. Eine Bewertung mit 1–5 Sternen je Gericht für die ganze Familie (keine Bewertung je Kind); ein Tipp auf den gesetzten Stern nimmt sie zurück.
+- Seite „Rezepte“ unter „Essen“ (`/meals/recipes`): alle Gerichte mit Rezept alphabetisch mit Bild und Sternen. Alles **ohne Eltern-PIN**, wie der Essensplan.
+- „Rezepte einfügen“: Text hineinkopieren, feste Regeln zerlegen ihn (kein externer Dienst): „1. Name“ beginnt ein Rezept, ein Zusatz in Klammern am Ende („(heute)“) fällt weg; „Zutaten“ und „Zubereitung“ (auch englisch, mit oder ohne Doppelpunkt) teilen es, ohne diese Überschriften ist alles Zubereitung; Aufzählungszeichen und Nummern vor Zeilen fallen weg. Nummerierte Schritte bleiben Schritte: Ein neues Rezept beginnt nur nach einer Leerzeile mit der nächsten Nummer und ohne Satzzeichen am Ende. Ohne Nummern ist der Text ein Rezept mit der ersten Zeile als Name. Eine Vorschau zeigt sofort, was erkannt wurde, und ob es das Gericht schon gibt (dann bekommt es das Rezept, Symbol, Foto und Bewertung bleiben). Grenzen: 50 Rezepte je Einfügen, je Rezept 60 Zutaten und 60 Schritte.
+- Rezeptansicht (Dialog) zum Mitkochen: Zutaten links, nummerierte Schritte groß daneben, Sterne oben. Von hier: „Rezept bearbeiten“ (Zutaten und Schritte als Text, je eine Zeile; beides leer nimmt das Rezept weg), „Name, Symbol, Foto“, aus dem Plan heraus „Anderes Gericht“.
+- Im Essensplan, auf „Heute“ und in der Küchenansicht öffnet ein Tipp auf ein geplantes Gericht mit Rezept zuerst das Rezept; ohne Rezept wie bisher den Dialog zum Eintragen, dort führt „Rezept“ zum (noch leeren) Rezept.
+- „Woche füllen“ (Knopf oben im Essensplan, ohne PIN): füllt in der gezeigten Woche die leeren Tage ab heute mit Gerichten aus der Rezeptsammlung, für das Abendessen (ist es abgeschaltet, die letzte geplante Mahlzeit). Geplantes bleibt. Gewicht je Bewertung: ohne Bewertung wie 3 Sterne; 1 Stern 0,25, 2 Sterne 1, 3 Sterne 3, 4 Sterne 5, 5 Sterne 8 (schlecht Bewertetes selten, aber nicht nie). Dasselbe Gericht frühestens nach 7 Tagen wieder (gerechnet mit allem, was rundherum geplant ist), solange die Sammlung reicht; sonst wenigstens nicht dasselbe wie vorher. Ohne Rezepte meldet es `meals.no_recipes`. Höchstens 14 Tage auf einmal.
+- „Neu würfeln“: In der Rezeptansicht eines geplanten Tages ab heute ersetzt der Knopf das Gericht durch ein anderes aus der Sammlung (nach denselben Regeln).
+- Zutaten auf die Einkaufsliste: „Auf die Einkaufsliste“ im Rezept und „Zutaten der Woche“ oben im Essensplan (Rezepte ab heute in der gezeigten Woche). Aus jeder Zutat wird ein Artikel: Eine Menge am Anfang (auch „2-3“, „1,5“, „½“, „ca.“) samt üblicher Einheit (g, kg, ml, l, EL, TL, Packung, Dose, Handvoll …, auch englisch) wird zum Hinweis, der Rest ist der Name („ca. 600 g Pellkartoffeln“ → Pellkartoffeln, „ca. 600 g“). Gleiche Namen werden zusammengefasst, die Mengen mit „+“ verbunden. Angehakt ist anfangs alles außer Vorräten (Salz, Pfeffer, Öl, Wasser, Zucker) und dem, was schon offen auf der Liste steht (dessen Hinweis bleibt). Das Symbol kommt wie beim Eintragen in die Einkaufsliste. Ideen: Zerlegen mit KI, Zutaten mit Menge und Einheit getrennt, Portionen umrechnen.
 
 **Küchenansicht** *(Phase 8, entschieden am 2026-10-03)*
 

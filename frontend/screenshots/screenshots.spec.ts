@@ -98,6 +98,7 @@ test('Display', async ({ page }) => {
   await shoot(page, 'meals', '/meals', DISPLAY)
   await shoot(page, 'shopping', '/shopping', DISPLAY)
   await shoot(page, 'household', '/household', DISPLAY)
+  await shoot(page, 'recipes', '/meals/recipes', DISPLAY)
   await shoot(page, 'rewards', `/rewards/${await memberId(page, 'Mia')}`, DISPLAY)
   await shoot(page, 'frame', '/frame', DISPLAY, {
     jpeg: true,
@@ -126,4 +127,11 @@ test('Handy', async ({ page }) => {
 
 test('Küche', async ({ page }) => {
   await shoot(page, 'kitchen', '/kitchen', KITCHEN)
+  // Ein Tipp aufs heutige Essen öffnet das Rezept zum Mitkochen.
+  await shoot(page, 'kitchen-recipe', '/kitchen', KITCHEN, {
+    prepare: async () => {
+      await page.locator('section[aria-current="date"]').getByRole('button').last().click()
+      await expect(page.getByRole('dialog')).toBeVisible()
+    },
+  })
 })

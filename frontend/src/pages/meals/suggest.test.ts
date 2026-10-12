@@ -15,6 +15,9 @@ const dish = (overrides: Partial<Dish> = {}): Dish => ({
   image_url: null,
   last_planned: '2026-10-01',
   times_planned: 3,
+  ingredients: [],
+  steps: [],
+  rating: null,
   ...overrides,
 })
 

@@ -490,9 +490,13 @@ class Photo(Base):
 
 
 class Dish(Base):
-    """Gericht für den Essensplan. Entsteht beim Eintippen im Plan und wird danach vorgeschlagen."""
+    """Gericht für den Essensplan. Entsteht beim Eintippen im Plan und wird danach vorgeschlagen.
+
+    Mit Zutaten oder Schritten ist es ein Rezept (Rezeptsammlung unter „Essen“).
+    """
 
     __tablename__ = "dishes"
+    __table_args__ = (CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
@@ -500,6 +504,11 @@ class Dish(Base):
     icon: Mapped[str] = mapped_column(String(100))
     # Eigenes Foto `<key>.webp` im Upload-Ordner „dishes“; ersetzt das Symbol in der Anzeige.
     image: Mapped[str | None] = mapped_column(String(64))
+    # Rezept: Zutaten („ca. 600 g Pellkartoffeln“) und Schritte, je ein Text, in Reihenfolge.
+    ingredients: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
+    steps: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
+    # Wie es der Familie schmeckt, 1 bis 5 Sterne; steuert „Woche füllen“.
+    rating: Mapped[int | None] = mapped_column(SmallInteger)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

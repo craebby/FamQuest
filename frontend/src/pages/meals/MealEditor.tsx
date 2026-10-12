@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CameraIcon from '~icons/fluent-emoji-flat/camera'
+import BookIcon from '~icons/fluent-emoji-flat/open-book'
 import CloseIcon from '~icons/lucide/x'
 import PencilIcon from '~icons/lucide/pencil'
 import SearchIcon from '~icons/lucide/search'
@@ -21,6 +22,8 @@ interface MealEditorProps {
   title: string
   entry: MealEntry | undefined
   onClose: () => void
+  /** Zum Rezept des geplanten Gerichts (siehe MealDialog). */
+  onRecipe?: () => void
 }
 
 /**
@@ -29,7 +32,7 @@ interface MealEditorProps {
  * dessen Bearbeitung (Name, Symbol, Foto, löschen); beim schon geplanten Gericht führt der Knopf
  * „Foto für …“ unten direkt dorthin.
  */
-export function MealEditor({ date, meal, title, entry, onClose }: MealEditorProps) {
+export function MealEditor({ date, meal, title, entry, onClose, onRecipe }: MealEditorProps) {
   const { t } = useTranslation()
   const dishes = useDishes()
   const planMeal = usePlanMeal()
@@ -183,7 +186,7 @@ export function MealEditor({ date, meal, title, entry, onClose }: MealEditorProp
             </div>
 
             {entry && (
-              <div className="flex flex-wrap justify-between gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Button
                   variant="secondary"
                   disabled={!planned || planMeal.isPending}
@@ -192,7 +195,18 @@ export function MealEditor({ date, meal, title, entry, onClose }: MealEditorProp
                   <CameraIcon className="size-8" aria-hidden="true" />
                   {t('meals.dish_photo', { name: entry.name })}
                 </Button>
-                <Button variant="danger" disabled={planMeal.isPending} onClick={() => save(null)}>
+                {onRecipe && (
+                  <Button variant="secondary" disabled={planMeal.isPending} onClick={onRecipe}>
+                    <BookIcon className="size-8" aria-hidden="true" />
+                    {t('recipes.show')}
+                  </Button>
+                )}
+                <Button
+                  variant="danger"
+                  className="ml-auto"
+                  disabled={planMeal.isPending}
+                  onClick={() => save(null)}
+                >
                   {t('meals.remove')}
                 </Button>
               </div>

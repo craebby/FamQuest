@@ -203,6 +203,9 @@ def test_rename_and_change_icon_without_pin(client, admin, now):
         "image_url": None,
         "last_planned": MONDAY,
         "times_planned": 1,
+        "ingredients": [],
+        "steps": [],
+        "rating": None,
     }
     assert [(e["name"], e["icon"]) for e in week(client)["entries"]] == [("Nudeln", BURGER)]
 
@@ -302,3 +305,204 @@ def test_dish_images_need_login(client, admin, now):
     client.post("/api/auth/logout", headers=csrf(admin))
 
     assert client.get(url).status_code == 401
+
+
+RUEHREI = {
+    "name": "Rührei-Pfanne mit Pellkartoffeln",
+    "icon": "fluent-emoji-flat:cooking",
+    "ingredients": ["ca. 600 g Pellkartoffeln", "8 Eier"],
+    "steps": ["Pellkartoffeln anbraten.", "Eier drübergießen und stocken lassen."],
+}
+
+
+def import_recipes(client, me, *recipes):
+    return client.post("/api/recipes", json={"recipes": list(recipes)}, headers=csrf(me))
+
+
+def test_import_creates_dishes_with_recipes(client, admin, now):
+    wraps = {"name": "Hähnchen-Wraps", "icon": BURGER, "steps": ["Tortillas erwärmen."]}
+
+    response = import_recipes(client, admin, RUEHREI, wraps)
+
+    assert response.status_code == 200, response.text
+    created = response.json()
+    assert [(d["name"], d["ingredients"], d["steps"]) for d in created] == [
+        (RUEHREI["name"], RUEHREI["ingredients"], RUEHREI["steps"]),
+        ("Hähnchen-Wraps", [], ["Tortillas erwärmen."]),
+    ]
+    assert {d["name"] for d in client.get("/api/dishes").json()} == {
+        RUEHREI["name"],
+        "Hähnchen-Wraps",
+    }
+
+
+def test_import_adds_the_recipe_to_an_existing_dish(client, admin, now):
+    dish = plan(client, admin, MONDAY, name="rührei-pfanne mit pellkartoffeln")["dish_id"]
+    client.put(f"/api/dishes/{dish}/rating", json={"rating": 4}, headers=csrf(admin))
+
+    [updated] = import_recipes(client, admin, RUEHREI).json()
+
+    # Name, Symbol und Bewertung bleiben, das Rezept kommt dazu.
+    assert updated["id"] == dish
+    assert updated["name"] == "rührei-pfanne mit pellkartoffeln"
+    assert updated["icon"] == SPAGHETTI
+    assert updated["rating"] == 4
+    assert updated["steps"] == RUEHREI["steps"]
+    assert updated["times_planned"] == 1
+
+
+@pytest.mark.parametrize(
+    "recipe",
+    [
+        {**RUEHREI, "steps": ["  "]},
+        {**RUEHREI, "steps": ["x" * 1001]},
+        {**RUEHREI, "ingredients": ["Ei"] * 61},
+        {**RUEHREI, "name": " "},
+    ],
+)
+def test_import_rejects_invalid_recipes(client, admin, recipe):
+    assert import_recipes(client, admin, recipe).status_code == 422
+    assert client.get("/api/dishes").json() == []
+
+
+def test_import_needs_a_recipe_and_csrf(client, admin):
+    assert client.post("/api/recipes", json={"recipes": []}, headers=csrf(admin)).status_code == 422
+    assert client.post("/api/recipes", json={"recipes": [RUEHREI]}).status_code == 403
+
+
+def test_edit_and_remove_a_recipe(client, admin, now):
+    [dish] = import_recipes(client, admin, RUEHREI).json()
+
+    response = client.put(
+        f"/api/dishes/{dish['id']}/recipe",
+        json={"ingredients": [" 6 Eier "], "steps": ["Braten.", "Essen."]},
+        headers=csrf(admin),
+    )
+
+    assert response.status_code == 200, response.text
+    assert (response.json()["ingredients"], response.json()["steps"]) == (
+        ["6 Eier"],
+        ["Braten.", "Essen."],
+    )
+    cleared = client.put(
+        f"/api/dishes/{dish['id']}/recipe",
+        json={"ingredients": [], "steps": []},
+        headers=csrf(admin),
+    ).json()
+    # Das Gericht bleibt, nur ohne Rezept.
+    assert (cleared["name"], cleared["ingredients"], cleared["steps"]) == (RUEHREI["name"], [], [])
+    missing = client.put("/api/dishes/999/recipe", json={"steps": []}, headers=csrf(admin))
+    assert missing.json()["code"] == "dish.not_found"
+
+
+def test_rate_a_dish_without_parent_pin(client, admin, now):
+    dish = plan(client, admin, MONDAY)["dish_id"]
+
+    rated = client.put(f"/api/dishes/{dish}/rating", json={"rating": 5}, headers=csrf(admin))
+
+    assert rated.status_code == 200, rated.text
+    assert rated.json()["rating"] == 5
+    for invalid in (0, 6):
+        response = client.put(
+            f"/api/dishes/{dish}/rating", json={"rating": invalid}, headers=csrf(admin)
+        )
+        assert response.status_code == 422
+    cleared = client.put(f"/api/dishes/{dish}/rating", json={"rating": None}, headers=csrf(admin))
+    assert cleared.json()["rating"] is None
+
+
+def recipe(name: str, **extra) -> dict:
+    return {"name": name, "icon": SPAGHETTI, "steps": [f"{name} kochen."]} | extra
+
+
+def fill(client, me, start=SATURDAY, end="2026-10-04", **body):
+    return client.post(
+        "/api/meals/fill", json={"start": start, "end": end} | body, headers=csrf(me)
+    )
+
+
+@pytest.fixture
+def seeded(monkeypatch):
+    import random
+
+    from app.api import meals
+
+    monkeypatch.setattr(meals, "fill_random", random.Random(7))
+
+
+def test_fill_needs_recipes(client, admin, now):
+    plan(client, admin, SATURDAY)  # ein Gericht ohne Rezept zählt nicht
+
+    response = fill(client, admin)
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "meals.no_recipes"
+
+
+def test_fill_only_empty_days_from_today(client, admin, now, seeded):
+    import_recipes(client, admin, *(recipe(f"Gericht {i}") for i in range(10)))
+    planned = plan(client, admin, "2026-10-04", name="Pizza", icon=BURGER)
+
+    # Montag bis Sonntag dieser Woche; heute ist Samstag.
+    response = fill(client, admin, start=MONDAY, end="2026-10-04")
+
+    assert response.status_code == 200, response.text
+    assert [entry["date"] for entry in response.json()] == [SATURDAY]
+    assert response.json()[0]["name"].startswith("Gericht ")
+    entries = week(client)["entries"]
+    assert [entry["date"] for entry in entries] == [SATURDAY, "2026-10-04"]
+    # Geplantes bleibt.
+    assert entries[1] == planned
+
+
+def test_fill_does_not_repeat_a_dish_within_a_week(client, admin, now, seeded):
+    import_recipes(client, admin, *(recipe(f"Gericht {i}") for i in range(8)))
+
+    entries = fill(client, admin, start=SATURDAY, end="2026-10-16").json()
+
+    assert len(entries) == 14
+    names = [entry["name"] for entry in entries]
+    for index in range(len(names)):
+        assert names[index] not in names[max(0, index - 6) : index]
+
+
+def test_fill_prefers_well_rated_dishes(client, admin, now, seeded):
+    loved, disliked = import_recipes(
+        client, admin, recipe("Pfannkuchen"), recipe("Rosenkohl")
+    ).json()
+    client.put(f"/api/dishes/{loved['id']}/rating", json={"rating": 5}, headers=csrf(admin))
+    client.put(f"/api/dishes/{disliked['id']}/rating", json={"rating": 1}, headers=csrf(admin))
+
+    counts = {"Pfannkuchen": 0, "Rosenkohl": 0}
+    # Mit nur zwei Gerichten reicht die Sammlung nicht für den Abstand; dann zählt die Bewertung.
+    for _ in range(20):
+        for entry in fill(client, admin, end=SATURDAY, replace=True).json():
+            counts[entry["name"]] += 1
+        client.delete(f"/api/meals/{SATURDAY}/dinner", headers=csrf(admin))
+
+    assert counts["Pfannkuchen"] > 3 * counts["Rosenkohl"]
+
+
+def test_reroll_a_single_day_picks_another_dish(client, admin, now, seeded):
+    import_recipes(client, admin, recipe("Pfannkuchen"), recipe("Wraps"))
+    [first] = fill(client, admin, end=SATURDAY).json()
+
+    [again] = fill(client, admin, end=SATURDAY, replace=True).json()
+
+    assert again["date"] == SATURDAY
+    assert again["name"] != first["name"]
+    assert [entry["name"] for entry in week(client)["entries"]] == [again["name"]]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"start": "2026-10-05", "end": SATURDAY},
+        {"start": SATURDAY, "end": "2026-10-17"},
+        {"start": SATURDAY, "end": SATURDAY, "meal": "brunch"},
+    ],
+)
+def test_fill_rejects_invalid_ranges(client, admin, now, body):
+    import_recipes(client, admin, recipe("Pfannkuchen"))
+    response = client.post("/api/meals/fill", json=body, headers=csrf(admin))
+    assert response.status_code == 422

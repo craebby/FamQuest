@@ -47,7 +47,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
   auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
   oder gedimmte Uhr)
-- Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen
+- Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen;
+  dazu eine Rezeptsammlung zum Einfügen per Text, mit Sternen bewertet
 - Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
   Hinweis), im Laden abhaken
 - Haushalt: Putzplan mit Ampel statt Terminen (jede Hausarbeit mit eigenem Abstand, je Raum), ein
@@ -558,6 +559,54 @@ Montag bis Sonntag, heute hervorgehoben. Die Pfeile blättern zu anderen Wochen.
 Standardmäßig wird nur das **Abendessen** geplant. Im Elternbereich unter **Einstellungen →
 Essensplan** lassen sich Frühstück, Mittagessen und Snack zuschalten (für die ganze Familie); dann
 steht an jedem Tag jede Mahlzeit mit ihrem Symbol. Ausgeschaltete Mahlzeiten bleiben gespeichert.
+
+### Rezepte
+
+![Rezeptsammlung mit Sternen](docs/screenshots/de/recipes.png)
+
+Oben im Essensplan führt **Rezepte** zur Rezeptsammlung: alle Gerichte mit Rezept, mit Bild und
+Sternen. Alles geht ohne Eltern-PIN.
+
+- **Rezepte einfügen:** Text hineinkopieren, z. B. aus einer Notiz oder Nachricht. Daneben steht
+  sofort, was FamQuest erkannt hat; „Speichern“ legt die Rezepte an. Gibt es ein Gericht schon,
+  bekommt es das Rezept und behält Symbol, Foto und Sterne. So sieht der Text aus:
+
+  ```text
+  1. Rührei-Pfanne mit Pellkartoffeln
+
+  Zutaten
+  ca. 600 g Pellkartoffeln
+  8 Eier
+
+  Zubereitung
+  Pellkartoffeln in Scheiben in Öl 8-10 Min anbraten.
+  Eier verquirlen, drübergießen und stocken lassen.
+
+  2. Hähnchen-Wraps
+  ...
+  ```
+
+  Jedes Rezept beginnt mit einer Nummer und dem Namen. „Zutaten“ und „Zubereitung“ sind optional;
+  ohne sie gilt alles als Zubereitung. Ein einzelnes Rezept braucht keine Nummer, dann ist die erste
+  Zeile der Name. Zusätze in Klammern hinter dem Namen wie „(heute)“ fallen weg.
+- **Mitkochen:** Ein Tipp auf ein Rezept zeigt die Zutaten und die nummerierten Schritte groß. Im
+  Essensplan, auf „Heute“ und in der [Küchenansicht](#küchenansicht) öffnet ein Tipp auf ein
+  geplantes Gericht mit Rezept direkt das Rezept; „Anderes Gericht“ führt zum Eintragen.
+- **Bewerten:** Ein bis fünf Sterne je Gericht, wie es der Familie schmeckt. Ein Tipp auf den
+  gesetzten Stern nimmt die Bewertung zurück.
+- **Bearbeiten:** „Rezept bearbeiten“ zeigt Zutaten und Zubereitung als Text, eine Zeile je Zutat
+  bzw. Schritt. Sind beide leer, ist es wieder ein Gericht ohne Rezept. „Name, Symbol, Foto“ ändert
+  das Gericht selbst. Ein Gericht ohne Rezept bekommt eins über „Rezept“ im Dialog zum Eintragen.
+- **Woche füllen:** Der Knopf mit dem Würfel oben im Essensplan füllt die leeren Tage der gezeigten
+  Woche (ab heute) mit Gerichten aus der Rezeptsammlung, fürs Abendessen. Gut bewertete kommen
+  öfter, schlecht bewertete selten; dasselbe Gericht kommt frühestens nach einer Woche wieder,
+  solange die Sammlung reicht. Schon geplante Tage bleiben, und zum Weiterblättern einfach die
+  nächste Woche füllen.
+- **Neu würfeln:** Passt ein Vorschlag nicht, tippt auf den Tag und im Rezept auf **Neu würfeln**.
+- **Einkaufen:** „Auf die Einkaufsliste“ im Rezept und **Zutaten der Woche** oben im Essensplan
+  (alle Rezepte ab heute in der gezeigten Woche) zeigen die Zutaten zum Anhaken. Die Menge wird zum
+  Hinweis („ca. 600 g Pellkartoffeln“ → Pellkartoffeln, „ca. 600 g“), gleiche Zutaten werden
+  zusammengefasst. Salz, Pfeffer, Öl und was schon auf der Liste steht, sind erst nicht angehakt.
 
 ## Einkaufsliste
 
@@ -1133,6 +1182,15 @@ erzeugt mit Demodaten (`npm run screenshots`).
 **Demoversion:** fertig. Eine deutsche und eine englische öffentliche Instanz mit der
 Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche Demo](#öffentliche-demo)).
 
+**Rezepte (Phase 9), in Arbeit**
+
+- [x] 1. Rezeptsammlung unter „Essen“: Rezepte als Text einfügen (mit Vorschau), am Display und in
+  der Küchenansicht zum Mitkochen öffnen, bearbeiten, mit ein bis fünf Sternen bewerten
+- [x] 2. „Woche füllen“: leere Tage aus der Rezeptsammlung füllen, gut bewertete öfter, keine
+  Wiederholung kurz hintereinander, einzelne Tage neu würfeln
+- [x] 3. Zutaten auf die Einkaufsliste, je Rezept und für die Woche
+- [ ] 4. Feinschliff
+
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 
 - [x] 1. Küchenansicht unter `/kitchen` für ein 8-Zoll-Tablet im Querformat: Termine und Essen der
@@ -1205,7 +1263,8 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 - Bilderrahmen: Fotos aus Immich (oder Nextcloud) statt nur hochgeladener Fotos, Alben
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
-- Rezepte zum Essensplan, z. B. durch Anbindung von [Mealie](https://mealie.io)
+- Rezepte: Anbindung von [Mealie](https://mealie.io), Zerlegen eingefügter Texte mit KI, Portionen
+  umrechnen
 - Einkaufsliste: mehrere Listen (z. B. Supermarkt und Drogerie), Sortierung nach Kategorie oder
   Gang im Laden (eventuell mit KI), Zutaten aus dem Essensplan, Export nach Obsidian
   (Markdown-Checkliste)

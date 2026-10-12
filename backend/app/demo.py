@@ -112,6 +112,92 @@ TEXT = {
             ("Lasagne", "shallow-pan-of-food"),
             ("Backcamembert", "cheese-wedge"),
         ],
+        # Rezepte: Name (wie oben oder neu), Symbol, Sterne, Zutaten, Schritte.
+        "recipes": [
+            (
+                "Fischstäbchen mit Kartoffelbrei",
+                "fish",
+                5,
+                [
+                    "1 Packung Fischstäbchen",
+                    "800 g Kartoffeln",
+                    "200 ml Milch",
+                    "1 EL Butter",
+                    "1 Klecks Quark",
+                    "400 g TK-Brokkoli",
+                ],
+                [
+                    "Fischstäbchen nach Packung im Ofen backen (15-20 Min).",
+                    "Kartoffeln schälen, würfeln und 15-20 Min kochen.",
+                    "Mit Milch, Butter und einem Klecks Quark stampfen.",
+                    "TK-Brokkoli 5-8 Min dämpfen.",
+                ],
+            ),
+            (
+                "Nudeln mit Tomatensoße",
+                "spaghetti",
+                4,
+                [
+                    "500 g Nudeln",
+                    "1 Zwiebel",
+                    "1 Packung passierte Tomaten",
+                    "Salz, Pfeffer",
+                    "geriebener Käse",
+                ],
+                [
+                    "Nudeln nach Packung kochen.",
+                    "Zwiebel würfeln und anbraten.",
+                    "Passierte Tomaten dazu, würzen und 10 Min köcheln.",
+                    "Mit Käse servieren.",
+                ],
+            ),
+            (
+                "Pfannkuchen",
+                "pancakes",
+                5,
+                ["250 g Mehl", "500 ml Milch", "3 Eier", "1 Prise Salz", "Butter zum Braten"],
+                [
+                    "Mehl, Milch, Eier und Salz glatt rühren, 10 Min quellen lassen.",
+                    "Wenig Butter in der Pfanne erhitzen.",
+                    "Dünn Teig hineingeben, von beiden Seiten goldbraun backen.",
+                ],
+            ),
+            (
+                "Gemüsecurry",
+                "curry-rice",
+                2,
+                [
+                    "1 Tasse Reis",
+                    "1 Zwiebel",
+                    "500 g TK-Gemüse",
+                    "1 Dose Kokosmilch",
+                    "2 TL Currypulver",
+                ],
+                [
+                    "Reis aufsetzen.",
+                    "Zwiebel und Gemüse anbraten.",
+                    "Currypulver kurz mitrösten, Kokosmilch dazu, 10 Min köcheln.",
+                ],
+            ),
+            (
+                "Hähnchen-Wraps",
+                "burrito",
+                4,
+                [
+                    "400 g Hähnchenstreifen",
+                    "300 g TK-Gemüse",
+                    "200 g Joghurt",
+                    "8 Tortillas",
+                    "geriebener Käse",
+                ],
+                [
+                    "Hähnchenstreifen 6 Min anbraten.",
+                    "TK-Gemüse dazu und das Wasser verdampfen lassen.",
+                    "Joghurt mit Salz und Pfeffer als Dip anrühren.",
+                    "Tortillas kurz erwärmen. Jeder füllt selbst.",
+                ],
+            ),
+        ],
         # Einkaufsliste: Name, Symbol, Hinweis, schon abgehakt.
         "shopping_list": [
             ("Milch", "glass-of-milk", "2 ×", False),
@@ -221,6 +307,84 @@ TEXT = {
             ("Tacos", "taco"),
             ("Lasagne", "shallow-pan-of-food"),
             ("Baked camembert", "cheese-wedge"),
+        ],
+        "recipes": [
+            (
+                "Fish fingers and mash",
+                "fish",
+                5,
+                [
+                    "1 pack fish fingers",
+                    "800 g potatoes",
+                    "200 ml milk",
+                    "1 tbsp butter",
+                    "400 g frozen broccoli",
+                ],
+                [
+                    "Bake the fish fingers in the oven as on the pack (15-20 min).",
+                    "Peel and dice the potatoes, boil for 15-20 min.",
+                    "Mash with milk and butter.",
+                    "Steam the broccoli for 5-8 min.",
+                ],
+            ),
+            (
+                "Pasta with tomato sauce",
+                "spaghetti",
+                4,
+                ["500 g pasta", "1 onion", "1 carton passata", "salt, pepper", "grated cheese"],
+                [
+                    "Cook the pasta as on the pack.",
+                    "Dice and fry the onion.",
+                    "Add the passata, season and simmer for 10 min.",
+                    "Serve with cheese.",
+                ],
+            ),
+            (
+                "Pancakes",
+                "pancakes",
+                5,
+                ["250 g flour", "500 ml milk", "3 eggs", "1 pinch of salt", "butter for frying"],
+                [
+                    "Whisk flour, milk, eggs and salt, rest for 10 min.",
+                    "Heat a little butter in the pan.",
+                    "Pour in a thin layer and fry both sides golden.",
+                ],
+            ),
+            (
+                "Vegetable curry",
+                "curry-rice",
+                2,
+                [
+                    "1 cup rice",
+                    "1 onion",
+                    "500 g frozen vegetables",
+                    "1 can coconut milk",
+                    "2 tsp curry powder",
+                ],
+                [
+                    "Cook the rice.",
+                    "Fry the onion and vegetables.",
+                    "Toast the curry powder briefly, add coconut milk, simmer for 10 min.",
+                ],
+            ),
+            (
+                "Chicken wraps",
+                "burrito",
+                4,
+                [
+                    "400 g chicken strips",
+                    "300 g frozen vegetables",
+                    "200 g yoghurt",
+                    "8 tortillas",
+                    "grated cheese",
+                ],
+                [
+                    "Fry the chicken strips for 6 min.",
+                    "Add the vegetables and let the water evaporate.",
+                    "Stir yoghurt with salt and pepper for a dip.",
+                    "Warm the tortillas. Everyone fills their own.",
+                ],
+            ),
         ],
         "shopping_list": [
             ("Milk", "glass-of-milk", "2 ×", False),
@@ -602,6 +766,19 @@ class Demo:
             self.call(
                 "PUT", f"/meals/{day.isoformat()}/dinner", json={"name": name, "icon": ICON + icon}
             )
+        recipes = self.text["recipes"]
+        saved = self.call(
+            "POST",
+            "/recipes",
+            json={
+                "recipes": [
+                    {"name": name, "icon": ICON + icon, "ingredients": ingredients, "steps": steps}
+                    for name, icon, _, ingredients, steps in recipes
+                ]
+            },
+        )
+        for dish, (_, _, stars, _, _) in zip(saved, recipes, strict=True):
+            self.call("PUT", f"/dishes/{dish['id']}/rating", json={"rating": stars})
 
     def shopping(self) -> None:
         for name, icon, note, checked in self.text["shopping_list"]:

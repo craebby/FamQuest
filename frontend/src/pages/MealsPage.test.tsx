@@ -48,6 +48,9 @@ const DISHES: Dish[] = [
     image_url: null,
     last_planned: '2026-10-02',
     times_planned: 4,
+    ingredients: [],
+    steps: [],
+    rating: null,
   },
 ]
 

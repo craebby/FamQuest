@@ -1,14 +1,26 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+import DiceIcon from '~icons/fluent-emoji-flat/game-die'
 import LeftIcon from '~icons/fluent-emoji-flat/left-arrow'
+import BookIcon from '~icons/fluent-emoji-flat/open-book'
 import RightIcon from '~icons/fluent-emoji-flat/right-arrow'
+import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import PlusIcon from '~icons/lucide/plus'
 
-import { type Meal, type MealWeek, useMealWeek } from '../api/meals'
+import {
+  type Meal,
+  type MealWeek,
+  mainMeal,
+  useDishes,
+  useFillMeals,
+  useMealWeek,
+} from '../api/meals'
 import { DishPicture } from '../components/DishPicture'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
-import { MealEditor } from './meals/MealEditor'
+import { IngredientsDialog } from './meals/IngredientsDialog'
+import { MealDialog } from './meals/MealDialog'
 import { MEAL_ICONS } from './meals/mealIcons'
 
 function parseDate(isoDate: string) {
@@ -24,7 +36,9 @@ function addDays(isoDate: string, days: number) {
 
 /**
  * Essensplan der Woche (Montag bis Sonntag): je Tag die geplanten Mahlzeiten mit großem Symbol.
- * Ein Tipp auf eine Mahlzeit trägt ein Gericht ein oder ändert es, ohne Eltern-PIN.
+ * Ein Tipp auf eine Mahlzeit trägt ein Gericht ein oder ändert es (mit Rezept zeigt er zuerst das
+ * Rezept), ohne Eltern-PIN. Oben geht es zur Rezeptsammlung; „Woche füllen“ plant die leeren Tage
+ * ab heute aus den Rezepten (Abendessen, sonst die letzte geplante Mahlzeit).
  */
 export function MealsPage() {
   const { t, i18n } = useTranslation()
@@ -32,6 +46,33 @@ export function MealsPage() {
   const [offset, setOffset] = useState(0)
   const week = useMealWeek(offset)
   const data = week.data
+  const fill = useFillMeals()
+  const dishes = useDishes()
+  const [shopping, setShopping] = useState(false)
+  // Zutaten der Rezepte, die ab heute in der gezeigten Woche geplant sind.
+  const weekIngredients = data
+    ? data.entries
+        .filter((entry) => entry.date >= data.today)
+        .flatMap(
+          (entry) => dishes.data?.find((dish) => dish.id === entry.dish_id)?.ingredients ?? [],
+        )
+    : []
+  const [filled, setFilled] = useState<number | null>(null)
+  const weekOver = data ? addDays(data.start, 6) < data.today : true
+
+  const fillWeek = () => {
+    if (!data) return
+    setFilled(null)
+    fill.mutate(
+      { start: data.start, end: addDays(data.start, 6), meal: mainMeal(data.meals) },
+      { onSuccess: (entries) => setFilled(entries.length) },
+    )
+  }
+  const showWeek = (next: number) => {
+    setOffset(next)
+    setFilled(null)
+    fill.reset()
+  }
 
   const title = data
     ? new Intl.DateTimeFormat(language, {
@@ -50,13 +91,13 @@ export function MealsPage() {
             variant="secondary"
             aria-label={t('calendar.previous_week')}
             title={t('calendar.previous_week')}
-            onClick={() => setOffset(offset - 1)}
+            onClick={() => showWeek(offset - 1)}
             className="px-4"
           >
             <LeftIcon className="size-8" aria-hidden="true" />
           </Button>
           {offset !== 0 && (
-            <Button variant="secondary" onClick={() => setOffset(0)}>
+            <Button variant="secondary" onClick={() => showWeek(0)}>
               {t('calendar.this_week')}
             </Button>
           )}
@@ -64,13 +105,39 @@ export function MealsPage() {
             variant="secondary"
             aria-label={t('calendar.next_week')}
             title={t('calendar.next_week')}
-            onClick={() => setOffset(offset + 1)}
+            onClick={() => showWeek(offset + 1)}
             className="px-4"
           >
             <RightIcon className="size-8" aria-hidden="true" />
           </Button>
         </div>
+        <Button
+          variant="secondary"
+          className="ml-auto"
+          disabled={weekOver || fill.isPending}
+          onClick={fillWeek}
+        >
+          <DiceIcon className="size-8" aria-hidden="true" />
+          {t('recipes.fill')}
+        </Button>
+        <Button variant="secondary" disabled={weekOver} onClick={() => setShopping(true)}>
+          <CartIcon className="size-8" aria-hidden="true" />
+          {t('recipes.week_ingredients')}
+        </Button>
+        <Link
+          to="/meals/recipes"
+          className="inline-flex min-h-14 items-center gap-2 rounded-2xl bg-white px-4 py-2 text-lg font-bold text-slate-700 shadow-sm hover:bg-orange-50 focus-visible:outline-4 focus-visible:outline-orange-400"
+        >
+          <BookIcon className="size-8" aria-hidden="true" />
+          {t('recipes.title')}
+        </Link>
       </header>
+      {fill.error ? <Alert>{errorMessage(t, fill.error)}</Alert> : null}
+      {filled !== null && (
+        <p role="status" className="text-lg font-bold text-emerald-700">
+          {filled > 0 ? t('recipes.fill_done', { count: filled }) : t('recipes.fill_none')}
+        </p>
+      )}
       {week.isPending ? (
         <p role="status" className="text-xl text-slate-600">
           {t('common.loading')}
@@ -82,6 +149,13 @@ export function MealsPage() {
         </div>
       ) : (
         <Days week={data} />
+      )}
+      {shopping && (
+        <IngredientsDialog
+          title={t('recipes.week_ingredients')}
+          lines={weekIngredients}
+          onClose={() => setShopping(false)}
+        />
       )}
     </main>
   )
@@ -169,12 +243,13 @@ function Days({ week }: { week: MealWeek }) {
         })}
       </div>
       {editing && (
-        <MealEditor
+        <MealDialog
           key={`${editing.date}-${editing.meal}`}
           date={editing.date}
           meal={editing.meal}
           title={`${t(`meals.meal.${editing.meal}`)}, ${longDate.format(parseDate(editing.date))}`}
           entry={entryOf(editing.date, editing.meal)}
+          upcoming={editing.date >= week.today}
           onClose={() => setEditing(null)}
         />
       )}

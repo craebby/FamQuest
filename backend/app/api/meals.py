@@ -2,14 +2,17 @@
 
 Geplant wird direkt in der Ansicht „Essen“, ohne Eltern-PIN. Gerichte entstehen beim Eintippen
 und werden danach wieder vorgeschlagen; welche Mahlzeiten geplant werden, legen die Eltern fest.
+Mit Zutaten und Schritten wird ein Gericht zum Rezept; eingefügt, bearbeitet und bewertet wird
+ebenfalls ohne Eltern-PIN.
 """
 
 import datetime as dt
+import random
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import delete, exists, func, select
 from sqlalchemy.exc import IntegrityError
 
@@ -41,6 +44,23 @@ IMAGE_FOLDER = "dishes"
 # Standard: nur das Abendessen, das planen die meisten Familien.
 DEFAULT_MEALS: list[Meal] = ["dinner"]
 
+# Grenzen eines Rezepts: so viele Zutaten bzw. Schritte, so lang je Zeile.
+MAX_RECIPE_LINES = 60
+Ingredient = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+Step = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+# So viele Rezepte auf einmal beim Einfügen.
+MAX_IMPORT = 50
+
+# „Woche füllen“: Gewicht je Bewertung (ohne Bewertung wie drei Sterne). Schlecht Bewertetes
+# kommt selten, aber nicht nie, damit es eine zweite Chance bekommt.
+FILL_WEIGHTS = {None: 3.0, 1: 0.25, 2: 1.0, 3: 3.0, 4: 5.0, 5: 8.0}
+# Dasselbe Gericht frühestens nach so vielen Tagen wieder, solange die Sammlung reicht.
+FILL_GAP_DAYS = 7
+# So viele Tage auf einmal (zwei Wochen).
+MAX_FILL_DAYS = 14
+# Zufall für „Woche füllen“; Tests setzen einen festen Startwert.
+fill_random = random.Random()
+
 
 class MealSettings(BaseModel):
     """Geplante Mahlzeiten; gespeichert und ausgegeben in zeitlicher Reihenfolge."""
@@ -57,6 +77,10 @@ class DishOut(BaseModel):
     # Wann zuletzt im Plan (auch in der Zukunft) und wie oft; für die Vorschläge.
     last_planned: dt.date | None
     times_planned: int
+    ingredients: list[str]
+    steps: list[str]
+    # 1 bis 5 Sterne, ohne Bewertung None.
+    rating: int | None
 
 
 class MealEntryOut(BaseModel):
@@ -83,6 +107,33 @@ class MealEntryIn(BaseModel):
 class DishIn(BaseModel):
     name: TypedName
     icon: IconName
+
+
+class RecipeIn(BaseModel):
+    ingredients: list[Ingredient] = Field(default=[], max_length=MAX_RECIPE_LINES)
+    steps: list[Step] = Field(default=[], max_length=MAX_RECIPE_LINES)
+
+
+class ImportedRecipe(RecipeIn):
+    name: TypedName
+    icon: IconName
+
+
+class RecipeImport(BaseModel):
+    recipes: list[ImportedRecipe] = Field(min_length=1, max_length=MAX_IMPORT)
+
+
+class FillIn(BaseModel):
+    start: dt.date
+    end: dt.date
+    meal: Meal = "dinner"
+    # Auch schon geplante Tage neu belegen („neu würfeln“).
+    replace: bool = False
+
+
+class RatingIn(BaseModel):
+    # None nimmt die Bewertung zurück.
+    rating: Annotated[int, Field(ge=1, le=5)] | None
 
 
 async def read_dish_image(request: Request) -> bytes:
@@ -155,6 +206,67 @@ def meal_week(
     return MealWeekOut(
         start=start, today=today, meals=meals, entries=[entry_out(e) for e in entries]
     )
+
+
+@router.post("/meals/fill")
+def fill_meals(body: FillIn, _: CurrentSession, db: DbSession) -> list[MealEntryOut]:
+    """Füllt leere Tage von `start` bis `end` (ab heute) mit Gerichten aus der Rezeptsammlung.
+
+    Gut bewertete kommen öfter (siehe FILL_WEIGHTS); dasselbe Gericht kommt frühestens nach
+    FILL_GAP_DAYS Tagen wieder, solange die Sammlung dafür reicht. Mit `replace` werden auch
+    geplante Tage neu belegt, möglichst mit einem anderen Gericht. Gibt die neuen Einträge zurück.
+    """
+    if body.end < body.start or (body.end - body.start).days >= MAX_FILL_DAYS:
+        raise ApiError(status.HTTP_422_UNPROCESSABLE_CONTENT, "meals.invalid_range")
+    recipes = [
+        dish
+        for dish in db.scalars(select(Dish).order_by(Dish.id))
+        if dish.ingredients or dish.steps
+    ]
+    if not recipes:
+        raise ApiError(status.HTTP_409_CONFLICT, "meals.no_recipes")
+
+    today = family_now(get_family(db)).date()
+    first = max(body.start, today)
+    days = [first + dt.timedelta(days=i) for i in range((body.end - first).days + 1)]
+    # Was rundherum schon geplant ist, je Tag; daran misst sich der Abstand.
+    gap = dt.timedelta(days=FILL_GAP_DAYS - 1)
+    nearby = db.scalars(
+        select(MealPlanEntry)
+        .where(
+            MealPlanEntry.meal == body.meal,
+            MealPlanEntry.date >= first - gap,
+            MealPlanEntry.date <= body.end + gap,
+        )
+        .with_for_update(of=MealPlanEntry)
+    ).all()
+    planned: dict[dt.date, MealPlanEntry] = {entry.date: entry for entry in nearby}
+
+    changed: list[MealPlanEntry] = []
+    for day in days:
+        entry = planned.get(day)
+        if entry is not None and not body.replace:
+            continue
+        previous = entry.dish_id if entry is not None else None
+        too_close = {
+            other.dish_id
+            for date, other in planned.items()
+            if date != day and abs((date - day).days) < FILL_GAP_DAYS
+        }
+        choices = [d for d in recipes if d.id not in too_close and d.id != previous]
+        if not choices:
+            # Die Sammlung reicht nicht für den Abstand: wenigstens nicht dasselbe wie vorher.
+            choices = [d for d in recipes if d.id != previous] or recipes
+        dish = fill_random.choices(choices, weights=[FILL_WEIGHTS[d.rating] for d in choices])[0]
+        if entry is None:
+            entry = MealPlanEntry(date=day, meal=body.meal)
+            db.add(entry)
+            planned[day] = entry
+        entry.dish = dish
+        entry.dish_id = dish.id
+        changed.append(entry)
+    db.commit()
+    return [entry_out(entry) for entry in changed]
 
 
 def _find_dish(db: DbSession, name: str) -> Dish | None:
@@ -230,6 +342,9 @@ def _dishes_out(db: DbSession, dish_id: int | None = None) -> list[DishOut]:
             image_url=image_url(dish),
             last_planned=last,
             times_planned=count or 0,
+            ingredients=dish.ingredients,
+            steps=dish.steps,
+            rating=dish.rating,
         )
         for dish, last, count in db.execute(query).all()
     ]
@@ -261,6 +376,48 @@ def update_dish(dish_id: int, body: DishIn, _: CurrentSession, db: DbSession) ->
     except IntegrityError as error:
         raise ApiError(status.HTTP_409_CONFLICT, "dish.duplicate_name") from error
     return _dishes_out(db, dish.id)[0]
+
+
+@router.put("/dishes/{dish_id}/recipe")
+def set_recipe(dish_id: int, body: RecipeIn, _: CurrentSession, db: DbSession) -> DishOut:
+    """Zutaten und Schritte ersetzen; beide leer macht aus dem Rezept wieder ein Gericht."""
+    dish = get_dish(db, dish_id)
+    dish.ingredients, dish.steps = body.ingredients, body.steps
+    db.commit()
+    return _dishes_out(db, dish.id)[0]
+
+
+@router.put("/dishes/{dish_id}/rating")
+def rate_dish(dish_id: int, body: RatingIn, _: CurrentSession, db: DbSession) -> DishOut:
+    """Wie es der Familie schmeckt (1 bis 5 Sterne); `null` nimmt die Bewertung zurück."""
+    dish = get_dish(db, dish_id)
+    dish.rating = body.rating
+    db.commit()
+    return _dishes_out(db, dish.id)[0]
+
+
+@router.post("/recipes")
+def import_recipes(body: RecipeImport, _: CurrentSession, db: DbSession) -> list[DishOut]:
+    """Fügt Rezepte ein (zerlegt hat sie das Frontend). Gibt es ein Gericht mit dem Namen schon,
+    bekommt es das Rezept; Symbol, Foto und Bewertung bleiben. Sonst entsteht ein neues Gericht.
+    Kommt ein Name mehrfach vor, gilt das letzte Rezept."""
+    ids: list[int] = []
+    for recipe in body.recipes:
+        dish = _find_dish(db, recipe.name)
+        if dish is None:
+            dish = Dish(name=recipe.name, icon=recipe.icon)
+            db.add(dish)
+        dish.ingredients, dish.steps = recipe.ingredients, recipe.steps
+        db.flush()
+        if dish.id not in ids:
+            ids.append(dish.id)
+    try:
+        db.commit()
+    except IntegrityError as error:
+        # Gleichzeitig auf einem anderen Gerät angelegt; einfach noch einmal einfügen.
+        raise ApiError(status.HTTP_409_CONFLICT, "dish.duplicate_name") from error
+    by_id = {dish.id: dish for dish in _dishes_out(db)}
+    return [by_id[dish_id] for dish_id in ids]
 
 
 @router.delete("/dishes/{dish_id}", status_code=status.HTTP_204_NO_CONTENT)

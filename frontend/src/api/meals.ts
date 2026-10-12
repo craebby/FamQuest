@@ -21,7 +21,23 @@ export interface Dish {
   /** Wann zuletzt im Plan (ISO-Datum) und wie oft; für die Vorschläge. */
   last_planned: string | null
   times_planned: number
+  /** Rezept: Zutaten und Schritte, je ein Text; beide leer = kein Rezept. */
+  ingredients: string[]
+  steps: string[]
+  /** 1 bis 5 Sterne; ohne Bewertung null. */
+  rating: number | null
 }
+
+/** Ein Rezept, wie es eingefügt wird (zerlegt aus einem Text). */
+export interface RecipeData {
+  name: string
+  icon: string
+  ingredients: string[]
+  steps: string[]
+}
+
+export const hasRecipe = (dish: Pick<Dish, 'ingredients' | 'steps'>) =>
+  dish.ingredients.length > 0 || dish.steps.length > 0
 
 export interface MealEntry {
   date: string
@@ -123,4 +139,31 @@ export const useDishImage = () =>
     image
       ? api<Dish>('PUT', `/dishes/${id}/image`, image)
       : api<Dish>('DELETE', `/dishes/${id}/image`),
+  )
+
+export const useSaveRecipe = () =>
+  useDishMutation(
+    ({ id, ingredients, steps }: { id: number; ingredients: string[]; steps: string[] }) =>
+      api<Dish>('PUT', `/dishes/${id}/recipe`, { ingredients, steps }),
+  )
+
+export const useRateDish = () =>
+  useDishMutation(({ id, rating }: { id: number; rating: number | null }) =>
+    api<Dish>('PUT', `/dishes/${id}/rating`, { rating }),
+  )
+
+export const useImportRecipes = () =>
+  useDishMutation((recipes: RecipeData[]) => api<Dish[]>('POST', '/recipes', { recipes }))
+
+/** Hauptmahlzeit für „Woche füllen“: das Abendessen, sonst die letzte geplante Mahlzeit. */
+export const mainMeal = (meals: Meal[]): Meal =>
+  meals.includes('dinner') ? 'dinner' : (meals.at(-1) ?? 'dinner')
+
+/**
+ * Leere Tage (ab heute) aus der Rezeptsammlung füllen; mit `replace` auch geplante neu belegen
+ * („neu würfeln“). Gibt die neuen Einträge zurück.
+ */
+export const useFillMeals = () =>
+  useDishMutation((body: { start: string; end: string; meal: Meal; replace?: boolean }) =>
+    api<MealEntry[]>('POST', '/meals/fill', body),
   )

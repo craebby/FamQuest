@@ -171,6 +171,22 @@ Branch `phase-8-kueche`.
    die Küchenansicht
 2. Feinschliff am echten Tablet
 
+## Etappen (Phase 9: Rezepte)
+
+Entschieden: Rezepte gehören zu den Gerichten des Essensplans (Zutaten, Schritte, eine Bewertung
+mit 1–5 Sternen je Gericht für die Familie, keine Bewertung je Kind); eingefügt wird Text, den
+feste Regeln zerlegen (kein externer Dienst, KI evtl. später); alles ohne Eltern-PIN wie der
+Essensplan; „Woche füllen“ per Knopf statt automatischer Vorschläge. Gearbeitet wird auf dem
+Branch `phase-9-rezepte`.
+
+1. Rezeptsammlung: Seite „Rezepte“ unter „Essen“, Text einfügen („1. Name“, optional „Zutaten“ und
+   „Zubereitung“) mit Vorschau, Rezept am Display und in der Küchenansicht zum Mitkochen öffnen,
+   bearbeiten, mit Sternen bewerten
+2. „Woche füllen“: leere Tage einer Woche aus der Rezeptsammlung füllen (gut bewertete öfter, keine
+   Wiederholung kurz hintereinander), einzelne Tage neu würfeln
+3. Zutaten auf die Einkaufsliste: je Rezept und für die Woche, Mengen werden zum Hinweis
+4. Feinschliff
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

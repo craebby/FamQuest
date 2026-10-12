@@ -21,7 +21,7 @@ import { EventCard } from '../calendar/EventCard'
 import { EventDialog } from '../calendar/EventDialog'
 import { HolidayChip } from '../calendar/HolidayChip'
 import { type Owners, isAllDayOnThisDay, ownersOf } from '../calendar/owners'
-import { MealEditor } from '../meals/MealEditor'
+import { MealDialog } from '../meals/MealDialog'
 import { MEAL_ICONS } from '../meals/mealIcons'
 
 /** So viele Tage zeigt die Startseite, ab heute oder ab Montag. */
@@ -233,12 +233,13 @@ export function WeekBoard({
         />
       )}
       {editing && (
-        <MealEditor
+        <MealDialog
           key={`${editing.date}-${editing.meal}`}
           date={editing.date}
           meal={editing.meal}
           title={`${t(`meals.meal.${editing.meal}`)}, ${longDate.format(parseDate(editing.date))}`}
           entry={entryOf(editing.date, editing.meal)}
+          upcoming={editing.date >= today}
           onClose={() => setEditing(null)}
         />
       )}

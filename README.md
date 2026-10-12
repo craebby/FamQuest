@@ -47,7 +47,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
   with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
   clock)
-- Meal plan: type the week's dishes right on the display, with suggestions and icons
+- Meal plan: type the week's dishes right on the display, with suggestions and icons; plus a
+  recipe collection you fill by pasting text, rated with stars
 - Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
   note), tick it off in the shop
 - Household: a cleaning plan with a traffic light instead of dates (every chore with its own
@@ -544,6 +545,54 @@ with today highlighted. The arrows browse to other weeks.
 By default only **dinner** is planned. In the parents' area under **Settings → Meal plan** you can
 switch on breakfast, lunch and snack (for the whole family); every day then shows each meal with its
 icon. Meals you switch off stay stored.
+
+### Recipes
+
+![Recipe collection with stars](docs/screenshots/en/recipes.png)
+
+At the top of the meal plan, **Recipes** opens the recipe collection: every dish with a recipe,
+with its picture and stars. Everything works without the parents' PIN.
+
+- **Add recipes:** paste text, e.g. from a note or a message. Next to it you see right away what
+  FamQuest recognised; "Save" stores the recipes. If a dish already exists, it gets the recipe and
+  keeps its icon, photo and stars. The text looks like this:
+
+  ```text
+  1. Scrambled egg and potato pan
+
+  Ingredients
+  approx. 600 g boiled potatoes
+  8 eggs
+
+  Preparation
+  Slice the potatoes and fry them in oil for 8-10 min.
+  Whisk the eggs, pour them over and let them set.
+
+  2. Chicken wraps
+  ...
+  ```
+
+  Each recipe starts with a number and its name. "Ingredients" and "Preparation" are optional;
+  without them everything counts as preparation. A single recipe needs no number, its first line is
+  the name then. Notes in brackets after the name, like "(today)", are dropped.
+- **Cooking:** tap a recipe to see the ingredients and the numbered steps in large print. In the
+  meal plan, on "Today" and in the [kitchen view](#kitchen-view), tapping a planned dish with a
+  recipe opens the recipe straight away; "Other dish" takes you to entering one.
+- **Rating:** one to five stars per dish, for how the family liked it. Tap the set star again to
+  remove the rating.
+- **Editing:** "Edit recipe" shows ingredients and preparation as text, one line per ingredient or
+  step. If both are empty, it's a dish without a recipe again. "Name, icon, photo" changes the dish
+  itself. A dish without a recipe gets one via "Recipe" in the dialog for entering a meal.
+- **Fill the week:** the button with the die at the top of the meal plan fills the empty days of
+  the week shown (from today on) with dishes from the recipe collection, for dinner. Well-rated
+  dishes come more often, poorly rated ones rarely; the same dish comes back after a week at the
+  earliest, as long as the collection is big enough. Days already planned stay, and to keep going,
+  simply fill the next week.
+- **Re-roll:** if a suggestion doesn't fit, tap the day and **Re-roll** in the recipe.
+- **Shopping:** "Add to shopping list" in a recipe and **Ingredients for the week** at the top of
+  the meal plan (all recipes from today on in the week shown) list the ingredients to tick. The
+  amount becomes the note ("approx. 600 g potatoes" → potatoes, "approx. 600 g"), equal
+  ingredients are combined. Salt, pepper, oil and whatever is already on the list start unticked.
 
 ## Shopping list
 
@@ -1101,6 +1150,15 @@ generated with demo data (`npm run screenshots`).
 **Demo version:** done. A German and an English public instance with the sample family that
 resets itself on the hour (see [Public demo](#public-demo)).
 
+**Recipes (phase 9), in progress**
+
+- [x] 1. Recipe collection under "Meals": paste recipes as text (with a preview), open them on the
+  display and in the kitchen view for cooking, edit them, rate them with one to five stars
+- [x] 2. "Fill the week": fill empty days from the recipe collection, well-rated dishes more often,
+  no repeats close together, re-roll single days
+- [x] 3. Ingredients onto the shopping list, per recipe and for the week
+- [ ] 4. Polish
+
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
 - [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
@@ -1173,7 +1231,7 @@ them; the children's routines stay.
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
-- Recipes for the meal plan, e.g. by connecting [Mealie](https://mealie.io)
+- Recipes: connecting [Mealie](https://mealie.io), splitting pasted text with AI, scaling portions
 - Shopping list: several lists (e.g. supermarket and chemist), sorting by category or aisle (maybe
   with AI help), ingredients from the meal plan, export to Obsidian (Markdown checklist)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
