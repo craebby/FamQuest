@@ -8,7 +8,8 @@ import { RecipeView } from './RecipeView'
  * Tipp auf eine Mahlzeit im Plan: Hat das geplante Gericht ein Rezept, erscheint zuerst das
  * Rezept (zum Mitkochen); „Anderes Gericht“ führt zum Eintragen. Sonst geht es gleich zum
  * Eintragen, wo der Knopf „Rezept“ zum (noch leeren) Rezept führt. Ab heute lässt sich ein Tag
- * im Rezept „neu würfeln“: ein anderes Gericht aus der Rezeptsammlung.
+ * im Rezept „neu würfeln“: ein anderes Gericht aus der Rezeptsammlung. Eine Variante nur für
+ * diesen Tag (Notiz, eigene Fassung des Rezepts) legt die Rezeptansicht fest.
  */
 export function MealDialog({
   date,
@@ -32,7 +33,8 @@ export function MealDialog({
   const fill = useFillMeals()
   // Bis die Gerichte da sind, ist unklar, ob es ein Rezept gibt; das dauert nur einen Augenblick.
   if (mode === 'auto' && entry && dishes.isPending) return null
-  const shown = mode === 'auto' ? (dish && hasRecipe(dish) ? 'recipe' : 'edit') : mode
+  const withRecipe = (dish && hasRecipe(dish)) || entry?.variant
+  const shown = mode === 'auto' ? (withRecipe ? 'recipe' : 'edit') : mode
 
   if (shown === 'recipe' && entry) {
     return (
@@ -40,6 +42,7 @@ export function MealDialog({
         dishId={entry.dish_id}
         onClose={onClose}
         onChangeMeal={() => setMode('edit')}
+        planned={{ date, meal, entry, title }}
         reroll={
           upcoming
             ? {

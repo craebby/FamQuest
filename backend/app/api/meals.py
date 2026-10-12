@@ -3,7 +3,8 @@
 Geplant wird direkt in der Ansicht „Essen“, ohne Eltern-PIN. Gerichte entstehen beim Eintippen
 und werden danach wieder vorgeschlagen; welche Mahlzeiten geplant werden, legen die Eltern fest.
 Mit Zutaten und Schritten wird ein Gericht zum Rezept; eingefügt, bearbeitet und bewertet wird
-ebenfalls ohne Eltern-PIN.
+ebenfalls ohne Eltern-PIN. Ein geplanter Tag kann eine Variante haben (Notiz und/oder eigene
+Fassung des Rezepts), ohne dass sich das Rezept des Gerichts ändert.
 """
 
 import datetime as dt
@@ -50,6 +51,8 @@ Ingredient = Annotated[str, StringConstraints(strip_whitespace=True, min_length=
 Step = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
 # So viele Portionen kann ein Rezept haben.
 MAX_SERVINGS = 50
+# Notiz zu einem geplanten Tag („mit Linsen statt Hack“).
+Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)]
 # So viele Rezepte auf einmal beim Einfügen.
 MAX_IMPORT = 50
 
@@ -87,6 +90,12 @@ class DishOut(BaseModel):
     rating: int | None
 
 
+class RecipeOut(BaseModel):
+    ingredients: list[str]
+    steps: list[str]
+    servings: int | None
+
+
 class MealEntryOut(BaseModel):
     date: dt.date
     meal: Meal
@@ -94,6 +103,9 @@ class MealEntryOut(BaseModel):
     name: str
     icon: str
     image_url: str | None
+    # Variante nur für diesen Tag: Notiz und eigene Fassung des Rezepts, jeweils oder None.
+    note: str | None
+    variant: RecipeOut | None
 
 
 class MealWeekOut(BaseModel):
@@ -117,6 +129,13 @@ class RecipeIn(BaseModel):
     ingredients: list[Ingredient] = Field(default=[], max_length=MAX_RECIPE_LINES)
     steps: list[Step] = Field(default=[], max_length=MAX_RECIPE_LINES)
     servings: Annotated[int, Field(ge=1, le=MAX_SERVINGS)] | None = None
+
+
+class VariantIn(RecipeIn):
+    """Variante für einen geplanten Tag. Gleicht das Rezept dem des Gerichts (oder ist es leer),
+    bleibt nur die Notiz."""
+
+    note: Note | None = None
 
 
 class ImportedRecipe(RecipeIn):
@@ -171,7 +190,19 @@ def entry_out(entry: MealPlanEntry) -> MealEntryOut:
         name=entry.dish.name,
         icon=entry.dish.icon,
         image_url=image_url(entry.dish),
+        note=entry.note,
+        variant=None
+        if entry.variant_ingredients is None or entry.variant_steps is None
+        else RecipeOut(
+            ingredients=entry.variant_ingredients,
+            steps=entry.variant_steps,
+            servings=entry.variant_servings,
+        ),
     )
+
+
+def clear_variant(entry: MealPlanEntry) -> None:
+    entry.note = entry.variant_ingredients = entry.variant_steps = entry.variant_servings = None
 
 
 @router.get("/meals/settings")
@@ -267,6 +298,8 @@ def fill_meals(body: FillIn, _: CurrentSession, db: DbSession) -> list[MealEntry
             entry = MealPlanEntry(date=day, meal=body.meal)
             db.add(entry)
             planned[day] = entry
+        # Die Variante gehörte zum vorigen Gericht.
+        clear_variant(entry)
         entry.dish = dish
         entry.dish_id = dish.id
         changed.append(entry)
@@ -305,7 +338,54 @@ def set_meal(
     if entry is None:
         entry = MealPlanEntry(date=date, meal=meal)
         db.add(entry)
+    elif entry.dish_id != dish.id:
+        # Die Variante gehörte zum vorigen Gericht.
+        clear_variant(entry)
     entry.dish = dish
+    db.commit()
+    return entry_out(entry)
+
+
+def _planned_entry(db: DbSession, date: dt.date, meal: Meal) -> MealPlanEntry:
+    entry = db.scalar(
+        select(MealPlanEntry)
+        .where(MealPlanEntry.date == date, MealPlanEntry.meal == meal)
+        .with_for_update(of=MealPlanEntry)
+    )
+    if entry is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "meals.not_planned")
+    return entry
+
+
+@router.put("/meals/{date}/{meal}/variant")
+def set_variant(
+    date: dt.date, meal: Meal, body: VariantIn, _: CurrentSession, db: DbSession
+) -> MealEntryOut:
+    """Variante nur für diesen Tag: Notiz und/oder eigene Fassung des Rezepts. Das Rezept des
+    Gerichts bleibt unverändert; gleicht die Fassung ihm (oder ist sie leer), gibt es keine."""
+    entry = _planned_entry(db, date, meal)
+    dish = entry.dish
+    servings = body.servings if body.ingredients or body.steps else None
+    own = bool(body.ingredients or body.steps) and (
+        body.ingredients != dish.ingredients
+        or body.steps != dish.steps
+        or servings != dish.servings
+    )
+    entry.note = body.note or None
+    if own:
+        entry.variant_ingredients, entry.variant_steps = body.ingredients, body.steps
+        entry.variant_servings = servings
+    else:
+        entry.variant_ingredients = entry.variant_steps = entry.variant_servings = None
+    db.commit()
+    return entry_out(entry)
+
+
+@router.delete("/meals/{date}/{meal}/variant")
+def delete_variant(date: dt.date, meal: Meal, _: CurrentSession, db: DbSession) -> MealEntryOut:
+    """Nimmt Notiz und Variante weg; es gilt wieder das Rezept des Gerichts."""
+    entry = _planned_entry(db, date, meal)
+    clear_variant(entry)
     db.commit()
     return entry_out(entry)
 

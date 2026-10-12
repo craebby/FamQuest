@@ -65,6 +65,8 @@ const WEEK: MealWeek = {
       name: 'Hähnchen-Wraps',
       icon: 'fluent-emoji-flat:burrito',
       image_url: null,
+      note: null,
+      variant: null,
     },
   ],
 }
@@ -361,5 +363,79 @@ describe('Rezepte', () => {
       'Hähnchenstreifen400 g',
       'Tortillas8',
     ])
+  })
+
+  it('legt eine Variante nur für den geplanten Tag fest, das Rezept bleibt', async () => {
+    const user = userEvent.setup()
+    let entry = WEEK.entries[0]
+    const calls = mockRecipes([WRAPS], {
+      'GET /api/meals/week': () => Response.json({ ...WEEK, entries: [entry] }),
+      'PUT /api/meals/2026-10-03/dinner/variant': (body) => {
+        const { note, ...variant } = body as { note: string } & NonNullable<typeof entry.variant>
+        entry = { ...entry, note, variant }
+        return Response.json(entry)
+      },
+      'DELETE /api/meals/2026-10-03/dinner/variant': () => {
+        entry = { ...entry, note: null, variant: null }
+        return Response.json(entry)
+      },
+    })
+    renderApp('/meals')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Abendessen: Hähnchen-Wraps, ändern' }),
+    )
+    const recipe = within(await screen.findByRole('dialog', { name: 'Hähnchen-Wraps' }))
+    await user.click(recipe.getByRole('button', { name: 'Nur für diesen Tag ändern' }))
+    expect(recipe.getByText(/Gilt nur für Abendessen, Samstag, 3\. Oktober/)).toBeVisible()
+    // Vorbefüllt mit dem Rezept.
+    const ingredients = recipe.getByLabelText('Zutaten, eine pro Zeile')
+    expect(ingredients).toHaveValue('400 g Hähnchenstreifen\n8 Tortillas')
+    await user.type(recipe.getByLabelText('Notiz für diesen Tag'), 'mit Tofu')
+    await user.clear(ingredients)
+    await user.type(ingredients, '400 g Tofu{Enter}8 Tortillas')
+    await user.click(recipe.getByRole('button', { name: 'Speichern' }))
+
+    expect(calls.find((call) => call.key.endsWith('/variant'))?.body).toEqual({
+      note: 'mit Tofu',
+      ingredients: ['400 g Tofu', '8 Tortillas'],
+      steps: WRAPS.steps,
+      servings: null,
+    })
+    expect(calls.some((call) => call.key === 'PUT /api/dishes/2/recipe')).toBe(false)
+    expect(await recipe.findByText('400 g Tofu')).toBeVisible()
+    expect(recipe.getByText('mit Tofu')).toBeVisible()
+    await user.click(recipe.getByRole('button', { name: 'Original anzeigen' }))
+    expect(recipe.getByText('400 g Hähnchenstreifen')).toBeVisible()
+
+    await user.click(recipe.getByRole('button', { name: 'Variante entfernen' }))
+    await waitFor(() => expect(recipe.queryByText('mit Tofu')).toBeNull())
+    expect(calls.some((call) => call.key === 'DELETE /api/meals/2026-10-03/dinner/variant')).toBe(
+      true,
+    )
+  })
+
+  it('zeigt die Notiz im Plan und nimmt die Zutaten der Variante für die Woche', async () => {
+    const user = userEvent.setup()
+    const entry = {
+      ...WEEK.entries[0],
+      note: 'mit Tofu',
+      variant: { ingredients: ['400 g Tofu'], steps: WRAPS.steps, servings: null },
+    }
+    mockRecipes([WRAPS], {
+      'GET /api/meals/week': Response.json({ ...WEEK, entries: [entry] }),
+      'GET /api/shopping/list': Response.json({ items: [] }),
+      'GET /api/shopping/items': Response.json([]),
+    })
+    renderApp('/meals')
+
+    const planned = await screen.findByRole('button', {
+      name: 'Abendessen: Hähnchen-Wraps, ändern (Notiz: mit Tofu)',
+    })
+    expect(within(planned).getByText('mit Tofu')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Zutaten der Woche' }))
+
+    const dialog = within(screen.getByRole('dialog', { name: 'Zutaten der Woche' }))
+    expect(dialog.getAllByRole('checkbox').map((box) => box.textContent)).toEqual(['Tofu400 g'])
   })
 })

@@ -470,7 +470,8 @@
     },
     "meals": {
       "no_recipes": "No recipes yet. Add some under “Recipes”, then FamQuest fills the week from them.",
-      "invalid_range": "This range is not possible."
+      "invalid_range": "This range is not possible.",
+      "not_planned": "Nothing is planned on this day anymore. Please reload."
     },
     "shopping": {
       "not_found": "This item no longer exists.",
@@ -800,7 +801,10 @@
     "edit_dish": "Edit {{name}}",
     "dish_photo": "Photo for “{{name}}”",
     "delete_dish": "Delete dish",
-    "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from past weeks."
+    "delete_confirm": "Really delete \"{{name}}\"? It disappears from the suggestions and from past weeks.",
+    "variant": "adjusted",
+    "label_with_note": "{{label}} (note: {{note}})",
+    "label_with_variant": "{{label}} (adjusted for this day)"
   },
   "recipes": {
     "to_list": "Add to shopping list",
@@ -858,7 +862,17 @@
     "servings_label": "Servings",
     "servings_hint": "How many servings the amounts are for. Leave empty if unknown.",
     "delete": "Delete recipe",
-    "delete_confirm": "Really delete the recipe for “{{name}}”? If the dish is in the meal plan, it stays there without a recipe; otherwise it is gone completely."
+    "delete_confirm": "Really delete the recipe for “{{name}}”? If the dish is in the meal plan, it stays there without a recipe; otherwise it is gone completely.",
+    "variant_edit": "Change for this day only",
+    "variant_hint": "Only for {{day}}. The recipe itself stays as it is.",
+    "variant_note": "Note for this day",
+    "variant_note_placeholder": "e.g. with lentils instead of mince",
+    "variant_shown": "Ingredients and steps are adjusted for this day. The recipe itself is unchanged.",
+    "variant_original": "You are seeing the recipe without the changes for this day.",
+    "variant_note_only": "Note for this day only",
+    "show_original": "Show original",
+    "show_variant": "Show variant",
+    "variant_remove": "Remove variant"
   },
   "shopping": {
     "title": "Shopping list",

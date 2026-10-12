@@ -17,6 +17,8 @@ import {
   useMealWeek,
 } from '../api/meals'
 import { DishPicture } from '../components/DishPicture'
+import { VariantMark } from './meals/VariantMark'
+import { entryLabel } from './meals/entryLabel'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { IngredientsDialog } from './meals/IngredientsDialog'
@@ -54,7 +56,11 @@ export function MealsPage() {
     ? data.entries
         .filter((entry) => entry.date >= data.today)
         .flatMap(
-          (entry) => dishes.data?.find((dish) => dish.id === entry.dish_id)?.ingredients ?? [],
+          (entry) =>
+            // Eine Variante für den Tag gilt statt des Rezepts.
+            entry.variant?.ingredients ??
+            dishes.data?.find((dish) => dish.id === entry.dish_id)?.ingredients ??
+            [],
         )
     : []
   const [filled, setFilled] = useState<number | null>(null)
@@ -205,7 +211,7 @@ function Days({ week }: { week: MealWeek }) {
                 const MealIcon = MEAL_ICONS[meal]
                 const mealName = t(`meals.meal.${meal}`)
                 const label = entry
-                  ? t('meals.edit_label', { meal: mealName, dish: entry.name })
+                  ? entryLabel(t, mealName, entry)
                   : t('meals.add_label', { meal: mealName })
                 return (
                   <button
@@ -228,8 +234,11 @@ function Days({ week }: { week: MealWeek }) {
                           imageUrl={entry.image_url}
                           className="size-14 lg:size-16"
                         />
-                        <span className="min-w-0 text-lg leading-tight font-bold break-words text-slate-800">
-                          {entry.name}
+                        <span className="flex min-w-0 flex-col gap-0.5 lg:items-center">
+                          <span className="text-lg leading-tight font-bold break-words text-slate-800">
+                            {entry.name}
+                          </span>
+                          <VariantMark entry={entry} />
                         </span>
                       </>
                     ) : (

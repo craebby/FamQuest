@@ -470,7 +470,8 @@
     },
     "meals": {
       "no_recipes": "Noch keine Rezepte. Legt unter „Rezepte“ welche an, dann füllt FamQuest die Woche daraus.",
-      "invalid_range": "Dieser Zeitraum geht nicht."
+      "invalid_range": "Dieser Zeitraum geht nicht.",
+      "not_planned": "An diesem Tag ist nichts mehr geplant. Bitte neu laden."
     },
     "shopping": {
       "not_found": "Diesen Artikel gibt es nicht mehr.",
@@ -800,7 +801,10 @@
     "edit_dish": "{{name}} bearbeiten",
     "dish_photo": "Foto für „{{name}}“",
     "delete_dish": "Gericht löschen",
-    "delete_confirm": "„{{name}}“ wirklich löschen? Es verschwindet aus den Vorschlägen und aus vergangenen Wochen."
+    "delete_confirm": "„{{name}}“ wirklich löschen? Es verschwindet aus den Vorschlägen und aus vergangenen Wochen.",
+    "variant": "angepasst",
+    "label_with_note": "{{label}} (Notiz: {{note}})",
+    "label_with_variant": "{{label}} (für diesen Tag angepasst)"
   },
   "recipes": {
     "to_list": "Auf die Einkaufsliste",
@@ -858,7 +862,17 @@
     "servings_label": "Portionen",
     "servings_hint": "Für wie viele Portionen die Mengen gelten. Leer lassen, wenn unbekannt.",
     "delete": "Rezept löschen",
-    "delete_confirm": "Rezept für „{{name}}“ wirklich löschen? Steht das Gericht im Essensplan, bleibt es dort ohne Rezept; sonst ist es ganz weg."
+    "delete_confirm": "Rezept für „{{name}}“ wirklich löschen? Steht das Gericht im Essensplan, bleibt es dort ohne Rezept; sonst ist es ganz weg.",
+    "variant_edit": "Nur für diesen Tag ändern",
+    "variant_hint": "Gilt nur für {{day}}. Das Rezept selbst bleibt, wie es ist.",
+    "variant_note": "Notiz für diesen Tag",
+    "variant_note_placeholder": "z. B. mit Linsen statt Hack",
+    "variant_shown": "Zutaten und Schritte sind für diesen Tag angepasst. Das Rezept selbst ist unverändert.",
+    "variant_original": "Ihr seht das Rezept ohne die Änderungen für diesen Tag.",
+    "variant_note_only": "Notiz nur für diesen Tag",
+    "show_original": "Original anzeigen",
+    "show_variant": "Variante anzeigen",
+    "variant_remove": "Variante entfernen"
   },
   "shopping": {
     "title": "Einkaufsliste",

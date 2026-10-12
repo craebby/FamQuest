@@ -36,6 +36,8 @@ const WEEK: MealWeek = {
       name: 'Fischstäbchen',
       icon: 'fluent-emoji-flat:fish',
       image_url: null,
+      note: null,
+      variant: null,
     },
   ],
 }

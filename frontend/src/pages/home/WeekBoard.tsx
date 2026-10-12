@@ -22,6 +22,8 @@ import { EventDialog } from '../calendar/EventDialog'
 import { HolidayChip } from '../calendar/HolidayChip'
 import { type Owners, isAllDayOnThisDay, ownersOf } from '../calendar/owners'
 import { MealDialog } from '../meals/MealDialog'
+import { VariantMark } from '../meals/VariantMark'
+import { entryLabel } from '../meals/entryLabel'
 import { MEAL_ICONS } from '../meals/mealIcons'
 
 /** So viele Tage zeigt die Startseite, ab heute oder ab Montag. */
@@ -325,11 +327,7 @@ function MealSlot({
   return (
     <button
       type="button"
-      aria-label={
-        entry
-          ? t('meals.edit_label', { meal: mealName, dish: entry.name })
-          : t('meals.add_label', { meal: mealName })
-      }
+      aria-label={entry ? entryLabel(t, mealName, entry) : t('meals.add_label', { meal: mealName })}
       onClick={onOpen}
       className={`flex min-h-16 items-center gap-2 rounded-2xl p-2 text-left focus-visible:outline-4 focus-visible:outline-orange-400 ${entry ? 'bg-white shadow-sm hover:bg-orange-50' : 'justify-center border-2 border-dashed border-slate-300 text-slate-400 hover:bg-white'}`}
     >
@@ -337,8 +335,11 @@ function MealSlot({
       {entry ? (
         <>
           <DishPicture icon={entry.icon} imageUrl={entry.image_url} className="size-12" />
-          <span className="line-clamp-3 min-w-0 text-base leading-tight font-bold break-words hyphens-auto text-slate-800">
-            {entry.name}
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="line-clamp-3 text-base leading-tight font-bold break-words hyphens-auto text-slate-800">
+              {entry.name}
+            </span>
+            <VariantMark entry={entry} compact />
           </span>
         </>
       ) : (

@@ -10,12 +10,17 @@ import MinusIcon from '~icons/lucide/minus'
 import PlusIcon from '~icons/lucide/plus'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import PlateIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
+import MemoIcon from '~icons/fluent-emoji-flat/memo'
 
 import {
   type Dish,
+  type Meal,
+  type MealEntry,
+  type Recipe as RecipeData,
   hasRecipe,
   useDeleteRecipe,
   useDishes,
+  usePlanVariant,
   useRateDish,
   useSaveRecipe,
 } from '../../api/meals'
@@ -28,18 +33,30 @@ import { StarRating } from './StarRating'
 import { RECIPE_LIMITS } from './parseRecipes'
 import { MAX_SERVINGS, decimalOf, parseServings, scaleIngredient } from './servings'
 
-type Mode = 'view' | 'recipe' | 'dish'
+type Mode = 'view' | 'recipe' | 'variant' | 'dish'
+
+/** Ein geplanter Tag, aus dem das Rezept geöffnet wurde (für die Variante nur dieses Tages). */
+export interface PlannedMeal {
+  date: string
+  meal: Meal
+  entry: MealEntry
+  /** Mahlzeit und Tag, z. B. „Abendessen, Samstag, 3. Oktober“. */
+  title: string
+}
 
 /**
  * Rezept eines Gerichts zum Mitkochen: Zutaten und Schritte groß und gut lesbar, dazu die
  * Bewertung mit Sternen. Von hier aus lassen sich Rezept, Name, Symbol und Foto ändern; aus dem
- * Essensplan heraus auch ein anderes Gericht wählen. Alles ohne Eltern-PIN.
+ * Essensplan heraus auch ein anderes Gericht wählen und eine Variante nur für diesen Tag festlegen
+ * (Notiz und eigene Fassung des Rezepts), die dann statt des Rezepts erscheint. Alles ohne
+ * Eltern-PIN.
  */
 export function RecipeView({
   dishId,
   onClose,
   onChangeMeal,
   reroll,
+  planned,
 }: {
   dishId: number
   onClose: () => void
@@ -47,14 +64,22 @@ export function RecipeView({
   onChangeMeal?: () => void
   /** Aus dem Essensplan, ab heute: ein anderes Gericht aus der Sammlung für diesen Tag. */
   reroll?: { run: () => void; busy: boolean; error: unknown }
+  /** Aus dem Essensplan geöffnet: der Tag, für den eine Variante gelten kann. */
+  planned?: PlannedMeal
 }) {
   const { t } = useTranslation()
   const dishes = useDishes()
   const dish = dishes.data?.find((candidate) => candidate.id === dishId)
   const rate = useRateDish()
   const remove = useDeleteRecipe()
+  const variant = usePlanVariant()
   const [mode, setMode] = useState<Mode>('view')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [original, setOriginal] = useState(false)
+  const entry = planned?.entry
+  const ownRecipe = entry?.variant ?? null
+  // Mit Variante steht deren Fassung da; „Original anzeigen“ zeigt das Rezept des Gerichts.
+  const shown = dish && ownRecipe && !original ? { ...dish, ...ownRecipe } : dish
   const dialog = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -111,16 +136,58 @@ export function RecipeView({
         {rate.error ? <Alert>{errorMessage(t, rate.error)}</Alert> : null}
         {reroll?.error ? <Alert>{errorMessage(t, reroll.error)}</Alert> : null}
         {remove.error ? <Alert>{errorMessage(t, remove.error)}</Alert> : null}
+        {variant.error ? <Alert>{errorMessage(t, variant.error)}</Alert> : null}
 
-        {dish && mode === 'view' && (
+        {dish && shown && mode === 'view' && (
           <>
-            {/* Neu gespeicherte Portionen setzen den Umrechner zurück. */}
-            <Recipe key={dish.servings} dish={dish} />
+            {planned && entry && (entry.note || ownRecipe) && (
+              <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-amber-50 p-3 ring-2 ring-amber-300">
+                <MemoIcon className="size-10 shrink-0" aria-hidden="true" />
+                <div className="flex min-w-0 flex-1 basis-48 flex-col">
+                  {entry.note && (
+                    <p className="text-xl font-bold break-words text-slate-800">{entry.note}</p>
+                  )}
+                  <p className="text-base text-slate-600">
+                    {ownRecipe
+                      ? original
+                        ? t('recipes.variant_original')
+                        : t('recipes.variant_shown')
+                      : t('recipes.variant_note_only')}
+                  </p>
+                </div>
+                {ownRecipe && (
+                  <Button variant="secondary" onClick={() => setOriginal(!original)}>
+                    {original ? t('recipes.show_variant') : t('recipes.show_original')}
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  disabled={variant.isPending}
+                  onClick={() =>
+                    variant.mutate(
+                      { date: planned.date, meal: planned.meal, variant: null },
+                      { onSuccess: () => setOriginal(false) },
+                    )
+                  }
+                >
+                  <TrashIcon className="size-6" aria-hidden="true" />
+                  {t('recipes.variant_remove')}
+                </Button>
+              </div>
+            )}
+            {/* Neu gespeicherte Portionen und der Wechsel zur Variante setzen den Umrechner zurück. */}
+            <Recipe key={`${shown === dish}-${shown.servings}`} dish={shown} />
             <div className="flex flex-wrap gap-3">
               <Button variant="secondary" onClick={() => setMode('recipe')}>
                 <PencilIcon className="size-6" aria-hidden="true" />
                 {t('recipes.edit')}
               </Button>
+              {planned && (
+                <Button variant="secondary" onClick={() => setMode('variant')}>
+                  <MemoIcon className="size-7" aria-hidden="true" />
+                  {t('recipes.variant_edit')}
+                </Button>
+              )}
               <Button variant="secondary" onClick={() => setMode('dish')}>
                 {t('recipes.edit_dish')}
               </Button>
@@ -185,6 +252,16 @@ export function RecipeView({
           </>
         )}
         {dish && mode === 'recipe' && <RecipeEditor dish={dish} onDone={() => setMode('view')} />}
+        {dish && mode === 'variant' && planned && (
+          <VariantEditor
+            dish={dish}
+            planned={planned}
+            onDone={() => {
+              setOriginal(false)
+              setMode('view')
+            }}
+          />
+        )}
         {dish && mode === 'dish' && <DishEditor dish={dish} onBack={() => setMode('view')} />}
       </div>
     </div>
@@ -296,6 +373,9 @@ function Recipe({ dish }: { dish: Dish }) {
   )
 }
 
+// Längste Notiz zu einem geplanten Tag (wie im Backend).
+const NOTE_LENGTH = 100
+
 const lines = (text: string, max: number) =>
   text
     .split('\n')
@@ -306,39 +386,121 @@ const lines = (text: string, max: number) =>
 
 /** Portionen, Zutaten und Schritte als Text, je eine Zeile; beides leer nimmt das Rezept weg. */
 function RecipeEditor({ dish, onDone }: { dish: Dish; onDone: () => void }) {
-  const { t } = useTranslation()
   const save = useSaveRecipe()
-  const [ingredients, setIngredients] = useState(dish.ingredients.join('\n'))
-  const [steps, setSteps] = useState(dish.steps.join('\n'))
-  const [servings, setServings] = useState(dish.servings?.toString() ?? '')
+  return (
+    <RecipeForm
+      recipe={dish}
+      pending={save.isPending}
+      error={save.error}
+      onSave={(recipe) => save.mutate({ id: dish.id, ...recipe }, { onSuccess: onDone })}
+      onCancel={onDone}
+    />
+  )
+}
+
+/**
+ * Variante nur für einen geplanten Tag: eine Notiz und eine eigene Fassung des Rezepts (anfangs
+ * die bisherige Variante, sonst das Rezept). Das Rezept des Gerichts bleibt, wie es ist; bleibt
+ * die Fassung gleich, speichert der Server nur die Notiz.
+ */
+function VariantEditor({
+  dish,
+  planned,
+  onDone,
+}: {
+  dish: Dish
+  planned: PlannedMeal
+  onDone: () => void
+}) {
+  const { t } = useTranslation()
+  const save = usePlanVariant()
+  return (
+    <RecipeForm
+      recipe={planned.entry.variant ?? dish}
+      note={planned.entry.note ?? ''}
+      hint={t('recipes.variant_hint', { day: planned.title })}
+      pending={save.isPending}
+      error={save.error}
+      onSave={(recipe, note) =>
+        save.mutate(
+          { date: planned.date, meal: planned.meal, variant: { ...recipe, note: note ?? '' } },
+          { onSuccess: onDone },
+        )
+      }
+      onCancel={onDone}
+    />
+  )
+}
+
+/** Formular für ein Rezept als Text, je eine Zeile; mit `note` (Variante) auch eine Notiz. */
+function RecipeForm({
+  recipe,
+  note: initialNote,
+  hint,
+  pending,
+  error,
+  onSave,
+  onCancel,
+}: {
+  recipe: RecipeData
+  note?: string
+  hint?: string
+  pending: boolean
+  error: unknown
+  onSave: (recipe: RecipeData, note: string | undefined) => void
+  onCancel: () => void
+}) {
+  const { t } = useTranslation()
+  const [ingredients, setIngredients] = useState(recipe.ingredients.join('\n'))
+  const [steps, setSteps] = useState(recipe.steps.join('\n'))
+  const [servings, setServings] = useState(recipe.servings?.toString() ?? '')
+  const [note, setNote] = useState(initialNote)
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    save.mutate(
+    onSave(
       {
-        id: dish.id,
         ingredients: lines(ingredients, RECIPE_LIMITS.ingredient),
         steps: lines(steps, RECIPE_LIMITS.step),
         servings: parseServings(servings),
       },
-      { onSuccess: onDone },
+      note?.replace(/\s+/g, ' ').trim(),
     )
   }
 
   return (
     <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-1">
-      {save.error ? <Alert>{errorMessage(t, save.error)}</Alert> : null}
-      <div className="max-w-xs">
-        <TextField
-          label={t('recipes.servings_label')}
-          hint={t('recipes.servings_hint')}
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={MAX_SERVINGS}
-          value={servings}
-          onChange={(event) => setServings(event.target.value)}
-        />
+      {error ? <Alert>{errorMessage(t, error)}</Alert> : null}
+      {hint && (
+        <p className="flex items-center gap-2 rounded-2xl bg-amber-50 p-3 text-lg font-semibold text-slate-700">
+          <MemoIcon className="size-8 shrink-0" aria-hidden="true" />
+          {hint}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-4">
+        {note !== undefined && (
+          <div className="min-w-0 flex-1 basis-64">
+            <TextField
+              label={t('recipes.variant_note')}
+              placeholder={t('recipes.variant_note_placeholder')}
+              maxLength={NOTE_LENGTH}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </div>
+        )}
+        <div className="max-w-xs">
+          <TextField
+            label={t('recipes.servings_label')}
+            hint={t('recipes.servings_hint')}
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={MAX_SERVINGS}
+            value={servings}
+            onChange={(event) => setServings(event.target.value)}
+          />
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <TextAreaField
@@ -355,10 +517,10 @@ function RecipeEditor({ dish, onDone }: { dish: Dish; onDone: () => void }) {
         />
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" disabled={save.isPending}>
+        <Button type="submit" disabled={pending}>
           {t('actions.save')}
         </Button>
-        <Button variant="secondary" disabled={save.isPending} onClick={onDone}>
+        <Button variant="secondary" disabled={pending} onClick={onCancel}>
           {t('actions.cancel')}
         </Button>
       </div>

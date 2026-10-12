@@ -611,10 +611,16 @@ Sternen. Alles geht ohne Eltern-PIN.
   solange die Sammlung reicht. Schon geplante Tage bleiben, und zum Weiterblättern einfach die
   nächste Woche füllen.
 - **Neu würfeln:** Passt ein Vorschlag nicht, tippt auf den Tag und im Rezept auf **Neu würfeln**.
+- **Nur für diesen Tag:** Im Rezept eines geplanten Tages ändert **Nur für diesen Tag ändern** das
+  Gericht nur an diesem Tag, z. B. „mit Tofu statt Hähnchen“: eine kurze Notiz, die im Essensplan
+  unter dem Gericht steht, und auf Wunsch angepasste Portionen, Zutaten und Schritte. Das Rezept
+  selbst bleibt, wie es ist. Am Tag zeigt das Rezept dann die Variante, **Original anzeigen**
+  wechselt zum Rezept. **Variante entfernen** nimmt die Änderung zurück, ein anderes Gericht am
+  Tag ebenso.
 - **Einkaufen:** „Auf die Einkaufsliste“ im Rezept und **Zutaten der Woche** oben im Essensplan
-  (alle Rezepte ab heute in der gezeigten Woche) zeigen die Zutaten zum Anhaken. Die Menge wird zum
-  Hinweis („ca. 600 g Pellkartoffeln“ → Pellkartoffeln, „ca. 600 g“), gleiche Zutaten werden
-  zusammengefasst. Salz, Pfeffer, Öl und was schon auf der Liste steht, sind erst nicht angehakt.
+  (alle Rezepte ab heute in der gezeigten Woche, an Tagen mit Variante deren Zutaten) zeigen die
+  Zutaten zum Anhaken. Die Menge wird zum Hinweis („ca. 600 g Pellkartoffeln“ → Pellkartoffeln,
+  „ca. 600 g“), gleiche Zutaten werden zusammengefasst. Salz, Pfeffer, Öl und was schon auf der Liste steht, sind erst nicht angehakt.
 
 ## Einkaufsliste
 

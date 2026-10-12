@@ -121,6 +121,8 @@ const MEAL_WEEK: MealWeek = {
       name: 'Fischstäbchen',
       icon: 'fluent-emoji-flat:fish',
       image_url: null,
+      note: null,
+      variant: null,
     },
     {
       date: '2026-10-03',
@@ -129,6 +131,8 @@ const MEAL_WEEK: MealWeek = {
       name: 'Ofengemüse mit Würstchen',
       icon: 'fluent-emoji-flat:hot-dog',
       image_url: null,
+      note: null,
+      variant: null,
     },
   ],
 }

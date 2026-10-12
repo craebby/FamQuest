@@ -76,6 +76,8 @@ def test_plan_the_week_without_parent_pin(client, admin, now):
         "name": "Nudeln mit Tomatensoße",
         "icon": SPAGHETTI,
         "image_url": None,
+        "note": None,
+        "variant": None,
     }
     assert week(client) == {
         "start": MONDAY,
@@ -426,6 +428,101 @@ def test_delete_a_recipe_keeps_only_planned_dishes(client, admin, now):
     )
     assert client.delete("/api/dishes/999/recipe", headers=csrf(admin)).status_code == 404
     assert client.delete(f"/api/dishes/{planned}/recipe").status_code == 403
+
+
+def set_variant(client, me, date=SATURDAY, meal="dinner", **body):
+    return client.put(f"/api/meals/{date}/{meal}/variant", json=body, headers=csrf(me))
+
+
+def test_variant_for_one_day_keeps_the_recipe(client, admin, now):
+    [dish] = import_recipes(client, admin, RUEHREI).json()
+    plan(client, admin, SATURDAY, name=RUEHREI["name"])
+    plan(client, admin, "2026-10-04", name=RUEHREI["name"])
+
+    response = set_variant(
+        client,
+        admin,
+        note="  mit Speck  ",
+        ingredients=["ca. 600 g Pellkartoffeln", "8 Eier", "100 g Speck"],
+        steps=RUEHREI["steps"],
+        servings=4,
+    )
+
+    assert response.status_code == 200, response.text
+    saturday, sunday = week(client)["entries"]
+    assert saturday == response.json()
+    assert saturday["note"] == "mit Speck"
+    assert saturday["variant"] == {
+        "ingredients": ["ca. 600 g Pellkartoffeln", "8 Eier", "100 g Speck"],
+        "steps": RUEHREI["steps"],
+        "servings": 4,
+    }
+    # Der andere Tag und das Rezept selbst bleiben unverändert.
+    assert (sunday["note"], sunday["variant"]) == (None, None)
+    [unchanged] = [d for d in client.get("/api/dishes").json() if d["id"] == dish["id"]]
+    assert unchanged["ingredients"] == RUEHREI["ingredients"]
+
+
+def test_variant_like_the_recipe_is_only_a_note(client, admin, now):
+    import_recipes(client, admin, RUEHREI)
+    plan(client, admin, SATURDAY, name=RUEHREI["name"])
+
+    same = set_variant(
+        client,
+        admin,
+        note="doppelt",
+        ingredients=RUEHREI["ingredients"],
+        steps=RUEHREI["steps"],
+        servings=4,
+    ).json()
+    empty = set_variant(client, admin, note="").json()
+
+    assert (same["note"], same["variant"]) == ("doppelt", None)
+    assert (empty["note"], empty["variant"]) == (None, None)
+
+
+def test_remove_variant(client, admin, now):
+    import_recipes(client, admin, RUEHREI)
+    plan(client, admin, SATURDAY, name=RUEHREI["name"])
+    set_variant(client, admin, note="mit Speck", steps=["Anders."])
+
+    response = client.delete(f"/api/meals/{SATURDAY}/dinner/variant", headers=csrf(admin))
+
+    assert response.status_code == 200, response.text
+    assert (response.json()["note"], response.json()["variant"]) == (None, None)
+
+
+def test_variant_goes_with_another_dish(client, admin, now, seeded):
+    import_recipes(client, admin, RUEHREI, recipe("Pfannkuchen"))
+    plan(client, admin, SATURDAY, name=RUEHREI["name"])
+    set_variant(client, admin, note="mit Speck", steps=["Anders."])
+
+    # Dasselbe Gericht noch einmal eingetragen: Die Variante bleibt.
+    kept = plan(client, admin, SATURDAY, name=RUEHREI["name"].upper(), icon=BURGER)
+    other = plan(client, admin, SATURDAY, name="Pizza")
+    set_variant(client, admin, note="mit Pilzen")
+    [rerolled] = fill(client, admin, end=SATURDAY, replace=True).json()
+
+    assert kept["note"] == "mit Speck" and kept["variant"] is not None
+    assert (other["note"], other["variant"]) == (None, None)
+    assert (rerolled["note"], rerolled["variant"]) == (None, None)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [{"note": "x" * 101}, {"steps": ["Braten."], "servings": 0}, {"steps": ["x" * 1001]}],
+)
+def test_invalid_variants_are_rejected(client, admin, now, body):
+    plan(client, admin, SATURDAY)
+    assert set_variant(client, admin, **body).status_code == 422
+
+
+def test_variant_needs_a_planned_meal(client, admin, now):
+    response = set_variant(client, admin, note="mit Speck")
+    removed = client.delete(f"/api/meals/{SATURDAY}/dinner/variant", headers=csrf(admin))
+
+    assert response.status_code == removed.status_code == 404
+    assert response.json()["code"] == "meals.not_planned"
 
 
 def test_rate_a_dish_without_parent_pin(client, admin, now):

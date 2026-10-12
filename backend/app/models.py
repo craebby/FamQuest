@@ -522,16 +522,28 @@ Index("uq_dishes_name_lower", func.lower(Dish.name), unique=True)
 
 
 class MealPlanEntry(Base):
-    """Ein Gericht im Essensplan: an einem Tag zu einer Mahlzeit (siehe schemas.MEALS)."""
+    """Ein Gericht im Essensplan: an einem Tag zu einer Mahlzeit (siehe schemas.MEALS).
+
+    Eine Variante gilt nur für diesen Eintrag: eine Notiz („mit Linsen statt Hack“) und/oder eine
+    eigene Fassung des Rezepts; das Rezept des Gerichts bleibt, wie es ist.
+    """
 
     __tablename__ = "meal_plan_entries"
     # Der Unique-Constraint (date, meal) dient zugleich als Index für date.
-    __table_args__ = (UniqueConstraint("date", "meal"),)
+    __table_args__ = (
+        UniqueConstraint("date", "meal"),
+        CheckConstraint("variant_servings BETWEEN 1 AND 50", name="variant_servings_range"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[dt.date] = mapped_column(Date)
     meal: Mapped[str] = mapped_column(String(20))
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id"), index=True)
+    note: Mapped[str | None] = mapped_column(String(100))
+    # Eigene Fassung des Rezepts für diesen Tag; ohne Variante beide None.
+    variant_ingredients: Mapped[list[str] | None] = mapped_column(JSONB)
+    variant_steps: Mapped[list[str] | None] = mapped_column(JSONB)
+    variant_servings: Mapped[int | None] = mapped_column(SmallInteger)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     dish: Mapped[Dish] = relationship(lazy="joined")

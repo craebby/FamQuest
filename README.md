@@ -600,8 +600,14 @@ with its picture and stars. Everything works without the parents' PIN.
   earliest, as long as the collection is big enough. Days already planned stay, and to keep going,
   simply fill the next week.
 - **Re-roll:** if a suggestion doesn't fit, tap the day and **Re-roll** in the recipe.
+- **This day only:** in the recipe of a planned day, **Change for this day only** changes the dish
+  on that day alone, e.g. "with tofu instead of chicken": a short note shown below the dish in the
+  meal plan and, if you like, adjusted servings, ingredients and steps. The recipe itself stays as
+  it is. On that day the recipe shows the variant, **Show original** switches to the recipe.
+  **Remove variant** undoes the change, and so does planning another dish on that day.
 - **Shopping:** "Add to shopping list" in a recipe and **Ingredients for the week** at the top of
-  the meal plan (all recipes from today on in the week shown) list the ingredients to tick. The
+  the meal plan (all recipes from today on in the week shown, using each day's variant) list the
+  ingredients to tick. The
   amount becomes the note ("approx. 600 g potatoes" → potatoes, "approx. 600 g"), equal
   ingredients are combined. Salt, pepper, oil and whatever is already on the list start unticked.
 

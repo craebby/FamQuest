@@ -42,6 +42,8 @@ export interface RecipeData {
 export const hasRecipe = (dish: Pick<Dish, 'ingredients' | 'steps'>) =>
   dish.ingredients.length > 0 || dish.steps.length > 0
 
+export type Recipe = Pick<Dish, 'ingredients' | 'steps' | 'servings'>
+
 export interface MealEntry {
   date: string
   meal: Meal
@@ -49,6 +51,9 @@ export interface MealEntry {
   name: string
   icon: string
   image_url: string | null
+  /** Variante nur für diesen Tag: Notiz („mit Linsen statt Hack“) und eigene Fassung des Rezepts. */
+  note: string | null
+  variant: Recipe | null
 }
 
 export interface MealWeek {
@@ -181,3 +186,26 @@ export const useFillMeals = () =>
   useDishMutation((body: { start: string; end: string; meal: Meal; replace?: boolean }) =>
     api<MealEntry[]>('POST', '/meals/fill', body),
   )
+
+/**
+ * Variante für einen geplanten Tag speichern (`variant` mit Notiz und Rezept) oder wegnehmen
+ * (`variant` null). Das Rezept des Gerichts bleibt unverändert; ohne Eltern-PIN.
+ */
+export function usePlanVariant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      date,
+      meal,
+      variant,
+    }: {
+      date: string
+      meal: Meal
+      variant: (Recipe & { note: string }) | null
+    }) =>
+      variant
+        ? api<MealEntry>('PUT', `/meals/${date}/${meal}/variant`, variant)
+        : api<MealEntry>('DELETE', `/meals/${date}/${meal}/variant`),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: MEAL_WEEK_KEY }),
+  })
+}
