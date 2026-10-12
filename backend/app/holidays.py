@@ -6,6 +6,7 @@ Schlüssel) und liegen in der Tabelle school_holidays.
 """
 
 import datetime as dt
+import re
 from dataclasses import dataclass
 
 import holidays as holiday_rules
@@ -90,6 +91,25 @@ def holidays_between(
     if family.show_school_holidays:
         found += school_holidays(db, region, start, end, language)
     return found
+
+
+# Titel eigener Termine, die nur „Ferien“ sagen (Jahreszahlen fallen beim Vergleich weg).
+_GENERIC_TITLES = {"ferien", "schulferien", "holidays", "school holidays"}
+
+
+def repeats_holiday(title: str | None, names: set[str]) -> bool:
+    """Wiederholt ein eigener Termin die Ferien oder einen Feiertag dieses Tages?
+
+    Ja, wenn der Titel einen der Namen enthält („Herbstferien 2026 Nordrhein-Westfalen“ enthält
+    „Herbstferien“) oder nur „Ferien“ heißt. So bleibt etwa „Ferienlager“ stehen.
+    """
+    if not title or not names:
+        return False
+    text = title.casefold()
+    if any(name.casefold() in text for name in names):
+        return True
+    words = re.sub(r"[\d\W_]+", " ", text).split()
+    return " ".join(words) in _GENERIC_TITLES
 
 
 def _name(item: dict, language: str) -> str | None:

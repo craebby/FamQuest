@@ -9,7 +9,7 @@ from app import calendar_sync, holidays
 from app.db import SessionLocal
 from app.models import SchoolHoliday
 from tests.conftest import csrf
-from tests.fake_google import timed
+from tests.fake_google import all_day, timed
 from tests.test_calendar import connect
 from tests.test_calendar_sync import MAMA, choose, week
 
@@ -155,3 +155,45 @@ def test_event_details(client, parent, fake_google, now):
     assert event["location"] == "Hauptstr. 1, Neuss"
     assert event["description"] == "Bitte Karte mitbringen\nTel: 0123 & mehr"
     assert event["calendars"] == [MAMA]
+
+
+def test_own_events_repeating_the_holidays_are_hidden(
+    client, parent, fake_google, now, open_holidays
+):
+    set_holidays(client, parent, region="NW", public=True, school=True)
+    connect(client, parent, fake_google)
+    fake_google.set_events(
+        MAMA,
+        [
+            all_day("a", "2026-09-28", "2026-10-03", "Herbstferien 2026 Nordrhein-Westfalen"),
+            all_day("b", "2026-10-01", "2026-10-02", "Ferien"),
+            all_day("c", "2026-10-01", "2026-10-02", "Ferienlager"),
+            timed("d", "2026-10-01T10:00:00+02:00", "2026-10-01T11:00:00+02:00", "Herbstferien"),
+            all_day("e", "2026-10-03", "2026-10-04", "Tag der Deutschen Einheit"),
+        ],
+    )
+    choose(client, parent, MAMA, None)
+
+    titles = {d["date"]: [e["title"] for e in d["events"]] for d in week(client)["days"]}
+
+    # Vor den Ferien bleibt der Termin stehen, in den Ferien fällt er weg.
+    assert titles["2026-09-30"] == ["Herbstferien 2026 Nordrhein-Westfalen"]
+    # „Ferienlager“ und Termine mit Uhrzeit bleiben.
+    assert titles["2026-10-01"] == ["Ferienlager", "Herbstferien"]
+    assert titles["2026-10-02"] == []
+    # Auch Feiertage, und auch, wenn das Gerät Englisch spricht.
+    assert titles["2026-10-03"] == []
+    english = client.get("/api/calendar/week", params={"lang": "en"}).json()
+    assert [e["title"] for e in english["days"][3]["events"]] == ["Ferienlager", "Herbstferien"]
+    upcoming = client.get("/api/calendar/upcoming", params={"limit": 20}).json()
+    assert [e["title"] for e in upcoming["events"]] == []
+
+
+def test_own_holiday_events_stay_without_shown_holidays(client, parent, fake_google, now):
+    connect(client, parent, fake_google)
+    fake_google.set_events(MAMA, [all_day("a", "2026-10-01", "2026-10-02", "Herbstferien")])
+    choose(client, parent, MAMA, None)
+
+    titles = {d["date"]: [e["title"] for e in d["events"]] for d in week(client)["days"]}
+
+    assert titles["2026-10-01"] == ["Herbstferien"]

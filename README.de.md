@@ -459,7 +459,9 @@ an.
 Sie erscheinen dezent in Grau über den Terminen des Tages (🎉 Feiertag, 🏖️ Ferien) und
 funktionieren auch ohne Google-Konto. Feiertage werden offline berechnet, Schulferien einmal am Tag
 von [OpenHolidays](https://www.openholidaysapi.org) geladen (übertragen wird nur das Bundesland,
-keine persönlichen Daten).
+keine persönlichen Daten). Steht dasselbe auch als ganztägiger Termin in einem Kalender, etwa
+„Herbstferien 2026 Nordrhein-Westfalen“ oder einfach „Ferien“, blendet FamQuest diesen Termin an
+den Ferien- bzw. Feiertagen aus, damit nichts doppelt steht. In Google bleibt er, wie er ist.
 
 **Symbole für Termine:** Kinder, die noch nicht lesen, erkennen ihre Termine nicht am Titel. Unter
 **Kalender & Wetter → Symbole für Termine** legt ihr fest, welche Begriffe ein Symbol bekommen:

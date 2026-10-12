@@ -2,6 +2,8 @@
 
 Die Tage werden in der Zeitzone der Familie gebildet. Steht derselbe Termin in mehreren
 Kalendern (z. B. eine Einladung an beide Eltern), erscheint er einmal mit allen Personen.
+Ganztägige Termine, die nur die angezeigten Ferien oder Feiertage wiederholen (z. B.
+„Herbstferien 2026“ aus einem privaten Kalender), fallen an diesen Tagen weg.
 """
 
 import datetime as dt
@@ -15,8 +17,8 @@ from sqlalchemy import and_, or_, select
 from app.auth import CurrentSession, DbSession, get_family
 from app.calendar_sync import local_midnight
 from app.event_symbols import SymbolMatcher
-from app.holidays import holidays_between
-from app.models import Calendar, CalendarConnection, CalendarEvent, FamilyMember
+from app.holidays import Holiday, holidays_between, repeats_holiday
+from app.models import Calendar, CalendarConnection, CalendarEvent, Family, FamilyMember
 from app.today import family_now
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
@@ -135,6 +137,7 @@ def week(
     merged = _merged_events(db, start, end, range_start, range_end)
     people = _People(db, family.event_symbols)
     holidays = holidays_between(db, family, start, end, lang or family.default_language)
+    known = _holiday_names(db, family, start, end)
     days = []
     for index in range(7):
         day = start + dt.timedelta(days=index)
@@ -142,7 +145,7 @@ def week(
         events = []
         for entry in merged:
             out = _event_on_day(entry, day, day_start, day_end, people)
-            if out is not None:
+            if out is not None and not _repeats_holiday(out, day, known):
                 events.append(out)
         # Ganztägige zuerst, dann nach Beginn.
         events.sort(
@@ -187,6 +190,7 @@ def upcoming(
     end = today + dt.timedelta(days=UPCOMING_DAYS)
 
     people = _People(db, family.event_symbols)
+    known = _holiday_names(db, family, today, end)
     found = []
     for entry in _merged_events(db, today, end, now, local_midnight(end, tz)):
         event = entry.event
@@ -194,7 +198,7 @@ def upcoming(
         day = max(first, today)
         day_start, day_end = local_midnight(day, tz), local_midnight(day + dt.timedelta(days=1), tz)
         out = _event_on_day(entry, day, day_start, day_end, people)
-        if out is None:
+        if out is None or _repeats_holiday(out, day, known):
             continue
         whole_day = out.all_day or (out.continues_before and out.continues_after)
         start = out.start if isinstance(out.start, dt.datetime) else day_start
@@ -213,6 +217,19 @@ def upcoming(
         holidays=[HolidayOut(kind=h.kind, name=h.name) for h in holidays],
         events=[event for _, event in found[:limit]],
     )
+
+
+def _holiday_names(db: DbSession, family: Family, start: dt.date, end: dt.date) -> list[Holiday]:
+    """Angezeigte Ferien und Feiertage in beiden Sprachen; damit werden eigene Termine erkannt,
+    die sie wiederholen, egal in welcher Sprache sie heißen."""
+    return [h for lang in ("de", "en") for h in holidays_between(db, family, start, end, lang)]
+
+
+def _repeats_holiday(out: WeekEventOut, day: dt.date, holidays: list[Holiday]) -> bool:
+    """Ganztägiger Termin, der nur die Ferien oder einen Feiertag des Tages wiederholt."""
+    whole_day = out.all_day or (out.continues_before and out.continues_after)
+    names = {h.name for h in holidays if h.start <= day < h.end}
+    return whole_day and repeats_holiday(out.title, names)
 
 
 def _merged_events(

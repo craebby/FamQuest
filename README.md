@@ -449,7 +449,9 @@ under **Calendar** has a **State** (Bundesland) setting with two switches, **pub
 **school holidays**. They appear subtly in grey above each day's events (🎉 public holiday,
 🏖️ school holidays) and work without a Google account too. Public holidays are calculated
 offline; school holidays are loaded once a day from [OpenHolidays](https://www.openholidaysapi.org)
-(only the state is sent, no personal data).
+(only the state is sent, no personal data). If a calendar has the same as an all-day event, e.g.
+"Herbstferien 2026 Nordrhein-Westfalen" or just "Ferien", FamQuest hides that event on those days
+so nothing shows up twice. It stays as it is in Google.
 
 **Symbols for events:** children who can't read yet don't recognise their events by the title.
 Under **Calendar & weather → Symbols for events**, choose which words get a symbol: pick from
