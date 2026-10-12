@@ -574,7 +574,7 @@ Sternen. Alles geht ohne Eltern-PIN.
   ```text
   1. Rührei-Pfanne mit Pellkartoffeln
 
-  Zutaten
+  Zutaten für 4 Personen
   ca. 600 g Pellkartoffeln
   8 Eier
 
@@ -588,15 +588,23 @@ Sternen. Alles geht ohne Eltern-PIN.
 
   Jedes Rezept beginnt mit einer Nummer und dem Namen. „Zutaten“ und „Zubereitung“ sind optional;
   ohne sie gilt alles als Zubereitung. Ein einzelnes Rezept braucht keine Nummer, dann ist die erste
-  Zeile der Name. Zusätze in Klammern hinter dem Namen wie „(heute)“ fallen weg.
+  Zeile der Name. Zusätze in Klammern hinter dem Namen wie „(heute)“ fallen weg. Eine Zeile wie
+  „für 4 Personen“, „4 Portionen“ oder „Zutaten für 4 Personen“ gibt die Portionen an; „Portionen
+  für alle“ unter dem Text gilt für jedes Rezept ohne solche Zeile.
+- **Portionen:** Steht beim Rezept, für wie viele Portionen es ist, rechnen − und + neben den
+  Zutaten die Mengen um („600 g“ für 4 → „900 g“ für 6), gut lesbar gerundet. Umgerechnet wird nur
+  die Menge am Anfang einer Zeile; das Rezept selbst bleibt, wie es ist, und öffnet beim nächsten
+  Mal wieder mit seiner Zahl. „Auf die Einkaufsliste“ nimmt die umgerechneten Mengen.
 - **Mitkochen:** Ein Tipp auf ein Rezept zeigt die Zutaten und die nummerierten Schritte groß. Im
   Essensplan, auf „Heute“ und in der [Küchenansicht](#küchenansicht) öffnet ein Tipp auf ein
   geplantes Gericht mit Rezept direkt das Rezept; „Anderes Gericht“ führt zum Eintragen.
 - **Bewerten:** Ein bis fünf Sterne je Gericht, wie es der Familie schmeckt. Ein Tipp auf den
   gesetzten Stern nimmt die Bewertung zurück.
-- **Bearbeiten:** „Rezept bearbeiten“ zeigt Zutaten und Zubereitung als Text, eine Zeile je Zutat
-  bzw. Schritt. Sind beide leer, ist es wieder ein Gericht ohne Rezept. „Name, Symbol, Foto“ ändert
-  das Gericht selbst. Ein Gericht ohne Rezept bekommt eins über „Rezept“ im Dialog zum Eintragen.
+- **Bearbeiten:** „Rezept bearbeiten“ zeigt die Portionen sowie Zutaten und Zubereitung als Text,
+  eine Zeile je Zutat bzw. Schritt. Sind beide leer, ist es wieder ein Gericht ohne Rezept.
+  „Rezept löschen“ (nach einer Rückfrage) macht das in einem Schritt; ein Gericht im Essensplan
+  bleibt dort, sonst ist es ganz weg. „Name, Symbol, Foto“ ändert das Gericht selbst. Ein Gericht
+  ohne Rezept bekommt eins über „Rezept“ im Dialog zum Eintragen.
 - **Woche füllen:** Der Knopf mit dem Würfel oben im Essensplan füllt die leeren Tage der gezeigten
   Woche (ab heute) mit Gerichten aus der Rezeptsammlung, fürs Abendessen. Gut bewertete kommen
   öfter, schlecht bewertete selten; dasselbe Gericht kommt frühestens nach einer Woche wieder,
@@ -1263,8 +1271,7 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 - Bilderrahmen: Fotos aus Immich (oder Nextcloud) statt nur hochgeladener Fotos, Alben
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
-- Rezepte: Anbindung von [Mealie](https://mealie.io), Zerlegen eingefügter Texte mit KI, Portionen
-  umrechnen
+- Rezepte: Anbindung von [Mealie](https://mealie.io), Zerlegen eingefügter Texte mit KI
 - Einkaufsliste: mehrere Listen (z. B. Supermarkt und Drogerie), Sortierung nach Kategorie oder
   Gang im Laden (eventuell mit KI), Zutaten aus dem Essensplan, Export nach Obsidian
   (Markdown-Checkliste)

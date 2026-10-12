@@ -205,6 +205,7 @@ def test_rename_and_change_icon_without_pin(client, admin, now):
         "times_planned": 1,
         "ingredients": [],
         "steps": [],
+        "servings": None,
         "rating": None,
     }
     assert [(e["name"], e["icon"]) for e in week(client)["entries"]] == [("Nudeln", BURGER)]
@@ -312,6 +313,7 @@ RUEHREI = {
     "icon": "fluent-emoji-flat:cooking",
     "ingredients": ["ca. 600 g Pellkartoffeln", "8 Eier"],
     "steps": ["Pellkartoffeln anbraten.", "Eier drübergießen und stocken lassen."],
+    "servings": 4,
 }
 
 
@@ -326,9 +328,9 @@ def test_import_creates_dishes_with_recipes(client, admin, now):
 
     assert response.status_code == 200, response.text
     created = response.json()
-    assert [(d["name"], d["ingredients"], d["steps"]) for d in created] == [
-        (RUEHREI["name"], RUEHREI["ingredients"], RUEHREI["steps"]),
-        ("Hähnchen-Wraps", [], ["Tortillas erwärmen."]),
+    assert [(d["name"], d["ingredients"], d["steps"], d["servings"]) for d in created] == [
+        (RUEHREI["name"], RUEHREI["ingredients"], RUEHREI["steps"], 4),
+        ("Hähnchen-Wraps", [], ["Tortillas erwärmen."], None),
     ]
     assert {d["name"] for d in client.get("/api/dishes").json()} == {
         RUEHREI["name"],
@@ -358,6 +360,8 @@ def test_import_adds_the_recipe_to_an_existing_dish(client, admin, now):
         {**RUEHREI, "steps": ["x" * 1001]},
         {**RUEHREI, "ingredients": ["Ei"] * 61},
         {**RUEHREI, "name": " "},
+        {**RUEHREI, "servings": 0},
+        {**RUEHREI, "servings": 51},
     ],
 )
 def test_import_rejects_invalid_recipes(client, admin, recipe):
@@ -375,24 +379,53 @@ def test_edit_and_remove_a_recipe(client, admin, now):
 
     response = client.put(
         f"/api/dishes/{dish['id']}/recipe",
-        json={"ingredients": [" 6 Eier "], "steps": ["Braten.", "Essen."]},
+        json={"ingredients": [" 6 Eier "], "steps": ["Braten.", "Essen."], "servings": 2},
         headers=csrf(admin),
     )
 
     assert response.status_code == 200, response.text
-    assert (response.json()["ingredients"], response.json()["steps"]) == (
+    edited = response.json()
+    assert (edited["ingredients"], edited["steps"], edited["servings"]) == (
         ["6 Eier"],
         ["Braten.", "Essen."],
+        2,
     )
     cleared = client.put(
         f"/api/dishes/{dish['id']}/recipe",
-        json={"ingredients": [], "steps": []},
+        json={"ingredients": [], "steps": [], "servings": 2},
         headers=csrf(admin),
     ).json()
-    # Das Gericht bleibt, nur ohne Rezept.
-    assert (cleared["name"], cleared["ingredients"], cleared["steps"]) == (RUEHREI["name"], [], [])
+    # Das Gericht bleibt, nur ohne Rezept (und damit ohne Portionen).
+    assert (cleared["name"], cleared["ingredients"], cleared["steps"], cleared["servings"]) == (
+        RUEHREI["name"],
+        [],
+        [],
+        None,
+    )
     missing = client.put("/api/dishes/999/recipe", json={"steps": []}, headers=csrf(admin))
     assert missing.json()["code"] == "dish.not_found"
+
+
+def test_delete_a_recipe_keeps_only_planned_dishes(client, admin, now):
+    planned = plan(client, admin, MONDAY, name=RUEHREI["name"])["dish_id"]
+    [_, wraps] = import_recipes(
+        client, admin, RUEHREI, {"name": "Wraps", "icon": BURGER, "steps": ["Rollen."]}
+    ).json()
+
+    for dish in (planned, wraps["id"]):
+        response = client.delete(f"/api/dishes/{dish}/recipe", headers=csrf(admin))
+        assert response.status_code == 204, response.text
+
+    # Das geplante Gericht bleibt ohne Rezept, das nur eingefügte ist ganz weg.
+    [kept] = client.get("/api/dishes").json()
+    assert (kept["id"], kept["ingredients"], kept["steps"], kept["servings"]) == (
+        planned,
+        [],
+        [],
+        None,
+    )
+    assert client.delete("/api/dishes/999/recipe", headers=csrf(admin)).status_code == 404
+    assert client.delete(f"/api/dishes/{planned}/recipe").status_code == 403
 
 
 def test_rate_a_dish_without_parent_pin(client, admin, now):

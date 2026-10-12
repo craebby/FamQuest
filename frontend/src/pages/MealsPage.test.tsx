@@ -50,6 +50,7 @@ const DISHES: Dish[] = [
     times_planned: 4,
     ingredients: [],
     steps: [],
+    servings: null,
     rating: null,
   },
 ]

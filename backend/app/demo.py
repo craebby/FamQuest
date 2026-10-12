@@ -36,6 +36,8 @@ PIN = "1234"
 
 # Symbole aus dem Icon-Katalog des Frontends (src/icons/categories.json).
 ICON = "fluent-emoji-flat:"
+# Die Rezepte der Demo sind für eine vierköpfige Familie.
+DEMO_SERVINGS = 4
 
 # Texte je Sprache; von Eltern eingegebene Inhalte speichert FamQuest so, wie sie getippt werden.
 TEXT = {
@@ -772,7 +774,13 @@ class Demo:
             "/recipes",
             json={
                 "recipes": [
-                    {"name": name, "icon": ICON + icon, "ingredients": ingredients, "steps": steps}
+                    {
+                        "name": name,
+                        "icon": ICON + icon,
+                        "ingredients": ingredients,
+                        "steps": steps,
+                        "servings": DEMO_SERVINGS,
+                    }
                     for name, icon, _, ingredients, steps in recipes
                 ]
             },

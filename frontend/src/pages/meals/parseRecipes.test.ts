@@ -51,8 +51,14 @@ describe('parseRecipes', () => {
           // Nummerierter Schritt ohne Leerzeile davor bleibt ein Schritt.
           'Käse drauf',
         ],
+        servings: null,
       },
-      { name: 'Hähnchen-Wraps', ingredients: ['Tortillas'], steps: ['Tortillas kurz erwärmen.'] },
+      {
+        name: 'Hähnchen-Wraps',
+        ingredients: ['Tortillas'],
+        steps: ['Tortillas kurz erwärmen.'],
+        servings: null,
+      },
     ])
   })
 
@@ -70,13 +76,21 @@ describe('parseRecipes', () => {
         'Reis aufsetzen (1 Teil Reis, 2 Teile Wasser, 12-15 Min).',
         'Hähnchenstreifen scharf anbraten (5-6 Min) und rausnehmen.',
       ],
+      servings: null,
     })
   })
 
   it('macht aus einem Text ohne Nummern ein Rezept mit der ersten Zeile als Name', () => {
     expect(
       parseRecipes('\nKartoffelsuppe\nZutaten\n1 kg Kartoffeln\nZubereitung\nKochen.'),
-    ).toEqual([{ name: 'Kartoffelsuppe', ingredients: ['1 kg Kartoffeln'], steps: ['Kochen.'] }])
+    ).toEqual([
+      {
+        name: 'Kartoffelsuppe',
+        ingredients: ['1 kg Kartoffeln'],
+        steps: ['Kochen.'],
+        servings: null,
+      },
+    ])
     expect(parseRecipes('  \n ')).toEqual([])
   })
 
@@ -91,8 +105,37 @@ describe('parseRecipes', () => {
 
 Teig rühren.`
     expect(parseRecipes(text)).toEqual([
-      { name: 'Nudeln', ingredients: [], steps: ['Wasser kochen.', 'Salz rein'] },
-      { name: 'Pfannkuchen', ingredients: [], steps: ['Teig rühren.'] },
+      { name: 'Nudeln', ingredients: [], steps: ['Wasser kochen.', 'Salz rein'], servings: null },
+      { name: 'Pfannkuchen', ingredients: [], steps: ['Teig rühren.'], servings: null },
+    ])
+  })
+
+  it('erkennt die Portionen', () => {
+    const text = `1. Linsensuppe (für 6 Personen)
+
+Zutaten
+500 g Linsen
+
+2. Pfannkuchen
+
+Zutaten für 4 Personen:
+250 g Mehl
+
+Zubereitung
+Für 2 Personen halbieren.
+
+3. Waffles
+
+Serves 4-6
+
+Ingredients
+2 eggs`
+    expect(
+      parseRecipes(text).map(({ name, ingredients, servings }) => [name, ingredients, servings]),
+    ).toEqual([
+      ['Linsensuppe', ['500 g Linsen'], 6],
+      ['Pfannkuchen', ['250 g Mehl'], 4],
+      ['Waffles', ['2 eggs'], 4],
     ])
   })
 
@@ -101,6 +144,7 @@ Teig rühren.`
       name: 'N'.repeat(150),
       ingredients: Array.from({ length: 70 }, () => 'Z'.repeat(250)),
       steps: ['S'.repeat(1200)],
+      servings: 4,
     })
     expect(long.name).toHaveLength(100)
     expect(long.ingredients).toHaveLength(60)

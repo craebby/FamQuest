@@ -17,6 +17,7 @@ const dish = (overrides: Partial<Dish> = {}): Dish => ({
   times_planned: 3,
   ingredients: [],
   steps: [],
+  servings: null,
   rating: null,
   ...overrides,
 })

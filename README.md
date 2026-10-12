@@ -560,6 +560,8 @@ with its picture and stars. Everything works without the parents' PIN.
   ```text
   1. Scrambled egg and potato pan
 
+  Serves 4
+
   Ingredients
   approx. 600 g boiled potatoes
   8 eggs
@@ -574,15 +576,24 @@ with its picture and stars. Everything works without the parents' PIN.
 
   Each recipe starts with a number and its name. "Ingredients" and "Preparation" are optional;
   without them everything counts as preparation. A single recipe needs no number, its first line is
-  the name then. Notes in brackets after the name, like "(today)", are dropped.
+  the name then. Notes in brackets after the name, like "(today)", are dropped. A line like
+  "Serves 4", "4 servings" or "for 4 people" gives the number of servings; "Servings for all"
+  below the text applies to every recipe without such a line.
+- **Servings:** if a recipe says how many servings it makes, − and + next to the ingredients scale
+  the amounts ("600 g" for 4 → "900 g" for 6), nicely rounded. Only the amount at the start of a
+  line changes; the recipe itself stays as it is, and the next time it opens with its own number
+  again. "Add to shopping list" takes the scaled amounts.
 - **Cooking:** tap a recipe to see the ingredients and the numbered steps in large print. In the
   meal plan, on "Today" and in the [kitchen view](#kitchen-view), tapping a planned dish with a
   recipe opens the recipe straight away; "Other dish" takes you to entering one.
 - **Rating:** one to five stars per dish, for how the family liked it. Tap the set star again to
   remove the rating.
-- **Editing:** "Edit recipe" shows ingredients and preparation as text, one line per ingredient or
-  step. If both are empty, it's a dish without a recipe again. "Name, icon, photo" changes the dish
-  itself. A dish without a recipe gets one via "Recipe" in the dialog for entering a meal.
+- **Editing:** "Edit recipe" shows the servings and ingredients and preparation as text, one line
+  per ingredient or step. If both are empty, it's a dish without a recipe again. "Delete recipe"
+  (after a question) does that in one go; a dish that is in the meal plan stays there, otherwise
+  it is gone completely.
+  "Name, icon, photo" changes the dish itself. A dish without a recipe gets one via "Recipe" in the
+  dialog for entering a meal.
 - **Fill the week:** the button with the die at the top of the meal plan fills the empty days of
   the week shown (from today on) with dishes from the recipe collection, for dinner. Well-rated
   dishes come more often, poorly rated ones rarely; the same dish comes back after a week at the
@@ -1231,7 +1242,7 @@ them; the children's routines stay.
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
-- Recipes: connecting [Mealie](https://mealie.io), splitting pasted text with AI, scaling portions
+- Recipes: connecting [Mealie](https://mealie.io), splitting pasted text with AI
 - Shopping list: several lists (e.g. supermarket and chemist), sorting by category or aisle (maybe
   with AI help), ingredients from the meal plan, export to Obsidian (Markdown checklist)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan

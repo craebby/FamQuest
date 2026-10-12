@@ -24,6 +24,8 @@ export interface Dish {
   /** Rezept: Zutaten und Schritte, je ein Text; beide leer = kein Rezept. */
   ingredients: string[]
   steps: string[]
+  /** Für wie viele Portionen die Mengen gelten; ohne Angabe null. */
+  servings: number | null
   /** 1 bis 5 Sterne; ohne Bewertung null. */
   rating: number | null
 }
@@ -34,6 +36,7 @@ export interface RecipeData {
   icon: string
   ingredients: string[]
   steps: string[]
+  servings: number | null
 }
 
 export const hasRecipe = (dish: Pick<Dish, 'ingredients' | 'steps'>) =>
@@ -143,9 +146,20 @@ export const useDishImage = () =>
 
 export const useSaveRecipe = () =>
   useDishMutation(
-    ({ id, ingredients, steps }: { id: number; ingredients: string[]; steps: string[] }) =>
-      api<Dish>('PUT', `/dishes/${id}/recipe`, { ingredients, steps }),
+    ({
+      id,
+      ...recipe
+    }: {
+      id: number
+      ingredients: string[]
+      steps: string[]
+      servings: number | null
+    }) => api<Dish>('PUT', `/dishes/${id}/recipe`, recipe),
   )
+
+/** Rezept weg; ein nie geplantes Gericht geht dabei ganz. */
+export const useDeleteRecipe = () =>
+  useDishMutation((id: number) => api<null>('DELETE', `/dishes/${id}/recipe`))
 
 export const useRateDish = () =>
   useDishMutation(({ id, rating }: { id: number; rating: number | null }) =>

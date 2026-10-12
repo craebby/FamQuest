@@ -4,10 +4,11 @@ import CloseIcon from '~icons/lucide/x'
 
 import { type RecipeData, hasRecipe, useDishes, useImportRecipes } from '../../api/meals'
 import { DishPicture } from '../../components/DishPicture'
-import { Alert, Button, TextAreaField } from '../../components/ui'
+import { Alert, Button, TextAreaField, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { normalize } from '../../icons/catalog'
 import { RECIPE_LIMITS, parseRecipes, withinLimits } from './parseRecipes'
+import { MAX_SERVINGS, parseServings } from './servings'
 import { iconForName } from './suggest'
 
 /**
@@ -20,6 +21,8 @@ export function RecipeImport({ onClose }: { onClose: () => void }) {
   const dishes = useDishes()
   const save = useImportRecipes()
   const [text, setText] = useState('')
+  // Portionen für alle Rezepte, die im Text keine eigene Angabe haben.
+  const [servings, setServings] = useState('')
   const [saved, setSaved] = useState<number | null>(null)
   const dialog = useRef<HTMLDivElement>(null)
   const known = useMemo(() => dishes.data ?? [], [dishes.data])
@@ -31,9 +34,13 @@ export function RecipeImport({ onClose }: { onClose: () => void }) {
         .map(withinLimits)
         .map((recipe) => {
           const existing = known.find((dish) => normalize(dish.name) === normalize(recipe.name))
-          return { ...recipe, icon: existing?.icon ?? iconForName(t, recipe.name, known) }
+          return {
+            ...recipe,
+            icon: existing?.icon ?? iconForName(t, recipe.name, known),
+            servings: recipe.servings ?? parseServings(servings),
+          }
         }),
-    [text, known, t],
+    [text, servings, known, t],
   )
 
   useEffect(() => {
@@ -85,6 +92,18 @@ export function RecipeImport({ onClose }: { onClose: () => void }) {
               placeholder={t('recipes.import_placeholder')}
             />
             <p className="text-base text-slate-500">{t('recipes.import_hint')}</p>
+            <div className="max-w-xs">
+              <TextField
+                label={t('recipes.import_servings')}
+                hint={t('recipes.import_servings_hint')}
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={MAX_SERVINGS}
+                value={servings}
+                onChange={(event) => setServings(event.target.value)}
+              />
+            </div>
           </div>
 
           <section aria-labelledby="recipe-preview" className="flex flex-col gap-2">
@@ -123,6 +142,8 @@ export function RecipeImport({ onClose }: { onClose: () => void }) {
                             ingredients: recipe.ingredients.length,
                             steps: recipe.steps.length,
                           })}
+                          {recipe.servings !== null &&
+                            ` · ${t('recipes.servings_count', { count: recipe.servings })}`}
                         </p>
                       </div>
                       <span className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-600">

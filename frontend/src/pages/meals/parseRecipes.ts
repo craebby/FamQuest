@@ -1,3 +1,5 @@
+import { servingsIn } from './servings'
+
 /**
  * Zerlegt eingefügten Text in Rezepte, nach festen Regeln und ohne externen Dienst:
  *
@@ -7,6 +9,8 @@
  * - „Zutaten“ und „Zubereitung“ (auch englisch, mit oder ohne Doppelpunkt) teilen ein Rezept in
  *   Zutaten und Schritte, je eine Zeile. Ohne diese Überschriften ist alles Zubereitung.
  * - Aufzählungszeichen und Nummern vor Zutaten und Schritten fallen weg, leere Zeilen auch.
+ * - Eine Zeile wie „für 4 Personen“, „Portionen: 4“ oder „Zutaten für 4 Personen“ (auch als
+ *   Zusatz in Klammern hinter dem Namen) gibt die Portionen an.
  *
  * Nummerierte Schritte bleiben Schritte: Ein neues Rezept beginnt nur nach einer Leerzeile, mit
  * der nächsten Nummer (nach „1.“ kommt „2.“) und ohne Satzzeichen am Ende. In Grenzfällen zeigt
@@ -17,6 +21,8 @@ export interface ParsedRecipe {
   name: string
   ingredients: string[]
   steps: string[]
+  /** Für wie viele Portionen die Mengen gelten; ohne Angabe null. */
+  servings: number | null
 }
 
 /** So lang darf ein Name sein, bevor eine nummerierte Zeile eher ein Schritt ist. */
@@ -59,12 +65,24 @@ export function parseRecipes(text: string): ParsedRecipe[] {
 
     if (startsRecipe) {
       number = numbered ? Number(numbered[1]) : 0
-      current = { name: withoutNote(numbered ? numbered[2] : line), ingredients: [], steps: [] }
+      const name = numbered ? numbered[2] : line
+      current = {
+        name: withoutNote(name),
+        ingredients: [],
+        steps: [],
+        servings: servingsIn(/\(([^)]*)\)\s*$/.exec(name)?.[1] ?? ''),
+      }
       recipes.push(current)
       section = 'steps'
       continue
     }
     if (!current) continue
+    const servings = servingsIn(line)
+    if (servings !== null && current.servings === null) {
+      current.servings = servings
+      if (/^(zutaten|ingredients)/i.test(line)) section = 'ingredients'
+      continue
+    }
     if (INGREDIENTS.test(line)) {
       section = 'ingredients'
       continue
@@ -91,6 +109,7 @@ function isName(line: string): boolean {
 export function withinLimits(recipe: ParsedRecipe): ParsedRecipe {
   return {
     name: recipe.name.slice(0, RECIPE_LIMITS.name),
+    servings: recipe.servings,
     ingredients: recipe.ingredients
       .slice(0, RECIPE_LIMITS.lines)
       .map((line) => line.slice(0, RECIPE_LIMITS.ingredient)),

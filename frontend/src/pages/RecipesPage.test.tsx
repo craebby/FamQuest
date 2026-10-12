@@ -23,6 +23,7 @@ const dish = (overrides: Partial<Dish> = {}): Dish => ({
   times_planned: 4,
   ingredients: [],
   steps: [],
+  servings: null,
   rating: null,
   ...overrides,
 })
@@ -38,7 +39,7 @@ const WRAPS = dish({
 
 const PASTED = `1. Rührei-Pfanne mit Pellkartoffeln (heute)
 
-Zutaten
+Zutaten für 4 Personen
 
 ca. 600 g Pellkartoffeln
 8 Eier
@@ -87,6 +88,7 @@ function mockRecipes(dishes: Dish[], extra: Parameters<typeof mockApi>[0] = {}) 
     },
     'PUT /api/dishes/2/rating': (body) => replace({ ...WRAPS, ...(body as object) }),
     'PUT /api/dishes/2/recipe': (body) => replace({ ...WRAPS, ...(body as object) }),
+    'DELETE /api/dishes/2/recipe': () => new Response(null, { status: 204 }),
     ...extra,
   })
 }
@@ -116,10 +118,12 @@ describe('Rezepte', () => {
     expect(dialog.getByRole('button', { name: '0 Rezepte speichern' })).toBeDisabled()
     await user.click(dialog.getByRole('textbox', { name: 'Text mit Rezepten' }))
     await user.paste(PASTED)
+    // Gilt nur für Rezepte ohne eigene Angabe: Die Rührei-Pfanne bleibt bei 4.
+    await user.type(dialog.getByRole('spinbutton', { name: 'Portionen für alle' }), '3')
 
     const preview = within(dialog.getByRole('region', { name: 'Erkannt' }))
     expect(preview.getByText('Rührei-Pfanne mit Pellkartoffeln')).toBeVisible()
-    expect(preview.getByText('Zutaten: 2 · Schritte: 2')).toBeVisible()
+    expect(preview.getByText('Zutaten: 2 · Schritte: 2 · 4 Portionen')).toBeVisible()
     expect(preview.getByText('neu')).toBeVisible()
     // Fischstäbchen gibt es schon als Gericht; es bekommt nur das Rezept.
     expect(preview.getByText('Gericht gibt es schon')).toBeVisible()
@@ -135,12 +139,14 @@ describe('Rezepte', () => {
           icon: expect.stringMatching(/^fluent-emoji-flat:/),
           ingredients: ['ca. 600 g Pellkartoffeln', '8 Eier'],
           steps: ['Pellkartoffeln anbraten.', 'Eier drübergießen.'],
+          servings: 4,
         },
         {
           name: 'Fischstäbchen',
           icon: 'fluent-emoji-flat:fish',
           ingredients: [],
           steps: ['Fischstäbchen im Ofen backen (15-20 Min).'],
+          servings: 3,
         },
       ],
     })
@@ -173,13 +179,16 @@ describe('Rezepte', () => {
     const steps = dialog.getByRole('textbox', { name: 'Zubereitung, ein Schritt pro Zeile' })
     await user.clear(steps)
     await user.type(steps, 'Alles anbraten.{Enter}{Enter}  Einrollen.  ')
+    await user.type(dialog.getByRole('spinbutton', { name: 'Portionen' }), '4')
     await user.click(dialog.getByRole('button', { name: 'Speichern' }))
 
     expect(calls.find((call) => call.key === 'PUT /api/dishes/2/recipe')?.body).toEqual({
       ingredients: ['400 g Hähnchenstreifen', '8 Tortillas'],
       steps: ['Alles anbraten.', 'Einrollen.'],
+      servings: 4,
     })
     expect(await dialog.findByText('Einrollen.')).toBeVisible()
+    expect(dialog.getByText('4 Portionen')).toBeVisible()
   })
 
   it('zeigt im Essensplan beim Gericht mit Rezept zuerst das Rezept', async () => {
@@ -250,10 +259,51 @@ describe('Rezepte', () => {
     })
   })
 
+  it('rechnet die Zutaten auf andere Portionen um', async () => {
+    const user = userEvent.setup()
+    mockRecipes([{ ...WRAPS, servings: 4 }])
+    renderApp('/meals/recipes')
+
+    await user.click(await screen.findByRole('button', { name: /Hähnchen-Wraps/ }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Hähnchen-Wraps' }))
+    expect(dialog.getByText('4 Portionen')).toBeVisible()
+    await user.click(dialog.getByRole('button', { name: 'Mehr Portionen' }))
+    await user.click(dialog.getByRole('button', { name: 'Mehr Portionen' }))
+
+    expect(dialog.getByText('6 Portionen')).toBeVisible()
+    expect(dialog.getByText('600 g Hähnchenstreifen')).toBeVisible()
+    expect(dialog.getByText('12 Tortillas')).toBeVisible()
+  })
+
+  it('löscht ein Rezept nach Rückfrage, das Gericht bleibt', async () => {
+    const user = userEvent.setup()
+    const calls = mockRecipes([{ ...WRAPS, servings: 4 }])
+    renderApp('/meals/recipes')
+
+    await user.click(await screen.findByRole('button', { name: /Hähnchen-Wraps/ }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Hähnchen-Wraps' }))
+    await user.click(dialog.getByRole('button', { name: 'Rezept löschen' }))
+    expect(dialog.getByText(/wirklich löschen/)).toBeVisible()
+    await user.click(dialog.getByRole('button', { name: 'Rezept löschen' }))
+
+    expect(calls.some((call) => call.key === 'DELETE /api/dishes/2/recipe')).toBe(true)
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Hähnchen-Wraps' })).toBeNull())
+  })
+
+  it('zeigt ohne Portionen keinen Umrechner', async () => {
+    const user = userEvent.setup()
+    mockRecipes([WRAPS])
+    renderApp('/meals/recipes')
+
+    await user.click(await screen.findByRole('button', { name: /Hähnchen-Wraps/ }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Hähnchen-Wraps' }))
+    expect(dialog.queryByRole('button', { name: 'Mehr Portionen' })).toBeNull()
+  })
+
   it('setzt die Zutaten eines Rezepts auf die Einkaufsliste, Salz und Vorhandenes erst nicht', async () => {
     const user = userEvent.setup()
     const calls = mockRecipes(
-      [{ ...WRAPS, ingredients: [...WRAPS.ingredients, 'Salz', '1 Zwiebel'] }],
+      [{ ...WRAPS, ingredients: [...WRAPS.ingredients, 'Salz', '1 Zwiebel'], servings: 4 }],
       {
         'GET /api/shopping/list': Response.json({
           items: [
@@ -268,6 +318,9 @@ describe('Rezepte', () => {
     renderApp('/meals/recipes')
 
     await user.click(await screen.findByRole('button', { name: /Hähnchen-Wraps/ }))
+    // Für zwei statt vier Portionen: Auf die Liste kommen die halben Mengen.
+    await user.click(screen.getByRole('button', { name: 'Weniger Portionen' }))
+    await user.click(screen.getByRole('button', { name: 'Weniger Portionen' }))
     await user.click(screen.getByRole('button', { name: 'Auf die Einkaufsliste' }))
     const dialog = within(screen.getByRole('dialog', { name: 'Zutaten für „Hähnchen-Wraps“' }))
 
@@ -288,7 +341,7 @@ describe('Rezepte', () => {
       {
         name: 'Hähnchenstreifen',
         icon: expect.stringMatching(/^fluent-emoji-flat:/),
-        note: '400 g',
+        note: '200 g',
       },
     ])
   })

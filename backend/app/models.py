@@ -496,7 +496,10 @@ class Dish(Base):
     """
 
     __tablename__ = "dishes"
-    __table_args__ = (CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),)
+    __table_args__ = (
+        CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),
+        CheckConstraint("servings BETWEEN 1 AND 50", name="servings_range"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
@@ -507,6 +510,8 @@ class Dish(Base):
     # Rezept: Zutaten („ca. 600 g Pellkartoffeln“) und Schritte, je ein Text, in Reihenfolge.
     ingredients: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
     steps: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
+    # Für wie viele Portionen die Mengen der Zutaten gelten; ohne Angabe None.
+    servings: Mapped[int | None] = mapped_column(SmallInteger)
     # Wie es der Familie schmeckt, 1 bis 5 Sterne; steuert „Woche füllen“.
     rating: Mapped[int | None] = mapped_column(SmallInteger)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

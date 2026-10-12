@@ -4,17 +4,29 @@ import DiceIcon from '~icons/fluent-emoji-flat/game-die'
 import BookIcon from '~icons/fluent-emoji-flat/open-book'
 import PencilIcon from '~icons/lucide/pencil'
 import SwapIcon from '~icons/lucide/repeat'
+import TrashIcon from '~icons/lucide/trash'
 import CloseIcon from '~icons/lucide/x'
+import MinusIcon from '~icons/lucide/minus'
+import PlusIcon from '~icons/lucide/plus'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
+import PlateIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 
-import { type Dish, hasRecipe, useDishes, useRateDish, useSaveRecipe } from '../../api/meals'
+import {
+  type Dish,
+  hasRecipe,
+  useDeleteRecipe,
+  useDishes,
+  useRateDish,
+  useSaveRecipe,
+} from '../../api/meals'
 import { DishPicture } from '../../components/DishPicture'
-import { Alert, Button, TextAreaField } from '../../components/ui'
+import { Alert, Button, TextAreaField, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { DishEditor } from './DishEditor'
 import { IngredientsDialog } from './IngredientsDialog'
 import { StarRating } from './StarRating'
 import { RECIPE_LIMITS } from './parseRecipes'
+import { MAX_SERVINGS, decimalOf, parseServings, scaleIngredient } from './servings'
 
 type Mode = 'view' | 'recipe' | 'dish'
 
@@ -40,7 +52,9 @@ export function RecipeView({
   const dishes = useDishes()
   const dish = dishes.data?.find((candidate) => candidate.id === dishId)
   const rate = useRateDish()
+  const remove = useDeleteRecipe()
   const [mode, setMode] = useState<Mode>('view')
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const dialog = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -79,7 +93,7 @@ export function RecipeView({
           {dish && <DishPicture icon={dish.icon} imageUrl={dish.image_url} className="size-16" />}
           <h2
             id="recipe-title"
-            className="min-w-0 flex-1 text-3xl leading-tight font-extrabold break-words text-slate-800"
+            className="min-w-0 flex-1 basis-48 text-3xl leading-tight font-extrabold break-words text-slate-800"
           >
             {dish?.name ?? t('common.loading')}
           </h2>
@@ -96,10 +110,12 @@ export function RecipeView({
         </div>
         {rate.error ? <Alert>{errorMessage(t, rate.error)}</Alert> : null}
         {reroll?.error ? <Alert>{errorMessage(t, reroll.error)}</Alert> : null}
+        {remove.error ? <Alert>{errorMessage(t, remove.error)}</Alert> : null}
 
         {dish && mode === 'view' && (
           <>
-            <Recipe dish={dish} />
+            {/* Neu gespeicherte Portionen setzen den Umrechner zurück. */}
+            <Recipe key={dish.servings} dish={dish} />
             <div className="flex flex-wrap gap-3">
               <Button variant="secondary" onClick={() => setMode('recipe')}>
                 <PencilIcon className="size-6" aria-hidden="true" />
@@ -129,7 +145,43 @@ export function RecipeView({
                   {t('recipes.change_meal')}
                 </Button>
               )}
+              {hasRecipe(dish) && !confirmDelete && (
+                <Button
+                  variant="danger"
+                  className={reroll || onChangeMeal ? '' : 'ml-auto'}
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <TrashIcon className="size-6" aria-hidden="true" />
+                  {t('recipes.delete')}
+                </Button>
+              )}
             </div>
+            {hasRecipe(dish) && confirmDelete && (
+              <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
+                <p className="text-lg font-semibold text-red-800">
+                  {t('recipes.delete_confirm', { name: dish.name })}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="danger"
+                    disabled={remove.isPending}
+                    onClick={() =>
+                      remove.mutate(
+                        dish.id,
+                        // Ohne Rezept gibt es hier nichts mehr zu sehen.
+                        { onSuccess: onClose },
+                      )
+                    }
+                  >
+                    <TrashIcon className="size-6" aria-hidden="true" />
+                    {t('recipes.delete')}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
+                    {t('actions.cancel')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </>
         )}
         {dish && mode === 'recipe' && <RecipeEditor dish={dish} onDone={() => setMode('view')} />}
@@ -139,10 +191,17 @@ export function RecipeView({
   )
 }
 
-/** Zutaten links (am Handy oben), Schritte nummeriert daneben. */
+/**
+ * Zutaten links (am Handy oben), Schritte nummeriert daneben. Stehen Portionen dabei, rechnen
+ * −/+ die Mengen der Zutaten um (nur zum Anschauen und für den Einkauf, gespeichert wird nichts).
+ */
 function Recipe({ dish }: { dish: Dish }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [shopping, setShopping] = useState(false)
+  const [servings, setServings] = useState(dish.servings)
+  const factor = dish.servings && servings ? servings / dish.servings : 1
+  const decimal = decimalOf(i18n.language)
+  const ingredients = dish.ingredients.map((line) => scaleIngredient(line, factor, decimal))
   if (!hasRecipe(dish)) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
@@ -158,8 +217,37 @@ function Recipe({ dish }: { dish: Dish }) {
           <h3 id="recipe-ingredients" className="text-xl font-extrabold text-orange-600">
             {t('recipes.ingredients')}
           </h3>
+          {servings !== null && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                className="px-3"
+                aria-label={t('recipes.servings_less')}
+                disabled={servings <= 1}
+                onClick={() => setServings(servings - 1)}
+              >
+                <MinusIcon className="size-7" aria-hidden="true" />
+              </Button>
+              <p
+                aria-live="polite"
+                className="flex min-w-0 flex-1 items-center justify-center gap-2 text-lg font-bold text-slate-700"
+              >
+                <PlateIcon className="size-8 shrink-0" aria-hidden="true" />
+                {t('recipes.servings_count', { count: servings })}
+              </p>
+              <Button
+                variant="secondary"
+                className="px-3"
+                aria-label={t('recipes.servings_more')}
+                disabled={servings >= MAX_SERVINGS}
+                onClick={() => setServings(servings + 1)}
+              >
+                <PlusIcon className="size-7" aria-hidden="true" />
+              </Button>
+            </div>
+          )}
           <ul className="flex flex-col gap-1.5">
-            {dish.ingredients.map((ingredient, index) => (
+            {ingredients.map((ingredient, index) => (
               <li
                 key={index}
                 className="rounded-xl bg-orange-50 px-3 py-2 text-lg leading-snug font-semibold text-slate-800"
@@ -175,7 +263,7 @@ function Recipe({ dish }: { dish: Dish }) {
           {shopping && (
             <IngredientsDialog
               title={t('recipes.ingredients_for', { name: dish.name })}
-              lines={dish.ingredients}
+              lines={ingredients}
               onClose={() => setShopping(false)}
             />
           )}
@@ -216,12 +304,13 @@ const lines = (text: string, max: number) =>
     .map((line) => line.slice(0, max))
     .slice(0, RECIPE_LIMITS.lines)
 
-/** Zutaten und Schritte als Text, je eine Zeile; beides leer nimmt das Rezept weg. */
+/** Portionen, Zutaten und Schritte als Text, je eine Zeile; beides leer nimmt das Rezept weg. */
 function RecipeEditor({ dish, onDone }: { dish: Dish; onDone: () => void }) {
   const { t } = useTranslation()
   const save = useSaveRecipe()
   const [ingredients, setIngredients] = useState(dish.ingredients.join('\n'))
   const [steps, setSteps] = useState(dish.steps.join('\n'))
+  const [servings, setServings] = useState(dish.servings?.toString() ?? '')
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -230,6 +319,7 @@ function RecipeEditor({ dish, onDone }: { dish: Dish; onDone: () => void }) {
         id: dish.id,
         ingredients: lines(ingredients, RECIPE_LIMITS.ingredient),
         steps: lines(steps, RECIPE_LIMITS.step),
+        servings: parseServings(servings),
       },
       { onSuccess: onDone },
     )
@@ -238,6 +328,18 @@ function RecipeEditor({ dish, onDone }: { dish: Dish; onDone: () => void }) {
   return (
     <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-1">
       {save.error ? <Alert>{errorMessage(t, save.error)}</Alert> : null}
+      <div className="max-w-xs">
+        <TextField
+          label={t('recipes.servings_label')}
+          hint={t('recipes.servings_hint')}
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={MAX_SERVINGS}
+          value={servings}
+          onChange={(event) => setServings(event.target.value)}
+        />
+      </div>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <TextAreaField
           label={t('recipes.ingredients_hint')}

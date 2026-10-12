@@ -48,6 +48,8 @@ DEFAULT_MEALS: list[Meal] = ["dinner"]
 MAX_RECIPE_LINES = 60
 Ingredient = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Step = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+# So viele Portionen kann ein Rezept haben.
+MAX_SERVINGS = 50
 # So viele Rezepte auf einmal beim Einfügen.
 MAX_IMPORT = 50
 
@@ -79,6 +81,8 @@ class DishOut(BaseModel):
     times_planned: int
     ingredients: list[str]
     steps: list[str]
+    # Für wie viele Portionen die Mengen gelten; ohne Angabe None.
+    servings: int | None
     # 1 bis 5 Sterne, ohne Bewertung None.
     rating: int | None
 
@@ -112,6 +116,7 @@ class DishIn(BaseModel):
 class RecipeIn(BaseModel):
     ingredients: list[Ingredient] = Field(default=[], max_length=MAX_RECIPE_LINES)
     steps: list[Step] = Field(default=[], max_length=MAX_RECIPE_LINES)
+    servings: Annotated[int, Field(ge=1, le=MAX_SERVINGS)] | None = None
 
 
 class ImportedRecipe(RecipeIn):
@@ -344,6 +349,7 @@ def _dishes_out(db: DbSession, dish_id: int | None = None) -> list[DishOut]:
             times_planned=count or 0,
             ingredients=dish.ingredients,
             steps=dish.steps,
+            servings=dish.servings,
             rating=dish.rating,
         )
         for dish, last, count in db.execute(query).all()
@@ -380,11 +386,30 @@ def update_dish(dish_id: int, body: DishIn, _: CurrentSession, db: DbSession) ->
 
 @router.put("/dishes/{dish_id}/recipe")
 def set_recipe(dish_id: int, body: RecipeIn, _: CurrentSession, db: DbSession) -> DishOut:
-    """Zutaten und Schritte ersetzen; beide leer macht aus dem Rezept wieder ein Gericht."""
+    """Zutaten, Schritte und Portionen ersetzen; Zutaten und Schritte leer macht aus dem Rezept
+    wieder ein Gericht."""
     dish = get_dish(db, dish_id)
     dish.ingredients, dish.steps = body.ingredients, body.steps
+    dish.servings = body.servings if body.ingredients or body.steps else None
     db.commit()
     return _dishes_out(db, dish.id)[0]
+
+
+@router.delete("/dishes/{dish_id}/recipe", status_code=status.HTTP_204_NO_CONTENT)
+def delete_recipe(dish_id: int, _: CurrentSession, db: DbSession) -> None:
+    """Nimmt das Rezept weg. Stand das Gericht nie im Essensplan (z. B. nur eingefügt), geht es
+    ganz, sonst bliebe es unsichtbar in den Vorschlägen. Geplantes bleibt als Gericht ohne
+    Rezept."""
+    dish = get_dish(db, dish_id)
+    planned = db.scalar(select(exists().where(MealPlanEntry.dish_id == dish.id)))
+    if planned:
+        dish.ingredients, dish.steps, dish.servings = [], [], None
+        db.commit()
+        return
+    image = dish.image
+    db.delete(dish)
+    db.commit()
+    delete_image(IMAGE_FOLDER, image)
 
 
 @router.put("/dishes/{dish_id}/rating")
@@ -408,6 +433,7 @@ def import_recipes(body: RecipeImport, _: CurrentSession, db: DbSession) -> list
             dish = Dish(name=recipe.name, icon=recipe.icon)
             db.add(dish)
         dish.ingredients, dish.steps = recipe.ingredients, recipe.steps
+        dish.servings = recipe.servings
         db.flush()
         if dish.id not in ids:
             ids.append(dish.id)

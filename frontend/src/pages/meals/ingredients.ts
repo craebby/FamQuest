@@ -16,8 +16,8 @@ export const NOTE_MAX = 60
 /** So lang darf ein Artikelname sein (wie im Backend). */
 const NAME_MAX = 100
 
-const APPROX = String.raw`(?:ca\.?|circa|etwa|approx\.?|about|je)\s*`
-const AMOUNT = String.raw`(?:\d+(?:[.,/]\d+)?|[½¼¾⅓⅔])(?:\s*(?:-|–|bis|to)\s*(?:\d+(?:[.,/]\d+)?|[½¼¾⅓⅔]))?`
+export const APPROX = String.raw`(?:ca\.?|circa|etwa|approx\.?|about|je)\s*`
+export const AMOUNT = String.raw`(?:\d+(?:[.,/]\d+)?|[½¼¾⅓⅔])(?:\s*(?:-|–|bis|to)\s*(?:\d+(?:[.,/]\d+)?|[½¼¾⅓⅔]))?`
 const UNITS = [
   'kg',
   'g',
