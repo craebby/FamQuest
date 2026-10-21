@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
+import type { Area } from '../pages/shopping/areas'
+
 import { ApiError, api, apiGet } from './client'
 import {
   type ShoppingOp,
@@ -27,6 +29,10 @@ export interface ListItem {
   /** Menge oder Hinweis, z. B. „2 ×“ oder „laktosefrei“. */
   note: string | null
   checked: boolean
+  /** Laden bzw. Bereich, wenn von Hand verschoben; null = automatisch (siehe areas.ts). */
+  area: Area | null
+  /** Platz im Bereich, wenn von Hand sortiert; null = nach der Zeit des Eintragens. */
+  position: number | null
 }
 
 export interface ShoppingList {
@@ -139,6 +145,19 @@ async function send(queryClient: QueryClient, op: ShoppingOp): Promise<ListItem 
     }
     case 'clear':
       return api<null>('DELETE', '/shopping/list/checked')
+    case 'move': {
+      const id = await resolveId(queryClient, op.variables.id, op.variables.name)
+      if (id === undefined) return null
+      const { area } = op.variables
+      return unlessGone(api<null>('PUT', `/shopping/items/${id}/area`, { area }))
+    }
+    case 'order': {
+      const ids = await Promise.all(
+        op.variables.items.map(({ id, name }) => resolveId(queryClient, id, name)),
+      )
+      const known = ids.filter((id) => id !== undefined)
+      return api<null>('PUT', '/shopping/order', { ids: known })
+    }
   }
 }
 
@@ -178,7 +197,7 @@ export function shoppingOpOptions<K extends ShoppingOpKind>(
 
 /** Gibt die Optionen für gespeicherte Änderungen als Vorgabe an den QueryClient. */
 export function registerShoppingOps(queryClient: QueryClient) {
-  for (const kind of ['add', 'check', 'remove', 'clear'] as const)
+  for (const kind of ['add', 'check', 'remove', 'clear', 'move', 'order'] as const)
     queryClient.setMutationDefaults(
       [...SHOPPING_OP_KEY, kind],
       shoppingOpOptions(queryClient, kind),
@@ -199,6 +218,12 @@ export const useCheckItem = () => useShoppingOp('check')
 export const useRemoveFromList = () => useShoppingOp('remove')
 
 export const useClearChecked = () => useShoppingOp('clear')
+
+/** In einen anderen Laden oder Bereich verschieben; geht wie das Abhaken auch ohne Netz. */
+export const useMoveItem = () => useShoppingOp('move')
+
+/** Reihenfolge innerhalb eines Bereichs, z. B. nach dem Laufweg im Laden. */
+export const useOrderItems = () => useShoppingOp('order')
 
 /** Bekannte Artikel ändern braucht Netz; ohne kommt sofort der Fehler statt ewigem Warten. */
 function useItemMutation<TVariables, TResult>(

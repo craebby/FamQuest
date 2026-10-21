@@ -1,3 +1,4 @@
+import type { Area } from '../pages/shopping/areas'
 import type { ListItem, ShoppingList } from './shopping'
 
 /**
@@ -10,6 +11,10 @@ export interface ShoppingOpVariables {
   check: { id: number; name: string; checked: boolean }
   remove: { id: number; name: string }
   clear: void
+  /** `area` null gibt den Artikel an die automatische Zuordnung zurück. */
+  move: { id: number; name: string; area: Area | null }
+  /** Artikel eines Bereichs in der neuen Reihenfolge. */
+  order: { items: { id: number; name: string }[] }
 }
 
 export type ShoppingOpKind = keyof ShoppingOpVariables
@@ -62,6 +67,8 @@ export function applyOp(list: ShoppingList, op: ShoppingOp): ShoppingList {
         icon,
         note: note || null,
         checked: false,
+        area: existing?.area ?? null,
+        position: existing?.position ?? null,
       }
       return { items: insertOpen(rest, added) }
     }
@@ -77,6 +84,22 @@ export function applyOp(list: ShoppingList, op: ShoppingOp): ShoppingList {
     }
     case 'clear':
       return { items: items.filter((item) => !item.checked) }
+    case 'move': {
+      const { id, name, area } = op.variables
+      const index = indexOf(items, id, name)
+      const moved = (item: ListItem) =>
+        item.area === area ? item : { ...item, area, position: null }
+      return { items: items.map((item, i) => (i === index ? moved(item) : item)) }
+    }
+    case 'order': {
+      const positions = op.variables.items.map(({ id, name }) => indexOf(items, id, name))
+      return {
+        items: items.map((item, i) => {
+          const position = positions.indexOf(i)
+          return position === -1 ? item : { ...item, position }
+        }),
+      }
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { type Page, expect, test } from '@playwright/test'
+import { type Locator, type Page, expect, test } from '@playwright/test'
 
 // Die Tests bauen aufeinander auf: Die Datenbank wird nur einmal pro Lauf neu angelegt.
 test.describe.configure({ mode: 'serial' })
@@ -47,6 +47,15 @@ async function login(page: Page) {
   await page.getByLabel('E-Mail').fill(EMAIL)
   await page.getByLabel('Passwort').fill(PASSWORD)
   await page.getByRole('button', { name: 'Anmelden' }).click()
+}
+
+/** Antippen und warten, bis die Änderung beim Server ist; sonst verliert ein Neuladen sie. */
+async function tapAndSave(page: Page, target: Locator) {
+  const saved = page.waitForResponse(
+    (response) => response.url().includes('/api/') && response.request().method() !== 'GET',
+  )
+  await target.tap()
+  await saved
 }
 
 test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte → rückgängig', async ({
@@ -103,7 +112,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
 
   // Antippen erledigt und bucht Punkte, erneutes Tippen macht rückgängig –
   // auch nach Neuladen gespeichert.
-  await card.tap()
+  await tapAndSave(page, card)
   await expect(card).toHaveAttribute('aria-pressed', 'true')
   await expect(card.getByTestId('points-feedback')).toHaveText('+2')
   await page.reload()
@@ -113,7 +122,7 @@ test('Erster Meilenstein: Setup → Kind → Aufgabe → antippen → Punkte →
   await column.getByRole('button', { name: 'Morgens: alles erledigt' }).tap()
   await expect(card).toHaveAttribute('aria-pressed', 'true')
 
-  await card.tap()
+  await tapAndSave(page, card)
   await expect(card).toHaveAttribute('aria-pressed', 'false')
   await page.reload()
   await expect(card).toHaveAttribute('aria-pressed', 'false')
@@ -283,7 +292,7 @@ test('Flexible Aufgabe: demnächst sichtbar und früher erledigbar', async ({ pa
   await expect(card).toBeVisible()
 
   // Früher erledigen: Sie wandert zu den heutigen Aufgaben und zählt als erledigt.
-  await card.tap()
+  await tapAndSave(page, card)
   await expect(soon).toBeHidden()
   await page.reload()
   // Heute ist damit alles erledigt; der Abschnitt klappt zu.
@@ -322,7 +331,7 @@ test('Einkauf: auf der Startseite eintragen, in der Liste abhaken', async ({ pag
 
   await page.getByRole('link', { name: 'Einkauf', exact: true }).tap()
   const milk = page.getByRole('button', { name: 'Milch', exact: true })
-  await milk.tap()
+  await tapAndSave(page, milk)
   await page.reload()
   // Abgehakt bleibt es bis zum Ende des Tages sichtbar, auf „Heute“ fehlt es nicht mehr.
   await expect(

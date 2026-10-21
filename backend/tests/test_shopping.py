@@ -54,6 +54,8 @@ def test_add_without_parent_pin(client, admin, now):
         "icon": MILK,
         "note": "2 ×",
         "checked": False,
+        "area": None,
+        "position": None,
     }
     assert listed(client) == [item]
     assert items(client) == [
@@ -184,6 +186,8 @@ def test_rename_and_change_icon(client, admin, now):
         "icon": BREAD,
         "note": None,
         "checked": False,
+        "area": None,
+        "position": None,
     }
 
 
@@ -221,3 +225,60 @@ def test_invalid_input_is_rejected(client, admin):
     ):
         response = client.post("/api/shopping/list", json=body, headers=csrf(admin))
         assert response.status_code == 422, body
+
+
+def move(client, me, item_id, area):
+    return client.put(f"/api/shopping/items/{item_id}/area", json={"area": area}, headers=csrf(me))
+
+
+def order(client, me, ids):
+    return client.put("/api/shopping/order", json={"ids": ids}, headers=csrf(me))
+
+
+def test_move_to_other_area_without_parent_pin(client, admin, now):
+    soap = add(client, admin, name="Seife")
+
+    assert move(client, admin, soap["id"], "drugstore").status_code == 204
+
+    assert listed(client)[0]["area"] == "drugstore"
+    # Der Bereich bleibt am Artikel, auch nach dem Abhaken und neuen Eintragen.
+    client.delete(f"/api/shopping/list/{soap['id']}", headers=csrf(admin))
+    assert add(client, admin, name="seife")["area"] == "drugstore"
+    # Zurück zur automatischen Zuordnung.
+    assert move(client, admin, soap["id"], None).status_code == 204
+    assert listed(client)[0]["area"] is None
+
+
+def test_order_within_area(client, admin, now):
+    milk, bread, eggs = (add(client, admin, name=name) for name in ("Milch", "Brot", "Eier"))
+
+    assert order(client, admin, [eggs["id"], 99999, milk["id"]]).status_code == 204
+
+    positions = {item["name"]: item["position"] for item in listed(client)}
+    # Unbekannte IDs werden übergangen, nicht genannte behalten ihren Platz (keinen).
+    assert positions == {"Eier": 0, "Milch": 2, "Brot": None}
+    # Die Reihenfolge bleibt beim Abhaken erhalten.
+    check(client, admin, eggs["id"])
+    check(client, admin, eggs["id"], checked=False)
+    assert {item["name"]: item["position"] for item in listed(client)}["Eier"] == 0
+
+
+def test_move_resets_position(client, admin, now):
+    milk = add(client, admin)
+    order(client, admin, [milk["id"]])
+
+    move(client, admin, milk["id"], "chilled")
+    assert listed(client)[0]["position"] is None
+    # Derselbe Bereich noch einmal ändert nichts.
+    order(client, admin, [milk["id"]])
+    move(client, admin, milk["id"], "chilled")
+    assert listed(client)[0]["position"] == 0
+
+
+def test_move_and_order_reject_invalid_input(client, admin, now):
+    milk = add(client, admin)
+
+    assert move(client, admin, milk["id"], "kiosk").status_code == 422
+    assert move(client, admin, 99999, "online").json()["code"] == "shopping.not_found"
+    assert order(client, admin, list(range(501))).status_code == 422
+    assert client.put("/api/shopping/order", json={"ids": [milk["id"]]}).status_code in (401, 403)

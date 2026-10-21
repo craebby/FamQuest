@@ -91,7 +91,8 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 - Ein Tipp hakt ab, ein weiterer nimmt es zurück. Abgehakte bleiben durchgestrichen sichtbar bis zum Ende des Tages in der Zeitzone der Familie, danach sind sie von der Liste; „Abgehakte entfernen“ räumt sie sofort weg.
 - Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
 - Als App am Handy (PWA) mit Offline-Nutzung im Laden: siehe „Einkaufsliste als App“ (Phase 10).
-- Später: mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+- Nach Laden und Bereich geordnet: siehe „Einkaufsliste nach Laden“ (Phase 11).
+- Später: mehrere Listen, Reihenfolge der Supermarkt-Bereiche je Familie, Läden mit KI erkennen, Export nach Obsidian.
 
 **Einkaufsliste als App** *(Phase 10, entschieden am 2026-10-21)*
 
@@ -103,6 +104,19 @@ Vorgezogen aus „Unterwegs“ (jetzt Version 1.5), erschienen mit 1.3: Im Laden
 - Daten auf dem Gerät (localStorage, 30 Tage): Anmeldung, Einkaufsliste, Vorschläge und die noch nicht gesendeten Änderungen. Abmelden löscht Liste und Vorschläge. Mit gespeicherter Anmeldung zeigt die App bei Netzfehlern den gespeicherten Stand statt einer Fehlerseite; nur 401 führt zur Anmeldung.
 - Ohne Netz gehen Abhaken, Zurücknehmen, Eintragen, Entfernen und „Abgehakte entfernen“. Sie stehen in einer Warteschlange und werden der Reihe nach gesendet, sobald wieder Netz da ist (auch nach einem Neustart der App); die Liste zeigt sie sofort. Ein offline eingetragener Artikel hat bis dahin eine vorläufige ID; was mit ihm passiert (abhaken, entfernen), findet beim Senden den Artikel über den Namen. Netzfehler und 5xx werden wiederholt, 404 („gibt es nicht mehr“) gilt als erledigt. Oben steht „Offline“ und wie viele Änderungen warten bzw. „Wird gesendet …“.
 - Mit Netz: eigene Artikel umbenennen oder löschen (ohne Netz kommt sofort „Keine Verbindung zum Server“), Anmelden.
+
+**Einkaufsliste nach Laden** *(Phase 11, 2026-10-21)*
+
+Wunsch: Die Liste soll erkennen, was in den Supermarkt, die Drogerie, den Baumarkt oder online gehört, im Supermarkt Blöcke entlang des Laufwegs bilden (Obst und Gemüse zuerst, dann Trockenes, dann Kühlung) und sich von Hand umsortieren lassen. Entschieden habe ich (Claude) die Einzelheiten, während der Nutzer unterwegs war; sie stehen zur Prüfung.
+
+- Läden: Supermarkt, Drogerie, Baumarkt, Online (feste Reihenfolge). Bereiche im Supermarkt in dieser Reihenfolge: Obst & Gemüse, Brot & Backwaren, Vorrat (Nudeln, Reis, Konserven, Öl, Gewürze, Müsli, Aufstriche, Kaffee, Tee), Süßes & Snacks, Getränke, Haushalt & Tier (Müllbeutel, Folie, Kerzen, Batterien, Tierfutter), Kühlung (Milchprodukte, Käse, Wurst, Fleisch, Fisch, Eier), Tiefkühl, Sonstiges. Hygiene, Putz- und Waschmittel, Papier und Babybedarf gehören zur Drogerie.
+- Automatische Zuordnung nach festen Regeln im Frontend (`pages/shopping/areas.ts`, kein externer Dienst): Stichwörter auf Deutsch und Englisch im Namen (klein, ohne Umlautpunkte). Gewinnt das Stichwort, das am weitesten hinten endet, bei Gleichstand das längere; so zählt das letzte Wort eines zusammengesetzten Worts („Milchschokolade“ → Süßes, „Orangensaft“ → Getränke). Stichwörter bis drei Buchstaben nur am Wortende („Kräutertee“, nicht „Teelichter“). „TK“, „Tiefkühl…“ und „frozen“ am Anfang → Tiefkühl. Ohne Stichwort entscheidet das Symbol, sonst „Sonstiges“. Die Regeln greifen bei jeder Anzeige, verbesserte Regeln gelten also auch für alte Artikel.
+- Symbol beim Eintragen: Findet sich keins zum Namen, bekommt ein Artikel für einen anderen Laden das Symbol des Ladens (Drogerie: Lotionflasche, Baumarkt: Werkzeugkasten, Online: Paket) statt der Einkaufstüten.
+- Anzeige: offene Artikel nach Laden, im Supermarkt nach Bereich mit Symbol und Name als Überschrift. Laden-Überschriften nur, wenn nicht alles aus dem Supermarkt kommt; die Überschrift „Sonstiges“ entfällt, wenn sie der einzige Bereich ist. Die Bereiche fließen in Spalten (am Display nebeneinander, am Handy untereinander). Abgehakte stehen wie bisher ungeordnet darunter. Die Kachel auf „Heute“ bleibt in der Reihenfolge des Eintragens.
+- „Ordnen“ (ohne Eltern-PIN): Pfeile ↑/↓ je Artikel ändern die Reihenfolge innerhalb des Bereichs; ein Knopf mit dem Symbol des Bereichs öffnet „Wo gibt es …?“ mit allen Bereichen und Läden. Wer den automatischen Bereich wählt, gibt den Artikel an die Regeln zurück. Beim Ordnen wird nicht abgehakt; „Fertig“ beendet es.
+- Gespeichert am Artikel (`shopping_items.area`, `shopping_items.position`), damit er beim nächsten Eintragen wieder an derselben Stelle landet. Verschieben in einen anderen Bereich setzt den Platz zurück (hinten). Ohne Platz kommt ein Artikel nach den sortierten in der Reihenfolge des Eintragens.
+- API: `PUT /api/shopping/items/{id}/area` (`area` oder `null` = automatisch), `PUT /api/shopping/order` (`ids` eines Bereichs in neuer Reihenfolge, höchstens 500, Unbekanntes wird übergangen). Die Liste liefert `area` und `position` mit.
+- Offline: Verschieben und Ordnen laufen über dieselbe Warteschlange wie das Abhaken (Phase 10), auch für offline Eingetragenes.
 
 **Rezepte** *(Phase 9, entschieden am 2026-10-12)*
 

@@ -20,9 +20,25 @@ const MILK = 'fluent-emoji-flat:glass-of-milk'
 
 const LIST: ShoppingList = {
   items: [
-    { id: 1, name: 'Milch', icon: MILK, note: '2 ×', checked: false },
-    { id: 2, name: 'Brot', icon: 'fluent-emoji-flat:bread', note: null, checked: false },
-    { id: 3, name: 'Eier', icon: 'fluent-emoji-flat:egg', note: null, checked: true },
+    { id: 1, name: 'Milch', icon: MILK, note: '2 ×', checked: false, area: null, position: null },
+    {
+      id: 2,
+      name: 'Brot',
+      icon: 'fluent-emoji-flat:bread',
+      note: null,
+      checked: false,
+      area: null,
+      position: null,
+    },
+    {
+      id: 3,
+      name: 'Eier',
+      icon: 'fluent-emoji-flat:egg',
+      note: null,
+      checked: true,
+      area: null,
+      position: null,
+    },
   ],
 }
 
@@ -111,6 +127,101 @@ describe('Einkaufsliste', () => {
 
     expect(await screen.findByRole('button', { name: /Alles da!/ })).toBeVisible()
     expect(screen.queryByRole('region', { name: 'Abgehakt' })).toBeNull()
+  })
+})
+
+describe('Nach Laden und Bereich', () => {
+  const SORTED: ShoppingList = {
+    items: [
+      LIST.items[0],
+      LIST.items[1],
+      { ...LIST.items[1], id: 5, name: 'Joghurt', icon: 'fluent-emoji-flat:bowl-with-spoon' },
+      { ...LIST.items[1], id: 6, name: 'Zahnpasta', icon: 'fluent-emoji-flat:toothbrush' },
+    ],
+  }
+
+  it('gruppiert offene Artikel nach Laden und Bereich im Laufweg', async () => {
+    mockShopping(SORTED)
+    renderApp('/shopping')
+
+    const supermarket = within(await screen.findByRole('region', { name: 'Supermarkt' }))
+    const headings = supermarket.getAllByRole('heading').map((heading) => heading.textContent)
+    expect(headings).toEqual(['Supermarkt', 'Brot & Backwaren', 'Kühlung'])
+    const chilled = within(supermarket.getByRole('region', { name: 'Kühlung' }))
+    expect(chilled.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Milch2 ×',
+      'Joghurt',
+    ])
+    const drugstore = within(screen.getByRole('region', { name: 'Drogerie' }))
+    expect(drugstore.getByRole('button', { name: 'Zahnpasta' })).toBeVisible()
+  })
+
+  it('zeigt keine Laden-Überschrift, wenn alles aus dem Supermarkt kommt', async () => {
+    mockShopping()
+    renderApp('/shopping')
+
+    await screen.findByRole('button', { name: /^Milch ?2 ×$/ })
+    expect(screen.queryByRole('heading', { name: 'Supermarkt' })).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Kühlung' })).toBeVisible()
+  })
+
+  it('ändert beim Ordnen die Reihenfolge im Bereich', async () => {
+    const user = userEvent.setup()
+    const calls = mockShopping(SORTED, {
+      'PUT /api/shopping/order': new Response(null, { status: 204 }),
+    })
+    renderApp('/shopping')
+
+    await user.click(await screen.findByRole('button', { name: 'Ordnen' }))
+    expect(screen.getByRole('button', { name: 'Milch nach oben' })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Joghurt nach oben' }))
+
+    await waitFor(() => expect(bodyOf(calls, 'PUT /api/shopping/order')).toEqual({ ids: [5, 1] }))
+    // Beim Ordnen wird nichts abgehakt.
+    expect(screen.queryByRole('button', { name: /^Milch ?2 ×$/ })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Fertig' }))
+    expect(await screen.findByRole('button', { name: /^Milch ?2 ×$/ })).toBeVisible()
+  })
+
+  it('verschiebt einen Artikel in einen anderen Laden', async () => {
+    const user = userEvent.setup()
+    let moved = false
+    const calls = mockShopping(SORTED, {
+      'GET /api/shopping/list': () =>
+        Response.json({
+          items: SORTED.items.map((item) =>
+            moved && item.id === 1 ? { ...item, area: 'online' } : item,
+          ),
+        }),
+      'PUT /api/shopping/items/1/area': () => {
+        moved = true
+        return new Response(null, { status: 204 })
+      },
+      'PUT /api/shopping/items/6/area': new Response(null, { status: 204 }),
+    })
+    renderApp('/shopping')
+
+    await user.click(await screen.findByRole('button', { name: 'Ordnen' }))
+    await user.click(screen.getByRole('button', { name: 'Milch verschieben' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Wo gibt es Milch?' }))
+    expect(dialog.getByRole('button', { name: 'Kühlung' })).toHaveAttribute('aria-pressed', 'true')
+    await user.click(dialog.getByRole('button', { name: 'Online' }))
+
+    await waitFor(() =>
+      expect(bodyOf(calls, 'PUT /api/shopping/items/1/area')).toEqual({ area: 'online' }),
+    )
+    expect(screen.queryByRole('dialog')).toBeNull()
+    const online = within(screen.getByRole('region', { name: 'Online' }))
+    expect(online.getByText('Milch')).toBeVisible()
+
+    // Zurück an den automatischen Platz: Der Artikel folgt wieder den Regeln.
+    await user.click(screen.getByRole('button', { name: 'Zahnpasta verschieben' }))
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Drogerie' }),
+    )
+    await waitFor(() =>
+      expect(bodyOf(calls, 'PUT /api/shopping/items/6/area')).toEqual({ area: null }),
+    )
   })
 })
 

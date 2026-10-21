@@ -51,7 +51,9 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Meal plan: type the week's dishes right on the display, with suggestions and icons; plus a
   recipe collection you fill by pasting text, rated with stars
 - Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
-  note), tick it off in the shop; on the phone also as an app that works without a connection
+  note), tick it off in the shop; sorted by shop (supermarket, drugstore, DIY store, online) and in
+  the supermarket by section along the way through the shop; on the phone also as an app that works
+  without a connection
 - Household: a cleaning plan with a traffic light instead of dates (every chore with its own
   interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home;
   what is due also shows on "Today" and next to the children under "Tasks". Plus "To do": a
@@ -634,6 +636,18 @@ with its picture and stars. Everything works without the parents' PIN.
   the bottom, crossed out, **until the end of the day** (in the family's time zone), so a wrong tap
   in the shop can still be undone; then they disappear on their own. "Remove ticked items" clears
   them right away; the × takes an item off the list.
+- **Sorted by shop:** open items are grouped by **supermarket, drugstore, DIY store and online**.
+  In the supermarket they come in sections along the usual way through the shop: fruit & veg,
+  bread & bakery, cupboard (pasta, tins, coffee …), sweets & snacks, drinks, household & pets,
+  chilled, frozen, other. FamQuest recognises this from the name (e.g. "Screws" → DIY store,
+  "Printer ink" → online, "Orange juice" → drinks; in German the last part of a compound word
+  counts, "Milchschokolade" → sweets), otherwise from the icon. Shop headings only appear when not
+  everything comes from the supermarket. Items for other shops without a matching icon get that
+  shop's icon (toolbox, parcel, lotion bottle).
+- **Arrange:** the "Arrange" button shows arrows on every item to change the order within its
+  section (e.g. the way through your supermarket) and a button with the section's icon to move it
+  to another shop or section. FamQuest remembers both for the item, so next time it lands in the
+  same place. No PIN needed, and it works offline in the shop too.
 - The list reloads every 30 seconds, so the display shows what someone added on their phone.
 
 <img src="docs/screenshots/en/phone-shopping.png" alt="Shopping list on a phone" width="300">
@@ -1208,11 +1222,18 @@ resets itself on the hour (see [Public demo](#public-demo)).
 
 **Shopping list as an app (phase 10):** released with 1.3, polish on a real phone to follow.
 
-Brought forward from "on the go": the part of "on the go" that's needed in the shop.
+Brought forward from 1.5 ("on the go"): the part that's needed in the shop.
 
 - [x] 1. Installable app (PWA) for the shopping list at `/shop`, works without a connection in the
   shop; changes made offline are sent once there's a connection again
 - [ ] 2. Polish on a real phone (Android and iPhone)
+
+**Shopping list by shop (phase 11), in progress**
+
+- [x] 1. Items grouped by shop (supermarket, drugstore, DIY store, online) and in the supermarket
+  by section along the way through the shop, recognised automatically; move items to another
+  shop or section and change their order, remembered per item, also offline
+- [ ] 2. Polish in everyday use
 
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
@@ -1287,8 +1308,8 @@ them; the children's routines stay.
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
 - Recipes: connecting [Mealie](https://mealie.io), splitting pasted text with AI
-- Shopping list: several lists (e.g. supermarket and chemist), sorting by category or aisle (maybe
-  with AI help), ingredients from the meal plan, export to Obsidian (Markdown checklist)
+- Shopping list: several lists, order of the supermarket sections per family (e.g. drinks at the
+  entrance), recognising shops with AI help, export to Obsidian (Markdown checklist)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan
   or decline
 - Household: seasonal chores (e.g. mowing the lawn only from April to October), changing the order

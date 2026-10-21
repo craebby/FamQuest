@@ -566,6 +566,12 @@ class ShoppingItem(Base):
     # des Tages (Zeitzone der Familie) sichtbar, danach gelten sie als nicht mehr auf der Liste.
     added_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Laden bzw. Bereich im Supermarkt, wenn von Hand verschoben (z. B. „chilled“, „drugstore“);
+    # None = automatisch nach Name und Symbol (Regeln im Frontend).
+    area: Mapped[str | None] = mapped_column(String(20))
+    # Platz innerhalb des Bereichs, wenn von Hand sortiert; None = nach der Zeit des Eintragens.
+    # Bleibt beim Abhaken erhalten, so kommt der Artikel beim nächsten Mal an dieselbe Stelle.
+    position: Mapped[int | None] = mapped_column()
     # Wie oft auf die Liste gesetzt; häufige kommen in den Vorschlägen zuerst.
     times_added: Mapped[int] = mapped_column(default=0, server_default="0")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

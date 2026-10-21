@@ -198,6 +198,18 @@ Branch `phase-10-pwa` (abgezweigt von `phase-9-rezepte`).
    Gerät gespeichert, Anzeige „Offline · X Änderungen warten“, Knopf „Als App installieren“
 2. Feinschliff am echten Handy (Android und iPhone)
 
+## Etappen (Phase 11: Einkaufsliste nach Laden)
+
+Entschieden (von Claude, während der Nutzer unterwegs war, zur Prüfung): Läden Supermarkt, Drogerie,
+Baumarkt, Online; im Supermarkt Bereiche entlang des Laufwegs (Obst & Gemüse zuerst, Kühlung und
+Tiefkühl zum Schluss); automatische Zuordnung nach festen Regeln (Stichwörter DE/EN, letztes Wort
+zählt, sonst Symbol); von Hand verschieben und ordnen ohne Eltern-PIN, gemerkt je Artikel, auch
+offline. Gearbeitet wird auf dem Branch `phase-11-einkauf-sortieren`.
+
+1. Läden und Bereiche: automatische Zuordnung, Gruppen in der Liste, „Ordnen“ (↑/↓ im Bereich,
+   in anderen Laden/Bereich verschieben)
+2. Feinschliff im Alltag
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

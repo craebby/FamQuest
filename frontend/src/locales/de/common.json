@@ -906,7 +906,35 @@
     "status_sending": "Wird gesendet …",
     "status_hint": "Ohne Netz geht alles weiter. Die Änderungen werden gesendet, sobald wieder Netz da ist.",
     "install": "Als App installieren",
-    "install_ios": "So kommt die Liste als App aufs iPhone: unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“."
+    "install_ios": "So kommt die Liste als App aufs iPhone: unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“.",
+    "arrange": "Ordnen",
+    "arrange_done": "Fertig",
+    "arrange_hint": "Mit den Pfeilen in die Reihenfolge eures Ladens bringen, mit dem Laden-Knopf in einen anderen Bereich verschieben. Die Liste merkt es sich.",
+    "move_up": "{{name}} nach oben",
+    "move_down": "{{name}} nach unten",
+    "move": "{{name}} verschieben",
+    "move_title": "Wo gibt es {{name}}?",
+    "other_stores": "Andere Läden",
+    "store": {
+      "supermarket": "Supermarkt",
+      "drugstore": "Drogerie",
+      "hardware": "Baumarkt",
+      "online": "Online"
+    },
+    "area": {
+      "produce": "Obst & Gemüse",
+      "bakery": "Brot & Backwaren",
+      "pantry": "Vorrat",
+      "sweets": "Süßes & Snacks",
+      "drinks": "Getränke",
+      "household": "Haushalt & Tier",
+      "chilled": "Kühlung",
+      "frozen": "Tiefkühl",
+      "other": "Sonstiges",
+      "drugstore": "Drogerie",
+      "hardware": "Baumarkt",
+      "online": "Online"
+    }
   },
   "event_symbols": {
     "section": "Symbole für Termine",

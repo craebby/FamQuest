@@ -906,7 +906,35 @@
     "status_sending": "Sending …",
     "status_hint": "Everything keeps working without a connection. Changes are sent as soon as you're back online.",
     "install": "Install as app",
-    "install_ios": "To get the list as an app on your iPhone: tap \"Share\" at the bottom, then \"Add to Home Screen\"."
+    "install_ios": "To get the list as an app on your iPhone: tap \"Share\" at the bottom, then \"Add to Home Screen\".",
+    "arrange": "Arrange",
+    "arrange_done": "Done",
+    "arrange_hint": "Use the arrows to match the order of your shop, and the shop button to move an item to another section. The list remembers it.",
+    "move_up": "Move {{name}} up",
+    "move_down": "Move {{name}} down",
+    "move": "Move {{name}}",
+    "move_title": "Where do you get {{name}}?",
+    "other_stores": "Other shops",
+    "store": {
+      "supermarket": "Supermarket",
+      "drugstore": "Drugstore",
+      "hardware": "DIY store",
+      "online": "Online"
+    },
+    "area": {
+      "produce": "Fruit & veg",
+      "bakery": "Bread & bakery",
+      "pantry": "Cupboard",
+      "sweets": "Sweets & snacks",
+      "drinks": "Drinks",
+      "household": "Household & pets",
+      "chilled": "Chilled",
+      "frozen": "Frozen",
+      "other": "Other",
+      "drugstore": "Drugstore",
+      "hardware": "DIY store",
+      "online": "Online"
+    }
   },
   "event_symbols": {
     "section": "Symbols for events",

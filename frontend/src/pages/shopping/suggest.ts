@@ -4,6 +4,7 @@ import type { ShoppingItem } from '../../api/shopping'
 import { iconId } from '../../icons/catalog'
 import { filterSuggestions, iconForTyped, iconsOf } from '../../nameSuggest'
 import { GROCERY_POOL, groceryTemplateIcon, groceryTemplateName } from '../../pools/groceries'
+import { STORE_ITEM_ICONS, autoArea } from './areas'
 
 /** Ohne passendes Symbol: Einkaufstüten. */
 export const DEFAULT_ITEM_ICON = iconId('shopping-bags')
@@ -26,10 +27,14 @@ const templates = (t: TFunction) =>
 
 /**
  * Symbol zu einem eingetippten Namen: ein bekannter Artikel behält seins, ein Standardartikel
- * bringt seins mit, sonst das erste passende Symbol („Vollkornbrot“ → Brot).
+ * bringt seins mit, sonst das erste passende Symbol („Vollkornbrot“ → Brot). Ohne passendes
+ * Symbol das des Ladens, wenn es nicht der Supermarkt ist („Schrauben“ → Werkzeugkasten).
  */
 export function iconForItem(t: TFunction, name: string, items: readonly ShoppingItem[]): string {
-  return iconForTyped(name, [...items, ...templates(t)], SHOPPING_ICONS, DEFAULT_ITEM_ICON)
+  const icon = iconForTyped(name, [...items, ...templates(t)], SHOPPING_ICONS, DEFAULT_ITEM_ICON)
+  if (icon !== DEFAULT_ITEM_ICON) return icon
+  const store = STORE_ITEM_ICONS[autoArea(name, icon)]
+  return store ? iconId(store) : icon
 }
 
 /**

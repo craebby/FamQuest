@@ -3,13 +3,17 @@
 Wie beim Essensplan ohne Eltern-PIN. Jeder Artikel gibt es nur einmal: Er steht auf der Liste oder
 wartet als Vorschlag. Abgehakte bleiben bis zum Ende des Tages (Zeitzone der Familie) sichtbar,
 damit sich ein falscher Tipp im Laden noch zurücknehmen lässt; danach sind sie von der Liste.
+
+Geordnet wird im Frontend nach Laden und Bereich im Supermarkt (`area`): automatisch nach festen
+Regeln, von Hand verschoben steht der Bereich am Artikel. Innerhalb eines Bereichs gilt die von Hand
+gesetzte Reihenfolge (`position`), sonst die Zeit des Eintragens.
 """
 
 import datetime as dt
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, status
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import ColumnElement, and_, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 
@@ -24,6 +28,22 @@ router = APIRouter(prefix="/shopping", tags=["shopping"])
 # Menge oder Hinweis; leer = keiner.
 Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=60)]
 
+# Bereiche im Supermarkt (in der üblichen Reihenfolge des Laufwegs) und die anderen Läden.
+Area = Literal[
+    "produce",
+    "bakery",
+    "pantry",
+    "sweets",
+    "drinks",
+    "household",
+    "chilled",
+    "frozen",
+    "other",
+    "drugstore",
+    "hardware",
+    "online",
+]
+
 
 class ListItemOut(BaseModel):
     id: int
@@ -31,6 +51,9 @@ class ListItemOut(BaseModel):
     icon: str
     note: str | None
     checked: bool
+    # Von Hand gesetzt; None = automatisch.
+    area: Area | None
+    position: int | None
 
 
 class ShoppingListOut(BaseModel):
@@ -64,6 +87,16 @@ class ItemIn(BaseModel):
     icon: IconName
 
 
+class AreaIn(BaseModel):
+    # None gibt den Artikel an die automatische Zuordnung zurück.
+    area: Area | None
+
+
+class OrderIn(BaseModel):
+    # Artikel eines Bereichs in der gewünschten Reihenfolge.
+    ids: Annotated[list[int], Field(max_length=500)]
+
+
 def _start_of_today(family: Family) -> dt.datetime:
     local = family_now(family)
     return local.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -91,6 +124,8 @@ def _list_item(item: ShoppingItem) -> ListItemOut:
         icon=item.icon,
         note=item.note,
         checked=item.checked_at is not None,
+        area=item.area,
+        position=item.position,
     )
 
 
@@ -182,6 +217,29 @@ def set_checked(item_id: int, body: CheckIn, _: CurrentSession, db: DbSession) -
 def remove_from_list(item_id: int, _: CurrentSession, db: DbSession) -> None:
     """Nimmt einen Artikel von der Liste; er bleibt als Vorschlag erhalten."""
     _take_off(_get(db, item_id))
+    db.commit()
+
+
+@router.put("/items/{item_id}/area", status_code=status.HTTP_204_NO_CONTENT)
+def set_area(item_id: int, body: AreaIn, _: CurrentSession, db: DbSession) -> None:
+    """In einen anderen Laden oder Bereich verschieben; gilt auch beim nächsten Eintragen. Im neuen
+    Bereich steht der Artikel zunächst hinten."""
+    item = _get(db, item_id)
+    if item.area != body.area:
+        item.area, item.position = body.area, None
+    db.commit()
+
+
+@router.put("/order", status_code=status.HTTP_204_NO_CONTENT)
+def set_order(body: OrderIn, _: CurrentSession, db: DbSession) -> None:
+    """Reihenfolge innerhalb eines Bereichs. Was es nicht mehr gibt, wird übergangen."""
+    known = {
+        item.id: item
+        for item in db.scalars(select(ShoppingItem).where(ShoppingItem.id.in_(body.ids)))
+    }
+    for index, item_id in enumerate(body.ids):
+        if item_id in known:
+            known[item_id].position = index
     db.commit()
 
 

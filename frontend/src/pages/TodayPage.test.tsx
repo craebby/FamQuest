@@ -139,9 +139,33 @@ const MEAL_WEEK: MealWeek = {
 
 const SHOPPING: ShoppingList = {
   items: [
-    { id: 1, name: 'Milch', icon: 'fluent-emoji-flat:glass-of-milk', note: '2 ×', checked: false },
-    { id: 2, name: 'Brot', icon: 'fluent-emoji-flat:bread', note: null, checked: false },
-    { id: 3, name: 'Eier', icon: 'fluent-emoji-flat:egg', note: null, checked: true },
+    {
+      id: 1,
+      name: 'Milch',
+      icon: 'fluent-emoji-flat:glass-of-milk',
+      note: '2 ×',
+      checked: false,
+      area: null,
+      position: null,
+    },
+    {
+      id: 2,
+      name: 'Brot',
+      icon: 'fluent-emoji-flat:bread',
+      note: null,
+      checked: false,
+      area: null,
+      position: null,
+    },
+    {
+      id: 3,
+      name: 'Eier',
+      icon: 'fluent-emoji-flat:egg',
+      note: null,
+      checked: true,
+      area: null,
+      position: null,
+    },
   ],
 }
 

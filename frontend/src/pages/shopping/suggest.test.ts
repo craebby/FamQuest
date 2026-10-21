@@ -51,7 +51,7 @@ describe('Symbol zum Namen', () => {
   })
 
   it('nimmt ohne Treffer die Einkaufstüten, auch keine Aufgaben-Symbole', () => {
-    expect(iconForItem(t, 'Geschenkpapier', [])).toBe(DEFAULT_ITEM_ICON)
+    expect(iconForItem(t, 'Grillanzünder', [])).toBe(DEFAULT_ITEM_ICON)
     // „Bett“ passt zum Bett, das kauft man aber nicht im Laden.
     expect(iconForItem(t, 'Bett', [])).toBe(DEFAULT_ITEM_ICON)
     expect(iconForItem(t, ' ', [])).toBe(DEFAULT_ITEM_ICON)

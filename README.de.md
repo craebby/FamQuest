@@ -51,7 +51,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen;
   dazu eine Rezeptsammlung zum Einfügen per Text, mit Sternen bewertet
 - Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
-  Hinweis), im Laden abhaken; am Handy auch als App, die ohne Netz funktioniert
+  Hinweis), im Laden abhaken; geordnet nach Laden (Supermarkt, Drogerie, Baumarkt, Online) und im
+  Supermarkt nach Bereichen entlang des Laufwegs; am Handy auch als App, die ohne Netz funktioniert
 - Haushalt: Putzplan mit Ampel statt Terminen (jede Hausarbeit mit eigenem Abstand, je Raum), ein
   Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor; was
   dran ist, steht auch auf „Heute“ und neben den Kindern unter „Aufgaben“. Dazu „Zu erledigen“:
@@ -646,6 +647,18 @@ Symbolen.
   durchgestrichen darunter, **bis der Tag vorbei ist** (in der Zeitzone der Familie), damit sich ein
   falscher Tipp im Laden noch zurücknehmen lässt; danach verschwinden sie von selbst. „Abgehakte
   entfernen“ räumt sie sofort weg, das × nimmt einen Artikel von der Liste.
+- **Nach Laden geordnet:** Offenes steht nach **Supermarkt, Drogerie, Baumarkt und Online**
+  getrennt. Im Supermarkt kommen die Bereiche in der üblichen Reihenfolge des Laufwegs: Obst &
+  Gemüse, Brot & Backwaren, Vorrat (Nudeln, Konserven, Kaffee …), Süßes & Snacks, Getränke,
+  Haushalt & Tier, Kühlung, Tiefkühl, Sonstiges. FamQuest erkennt das am Namen („Schrauben“ →
+  Baumarkt, „Druckerpatronen“ → Online, „Orangensaft“ → Getränke; bei zusammengesetzten Wörtern
+  zählt das letzte, „Milchschokolade“ → Süßes), sonst am Symbol. Überschriften für die Läden
+  erscheinen nur, wenn nicht alles aus dem Supermarkt kommt. Artikel für andere Läden ohne
+  passendes Symbol bekommen das des Ladens (Werkzeugkasten, Paket, Lotionflasche).
+- **Ordnen:** Der Knopf „Ordnen“ zeigt an jedem Artikel Pfeile für die Reihenfolge im Bereich (z. B.
+  nach dem Laufweg in eurem Supermarkt) und einen Knopf mit dem Symbol des Bereichs, der ihn in
+  einen anderen Laden oder Bereich verschiebt. Beides merkt sich FamQuest am Artikel, beim nächsten
+  Mal landet er wieder an derselben Stelle. Ohne PIN und auch offline im Laden.
 - Die Liste lädt alle 30 Sekunden neu; so sieht das Display, was jemand am Handy eingetragen hat.
 
 <img src="docs/screenshots/de/phone-shopping.png" alt="Einkaufsliste am Handy" width="300">
@@ -1237,11 +1250,18 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 
 **Einkaufsliste als App (Phase 10):** veröffentlicht mit 1.3, Feinschliff am echten Handy folgt.
 
-Vorgezogen aus „Unterwegs“: der Teil von „Unterwegs“, den man im Laden braucht.
+Vorgezogen aus 1.5 („Unterwegs“): der Teil, den man im Laden braucht.
 
 - [x] 1. Installierbare App (PWA) für die Einkaufsliste unter `/shop`, funktioniert im Laden ohne
   Netz; was offline geändert wurde, wird gesendet, sobald wieder Verbindung besteht
 - [ ] 2. Feinschliff am echten Handy (Android und iPhone)
+
+**Einkaufsliste nach Laden (Phase 11), in Arbeit**
+
+- [x] 1. Artikel nach Laden (Supermarkt, Drogerie, Baumarkt, Online) und im Supermarkt nach
+  Bereichen entlang des Laufwegs, automatisch erkannt; in einen anderen Laden oder Bereich
+  verschieben und die Reihenfolge ändern, gemerkt je Artikel, auch offline
+- [ ] 2. Feinschliff im Alltag
 
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 
@@ -1315,9 +1335,8 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
 - Rezepte: Anbindung von [Mealie](https://mealie.io), Zerlegen eingefügter Texte mit KI
-- Einkaufsliste: mehrere Listen (z. B. Supermarkt und Drogerie), Sortierung nach Kategorie oder
-  Gang im Laden (eventuell mit KI), Zutaten aus dem Essensplan, Export nach Obsidian
-  (Markdown-Checkliste)
+- Einkaufsliste: mehrere Listen, Reihenfolge der Supermarkt-Bereiche je Familie (z. B. Getränke am
+  Eingang), Läden mit KI erkennen, Export nach Obsidian (Markdown-Checkliste)
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch
   in den Plan oder lehnen ab
 - Haushalt: saisonale Aufgaben (z. B. Rasen mähen nur von April bis Oktober), Reihenfolge der Räume
