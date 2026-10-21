@@ -90,7 +90,19 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 - Optional eine Menge oder ein Hinweis („2 ×“, „laktosefrei“), gilt nur für diesen Einkauf.
 - Ein Tipp hakt ab, ein weiterer nimmt es zurück. Abgehakte bleiben durchgestrichen sichtbar bis zum Ende des Tages in der Zeitzone der Familie, danach sind sie von der Liste; „Abgehakte entfernen“ räumt sie sofort weg.
 - Am Handy im Browser (unterwegs über HTTPS hinter einem Reverse Proxy oder VPN). Die Liste lädt alle 30 Sekunden neu.
-- Später: PWA mit Offline-Nutzung im Laden (Version 1.4), mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+- Als App am Handy (PWA) mit Offline-Nutzung im Laden: siehe „Einkaufsliste als App“ (Phase 10).
+- Später: mehrere Listen, Sortierung nach Kategorie oder Gang (evtl. mit KI), Zutaten aus dem Essensplan, Export nach Obsidian.
+
+**Einkaufsliste als App** *(Phase 10, entschieden am 2026-10-21)*
+
+Vorgezogen aus Version 1.4 („Unterwegs“): Im Laden ist oft kein oder schlechtes Netz, die Liste muss trotzdem gehen. Die übrigen Eltern-Funktionen am Handy bleiben in 1.4.
+
+- Eigene Adresse `/shop`: nur die Einkaufsliste, ohne Navigationsleiste (wie die Küchenansicht), damit ohne Netz nichts auf Seiten führt, die dann nicht laden. Läuft die Anmeldung ab, geht es nach dem Anmelden dorthin zurück.
+- Installierbar (PWA): Manifest je Sprache („FamQuest Einkauf“ / „FamQuest Shopping“, Start und Bereich `/shop`, Logo als Symbol, auch „maskable“). Es wird nur auf `/shopping` und `/shop` eingebunden, Display und Küchen-Tablet bieten keine Installation an. Am Handy (schmaler Bildschirm) ein Knopf „Als App installieren“: unter Android das Installieren des Browsers, auf iPhone/iPad ein Hinweis („Teilen → Zum Home-Bildschirm“). Braucht HTTPS (oder localhost).
+- Service Worker (Bereich `/shop`, steuert damit `/shop` und `/shopping`): speichert beim Installieren alle Dateien des Builds; Seitenaufrufe holen zuerst das Netz (höchstens 4 Sekunden, bei 5xx vom Proxy oder ohne Netz die gespeicherte App); `/api` geht nie über seinen Zwischenspeicher. Jeder neue Build bringt eine neue Version, alte Zwischenspeicher werden gelöscht.
+- Daten auf dem Gerät (localStorage, 30 Tage): Anmeldung, Einkaufsliste, Vorschläge und die noch nicht gesendeten Änderungen. Abmelden löscht Liste und Vorschläge. Mit gespeicherter Anmeldung zeigt die App bei Netzfehlern den gespeicherten Stand statt einer Fehlerseite; nur 401 führt zur Anmeldung.
+- Ohne Netz gehen Abhaken, Zurücknehmen, Eintragen, Entfernen und „Abgehakte entfernen“. Sie stehen in einer Warteschlange und werden der Reihe nach gesendet, sobald wieder Netz da ist (auch nach einem Neustart der App); die Liste zeigt sie sofort. Ein offline eingetragener Artikel hat bis dahin eine vorläufige ID; was mit ihm passiert (abhaken, entfernen), findet beim Senden den Artikel über den Namen. Netzfehler und 5xx werden wiederholt, 404 („gibt es nicht mehr“) gilt als erledigt. Oben steht „Offline“ und wie viele Änderungen warten bzw. „Wird gesendet …“.
+- Mit Netz: eigene Artikel umbenennen oder löschen (ohne Netz kommt sofort „Keine Verbindung zum Server“), Anmelden.
 
 **Rezepte** *(Phase 9, entschieden am 2026-10-12)*
 

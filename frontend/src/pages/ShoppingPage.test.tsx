@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react'
+import { onlineManager } from '@tanstack/react-query'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -12,6 +13,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  onlineManager.setOnline(true)
 })
 
 const MILK = 'fluent-emoji-flat:glass-of-milk'
@@ -109,6 +111,57 @@ describe('Einkaufsliste', () => {
 
     expect(await screen.findByRole('button', { name: /Alles da!/ })).toBeVisible()
     expect(screen.queryByRole('region', { name: 'Abgehakt' })).toBeNull()
+  })
+})
+
+describe('Im Laden ohne Netz', () => {
+  it('merkt sich Abhaken und Eintragen und sendet alles der Reihe nach, sobald Netz da ist', async () => {
+    const user = userEvent.setup()
+    const calls = mockShopping(LIST, {
+      'PUT /api/shopping/list/9/checked': (body) =>
+        Response.json({ id: 9, name: 'Käse', icon: 'x', note: null, ...(body as object) }),
+    })
+    renderApp('/shopping')
+    const milk = await screen.findByRole('button', { name: /^Milch ?2 ×$/ })
+    onlineManager.setOnline(false)
+
+    await user.click(milk)
+    const checked = within(screen.getByRole('region', { name: 'Abgehakt' }))
+    expect(checked.getByRole('button', { name: /^Milch/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('status')).toHaveTextContent('Offline · 1 Änderung wartet')
+
+    // Ein neuer Artikel steht sofort auf der Liste und lässt sich gleich abhaken.
+    await user.click(screen.getByRole('button', { name: 'Eintragen' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Was fehlt?' }))
+    await user.type(dialog.getByRole('textbox', { name: 'Artikel' }), 'Käse')
+    await user.click(dialog.getByRole('button', { name: 'Hinzufügen' }))
+    await user.click(dialog.getByRole('button', { name: 'Fertig' }))
+    await user.click(screen.getByRole('button', { name: 'Käse' }))
+    expect(screen.getByRole('status')).toHaveTextContent('3 Änderungen warten')
+
+    const sent = () => calls.map((call) => call.key).filter((key) => !key.startsWith('GET'))
+    expect(sent()).toEqual([])
+
+    onlineManager.setOnline(true)
+    await waitFor(() =>
+      expect(sent()).toEqual([
+        'PUT /api/shopping/list/1/checked',
+        'POST /api/shopping/list',
+        'PUT /api/shopping/list/9/checked',
+      ]),
+    )
+    expect(bodyOf(calls, 'PUT /api/shopping/list/9/checked')).toEqual({ checked: true })
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
+  })
+})
+
+describe('Als App (/shop)', () => {
+  it('zeigt nur die Einkaufsliste, ohne Navigationsleiste', async () => {
+    mockShopping()
+    renderApp('/shop')
+
+    expect(await screen.findByRole('heading', { name: 'Einkaufsliste', level: 1 })).toBeVisible()
+    expect(screen.queryByRole('navigation', { name: 'Hauptnavigation' })).toBeNull()
   })
 })
 

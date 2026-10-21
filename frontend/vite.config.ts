@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -11,6 +12,7 @@ import { type Plugin, defineConfig } from 'vite'
 const TASK_ICONS_ID = 'virtual:task-icons'
 const CATEGORIES_FILE = fileURLToPath(new URL('./src/icons/categories.json', import.meta.url))
 const COMPOSED_FILE = fileURLToPath(new URL('./src/icons/composed.json', import.meta.url))
+const SERVICE_WORKER_FILE = fileURLToPath(new URL('./sw.js', import.meta.url))
 
 /** Ebene eines zusammengesetzten Icons: ein Icon aus dem Set, verschoben, skaliert, umgefärbt. */
 interface Layer {
@@ -67,9 +69,49 @@ function taskIcons(): Plugin {
   }
 }
 
+/** Dateien aus public/, die die Einkaufs-App ohne Netz braucht. */
+const OFFLINE_PUBLIC_FILES = [
+  '/favicon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-maskable-512.png',
+  '/manifest-de.webmanifest',
+  '/manifest-en.webmanifest',
+]
+
+/**
+ * Baut den Service Worker der Einkaufs-App (sw.js) mit der Liste aller Dateien dieses Builds,
+ * damit die App im Laden ohne Netz startet. Die Version ändert sich mit jedem neuen Build;
+ * dann lädt das Handy beim nächsten Öffnen mit Netz den neuen Stand.
+ */
+function serviceWorker(): Plugin {
+  return {
+    name: 'famquest-service-worker',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const assets = Object.keys(bundle)
+        .filter((fileName) => fileName.startsWith('assets/'))
+        .map((fileName) => `/${fileName}`)
+        .sort()
+      const precache = ['/index.html', ...OFFLINE_PUBLIC_FILES, ...assets]
+      const version = createHash('sha256').update(precache.join('\n')).digest('hex').slice(0, 12)
+      const source = readFileSync(SERVICE_WORKER_FILE, 'utf8')
+        .replace('__VERSION__', JSON.stringify(version))
+        .replace('__PRECACHE__', JSON.stringify(precache))
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source })
+    },
+  }
+}
+
 export default defineConfig({
   // Icons werden beim Build aus den Iconify-Paketen eingebettet (keine Abrufe zur Laufzeit).
-  plugins: [react(), tailwindcss(), Icons({ compiler: 'jsx', jsx: 'react' }), taskIcons()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    Icons({ compiler: 'jsx', jsx: 'react' }),
+    taskIcons(),
+    serviceWorker(),
+  ],
   build: {
     // Die eingebetteten Aufgaben-Icons (~250 kB) gehören bewusst ins Bundle: Die App läuft im LAN,
     // und die Familienansicht braucht sie sofort.

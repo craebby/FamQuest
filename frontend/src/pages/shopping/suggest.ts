@@ -16,8 +16,6 @@ export interface ItemSuggestion {
   icon: string
   /** Nur bei Artikeln der Familie (bearbeitbar); Standardartikel haben keine. */
   item_id?: number
-  /** Steht gerade offen auf der Liste. */
-  on_list: boolean
 }
 
 const templates = (t: TFunction) =>
@@ -48,8 +46,7 @@ export function itemSuggestions(
       name: item.name,
       icon: item.icon,
       item_id: item.id,
-      on_list: item.on_list,
     })),
-    ...templates(t).map((template) => ({ ...template, on_list: false })),
+    ...templates(t),
   ])
 }

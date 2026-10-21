@@ -1,6 +1,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { ApiError, api, apiGet, setCsrfToken } from './client'
+import { SHOPPING_ITEMS_KEY, SHOPPING_LIST_KEY } from './shopping'
 
 export interface Me {
   user: { email: string; role: string; language: string | null }
@@ -31,7 +32,7 @@ export interface SetupStatus {
 }
 
 export const ME_KEY = ['me'] as const
-const SETUP_STATUS_KEY = ['setup-status'] as const
+export const SETUP_STATUS_KEY = ['setup-status'] as const
 
 export function useSetupStatus() {
   return useQuery({
@@ -100,7 +101,9 @@ export function useLogout() {
     mutationFn: () => api<void>('POST', '/auth/logout'),
     onSuccess: () => {
       setCsrfToken(null)
-      queryClient.removeQueries({ queryKey: ME_KEY })
+      // Auch die Einkaufsliste, die für unterwegs auf dem Gerät gespeichert ist.
+      for (const queryKey of [ME_KEY, SHOPPING_LIST_KEY, SHOPPING_ITEMS_KEY])
+        queryClient.removeQueries({ queryKey })
     },
   })
 }

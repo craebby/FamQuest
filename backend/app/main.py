@@ -114,8 +114,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 
 # Python 3.12 kennt `.webp` nur, wenn das System eine mime.types mitbringt; im schlanken Image
-# fehlt sie, und das Logo käme sonst als `application/octet-stream`.
+# fehlt sie, und das Logo käme sonst als `application/octet-stream`. Ebenso das Manifest der
+# Einkaufs-App, ohne das sie sich nicht installieren lässt.
 mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 
 def _mount_frontend(app: FastAPI, static_dir: Path) -> None:

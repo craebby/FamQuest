@@ -2,6 +2,9 @@ import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
+import CloudOffIcon from '~icons/lucide/cloud-off'
+import DownloadIcon from '~icons/lucide/download'
+import RefreshIcon from '~icons/lucide/refresh-cw'
 import CloseIcon from '~icons/lucide/x'
 import PlusIcon from '~icons/lucide/plus'
 
@@ -9,19 +12,24 @@ import {
   type ListItem,
   useCheckItem,
   useClearChecked,
+  usePendingShoppingCount,
   useRemoveFromList,
   useShoppingList,
 } from '../api/shopping'
 import { TaskIcon } from '../components/TaskIcon'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
+import { useOnline } from '../offline'
+import { useShopApp } from '../pwa'
 import { ShoppingAdder } from './shopping/ShoppingAdder'
 
 /**
  * Einkaufsliste: offene Artikel groß mit Symbol, ein Tipp hakt ab, ein weiterer nimmt es zurück.
  * Abgehakte stehen darunter bis zum Ende des Tages. Eintragen geht ohne Eltern-PIN.
+ * Ohne Netz (im Laden) geht alles weiter; die Änderungen werden später gesendet.
+ * `installable`: als App fürs Handy anbieten (nicht am Display und in der Küchenansicht).
  */
-export function ShoppingPage() {
+export function ShoppingPage({ installable = false }: { installable?: boolean }) {
   const { t } = useTranslation()
   const list = useShoppingList()
   const check = useCheckItem()
@@ -33,12 +41,15 @@ export function ShoppingPage() {
   const checked = items.filter((item) => item.checked)
   const error = check.error ?? remove.error ?? clear.error
 
-  const toggle = (item: ListItem) => check.mutate({ id: item.id, checked: !item.checked })
+  const toggle = (item: ListItem) =>
+    check.mutate({ id: item.id, name: item.name, checked: !item.checked })
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
       <header className="flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-extrabold text-orange-600">{t('shopping.title')}</h1>
+        <SyncStatus />
+        {installable && <InstallApp />}
         <Button className="ml-auto" onClick={() => setAdding(true)}>
           <PlusIcon className="size-7" aria-hidden="true" />
           {t('shopping.add_button')}
@@ -76,7 +87,7 @@ export function ShoppingPage() {
                     type="button"
                     aria-label={t('shopping.remove', { name: item.name })}
                     title={t('shopping.remove', { name: item.name })}
-                    onClick={() => remove.mutate(item.id)}
+                    onClick={() => remove.mutate({ id: item.id, name: item.name })}
                     className="flex w-14 shrink-0 items-center justify-center rounded-2xl text-slate-400 hover:bg-red-50 hover:text-red-700 focus-visible:outline-4 focus-visible:outline-orange-400"
                   >
                     <CloseIcon className="size-7" aria-hidden="true" />
@@ -158,5 +169,62 @@ function Row({
       </button>
       {children}
     </li>
+  )
+}
+
+/** Zeigt, wenn das Handy offline ist oder Änderungen noch nicht beim Server sind. */
+function SyncStatus() {
+  const { t } = useTranslation()
+  const online = useOnline()
+  const pending = usePendingShoppingCount()
+  if (online && pending === 0) return null
+  const Icon = online ? RefreshIcon : CloudOffIcon
+  const text = [
+    online ? null : t('shopping.status_offline'),
+    pending === 0
+      ? null
+      : online
+        ? t('shopping.status_sending')
+        : t('shopping.status_pending', { count: pending }),
+  ]
+    .filter(Boolean)
+    .join(' · ')
+  return (
+    <p
+      role="status"
+      title={t('shopping.status_hint')}
+      className="flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-base font-bold text-amber-900"
+    >
+      <Icon className="size-5 shrink-0" aria-hidden="true" />
+      {text}
+    </p>
+  )
+}
+
+/**
+ * Bietet am Handy an, die Liste als App zu installieren (Android per Knopf, iPhone mit Hinweis).
+ * Meldet dafür Manifest und Service Worker an, auch wenn kein Knopf zu sehen ist.
+ */
+function InstallApp() {
+  const { t } = useTranslation()
+  const { install, iosHint } = useShopApp()
+  const [showHint, setShowHint] = useState(false)
+  if (!install && !iosHint) return null
+  return (
+    <>
+      <Button
+        variant="secondary"
+        className="sm:hidden"
+        onClick={() => (install ? void install() : setShowHint((shown) => !shown))}
+      >
+        <DownloadIcon className="size-6" aria-hidden="true" />
+        {t('shopping.install')}
+      </Button>
+      {showHint && (
+        <p className="w-full rounded-2xl bg-white px-4 py-3 text-lg text-slate-700 sm:hidden">
+          {t('shopping.install_ios')}
+        </p>
+      )}
+    </>
   )
 }

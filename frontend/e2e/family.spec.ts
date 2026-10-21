@@ -484,3 +484,64 @@ test('Küchenansicht: am kleinen Tablet nicht breiter als der Bildschirm, Dialog
   expect(await kitchen.evaluate('[innerWidth, innerHeight]')).toEqual([853, 533])
   await tablet.close()
 })
+
+test('Einkaufs-App: im Laden ohne Netz abhaken und eintragen, mit Netz wird alles gesendet', async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  await login(page)
+  await expect(page.getByRole('link', { name: 'Heute', exact: true })).toBeVisible()
+  const handy = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    locale: 'de-DE',
+    storageState: await page.context().storageState(),
+  })
+  const shop = await handy.newPage()
+  await shop.goto('/shop')
+  await expect(shop.getByRole('navigation', { name: 'Hauptnavigation' })).toHaveCount(0)
+
+  await shop.getByRole('button', { name: 'Eintragen', exact: true }).tap()
+  const dialog = shop.getByRole('dialog', { name: 'Was fehlt?' })
+  await dialog.getByRole('button', { name: 'Butter', exact: true }).tap()
+  await dialog.getByRole('button', { name: 'Fertig' }).tap()
+  const butter = shop.getByRole('button', { name: 'Butter', exact: true })
+  await expect(butter).toHaveAttribute('aria-pressed', 'false')
+  // Erst wenn der Service Worker die App gespeichert hat, startet sie ohne Netz.
+  await shop.evaluate('navigator.serviceWorker.ready.then(() => true)')
+
+  await expect
+    .poll(() => shop.evaluate(() => localStorage.getItem('famquest-offline') ?? ''))
+    .toContain('Butter')
+  await handy.setOffline(true)
+  await shop.reload()
+  await butter.tap()
+  await shop.getByRole('button', { name: 'Eintragen', exact: true }).tap()
+  await dialog.getByRole('button', { name: 'Äpfel', exact: true }).tap()
+  await dialog.getByRole('button', { name: 'Fertig' }).tap()
+  const status = shop.getByRole('status')
+  await expect(status).toHaveText('Offline · 2 Änderungen warten')
+
+  // Auch nach einem Neustart der App ohne Netz ist nichts verloren.
+  await expect
+    .poll(() => shop.evaluate(() => localStorage.getItem('famquest-offline') ?? ''))
+    .toContain('Äpfel')
+  await shop.reload()
+  await expect(status).toHaveText('Offline · 2 Änderungen warten')
+  await expect(
+    shop.getByRole('region', { name: 'Abgehakt' }).getByRole('button', { name: 'Butter' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+
+  await handy.setOffline(false)
+  await expect(status).toBeHidden()
+  const list = await (await page.request.get('/api/shopping/list')).json()
+  const names = new Set(['Äpfel', 'Butter'])
+  expect(list.items.filter((item: { name: string }) => names.has(item.name))).toMatchObject([
+    { name: 'Äpfel', checked: false },
+    { name: 'Butter', checked: true },
+  ])
+  await handy.close()
+})

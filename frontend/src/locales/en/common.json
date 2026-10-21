@@ -899,7 +899,14 @@
     "remove": "Remove {{name}} from the list",
     "more_one": "+{{count}} more",
     "more_other": "+{{count}} more",
-    "open_list": "Open shopping list"
+    "open_list": "Open shopping list",
+    "status_offline": "Offline",
+    "status_pending_one": "{{count}} change waiting",
+    "status_pending_other": "{{count}} changes waiting",
+    "status_sending": "Sending …",
+    "status_hint": "Everything keeps working without a connection. Changes are sent as soon as you're back online.",
+    "install": "Install as app",
+    "install_ios": "To get the list as an app on your iPhone: tap \"Share\" at the bottom, then \"Add to Home Screen\"."
   },
   "event_symbols": {
     "section": "Symbols for events",

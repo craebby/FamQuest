@@ -187,6 +187,17 @@ Branch `phase-9-rezepte`.
 3. Zutaten auf die Einkaufsliste: je Rezept und für die Woche, Mengen werden zum Hinweis
 4. Feinschliff
 
+## Etappen (Phase 10: Einkaufsliste als App)
+
+Entschieden: Aus 1.4 („Unterwegs“) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
+ohne Navigationsleiste, installierbar (PWA), im Laden ohne Netz: Abhaken, Eintragen, Entfernen
+landen in einer Warteschlange und werden mit Netz der Reihe nach gesendet. Gearbeitet wird auf dem
+Branch `phase-10-pwa` (abgezweigt von `phase-9-rezepte`).
+
+1. Einkaufs-App: Manifest je Sprache, Service Worker (nur `/shop`), Liste und Änderungen auf dem
+   Gerät gespeichert, Anzeige „Offline · X Änderungen warten“, Knopf „Als App installieren“
+2. Feinschliff am echten Handy (Android und iPhone)
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

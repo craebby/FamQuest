@@ -50,7 +50,7 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen;
   dazu eine Rezeptsammlung zum Einfügen per Text, mit Sternen bewertet
 - Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
-  Hinweis), im Laden abhaken
+  Hinweis), im Laden abhaken; am Handy auch als App, die ohne Netz funktioniert
 - Haushalt: Putzplan mit Ampel statt Terminen (jede Hausarbeit mit eigenem Abstand, je Raum), ein
   Einrichtungs-Assistent schlägt Räume, Aufgaben und Abstände passend zu eurem Zuhause vor; was
   dran ist, steht auch auf „Heute“ und neben den Kindern unter „Aufgaben“. Dazu „Zu erledigen“:
@@ -651,8 +651,31 @@ Symbolen.
 
 **Am Handy:** FamQuest im Browser öffnen. Unterwegs muss FamQuest dafür von außen erreichbar sein,
 z. B. per HTTPS hinter einem Reverse Proxy (siehe [Hinter einem Reverse Proxy](#hinter-einem-reverse-proxy))
-oder über ein VPN. Eine installierbare App, die im Laden auch ohne Netz funktioniert, ist für 1.4
-geplant.
+oder über ein VPN.
+
+### Einkaufsliste als App
+
+Am Handy lässt sich die Einkaufsliste als App installieren. Sie öffnet direkt die Liste, ohne
+Navigationsleiste, und **funktioniert im Laden auch ohne Netz**.
+
+- **Installieren:** am Handy anmelden und **Einkauf** öffnen. Die App heißt „FamQuest Einkauf“
+  („FamQuest Shopping“ auf Englisch) und öffnet `/shop`.
+  - **Android (Chrome):** oben auf **„Als App installieren“** tippen, oder im Browsermenü → „App
+    installieren“.
+  - **iPhone/iPad (Safari):** unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Der Knopf
+    „Als App installieren“ zeigt diesen Hinweis ebenfalls.
+- **Ohne Netz:** Die Liste zeigt den letzten bekannten Stand. Abhaken, zurücknehmen, eintragen und
+  entfernen gehen wie gewohnt; oben steht dann „Offline · 2 Änderungen warten“. Sobald wieder Netz
+  da ist, werden die Änderungen in der Reihenfolge gesendet, in der sie gemacht wurden, auch wenn
+  die App zwischendurch geschlossen war. Auch was offline eingetragen und gleich abgehakt wurde,
+  kommt richtig an.
+- **Braucht Netz:** eigene Artikel umbenennen oder löschen (der Stift) und das Anmelden. Nach dem
+  Installieren muss die App einmal mit Netz geöffnet worden sein.
+- Voraussetzung: FamQuest wird über **HTTPS** aufgerufen (z. B. hinter einem Reverse Proxy); nur
+  dort erlauben Browser installierbare Apps. Im Heimnetz über einfaches `http://` geht die Liste
+  weiterhin im Browser, nur nicht als App.
+- Display und Küchen-Tablet bleiben unberührt: Nur die Seiten der Einkaufsliste werden für
+  unterwegs gespeichert. Abmelden löscht die gespeicherte Liste vom Handy.
 
 ## Haushalt
 
@@ -1207,6 +1230,14 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 - [x] 3. Zutaten auf die Einkaufsliste, je Rezept und für die Woche
 - [ ] 4. Feinschliff
 
+**Einkaufsliste als App (Phase 10), in Arbeit**
+
+Vorgezogen aus 1.4: der Teil von „Unterwegs“, den man im Laden braucht.
+
+- [x] 1. Installierbare App (PWA) für die Einkaufsliste unter `/shop`, funktioniert im Laden ohne
+  Netz; was offline geändert wurde, wird gesendet, sobald wieder Verbindung besteht
+- [ ] 2. Feinschliff am echten Handy (Android und iPhone)
+
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 
 - [x] 1. Küchenansicht unter `/kitchen` für ein 8-Zoll-Tablet im Querformat: Termine und Essen der
@@ -1229,8 +1260,7 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 **1.4: Unterwegs**
 
 - Installierbare Web-App (PWA) fürs Smartphone der Eltern: Aufgaben prüfen, Punkte buchen und
-  Aufgaben anlegen von unterwegs; die Einkaufsliste auch ohne Netz im Laden, abgeglichen, sobald
-  wieder Verbindung besteht
+  Aufgaben anlegen von unterwegs (die Einkaufsliste als App kommt vorher, siehe Phase 10)
 - Erwachsene legen Aufgaben schnell direkt in der Familienansicht an, ohne Elternbereich
 
 **Als Nächstes: Essensplanung (Phase 5)**

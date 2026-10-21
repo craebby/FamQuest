@@ -50,7 +50,7 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Meal plan: type the week's dishes right on the display, with suggestions and icons; plus a
   recipe collection you fill by pasting text, rated with stars
 - Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
-  note), tick it off in the shop
+  note), tick it off in the shop; on the phone also as an app that works without a connection
 - Household: a cleaning plan with a traffic light instead of dates (every chore with its own
   interval, per room); a setup assistant suggests rooms, chores and intervals that fit your home;
   what is due also shows on "Today" and next to the children under "Tasks". Plus "To do": a
@@ -639,7 +639,30 @@ with its picture and stars. Everything works without the parents' PIN.
 
 **On the phone:** open FamQuest in the browser. Away from home this needs FamQuest to be reachable
 from outside, e.g. over HTTPS behind a reverse proxy (see [Behind a reverse proxy](#behind-a-reverse-proxy))
-or via a VPN. An installable app that also works offline in the shop is planned for 1.4.
+or via a VPN.
+
+### Shopping list as an app
+
+On the phone the shopping list can be installed as an app. It opens straight into the list,
+without the navigation bar, and **keeps working without a connection in the shop**.
+
+- **Install:** sign in on the phone and open **Shopping**. The app is called "FamQuest Shopping"
+  ("FamQuest Einkauf" in German) and opens `/shop`.
+  - **Android (Chrome):** tap **"Install as app"** at the top, or use the browser menu → "Install
+    app".
+  - **iPhone/iPad (Safari):** tap "Share" at the bottom, then "Add to Home Screen". The button
+    "Install as app" shows this hint as well.
+- **Without a connection:** the list shows what it last knew. Ticking off, bringing back, adding
+  and removing work as usual; at the top it says "Offline · 2 changes waiting". Once there's a
+  connection again, the changes are sent in the order they were made, even if the app was closed
+  in the meantime. Something added offline and ticked right away arrives correctly too.
+- **Needs network:** renaming or deleting one of your items (the pencil) and signing in. The app
+  needs to have been opened once with a connection after installing.
+- Requirement: FamQuest is reached over **HTTPS** (e.g. behind a reverse proxy); browsers only
+  allow installable apps there. On the home network over plain `http://` the list still works in
+  the browser, just not as an app.
+- The display and the kitchen tablet are not affected: only the shopping list pages are stored
+  for offline use. Signing out removes the stored list from the phone.
 
 ## Household
 
@@ -1178,6 +1201,14 @@ resets itself on the hour (see [Public demo](#public-demo)).
 - [x] 3. Ingredients onto the shopping list, per recipe and for the week
 - [ ] 4. Polish
 
+**Shopping list as an app (phase 10), in progress**
+
+Brought forward from 1.4: the part of "on the go" that's needed in the shop.
+
+- [x] 1. Installable app (PWA) for the shopping list at `/shop`, works without a connection in the
+  shop; changes made offline are sent once there's a connection again
+- [ ] 2. Polish on a real phone (Android and iPhone)
+
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
 - [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
@@ -1201,7 +1232,7 @@ resets itself on the hour (see [Public demo](#public-demo)).
 **1.4: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
-  anywhere; the shopping list also offline in the shop, synced once there's a connection again
+  anywhere (the shopping list as an app comes earlier, see phase 10)
 - Adults can quickly add tasks right from the family view, without the parents' area
 
 **Next: meal planning (phase 5)**

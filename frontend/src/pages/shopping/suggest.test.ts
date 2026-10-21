@@ -64,8 +64,8 @@ describe('Vorschläge', () => {
     const suggestions = itemSuggestions(t, '', own)
 
     expect(suggestions.slice(0, 2)).toEqual([
-      { name: 'Hafermilch', icon: 'fluent-emoji-flat:beverage-box', item_id: 1, on_list: false },
-      { name: 'milch', icon: 'fluent-emoji-flat:beverage-box', item_id: 2, on_list: true },
+      { name: 'Hafermilch', icon: 'fluent-emoji-flat:beverage-box', item_id: 1 },
+      { name: 'milch', icon: 'fluent-emoji-flat:beverage-box', item_id: 2 },
     ])
     expect(suggestions.filter((s) => s.name.toLowerCase() === 'milch')).toHaveLength(1)
     expect(suggestions).toHaveLength(2 + GROCERY_POOL.length - 1)

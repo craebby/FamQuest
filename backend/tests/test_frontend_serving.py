@@ -13,6 +13,7 @@ def spa_client(tmp_path):
     (static / "assets" / "app.js").write_text("console.log(1)")
     (static / "favicon.svg").write_text("<svg/>")
     (static / "logo.webp").write_bytes(b"RIFF")
+    (static / "manifest-de.webmanifest").write_text("{}")
     (tmp_path / "secret.txt").write_text("secret")
 
     settings = Settings(static_dir=static, upload_dir=tmp_path / "uploads")
@@ -34,6 +35,11 @@ def test_serves_static_files(spa_client):
 def test_logo_is_served_as_an_image(spa_client):
     # Im schlanken Image kennt Python die Endung nicht von selbst.
     assert spa_client.get("/logo.webp").headers["content-type"] == "image/webp"
+
+
+def test_manifest_is_served_as_manifest(spa_client):
+    response = spa_client.get("/manifest-de.webmanifest")
+    assert response.headers["content-type"] == "application/manifest+json"
 
 
 def test_does_not_serve_files_outside_static_dir(spa_client):

@@ -5,7 +5,12 @@ import CloseIcon from '~icons/lucide/x'
 import PencilIcon from '~icons/lucide/pencil'
 import SearchIcon from '~icons/lucide/search'
 
-import { useAddToList, useRemoveFromList, useShoppingItems } from '../../api/shopping'
+import {
+  useAddToList,
+  useRemoveFromList,
+  useShoppingItems,
+  useShoppingList,
+} from '../../api/shopping'
 import { TaskIcon } from '../../components/TaskIcon'
 import { Alert, Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
@@ -22,6 +27,7 @@ import { type ItemSuggestion, iconForItem, itemSuggestions } from './suggest'
 export function ShoppingAdder({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
   const items = useShoppingItems()
+  const list = useShoppingList()
   const add = useAddToList()
   const remove = useRemoveFromList()
   const [name, setName] = useState('')
@@ -30,8 +36,6 @@ export function ShoppingAdder({ onClose }: { onClose: () => void }) {
   const [chosenIcon, setChosenIcon] = useState<string | null>(null)
   const [picking, setPicking] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
-  // Angetippt, aber noch nicht vom Server bestätigt: so sieht man den Tipp sofort.
-  const [toggled, setToggled] = useState<Record<string, boolean>>({})
   const [added, setAdded] = useState<string | null>(null)
   const dialog = useRef<HTMLDivElement>(null)
 
@@ -40,6 +44,12 @@ export function ShoppingAdder({ onClose }: { onClose: () => void }) {
   const icon = chosenIcon ?? iconForItem(t, typed, known)
   const suggestions = itemSuggestions(t, typed, known)
   const editing = known.find((item) => item.id === editingId)
+  // Was offen auf der Liste steht, auch was gerade erst angetippt ist (oder ohne Netz wartet).
+  const open = new Map(
+    (list.data?.items ?? [])
+      .filter((item) => !item.checked)
+      .map((item) => [normalize(item.name), item]),
+  )
   const error = add.error ?? remove.error
 
   useEffect(() => {
@@ -59,36 +69,19 @@ export function ShoppingAdder({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose, picking, editingId])
 
-  const settle = (key: string) =>
-    setToggled((current) => {
-      const next = { ...current }
-      delete next[key]
-      return next
-    })
-
   const addItem = (item: { name: string; icon: string }) => {
-    const key = normalize(item.name)
-    setToggled((current) => ({ ...current, [key]: true }))
-    add.mutate(
-      { name: item.name, icon: item.icon, note: note.trim() || undefined },
-      {
-        onSuccess: (result) => setAdded(result.name),
-        onSettled: () => settle(key),
-      },
-    )
+    add.mutate({ name: item.name, icon: item.icon, note: note.trim() || undefined })
+    setAdded(item.name)
     setName('')
     setNote('')
     setChosenIcon(null)
   }
 
-  const toggle = (suggestion: ItemSuggestion, onList: boolean) => {
-    const key = normalize(suggestion.name)
-    if (key in toggled) return
+  const toggle = (suggestion: ItemSuggestion) => {
+    const onList = open.get(normalize(suggestion.name))
     if (!onList) return addItem(suggestion)
-    if (suggestion.item_id === undefined) return
-    setToggled((current) => ({ ...current, [key]: false }))
     setAdded(null)
-    remove.mutate(suggestion.item_id, { onSettled: () => settle(key) })
+    remove.mutate({ id: onList.id, name: onList.name })
   }
 
   const submit = (event: FormEvent) => {
@@ -177,13 +170,13 @@ export function ShoppingAdder({ onClose }: { onClose: () => void }) {
                   className="grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-2 p-1"
                 >
                   {suggestions.map((suggestion) => {
-                    const onList = toggled[normalize(suggestion.name)] ?? suggestion.on_list
+                    const onList = open.has(normalize(suggestion.name))
                     return (
                       <li key={suggestion.name} className="relative">
                         <button
                           type="button"
                           aria-pressed={onList}
-                          onClick={() => toggle(suggestion, onList)}
+                          onClick={() => toggle(suggestion)}
                           className="flex h-full w-full flex-col items-center gap-1 rounded-2xl p-2 text-center text-base leading-tight font-bold text-slate-700 ring-2 ring-slate-100 transition-colors hover:bg-orange-50 focus-visible:outline-4 focus-visible:outline-orange-400 active:bg-orange-100 aria-pressed:bg-emerald-50 aria-pressed:ring-4 aria-pressed:ring-emerald-500"
                         >
                           <TaskIcon icon={suggestion.icon} className="size-14" />

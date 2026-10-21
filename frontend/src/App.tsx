@@ -16,6 +16,7 @@ import { KITCHEN_PATH, KitchenPage } from './pages/KitchenPage'
 import { LoginPage } from './pages/LoginPage'
 import { MealsPage } from './pages/MealsPage'
 import { RecipesPage } from './pages/RecipesPage'
+import { ShopPage } from './pages/ShopPage'
 import { ShoppingPage } from './pages/ShoppingPage'
 import { ParentsPage } from './pages/ParentsPage'
 import { PersonPage } from './pages/PersonPage'
@@ -23,6 +24,10 @@ import { RewardsPage } from './pages/RewardsPage'
 import { SetupPage } from './pages/SetupPage'
 import { TasksWeekPage } from './pages/TasksWeekPage'
 import { TodayPage } from './pages/TodayPage'
+import { SHOP_PATH } from './pwa'
+
+/** Seiten ohne Navigationsleiste, zu denen es nach dem Anmelden zurückgeht. */
+const RETURN_PATHS = [KITCHEN_PATH, SHOP_PATH]
 
 function Loading() {
   const { t } = useTranslation()
@@ -49,8 +54,8 @@ function SetupGate() {
   const { pathname } = useLocation()
 
   if (status.isPending) return <Loading />
-  if (status.isError)
-    return <LoadError error={status.error} onRetry={() => void status.refetch()} />
+  // Ohne Netz (Einkaufs-App im Laden) reicht der auf dem Gerät gespeicherte Stand.
+  if (!status.data) return <LoadError error={status.error} onRetry={() => void status.refetch()} />
 
   const required = status.data.setup_required
   if (required && pathname !== '/setup') return <Navigate to="/setup" replace />
@@ -71,15 +76,17 @@ function RequireAuth() {
   if (me.isPending) return <Loading />
   if (me.isError) {
     if (me.error instanceof ApiError && me.error.status === 401)
-      // Die Küchenansicht merkt sich ihre Adresse: Nach dem Anmelden geht es dorthin zurück.
+      // Küchenansicht und Einkaufs-App merken sich ihre Adresse: Nach dem Anmelden geht es
+      // dorthin zurück.
       return (
         <Navigate
           to="/login"
           replace
-          state={pathname === KITCHEN_PATH ? { from: pathname } : null}
+          state={RETURN_PATHS.includes(pathname) ? { from: pathname } : null}
         />
       )
-    return <LoadError error={me.error} onRetry={() => void me.refetch()} />
+    // Ohne Netz (Einkaufs-App im Laden) reicht die auf dem Gerät gespeicherte Anmeldung.
+    if (!me.data) return <LoadError error={me.error} onRetry={() => void me.refetch()} />
   }
   return <Outlet />
 }
@@ -89,7 +96,7 @@ function LoginRoute() {
   const from = (useLocation().state as { from?: string } | null)?.from
   if (me.isPending) return <Loading />
   return me.isSuccess ? (
-    <Navigate to={from === KITCHEN_PATH ? KITCHEN_PATH : '/'} replace />
+    <Navigate to={from && RETURN_PATHS.includes(from) ? from : '/'} replace />
   ) : (
     <LoginPage />
   )
@@ -112,11 +119,12 @@ export default function App() {
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/meals" element={<MealsPage />} />
             <Route path="/meals/recipes" element={<RecipesPage />} />
-            <Route path="/shopping" element={<ShoppingPage />} />
+            <Route path="/shopping" element={<ShoppingPage installable />} />
             <Route path="/household" element={<ChoresPage />} />
           </Route>
           <Route path="/frame" element={<FramePage />} />
           <Route path={KITCHEN_PATH} element={<KitchenPage />} />
+          <Route path={SHOP_PATH} element={<ShopPage />} />
           <Route path="/parents/:area?" element={<ParentsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
