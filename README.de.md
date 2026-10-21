@@ -10,11 +10,12 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Version 1.2. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
+> **Status:** Version 1.3. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
 > Belohnungen, Kontrolle durch die Eltern), den Google Kalender (nur lesend), die Startseite „Heute“
 > als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan, die
-> Einkaufsliste, den Haushalt (Putzplan mit Ampel, „Zu erledigen“) und die Küchenansicht fürs
-> kleine Tablet. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
+> Einkaufsliste, den Haushalt (Putzplan mit Ampel, „Zu erledigen“), die Küchenansicht fürs
+> kleine Tablet, Rezepte und die Einkaufsliste als installierbare App, die im Laden auch ohne Netz
+> funktioniert. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
 
 **Ausprobieren ohne Installation:** [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) –
 „Demo öffnen“ antippen, die Eltern-PIN steht auf der Anmeldeseite. Die Beispielfamilie setzt sich
@@ -95,7 +96,7 @@ docker compose up -d --build
 ```
 
 `main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
-[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.2.1`,
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.3.0`,
 danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
@@ -1140,8 +1141,12 @@ einziges App-Image, das als unprivilegierter Benutzer läuft.
 
 ## Roadmap
 
-Aktueller Stand: **1.2** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
-nach 1.2 sind ein erster Plan und können sich noch ändern.
+Aktueller Stand: **1.3** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
+nach 1.3 sind ein erster Plan und können sich noch ändern.
+
+**1.3: veröffentlicht.** Rezepte (Phase 9 unten) zu den Gerichten des Essensplans, mit „Woche
+füllen“ und Zutaten auf die Einkaufsliste, dazu die Einkaufsliste als installierbare App, die im
+Laden auch ohne Netz funktioniert (Phase 10 unten).
 
 **1.2: veröffentlicht.** Die Küchenansicht (Phase 8 unten) für ein kleines Tablet in der Küche,
 dazu im Essensplan der Knopf „Foto für …“ direkt beim geplanten Gericht.
@@ -1221,7 +1226,7 @@ erzeugt mit Demodaten (`npm run screenshots`).
 **Demoversion:** fertig. Eine deutsche und eine englische öffentliche Instanz mit der
 Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche Demo](#öffentliche-demo)).
 
-**Rezepte (Phase 9), in Arbeit**
+**Rezepte (Phase 9):** veröffentlicht mit 1.3, Feinschliff läuft im Alltag weiter.
 
 - [x] 1. Rezeptsammlung unter „Essen“: Rezepte als Text einfügen (mit Vorschau), am Display und in
   der Küchenansicht zum Mitkochen öffnen, bearbeiten, mit ein bis fünf Sternen bewerten
@@ -1230,9 +1235,9 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 - [x] 3. Zutaten auf die Einkaufsliste, je Rezept und für die Woche
 - [ ] 4. Feinschliff
 
-**Einkaufsliste als App (Phase 10), in Arbeit**
+**Einkaufsliste als App (Phase 10):** veröffentlicht mit 1.3, Feinschliff am echten Handy folgt.
 
-Vorgezogen aus 1.4: der Teil von „Unterwegs“, den man im Laden braucht.
+Vorgezogen aus „Unterwegs“: der Teil von „Unterwegs“, den man im Laden braucht.
 
 - [x] 1. Installierbare App (PWA) für die Einkaufsliste unter `/shop`, funktioniert im Laden ohne
   Netz; was offline geändert wurde, wird gesendet, sobald wieder Verbindung besteht
@@ -1245,7 +1250,7 @@ Vorgezogen aus 1.4: der Teil von „Unterwegs“, den man im Laden braucht.
   Uhr, Nachtmodus; dazu im Essensplan der Knopf „Foto für …“ direkt beim geplanten Gericht
 - [ ] 2. Feinschliff am echten Tablet
 
-**1.3: Anpassen**
+**1.4: Anpassen**
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
   ergänzen und entfernen (in der Datenbank statt im Code); überarbeitete Beispiel-Vorlagen
@@ -1257,7 +1262,7 @@ Vorgezogen aus 1.4: der Teil von „Unterwegs“, den man im Laden braucht.
 - Mehr als sieben Personen (mehr Farben)
 - About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
 
-**1.4: Unterwegs**
+**1.5: Unterwegs**
 
 - Installierbare Web-App (PWA) fürs Smartphone der Eltern: Aufgaben prüfen, Punkte buchen und
   Aufgaben anlegen von unterwegs (die Einkaufsliste als App kommt vorher, siehe Phase 10)

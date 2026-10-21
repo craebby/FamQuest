@@ -11,10 +11,11 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 1.2. Contains the task system (routines, family view, points, rewards,
+> **Status:** version 1.3. Contains the task system (routines, family view, points, rewards,
 > parent checks), Google Calendar (read-only), the start page "Today" as a week dashboard with
 > weather, the picture frame with night mode, the meal plan, the shopping list, the household
-> (cleaning plan with a traffic light, "To do") and the kitchen view for a small tablet. Polish continues in everyday use (see
+> (cleaning plan with a traffic light, "To do"), the kitchen view for a small tablet, recipes and
+> the shopping list as an installable app that works offline in the shop. Polish continues in everyday use (see
 > [Roadmap](#roadmap)).
 
 **Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
@@ -94,7 +95,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.2.1`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.3.0`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -1115,8 +1116,12 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **1.2** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
-1.2 are a first plan and may still change.
+Current state: **1.3** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.3 are a first plan and may still change.
+
+**1.3: released.** Recipes (phase 9 below) for the dishes in the meal plan, with "Fill the week"
+and ingredients onto the shopping list, plus the shopping list as an installable app that works
+without a connection in the shop (phase 10 below).
 
 **1.2: released.** The kitchen view (phase 8 below) for a small tablet in the kitchen, plus a
 "Photo for …" button right at the planned dish in the meal plan.
@@ -1192,7 +1197,7 @@ generated with demo data (`npm run screenshots`).
 **Demo version:** done. A German and an English public instance with the sample family that
 resets itself on the hour (see [Public demo](#public-demo)).
 
-**Recipes (phase 9), in progress**
+**Recipes (phase 9):** released with 1.3, polish continues in everyday use.
 
 - [x] 1. Recipe collection under "Meals": paste recipes as text (with a preview), open them on the
   display and in the kitchen view for cooking, edit them, rate them with one to five stars
@@ -1201,9 +1206,9 @@ resets itself on the hour (see [Public demo](#public-demo)).
 - [x] 3. Ingredients onto the shopping list, per recipe and for the week
 - [ ] 4. Polish
 
-**Shopping list as an app (phase 10), in progress**
+**Shopping list as an app (phase 10):** released with 1.3, polish on a real phone to follow.
 
-Brought forward from 1.4: the part of "on the go" that's needed in the shop.
+Brought forward from "on the go": the part of "on the go" that's needed in the shop.
 
 - [x] 1. Installable app (PWA) for the shopping list at `/shop`, works without a connection in the
   shop; changes made offline are sent once there's a connection again
@@ -1216,7 +1221,7 @@ Brought forward from 1.4: the part of "on the go" that's needed in the shop.
   clock, night mode; plus a "Photo for …" button right at the planned dish in the meal plan
 - [ ] 2. Polish on the real tablet
 
-**1.3: make it your own**
+**1.4: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
@@ -1229,7 +1234,7 @@ Brought forward from 1.4: the part of "on the go" that's needed in the shop.
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
 
-**1.4: on the go**
+**1.5: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
   anywhere (the shopping list as an app comes earlier, see phase 10)

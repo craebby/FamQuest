@@ -124,7 +124,7 @@ Wünsche der Kinder später (Roadmap, Ideen ohne Version).
 ## Etappen (Phase 6: Einkaufsliste)
 
 Entschieden: eigene Liste statt fremdem Dienst; eintragen und abhaken ohne Eltern-PIN; Menge/Hinweis
-optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kommt mit 1.4;
+optional; Abgehakte bleiben bis Tagesende (Zeitzone der Familie). PWA (offline im Laden) kam mit 1.3 (Phase 10);
 mehrere Listen, Sortierung (evtl. KI), Zutaten aus dem Essensplan und Obsidian-Export stehen unter „Ideen“.
 
 1. Einkaufsliste am Display und im Browser: Ansicht „Einkauf“ in der Navigationsleiste, Artikel mit
@@ -189,7 +189,7 @@ Branch `phase-9-rezepte`.
 
 ## Etappen (Phase 10: Einkaufsliste als App)
 
-Entschieden: Aus 1.4 („Unterwegs“) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
+Entschieden: Aus „Unterwegs“ (jetzt 1.5) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
 ohne Navigationsleiste, installierbar (PWA), im Laden ohne Netz: Abhaken, Eintragen, Entfernen
 landen in einer Warteschlange und werden mit Netz der Reihe nach gesendet. Gearbeitet wird auf dem
 Branch `phase-10-pwa` (abgezweigt von `phase-9-rezepte`).

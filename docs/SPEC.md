@@ -95,7 +95,7 @@ Eine eigene Liste in FamQuest statt der Anbindung eines fremden Dienstes (Bring!
 
 **Einkaufsliste als App** *(Phase 10, entschieden am 2026-10-21)*
 
-Vorgezogen aus Version 1.4 („Unterwegs“): Im Laden ist oft kein oder schlechtes Netz, die Liste muss trotzdem gehen. Die übrigen Eltern-Funktionen am Handy bleiben in 1.4.
+Vorgezogen aus „Unterwegs“ (jetzt Version 1.5), erschienen mit 1.3: Im Laden ist oft kein oder schlechtes Netz, die Liste muss trotzdem gehen. Die übrigen Eltern-Funktionen am Handy bleiben in 1.5.
 
 - Eigene Adresse `/shop`: nur die Einkaufsliste, ohne Navigationsleiste (wie die Küchenansicht), damit ohne Netz nichts auf Seiten führt, die dann nicht laden. Läuft die Anmeldung ab, geht es nach dem Anmelden dorthin zurück.
 - Installierbar (PWA): Manifest je Sprache („FamQuest Einkauf“ / „FamQuest Shopping“, Start und Bereich `/shop`, Logo als Symbol, auch „maskable“). Es wird nur auf `/shopping` und `/shop` eingebunden, Display und Küchen-Tablet bieten keine Installation an. Am Handy (schmaler Bildschirm) ein Knopf „Als App installieren“: unter Android das Installieren des Browsers, auf iPhone/iPad ein Hinweis („Teilen → Zum Home-Bildschirm“). Braucht HTTPS (oder localhost).
