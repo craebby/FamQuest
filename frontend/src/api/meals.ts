@@ -28,6 +28,19 @@ export interface Dish {
   servings: number | null
   /** 1 bis 5 Sterne; ohne Bewertung null. */
   rating: number | null
+  /** Rezept aus Mealie (dann gelten dessen Zutaten und Schritte); sonst null. */
+  mealie?: MealieLink | null
+}
+
+export interface MealieLink {
+  id: string
+  name: string
+  /** Adresse in Mealie, zum Öffnen. */
+  url: string | null
+  /** Das Gericht ist das Mealie-Rezept selbst, nicht von Hand verknüpft. */
+  auto: boolean
+  /** Hinter der Verknüpfung liegt ein eigenes Rezept. */
+  own_recipe: boolean
 }
 
 /** Ein Rezept, wie es eingefügt wird (zerlegt aus einem Text). */
@@ -38,6 +51,10 @@ export interface RecipeData {
   steps: string[]
   servings: number | null
 }
+
+/** Hat das Gericht ein eigenes Foto (und zeigt nicht nur das Bild aus Mealie)? */
+export const hasOwnImage = (dish: Pick<Dish, 'image_url'>) =>
+  dish.image_url !== null && !dish.image_url.startsWith('/api/mealie/')
 
 export const hasRecipe = (dish: Pick<Dish, 'ingredients' | 'steps'>) =>
   dish.ingredients.length > 0 || dish.steps.length > 0

@@ -20,6 +20,7 @@ from app.api import (
     frame,
     health,
     home,
+    mealie,
     meals,
     members,
     parent,
@@ -40,6 +41,7 @@ from app.config import Settings, get_settings
 from app.demo_mode import block_while_resetting, run_resets
 from app.errors import register_error_handlers
 from app.logs import configure_logging
+from app.mealie import run_periodically as run_mealie_sync
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -54,6 +56,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if settings.calendar_sync_minutes > 0:
             interval = timedelta(minutes=settings.calendar_sync_minutes)
             tasks.append(asyncio.create_task(run_periodically(interval)))
+        if settings.mealie_sync_minutes > 0:
+            interval = timedelta(minutes=settings.mealie_sync_minutes)
+            tasks.append(asyncio.create_task(run_mealie_sync(interval)))
         if settings.demo_mode:
             interval = timedelta(minutes=settings.demo_reset_minutes)
             tasks.append(asyncio.create_task(run_resets(settings.demo_mode, interval)))
@@ -96,6 +101,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         photos,
         frame,
         meals,
+        mealie,
         shopping,
         chores,
         todos,

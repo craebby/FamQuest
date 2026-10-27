@@ -22,6 +22,7 @@ UPLOAD_DIR = Path(tempfile.mkdtemp(prefix="famquest-test-uploads-"))
 os.environ["UPLOAD_DIR"] = str(UPLOAD_DIR)
 # Keine Kalender-Synchronisation im Hintergrund; Tests rufen sie gezielt auf.
 os.environ["CALENDAR_SYNC_MINUTES"] = "0"
+os.environ["MEALIE_SYNC_MINUTES"] = "0"
 # Google-Zugangsdaten aus der lokalen .env gelten nicht; Tests schalten sie mit `configured` ein.
 for name in ("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "TOKEN_ENCRYPTION_KEY"):
     os.environ[name] = ""

@@ -49,7 +49,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
   with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
   clock)
 - Meal plan: type the week's dishes right on the display, with suggestions and icons; plus a
-  recipe collection you fill by pasting text, rated with stars
+  recipe collection you fill by pasting text, rated with stars, optionally with recipes from
+  [Mealie](#mealie)
 - Shopping list: add what's missing on the display or a phone (suggestions with icons, amount or
   note), tick it off in the shop; sorted by shop (supermarket, drugstore, DIY store, online) and in
   the supermarket by section along the way through the shop; on the phone also as an app that works
@@ -616,6 +617,44 @@ with its picture and stars. Everything works without the parents' PIN.
   amount becomes the note ("approx. 600 g potatoes" → potatoes, "approx. 600 g"), equal
   ingredients are combined. Salt, pepper, oil and whatever is already on the list start unticked.
 
+### Mealie
+
+If you keep your recipes in [Mealie](https://mealie.io), FamQuest can use them. FamQuest only
+reads and never changes anything in Mealie.
+
+**Set up:** parents' area → **Settings** → **Mealie**. Choose how FamQuest should use Mealie:
+
+- **Off:** only your own recipes (default).
+- **Button only:** a **Mealie** button (cook icon) in the navigation bar and in the kitchen view
+  opens Mealie inside FamQuest, e.g. to look up a recipe while cooking. Needs only the address.
+- **Mixed:** your own recipes and those from Mealie side by side.
+- **Mealie only:** the recipe collection and "Fill the week" use Mealie only.
+
+For "Mixed" and "Mealie only", also enter an **API token**: in Mealie under *Profile → API Tokens*,
+create one (e.g. named "FamQuest"). FamQuest stores it encrypted, which needs
+`TOKEN_ENCRYPTION_KEY` in the `.env` (see [Google Calendar](#google-calendar)); it is never shown
+again. Saving checks the connection and imports the recipes right away.
+
+**In everyday use:**
+
+- Every Mealie recipe becomes a dish: it appears in the recipe collection (with a cook icon), in the
+  suggestions when entering a meal and in "Fill the week". Its picture comes from Mealie until you
+  give it your own photo. Ingredients, steps and servings come from Mealie, including the servings
+  calculator and "Add to shopping list".
+- **Link a dish:** any of your own dishes can point to a Mealie recipe, e.g. "Meatballs with djuvec
+  rice" to the djuvec rice in Mealie. Open the dish's recipe and tap **Link with Mealie**.
+  **Unlink** brings back your own recipe, if it had one.
+- Changes in Mealie arrive within 10 minutes (`MEALIE_SYNC_MINUTES`); opening a recipe fetches it
+  right away. **Sync now** in the parents' area syncs immediately. If Mealie can't be reached,
+  FamQuest keeps showing the last state.
+- A recipe from Mealie is edited in Mealie: **Open in Mealie** in the recipe. Stars, variants for a
+  day and re-rolling work as with your own recipes.
+- **Signing in to Mealie** inside FamQuest happens once per device in Mealie itself. This only
+  works if FamQuest and Mealie run under the same domain (e.g. `famquest.example.org` and
+  `mealie.example.org`); otherwise use **Open in browser**.
+- Switching Mealie off hides its recipes, but keeps links and the stored state; switch it on again
+  and everything is back.
+
 ## Shopping list
 
 ![Shopping list on the display](docs/screenshots/en/shopping.png)
@@ -864,9 +903,10 @@ described in [`.env.example`](.env.example).
 | `PROXY_NETWORK` | `proxy` | Docker network of your reverse proxy (see below) |
 | `GOOGLE_CLIENT_ID` | – | OAuth client for [Google Calendar](#google-calendar) |
 | `GOOGLE_CLIENT_SECRET` | – | Its client secret |
-| `TOKEN_ENCRYPTION_KEY` | – | Encrypts the Google tokens in the database |
+| `TOKEN_ENCRYPTION_KEY` | – | Encrypts the Google tokens and the Mealie API token in the database |
 | `PUBLIC_URL` | – | Public address, e.g. `https://family.example.com`; fixes the Google redirect URI behind a reverse proxy |
 | `CALENDAR_SYNC_MINUTES` | `5` | Minutes between calendar syncs in the background; `0` = off |
+| `MEALIE_SYNC_MINUTES` | `10` | Minutes between [Mealie](#mealie) syncs in the background; `0` = only by hand |
 
 Data lives in two Docker volumes: `db-data` (PostgreSQL) and `uploads` (uploaded images). How to
 back them up is described under [Backup and restore](#backup-and-restore).
@@ -1237,6 +1277,15 @@ Brought forward from 1.5 ("on the go"): the part that's needed in the shop.
   shop or section and change their order, remembered per item, also offline
 - [ ] 2. Polish in everyday use
 
+**Mealie (phase 12), in progress**
+
+- [x] 1. Connect [Mealie](#mealie): four modes (off, button only, mixed, Mealie only), API token
+  stored encrypted, background sync, Mealie recipes as dishes (collection, suggestions, "Fill the
+  week", shopping list), link your own dishes to a Mealie recipe, a Mealie button in the navigation
+  bar and the kitchen view
+- [ ] 2. Polish in everyday use (later: single sign-on, so the tablet doesn't need its own Mealie
+  login)
+
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
 - [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
@@ -1309,7 +1358,7 @@ them; the children's routines stay.
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
-- Recipes: connecting [Mealie](https://mealie.io), splitting pasted text with AI
+- Recipes: splitting pasted text with AI; for Mealie: single sign-on, syncing the shopping list
 - Shopping list: several lists, order of the supermarket sections per family (e.g. drinks at the
   entrance), recognising shops with AI help, export to Obsidian (Markdown checklist)
 - Children's meal wishes: tap your avatar and a dish on the display; parents add it to the plan

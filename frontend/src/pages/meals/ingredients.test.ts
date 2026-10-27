@@ -20,6 +20,9 @@ describe('parseIngredient', () => {
     ['500 g', '500 g', ''],
     // „g“ gehört nur als eigenes Wort zur Menge.
     ['2 Gurken', 'Gurken', '2'],
+    // Ein Zusatz in Klammern am Ende (so kommen Zutaten aus Mealie) fällt weg.
+    ['1 Stück Paprika (ca. 180 g rot)', 'Paprika', '1 Stück'],
+    ['Salz (nach Geschmack)', 'Salz', ''],
   ])('%s', (line, name, note) => {
     expect(parseIngredient(line)).toEqual({ name, note })
   })

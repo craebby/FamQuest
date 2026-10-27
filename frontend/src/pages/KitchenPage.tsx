@@ -4,9 +4,11 @@ import BroomIcon from '~icons/fluent-emoji-flat/broom'
 import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
+import CookIcon from '~icons/fluent-emoji-flat/cook'
 
 import { useMe } from '../api/auth'
 import { DEFAULT_FRAME_SETTINGS, useFrameSettings } from '../api/frame'
+import { mealieUrl, useMealie } from '../api/mealie'
 import { useToday } from '../api/today'
 import { useIdleTimeout } from '../useIdleTimeout'
 import { useNow } from '../useNow'
@@ -14,6 +16,7 @@ import { formatLongDate } from '../weekdays'
 import { ChoresPage } from './ChoresPage'
 import { ShoppingPage } from './ShoppingPage'
 import { NightScreen } from './frame/NightScreen'
+import { MealieOverlay } from './mealie/MealieFrame'
 import { isNightTime } from './frame/night'
 import { RoutineWidget } from './home/RoutineWidget'
 import { WeatherBadge } from './home/WeatherBadge'
@@ -59,6 +62,9 @@ export function KitchenPage() {
   const pages = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState(0)
   const [awake, setAwake] = useState(false)
+  const mealie = mealieUrl(useMealie().data)
+  // Bleibt beim Zurückspringen nach Ruhe offen: Wer nach Rezept kocht, tippt selten.
+  const [cooking, setCooking] = useState(false)
   const night =
     settings.night_enabled && isNightTime(now, settings.night_start, settings.night_end, timeZone)
 
@@ -91,6 +97,17 @@ export function KitchenPage() {
               <PageIcon className="size-9" aria-hidden="true" />
             </button>
           ))}
+          {mealie && (
+            <button
+              type="button"
+              aria-label={t('nav.mealie')}
+              title={t('nav.mealie')}
+              onClick={() => setCooking(true)}
+              className="flex size-14 items-center justify-center rounded-2xl opacity-50 hover:bg-white/80 focus-visible:outline-4 focus-visible:outline-orange-400"
+            >
+              <CookIcon className="size-9" aria-hidden="true" />
+            </button>
+          )}
         </nav>
         {today && (
           <p className="min-w-0 truncate text-xl font-bold text-slate-600">
@@ -136,6 +153,8 @@ export function KitchenPage() {
           </section>
         ))}
       </div>
+
+      {cooking && mealie && <MealieOverlay src={mealie} onClose={() => setCooking(false)} />}
 
       {night && !awake && (
         <button

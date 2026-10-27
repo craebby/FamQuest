@@ -15,6 +15,7 @@ import { FramePage } from './pages/FramePage'
 import { KITCHEN_PATH, KitchenPage } from './pages/KitchenPage'
 import { LoginPage } from './pages/LoginPage'
 import { MealsPage } from './pages/MealsPage'
+import { MealiePage } from './pages/MealiePage'
 import { RecipesPage } from './pages/RecipesPage'
 import { ShopPage } from './pages/ShopPage'
 import { ShoppingPage } from './pages/ShoppingPage'
@@ -119,6 +120,7 @@ export default function App() {
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/meals" element={<MealsPage />} />
             <Route path="/meals/recipes" element={<RecipesPage />} />
+            <Route path="/mealie" element={<MealiePage />} />
             <Route path="/shopping" element={<ShoppingPage installable />} />
             <Route path="/household" element={<ChoresPage />} />
           </Route>

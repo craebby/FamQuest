@@ -209,6 +209,7 @@ def test_rename_and_change_icon_without_pin(client, admin, now):
         "steps": [],
         "servings": None,
         "rating": None,
+        "mealie": None,
     }
     assert [(e["name"], e["icon"]) for e in week(client)["entries"]] == [("Nudeln", BURGER)]
 

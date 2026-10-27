@@ -59,6 +59,8 @@ class Family(Base):
     meal_settings: Mapped[dict | None] = mapped_column(JSONB)
     # Symbole für Termine, [{"icon": "…", "terms": ["Judo", …]}, …] (siehe app/event_symbols.py).
     event_symbols: Mapped[list[dict] | None] = mapped_column(JSONB)
+    # Mealie: Modus, Adresse, verschlüsselter API-Token, Stand des Abgleichs (siehe app/mealie.py).
+    mealie_settings: Mapped[dict | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -514,7 +516,36 @@ class Dish(Base):
     servings: Mapped[int | None] = mapped_column(SmallInteger)
     # Wie es der Familie schmeckt, 1 bis 5 Sterne; steuert „Woche füllen“.
     rating: Mapped[int | None] = mapped_column(SmallInteger)
+    # Mit Mealie verknüpft: Solange Mealie eingeschaltet ist, gilt dessen Rezept. `mealie_auto`:
+    # vom Abgleich für ein Mealie-Rezept angelegt (statt von Hand verknüpft).
+    mealie_id: Mapped[str | None] = mapped_column(
+        ForeignKey("mealie_recipes.id", ondelete="SET NULL"), index=True
+    )
+    mealie_auto: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    mealie_recipe: Mapped["MealieRecipe | None"] = relationship(lazy="joined")
+
+
+class MealieRecipe(Base):
+    """Rezept aus Mealie, wie es der letzte Abgleich gesehen hat. So geht der Essensplan auch,
+    wenn Mealie gerade nicht erreichbar ist."""
+
+    __tablename__ = "mealie_recipes"
+
+    # ID des Rezepts in Mealie (UUID).
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    slug: Mapped[str] = mapped_column(String(300))
+    name: Mapped[str] = mapped_column(String(300))
+    # Kennung des Bilds in Mealie; None = kein Bild. Ändert sich mit dem Bild.
+    image: Mapped[str | None] = mapped_column(String(64))
+    # Bewertung in Mealie, 1 bis 5 Sterne; None = keine.
+    rating: Mapped[int | None] = mapped_column(SmallInteger)
+    servings: Mapped[int | None] = mapped_column(SmallInteger)
+    ingredients: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
+    steps: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
+    # Stand in Mealie (`updatedAt`); nur bei einer Änderung wird das Rezept neu geholt.
+    updated: Mapped[str | None] = mapped_column(String(64))
 
 
 # Gleicher Name in anderer Schreibweise ist dasselbe Gericht („nudeln“ = „Nudeln“).

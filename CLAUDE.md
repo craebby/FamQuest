@@ -210,6 +210,18 @@ offline. Gearbeitet wird auf dem Branch `phase-11-einkauf-sortieren`.
    in anderen Laden/Bereich verschieben)
 2. Feinschliff im Alltag
 
+## Etappen (Phase 12: Mealie)
+
+Entschieden: Mealie als optionale Rezeptquelle, nur lesend per API-Token (verschlüsselt); vier
+Modi (aus, nur Knopf in der Leiste, gemischt, nur Mealie); Mealie-Rezepte erscheinen in FamQuest
+(live verknüpft mit Zwischenspeicher), mit Zutaten auf die Einkaufsliste, „Woche füllen“ und Suche
+beim Eintragen; Single Sign-on erst später. Gearbeitet wird auf dem Branch `phase-12-mealie`
+(abgezweigt von `phase-11-einkauf-sortieren`).
+
+1. Mealie anbinden: Abschnitt im Elternbereich, Abgleich im Hintergrund, Mealie-Rezepte als
+   Gerichte, Gericht von Hand verknüpfen, Knopf „Mealie“ in Leiste und Küchenansicht
+2. Feinschliff im Alltag
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

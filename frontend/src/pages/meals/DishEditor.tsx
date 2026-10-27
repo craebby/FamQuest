@@ -2,7 +2,7 @@ import { type FormEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CameraIcon from '~icons/fluent-emoji-flat/camera'
 
-import { type Dish, useDeleteDish, useDishImage, useUpdateDish } from '../../api/meals'
+import { type Dish, hasOwnImage, useDeleteDish, useDishImage, useUpdateDish } from '../../api/meals'
 import { AvatarCropper } from '../../components/AvatarCropper'
 import { DishPicture } from '../../components/DishPicture'
 import { TaskIcon } from '../../components/TaskIcon'
@@ -15,7 +15,10 @@ interface DishEditorProps {
   onBack: () => void
 }
 
-/** Ein Gericht der Familie ändern: Name, Symbol, eigenes Foto; oder löschen. */
+/**
+ * Ein Gericht der Familie ändern: Name, Symbol, eigenes Foto; oder löschen. Ein Gericht aus Mealie
+ * zeigt dessen Bild, bis es ein eigenes Foto bekommt; gelöscht wird es in Mealie.
+ */
 export function DishEditor({ dish, onBack }: DishEditorProps) {
   const { t } = useTranslation()
   const [name, setName] = useState(dish.name)
@@ -29,6 +32,7 @@ export function DishEditor({ dish, onBack }: DishEditorProps) {
   const remove = useDeleteDish()
   const busy = update.isPending || image.isPending || remove.isPending
   const error = update.error ?? image.error ?? remove.error
+  const ownImage = hasOwnImage(dish)
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -67,9 +71,9 @@ export function DishEditor({ dish, onBack }: DishEditorProps) {
           />
           <Button variant="secondary" disabled={busy} onClick={() => fileInput.current?.click()}>
             <CameraIcon className="size-8" aria-hidden="true" />
-            {t(dish.image_url ? 'members.change_photo' : 'members.choose_photo')}
+            {t(ownImage ? 'members.change_photo' : 'members.choose_photo')}
           </Button>
-          {dish.image_url ? (
+          {ownImage ? (
             <Button
               variant="secondary"
               disabled={busy}
@@ -96,7 +100,9 @@ export function DishEditor({ dish, onBack }: DishEditorProps) {
       </div>
 
       <div className="mt-auto flex flex-col gap-3 border-t-2 border-slate-100 pt-4">
-        {confirmDelete ? (
+        {dish.mealie?.auto ? (
+          <p className="text-base text-slate-500">{t('mealie.delete_in_mealie')}</p>
+        ) : confirmDelete ? (
           <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
             <p className="text-lg font-semibold text-red-800">
               {t('meals.delete_confirm', { name: dish.name })}

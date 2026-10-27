@@ -4,7 +4,9 @@ import { Link } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 import BookIcon from '~icons/fluent-emoji-flat/open-book'
 import PlusIcon from '~icons/lucide/plus'
+import CookIcon from '~icons/fluent-emoji-flat/cook'
 
+import { useMealie } from '../api/mealie'
 import { hasRecipe, useDishes } from '../api/meals'
 import { DishPicture } from '../components/DishPicture'
 import { Alert, Button } from '../components/ui'
@@ -17,16 +19,19 @@ import { StarRating } from './meals/StarRating'
  * Rezeptsammlung (unter „Essen“): alle Gerichte mit Rezept, alphabetisch, mit Bild und Sternen.
  * „Rezepte einfügen“ nimmt einen Text mit einem oder mehreren Rezepten entgegen; ein Tipp auf
  * ein Rezept öffnet es zum Lesen, Bewerten und Bearbeiten. Ohne Eltern-PIN.
+ * Mit Mealie stehen dessen Rezepte dabei (Koch-Symbol); im Modus „nur Mealie“ nur diese, ohne
+ * „Rezepte einfügen“.
  */
 export function RecipesPage() {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
   const dishes = useDishes()
+  const onlyMealie = useMealie().data?.mode === 'only'
   const [importing, setImporting] = useState(false)
   const [open, setOpen] = useState<number | null>(null)
   const collator = new Intl.Collator(language)
   const recipes = (dishes.data ?? [])
-    .filter(hasRecipe)
+    .filter((dish) => hasRecipe(dish) && (!onlyMealie || dish.mealie))
     .sort((a, b) => collator.compare(a.name, b.name))
 
   return (
@@ -41,10 +46,12 @@ export function RecipesPage() {
           <BackIcon className="size-8" aria-hidden="true" />
         </Link>
         <h1 className="text-3xl font-extrabold text-orange-600">{t('recipes.title')}</h1>
-        <Button className="ml-auto" onClick={() => setImporting(true)}>
-          <PlusIcon className="size-7" aria-hidden="true" />
-          {t('recipes.import')}
-        </Button>
+        {!onlyMealie && (
+          <Button className="ml-auto" onClick={() => setImporting(true)}>
+            <PlusIcon className="size-7" aria-hidden="true" />
+            {t('recipes.import')}
+          </Button>
+        )}
       </header>
 
       {dishes.isPending ? (
@@ -56,6 +63,10 @@ export function RecipesPage() {
           <Alert>{errorMessage(t, dishes.error)}</Alert>
           <Button onClick={() => void dishes.refetch()}>{t('actions.retry')}</Button>
         </div>
+      ) : recipes.length === 0 && onlyMealie ? (
+        <p className="max-w-2xl self-center p-8 text-center text-xl text-slate-600">
+          {t('mealie.no_recipes')}
+        </p>
       ) : recipes.length === 0 ? (
         <button
           type="button"
@@ -85,6 +96,13 @@ export function RecipesPage() {
                   </span>
                   <StarRating value={dish.rating} size="size-5" />
                 </span>
+                {dish.mealie && (
+                  <CookIcon
+                    className="size-8 shrink-0 self-start"
+                    aria-label={t('mealie.from_mealie')}
+                    role="img"
+                  />
+                )}
               </button>
             </li>
           ))}

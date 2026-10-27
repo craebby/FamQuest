@@ -10,8 +10,10 @@ import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
 import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
 import MealIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
+import CookIcon from '~icons/fluent-emoji-flat/cook'
 
 import { useCalendarStatus } from '../api/calendar'
+import { mealieUrl, useMealie } from '../api/mealie'
 import { usePhotos } from '../api/photos'
 import { useToday } from '../api/today'
 import { getFrameIdleMinutes } from '../frameIdle'
@@ -74,10 +76,14 @@ export function AppShell() {
   const calendarEnabled = useCalendarStatus().data?.enabled ?? false
   // Den Bilderrahmen gibt es erst, wenn mindestens ein Foto sichtbar ist.
   const hasPhotos = usePhotos().data?.some((photo) => photo.visible) ?? false
-  // Nach Leerlauf nur, wenn es auf diesem Gerät eingeschaltet ist (gelesen beim Betreten).
+  // Mealie gibt es, wenn es im Elternbereich eingeschaltet ist.
+  const hasMealie = mealieUrl(useMealie().data) !== null
+  const onMealie = pathname.startsWith('/mealie')
+  // Nach Leerlauf nur, wenn es auf diesem Gerät eingeschaltet ist (gelesen beim Betreten). Nicht
+  // in Mealie: Tippen im Rahmen merkt die Seite nicht, der Bilderrahmen käme mitten im Kochen.
   const [idleMinutes] = useState(getFrameIdleMinutes)
   const navigate = useNavigate()
-  useIdleTimeout(hasPhotos && idleMinutes > 0 ? idleMinutes * 60 * 1000 : null, () =>
+  useIdleTimeout(hasPhotos && idleMinutes > 0 && !onMealie ? idleMinutes * 60 * 1000 : null, () =>
     navigate('/frame'),
   )
 
@@ -110,6 +116,16 @@ export function AppShell() {
           icon={MealIcon}
           active={pathname.startsWith('/meals')}
         />
+        {hasMealie && (
+          // Am Handy ist die Leiste voll; dort gibt es Mealie als eigene App.
+          <NavItem
+            to="/mealie"
+            label={t('nav.mealie')}
+            icon={CookIcon}
+            active={onMealie}
+            className="max-sm:hidden"
+          />
+        )}
         <NavItem
           to="/shopping"
           label={t('nav.shopping')}

@@ -5,6 +5,9 @@ und werden danach wieder vorgeschlagen; welche Mahlzeiten geplant werden, legen 
 Mit Zutaten und Schritten wird ein Gericht zum Rezept; eingefügt, bearbeitet und bewertet wird
 ebenfalls ohne Eltern-PIN. Ein geplanter Tag kann eine Variante haben (Notiz und/oder eigene
 Fassung des Rezepts), ohne dass sich das Rezept des Gerichts ändert.
+
+Mit Mealie (siehe app/mealie.py) gilt für verknüpfte Gerichte das Rezept aus Mealie, solange
+Rezepte von dort kommen; das eigene Rezept bleibt dahinter gespeichert.
 """
 
 import datetime as dt
@@ -17,6 +20,7 @@ from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import delete, exists, func, select
 from sqlalchemy.exc import IntegrityError
 
+from app import mealie
 from app.api.calendar_week import MAX_WEEK_OFFSET
 from app.auth import CurrentSession, DbSession, ParentSession, get_family
 from app.avatars import (
@@ -30,7 +34,7 @@ from app.avatars import (
 )
 from app.demo_mode import NotInDemo
 from app.errors import ApiError
-from app.models import Dish, Family, MealPlanEntry
+from app.models import Dish, Family, MealieRecipe, MealPlanEntry
 from app.schemas import MEALS, IconName, TypedName
 from app.today import family_now
 
@@ -73,6 +77,19 @@ class MealSettings(BaseModel):
     meals: list[Meal] = Field(min_length=1, max_length=len(MEALS))
 
 
+class MealieLinkOut(BaseModel):
+    """Woher das Rezept eines Gerichts kommt, wenn aus Mealie."""
+
+    id: str
+    name: str
+    # Adresse in Mealie, zum Öffnen im Browser.
+    url: str | None
+    # Das Gericht ist das Mealie-Rezept selbst (vom Abgleich angelegt), nicht von Hand verknüpft.
+    auto: bool
+    # Hinter der Verknüpfung liegt ein eigenes Rezept; „Verknüpfung lösen“ bringt es zurück.
+    own_recipe: bool
+
+
 class DishOut(BaseModel):
     id: int
     name: str
@@ -88,6 +105,8 @@ class DishOut(BaseModel):
     servings: int | None
     # 1 bis 5 Sterne, ohne Bewertung None.
     rating: int | None
+    # Rezept aus Mealie; None ohne Verknüpfung oder wenn Mealie aus ist.
+    mealie: MealieLinkOut | None = None
 
 
 class RecipeOut(BaseModel):
@@ -155,6 +174,11 @@ class FillIn(BaseModel):
     replace: bool = False
 
 
+class MealieLinkIn(BaseModel):
+    # ID des Mealie-Rezepts; None löst die Verknüpfung.
+    recipe_id: Annotated[str, StringConstraints(max_length=36)] | None
+
+
 class RatingIn(BaseModel):
     # None nimmt die Bewertung zurück.
     rating: Annotated[int, Field(ge=1, le=5)] | None
@@ -167,8 +191,17 @@ async def read_dish_image(request: Request) -> bytes:
 DishImage = Annotated[bytes, Depends(read_dish_image)]
 
 
-def image_url(dish: Dish) -> str | None:
-    return f"/api/dish-images/{dish.image}" if dish.image else None
+def image_url(dish: Dish, with_mealie: bool = False) -> str | None:
+    """Eigenes Foto; sonst, wenn Rezepte aus Mealie kommen, das Bild des Mealie-Rezepts."""
+    if dish.image:
+        return f"/api/dish-images/{dish.image}"
+    if with_mealie and dish.mealie_recipe is not None:
+        return mealie.image_url(dish.mealie_recipe)
+    return None
+
+
+def _with_mealie(db: DbSession) -> bool:
+    return mealie.recipes_on(get_family(db))
 
 
 def _ordered(meals: list[str]) -> list[Meal]:
@@ -182,14 +215,14 @@ def settings_of(family: Family) -> MealSettings:
     return MealSettings(meals=meals or DEFAULT_MEALS)
 
 
-def entry_out(entry: MealPlanEntry) -> MealEntryOut:
+def entry_out(entry: MealPlanEntry, with_mealie: bool = False) -> MealEntryOut:
     return MealEntryOut(
         date=entry.date,
         meal=entry.meal,  # type: ignore[arg-type]
         dish_id=entry.dish_id,
         name=entry.dish.name,
         icon=entry.dish.icon,
-        image_url=image_url(entry.dish),
+        image_url=image_url(entry.dish, with_mealie),
         note=entry.note,
         variant=None
         if entry.variant_ingredients is None or entry.variant_steps is None
@@ -239,8 +272,9 @@ def meal_week(
         )
         .order_by(MealPlanEntry.date, MealPlanEntry.id)
     )
+    on = mealie.recipes_on(family)
     return MealWeekOut(
-        start=start, today=today, meals=meals, entries=[entry_out(e) for e in entries]
+        start=start, today=today, meals=meals, entries=[entry_out(e, on) for e in entries]
     )
 
 
@@ -254,15 +288,26 @@ def fill_meals(body: FillIn, _: CurrentSession, db: DbSession) -> list[MealEntry
     """
     if body.end < body.start or (body.end - body.start).days >= MAX_FILL_DAYS:
         raise ApiError(status.HTTP_422_UNPROCESSABLE_CONTENT, "meals.invalid_range")
+    family = get_family(db)
+    mode = mealie.mode_of(family)
+    on = mode in mealie.RECIPE_MODES
     recipes = [
         dish
         for dish in db.scalars(select(Dish).order_by(Dish.id))
-        if dish.ingredients or dish.steps
+        if (on and dish.mealie_recipe is not None)
+        or (mode != "only" and (dish.ingredients or dish.steps) and not dish.mealie_auto)
     ]
     if not recipes:
         raise ApiError(status.HTTP_409_CONFLICT, "meals.no_recipes")
 
-    today = family_now(get_family(db)).date()
+    def weight(dish: Dish) -> float:
+        # Ohne eigene Bewertung zählt die aus Mealie.
+        rating = dish.rating
+        if rating is None and on and dish.mealie_recipe is not None:
+            rating = dish.mealie_recipe.rating
+        return FILL_WEIGHTS[rating]
+
+    today = family_now(family).date()
     first = max(body.start, today)
     days = [first + dt.timedelta(days=i) for i in range((body.end - first).days + 1)]
     # Was rundherum schon geplant ist, je Tag; daran misst sich der Abstand.
@@ -293,7 +338,7 @@ def fill_meals(body: FillIn, _: CurrentSession, db: DbSession) -> list[MealEntry
         if not choices:
             # Die Sammlung reicht nicht für den Abstand: wenigstens nicht dasselbe wie vorher.
             choices = [d for d in recipes if d.id != previous] or recipes
-        dish = fill_random.choices(choices, weights=[FILL_WEIGHTS[d.rating] for d in choices])[0]
+        dish = fill_random.choices(choices, weights=[weight(d) for d in choices])[0]
         if entry is None:
             entry = MealPlanEntry(date=day, meal=body.meal)
             db.add(entry)
@@ -304,7 +349,7 @@ def fill_meals(body: FillIn, _: CurrentSession, db: DbSession) -> list[MealEntry
         entry.dish_id = dish.id
         changed.append(entry)
     db.commit()
-    return [entry_out(entry) for entry in changed]
+    return [entry_out(entry, on) for entry in changed]
 
 
 def _find_dish(db: DbSession, name: str) -> Dish | None:
@@ -343,7 +388,7 @@ def set_meal(
         clear_variant(entry)
     entry.dish = dish
     db.commit()
-    return entry_out(entry)
+    return entry_out(entry, _with_mealie(db))
 
 
 def _planned_entry(db: DbSession, date: dt.date, meal: Meal) -> MealPlanEntry:
@@ -378,7 +423,7 @@ def set_variant(
     else:
         entry.variant_ingredients = entry.variant_steps = entry.variant_servings = None
     db.commit()
-    return entry_out(entry)
+    return entry_out(entry, _with_mealie(db))
 
 
 @router.delete("/meals/{date}/{meal}/variant")
@@ -387,7 +432,7 @@ def delete_variant(date: dt.date, meal: Meal, _: CurrentSession, db: DbSession) 
     entry = _planned_entry(db, date, meal)
     clear_variant(entry)
     db.commit()
-    return entry_out(entry)
+    return entry_out(entry, _with_mealie(db))
 
 
 @router.delete("/meals/{date}/{meal}", status_code=status.HTTP_204_NO_CONTENT)
@@ -401,8 +446,41 @@ def clear_meal(date: dt.date, meal: Meal, _: CurrentSession, db: DbSession) -> N
         db.commit()
 
 
+def _dish_out(
+    family: Family, dish: Dish, last: dt.date | None, count: int | None, on: bool
+) -> DishOut:
+    recipe = dish.mealie_recipe if on else None
+    source = recipe or dish
+    return DishOut(
+        id=dish.id,
+        name=dish.name,
+        icon=dish.icon,
+        image_url=image_url(dish, on),
+        last_planned=last,
+        times_planned=count or 0,
+        ingredients=source.ingredients,
+        steps=source.steps,
+        servings=source.servings,
+        rating=dish.rating,
+        mealie=None
+        if recipe is None
+        else MealieLinkOut(
+            id=recipe.id,
+            name=recipe.name,
+            url=mealie.recipe_url(family, recipe.slug),
+            auto=dish.mealie_auto,
+            own_recipe=bool(dish.ingredients or dish.steps),
+        ),
+    )
+
+
 def _dishes_out(db: DbSession, dish_id: int | None = None) -> list[DishOut]:
-    """Gerichte mit Nutzung, zuletzt geplante zuerst; mit `dish_id` nur dieses."""
+    """Gerichte mit Nutzung, zuletzt geplante zuerst; mit `dish_id` nur dieses.
+
+    Ist Mealie aus, fehlen die Gerichte, die der Abgleich angelegt hat und die nie geplant
+    waren; sie kommen zurück, sobald Mealie wieder eingeschaltet ist."""
+    family = get_family(db)
+    on = mealie.recipes_on(family)
     usage = (
         select(
             MealPlanEntry.dish_id,
@@ -420,19 +498,9 @@ def _dishes_out(db: DbSession, dish_id: int | None = None) -> list[DishOut]:
     if dish_id is not None:
         query = query.where(Dish.id == dish_id)
     return [
-        DishOut(
-            id=dish.id,
-            name=dish.name,
-            icon=dish.icon,
-            image_url=image_url(dish),
-            last_planned=last,
-            times_planned=count or 0,
-            ingredients=dish.ingredients,
-            steps=dish.steps,
-            servings=dish.servings,
-            rating=dish.rating,
-        )
-        for dish, last, count in db.execute(query).all()
+        _dish_out(family, dish, last, count, on)
+        for dish, last, count in db.execute(query).unique().all()
+        if on or not dish.mealie_auto or count or dish_id is not None
     ]
 
 
@@ -492,6 +560,24 @@ def delete_recipe(dish_id: int, _: CurrentSession, db: DbSession) -> None:
     delete_image(IMAGE_FOLDER, image)
 
 
+@router.put("/dishes/{dish_id}/mealie")
+def link_mealie(dish_id: int, body: MealieLinkIn, _: CurrentSession, db: DbSession) -> DishOut:
+    """Verknüpft ein Gericht mit einem Mealie-Rezept (z. B. „Hackbällchen mit Djuvec-Reis“ mit dem
+    Djuvec-Reis aus Mealie) oder löst die Verknüpfung; ein eigenes Rezept bleibt dabei erhalten.
+    Die Gerichte, die der Abgleich für Mealie-Rezepte anlegt, bleiben verknüpft."""
+    dish = get_dish(db, dish_id)
+    if not mealie.recipes_on(get_family(db)):
+        raise ApiError(status.HTTP_409_CONFLICT, "mealie.off")
+    if dish.mealie_auto:
+        raise ApiError(status.HTTP_409_CONFLICT, "dish.from_mealie")
+    if body.recipe_id is not None and db.get(MealieRecipe, body.recipe_id) is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "mealie.not_found")
+    dish.mealie_id = body.recipe_id
+    db.commit()
+    db.expire(dish)
+    return _dishes_out(db, dish.id)[0]
+
+
 @router.put("/dishes/{dish_id}/rating")
 def rate_dish(dish_id: int, body: RatingIn, _: CurrentSession, db: DbSession) -> DishOut:
     """Wie es der Familie schmeckt (1 bis 5 Sterne); `null` nimmt die Bewertung zurück."""
@@ -531,6 +617,9 @@ def delete_dish(dish_id: int, _: CurrentSession, db: DbSession) -> None:
     """Löscht ein Gericht samt vergangener Plan-Einträge. Steht es heute oder später im Plan,
     muss es dort zuerst weg."""
     dish = get_dish(db, dish_id)
+    if dish.mealie_auto and dish.mealie_id is not None:
+        # Käme beim nächsten Abgleich wieder; gelöscht wird es in Mealie.
+        raise ApiError(status.HTTP_409_CONFLICT, "dish.from_mealie")
     today = family_now(get_family(db)).date()
     planned = db.scalar(
         select(exists().where(MealPlanEntry.dish_id == dish.id, MealPlanEntry.date >= today))

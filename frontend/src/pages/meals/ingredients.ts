@@ -77,8 +77,12 @@ const QUANTITY = new RegExp(
 
 const UNIT_ONLY = new RegExp(String.raw`^(?:${UNITS})\.?$`, 'iu')
 
+/** Ein Zusatz in Klammern am Ende („Paprika (rot)“) gehört nicht in den Namen des Artikels. */
+const TRAILING_NOTE = /\s*\([^()]*\)$/
+
 export function parseIngredient(line: string): Ingredient {
-  const text = line.replace(/\s+/g, ' ').trim()
+  const full = line.replace(/\s+/g, ' ').trim()
+  const text = full.replace(TRAILING_NOTE, '') || full
   const match = QUANTITY.exec(text)
   if (!match) return { name: text.slice(0, NAME_MAX), note: '' }
   const name = text.slice(match[0].length).trim()

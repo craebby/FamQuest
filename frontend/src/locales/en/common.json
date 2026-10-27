@@ -57,7 +57,8 @@
     "frame": "Photos",
     "meals": "Meals",
     "shopping": "Shopping",
-    "household": "Household"
+    "household": "Household",
+    "mealie": "Mealie"
   },
   "kitchen": {
     "title": "Kitchen view",
@@ -381,7 +382,8 @@
       "choose_member": "Please choose at least one person",
       "choose_weekday": "Please choose at least one day",
       "not_zero": "Please enter a number greater than 0",
-      "password_mismatch": "The passwords don't match"
+      "password_mismatch": "The passwords don't match",
+      "invalid_url": "Please enter a full address, e.g. https://mealie.example.org"
     },
     "auth": {
       "not_authenticated": "Please sign in",
@@ -466,7 +468,8 @@
       "duplicate_name": "There is already a dish with this name.",
       "planned": "This dish is still in the plan. Remove it there first.",
       "invalid_image": "The photo couldn't be read. Please choose a JPEG, PNG or WebP image.",
-      "image_too_large": "The photo is too large (5 MB at most)."
+      "image_too_large": "The photo is too large (5 MB at most).",
+      "from_mealie": "This dish is a recipe from Mealie. Change or delete it in Mealie."
     },
     "meals": {
       "no_recipes": "No recipes yet. Add some under “Recipes”, then FamQuest fills the week from them.",
@@ -491,6 +494,17 @@
     "todo": {
       "not_found": "This entry no longer exists.",
       "duplicate": "That is already on the list."
+    },
+    "mealie": {
+      "unreachable": "Mealie can't be reached right now. Is the address correct?",
+      "unauthorized": "Mealie rejects the API token. Please create a new one in Mealie and enter it.",
+      "not_mealie": "There's no Mealie answering at this address. Please check it (without /g/… at the end).",
+      "not_configured": "Mealie isn't set up yet.",
+      "no_encryption_key": "The API token can't be stored: TOKEN_ENCRYPTION_KEY is missing in the .env file.",
+      "url_missing": "Please enter Mealie's address.",
+      "token_missing": "Recipes from Mealie need an API token.",
+      "off": "Recipes from Mealie are switched off right now.",
+      "not_found": "This recipe no longer exists in Mealie."
     }
   },
   "rewards": {
@@ -873,6 +887,47 @@
     "show_original": "Show original",
     "show_variant": "Show variant",
     "variant_remove": "Remove variant"
+  },
+  "mealie": {
+    "section": "Mealie",
+    "intro": "Use recipes from your Mealie installation in the meal plan. FamQuest only reads and never changes anything in Mealie.",
+    "mode": "How should FamQuest use Mealie?",
+    "mode_off": "Off",
+    "mode_off_hint": "Only your own recipes",
+    "mode_link": "Button only",
+    "mode_link_hint": "A button in the bar opens Mealie",
+    "mode_mixed": "Mixed",
+    "mode_mixed_hint": "Your own recipes and those from Mealie",
+    "mode_only": "Mealie only",
+    "mode_only_hint": "Recipe collection and “Fill week” only from Mealie",
+    "url": "Mealie address",
+    "url_hint": "As you open Mealie in the browser, e.g. https://mealie.example.org",
+    "token": "API token",
+    "token_hint": "Create one in Mealie under Profile → API Tokens. It is stored encrypted and never shown again.",
+    "token_no_key": "To store the token, the server needs TOKEN_ENCRYPTION_KEY in the .env file.",
+    "token_saved": "Saved – leave empty to keep it",
+    "connecting": "Connecting …",
+    "sync_now": "Sync now",
+    "status_one": "Connected, {{count}} recipe",
+    "status_other": "Connected, {{count}} recipes",
+    "synced_at": "last synced {{time}}",
+    "sync_failed": "The last sync didn't work, the previous state still applies.",
+    "saved": "Mealie settings saved.",
+    "saved_recipes_one": "Connected to Mealie: {{count}} recipe.",
+    "saved_recipes_other": "Connected to Mealie: {{count}} recipes.",
+    "title": "Mealie",
+    "open_browser": "Open in browser",
+    "close": "Close Mealie",
+    "delete_in_mealie": "This dish is a recipe from Mealie. Delete it in Mealie.",
+    "pick_title": "Recipe from Mealie for “{{name}}”",
+    "search": "Search recipes",
+    "pick_none": "No recipe matches.",
+    "from_mealie": "Recipe from Mealie",
+    "linked": "Linked to “{{name}}” from Mealie",
+    "open_recipe": "Open in Mealie",
+    "link": "Link with Mealie",
+    "unlink": "Unlink",
+    "no_recipes": "No recipes from Mealie yet. Syncing runs every few minutes; in the parents' area you can sync right away."
   },
   "shopping": {
     "title": "Shopping list",

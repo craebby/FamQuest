@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     token_encryption_key: str = ""
     # Abstand der Kalender-Synchronisation im Hintergrund in Minuten; 0 = aus.
     calendar_sync_minutes: int = 5
+    # Abstand des Mealie-Abgleichs im Hintergrund in Minuten; 0 = aus (nur von Hand).
+    mealie_sync_minutes: int = 10
 
     # Öffentliche Demo: "de" oder "en" = Sprache der Beispielfamilie, leer = aus. Die Demo legt die
     # Familie selbst an, setzt sie alle `demo_reset_minutes` Minuten zurück und sperrt Aktionen,

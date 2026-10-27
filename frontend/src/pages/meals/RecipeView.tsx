@@ -11,6 +11,8 @@ import PlusIcon from '~icons/lucide/plus'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import PlateIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import MemoIcon from '~icons/fluent-emoji-flat/memo'
+import CookIcon from '~icons/fluent-emoji-flat/cook'
+import UnlinkIcon from '~icons/lucide/unlink'
 
 import {
   type Dish,
@@ -24,9 +26,12 @@ import {
   useRateDish,
   useSaveRecipe,
 } from '../../api/meals'
+import { mealieRecipesOn, useLinkMealie, useMealie, useRefreshMealieRecipe } from '../../api/mealie'
 import { DishPicture } from '../../components/DishPicture'
 import { Alert, Button, TextAreaField, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
+import { MealieOverlay } from '../mealie/MealieFrame'
+import { MealiePicker } from '../mealie/MealiePicker'
 import { DishEditor } from './DishEditor'
 import { IngredientsDialog } from './IngredientsDialog'
 import { StarRating } from './StarRating'
@@ -50,6 +55,9 @@ export interface PlannedMeal {
  * Essensplan heraus auch ein anderes Gericht wählen und eine Variante nur für diesen Tag festlegen
  * (Notiz und eigene Fassung des Rezepts), die dann statt des Rezepts erscheint. Alles ohne
  * Eltern-PIN.
+ *
+ * Mit Mealie: Ein verknüpftes Gericht zeigt das Rezept aus Mealie (beim Öffnen frisch geholt);
+ * bearbeitet wird es in Mealie. Jedes andere Gericht lässt sich mit einem Mealie-Rezept verknüpfen.
  */
 export function RecipeView({
   dishId,
@@ -81,21 +89,34 @@ export function RecipeView({
   // Mit Variante steht deren Fassung da; „Original anzeigen“ zeigt das Rezept des Gerichts.
   const shown = dish && ownRecipe && !original ? { ...dish, ...ownRecipe } : dish
   const dialog = useRef<HTMLDivElement>(null)
+  const mealieOn = mealieRecipesOn(useMealie().data)
+  const link = useLinkMealie()
+  const refresh = useRefreshMealieRecipe()
+  const [picking, setPicking] = useState(false)
+  const [inMealie, setInMealie] = useState(false)
+  const linked = dish?.mealie ?? null
+  const linkedId = linked?.id
 
   useEffect(() => {
     // Nur beim Öffnen fokussieren, nicht bei jedem Neuzeichnen (siehe MealEditor).
     dialog.current?.focus()
   }, [])
 
+  // Zum Kochen das Neueste aus Mealie; ohne Verbindung bleibt der letzte Stand.
+  const { mutate: refreshRecipe } = refresh
+  useEffect(() => {
+    if (linkedId) refreshRecipe(linkedId)
+  }, [linkedId, refreshRecipe])
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
+      if (event.key !== 'Escape' || picking || inMealie) return
       if (mode === 'view') onClose()
       else setMode('view')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mode, onClose])
+  }, [mode, onClose, picking, inMealie])
 
   // Gelöscht (z. B. über „Name, Symbol, Foto“): Es gibt nichts mehr zu zeigen.
   useEffect(() => {
@@ -133,7 +154,14 @@ export function RecipeView({
             <CloseIcon className="size-7" aria-hidden="true" />
           </Button>
         </div>
+        {linked && (
+          <p className="-mt-2 flex items-center gap-2 text-base text-slate-600">
+            <CookIcon className="size-6 shrink-0" aria-hidden="true" />
+            {linked.auto ? t('mealie.from_mealie') : t('mealie.linked', { name: linked.name })}
+          </p>
+        )}
         {rate.error ? <Alert>{errorMessage(t, rate.error)}</Alert> : null}
+        {link.error ? <Alert>{errorMessage(t, link.error)}</Alert> : null}
         {reroll?.error ? <Alert>{errorMessage(t, reroll.error)}</Alert> : null}
         {remove.error ? <Alert>{errorMessage(t, remove.error)}</Alert> : null}
         {variant.error ? <Alert>{errorMessage(t, variant.error)}</Alert> : null}
@@ -178,10 +206,35 @@ export function RecipeView({
             {/* Neu gespeicherte Portionen und der Wechsel zur Variante setzen den Umrechner zurück. */}
             <Recipe key={`${shown === dish}-${shown.servings}`} dish={shown} />
             <div className="flex flex-wrap gap-3">
-              <Button variant="secondary" onClick={() => setMode('recipe')}>
-                <PencilIcon className="size-6" aria-hidden="true" />
-                {t('recipes.edit')}
-              </Button>
+              {linked ? (
+                linked.url && (
+                  <Button variant="secondary" onClick={() => setInMealie(true)}>
+                    <CookIcon className="size-7" aria-hidden="true" />
+                    {t('mealie.open_recipe')}
+                  </Button>
+                )
+              ) : (
+                <Button variant="secondary" onClick={() => setMode('recipe')}>
+                  <PencilIcon className="size-6" aria-hidden="true" />
+                  {t('recipes.edit')}
+                </Button>
+              )}
+              {mealieOn && !linked && (
+                <Button variant="secondary" onClick={() => setPicking(true)}>
+                  <CookIcon className="size-7" aria-hidden="true" />
+                  {t('mealie.link')}
+                </Button>
+              )}
+              {linked && !linked.auto && (
+                <Button
+                  variant="secondary"
+                  disabled={link.isPending}
+                  onClick={() => link.mutate({ dishId: dish.id, recipeId: null })}
+                >
+                  <UnlinkIcon className="size-6" aria-hidden="true" />
+                  {t('mealie.unlink')}
+                </Button>
+              )}
               {planned && (
                 <Button variant="secondary" onClick={() => setMode('variant')}>
                   <MemoIcon className="size-7" aria-hidden="true" />
@@ -212,7 +265,7 @@ export function RecipeView({
                   {t('recipes.change_meal')}
                 </Button>
               )}
-              {hasRecipe(dish) && !confirmDelete && (
+              {hasRecipe(dish) && !linked && !confirmDelete && (
                 <Button
                   variant="danger"
                   className={reroll || onChangeMeal ? '' : 'ml-auto'}
@@ -223,7 +276,7 @@ export function RecipeView({
                 </Button>
               )}
             </div>
-            {hasRecipe(dish) && confirmDelete && (
+            {hasRecipe(dish) && !linked && confirmDelete && (
               <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
                 <p className="text-lg font-semibold text-red-800">
                   {t('recipes.delete_confirm', { name: dish.name })}
@@ -264,6 +317,19 @@ export function RecipeView({
         )}
         {dish && mode === 'dish' && <DishEditor dish={dish} onBack={() => setMode('view')} />}
       </div>
+      {picking && dish && (
+        <MealiePicker
+          dishName={dish.name}
+          onPick={(recipeId) => {
+            link.mutate({ dishId: dish.id, recipeId })
+            setPicking(false)
+          }}
+          onClose={() => setPicking(false)}
+        />
+      )}
+      {inMealie && linked?.url && (
+        <MealieOverlay src={linked.url} onClose={() => setInMealie(false)} />
+      )}
     </div>
   )
 }

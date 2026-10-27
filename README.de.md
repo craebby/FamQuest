@@ -49,7 +49,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
   auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
   oder gedimmte Uhr)
 - Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen;
-  dazu eine Rezeptsammlung zum Einfügen per Text, mit Sternen bewertet
+  dazu eine Rezeptsammlung zum Einfügen per Text, mit Sternen bewertet, auf Wunsch mit Rezepten aus
+  [Mealie](#mealie)
 - Einkaufsliste: am Display oder Handy eintragen, was fehlt (Vorschläge mit Symbolen, Menge oder
   Hinweis), im Laden abhaken; geordnet nach Laden (Supermarkt, Drogerie, Baumarkt, Online) und im
   Supermarkt nach Bereichen entlang des Laufwegs; am Handy auch als App, die ohne Netz funktioniert
@@ -626,6 +627,47 @@ Sternen. Alles geht ohne Eltern-PIN.
   Zutaten zum Anhaken. Die Menge wird zum Hinweis („ca. 600 g Pellkartoffeln“ → Pellkartoffeln,
   „ca. 600 g“), gleiche Zutaten werden zusammengefasst. Salz, Pfeffer, Öl und was schon auf der Liste steht, sind erst nicht angehakt.
 
+### Mealie
+
+Wer seine Rezepte in [Mealie](https://mealie.io) sammelt, kann sie in FamQuest nutzen. FamQuest
+liest nur und ändert in Mealie nichts.
+
+**Einrichten:** Elternbereich → **Einstellungen** → **Mealie**. Dort wählt ihr, wie FamQuest Mealie
+nutzt:
+
+- **Aus:** nur die eigenen Rezepte (Standard).
+- **Nur Knopf:** ein Knopf **Mealie** (Koch) in der Navigationsleiste und in der Küchenansicht
+  öffnet Mealie in FamQuest, z. B. um beim Kochen ein Rezept nachzuschlagen. Braucht nur die
+  Adresse.
+- **Gemischt:** eigene Rezepte und die aus Mealie nebeneinander.
+- **Nur Mealie:** Rezeptsammlung und „Woche füllen“ nur aus Mealie.
+
+Für „Gemischt“ und „Nur Mealie“ braucht es zusätzlich einen **API-Token**: in Mealie unter *Profil →
+API-Tokens* einen anlegen (z. B. „FamQuest“). FamQuest speichert ihn verschlüsselt, dafür muss
+`TOKEN_ENCRYPTION_KEY` in der `.env` stehen (siehe [Google Kalender](#google-kalender)); angezeigt
+wird er nie wieder. Speichern prüft die Verbindung und holt die Rezepte sofort.
+
+**Im Alltag:**
+
+- Jedes Mealie-Rezept wird ein Gericht: Es steht in der Rezeptsammlung (mit Koch-Symbol), in den
+  Vorschlägen beim Eintragen und bei „Woche füllen“. Das Bild kommt aus Mealie, bis ihr ein eigenes
+  Foto setzt. Zutaten, Schritte und Portionen kommen aus Mealie, samt Umrechner und „Auf die
+  Einkaufsliste“.
+- **Gericht verknüpfen:** Jedes eigene Gericht kann auf ein Mealie-Rezept zeigen, z. B.
+  „Hackbällchen mit Djuvec-Reis“ auf den Djuvec-Reis in Mealie. Dafür das Rezept des Gerichts
+  öffnen und **Mit Mealie verknüpfen** antippen. **Verknüpfung lösen** bringt ein eigenes Rezept
+  zurück, falls es eins hatte.
+- Änderungen in Mealie kommen innerhalb von 10 Minuten an (`MEALIE_SYNC_MINUTES`); wer ein Rezept
+  öffnet, bekommt es sofort frisch. **Jetzt abgleichen** im Elternbereich holt alles gleich. Ist
+  Mealie nicht erreichbar, zeigt FamQuest den letzten Stand.
+- Ein Rezept aus Mealie wird in Mealie bearbeitet: **In Mealie öffnen** im Rezept. Sterne, Variante
+  für einen Tag und „Neu würfeln“ gehen wie bei eigenen Rezepten.
+- **Anmelden in Mealie** innerhalb von FamQuest geht einmal je Gerät in Mealie selbst. Das klappt
+  nur, wenn FamQuest und Mealie unter derselben Domain laufen (z. B. `famquest.example.org` und
+  `mealie.example.org`); sonst **Im Browser öffnen**.
+- Mealie ausschalten blendet seine Rezepte aus, Verknüpfungen und der letzte Stand bleiben; wieder
+  eingeschaltet ist alles wie vorher.
+
 ## Einkaufsliste
 
 ![Einkaufsliste am Display](docs/screenshots/de/shopping.png)
@@ -883,9 +925,10 @@ Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Al
 | `PROXY_NETWORK` | `proxy` | Docker-Netzwerk eures Reverse Proxys (siehe unten) |
 | `GOOGLE_CLIENT_ID` | – | OAuth-Client für den [Google Kalender](#google-kalender) |
 | `GOOGLE_CLIENT_SECRET` | – | Clientschlüssel dazu |
-| `TOKEN_ENCRYPTION_KEY` | – | Verschlüsselt die Google-Tokens in der Datenbank |
+| `TOKEN_ENCRYPTION_KEY` | – | Verschlüsselt die Google-Tokens und den Mealie-API-Token in der Datenbank |
 | `PUBLIC_URL` | – | Öffentliche Adresse, z. B. `https://familie.example.com`; legt die Google-Weiterleitungs-URI hinter einem Reverse Proxy fest |
 | `CALENDAR_SYNC_MINUTES` | `5` | Minuten zwischen zwei Kalender-Synchronisationen im Hintergrund; `0` = aus |
+| `MEALIE_SYNC_MINUTES` | `10` | Minuten zwischen zwei Abgleichen mit [Mealie](#mealie) im Hintergrund; `0` = nur von Hand |
 
 Daten liegen in zwei Docker-Volumes: `db-data` (PostgreSQL) und `uploads` (hochgeladene Bilder).
 Wie ihr sie sichert, steht unter [Backup und Restore](#backup-und-restore).
@@ -1265,6 +1308,15 @@ Vorgezogen aus 1.5 („Unterwegs“): der Teil, den man im Laden braucht.
   verschieben und die Reihenfolge ändern, gemerkt je Artikel, auch offline
 - [ ] 2. Feinschliff im Alltag
 
+**Mealie (Phase 12), in Arbeit**
+
+- [x] 1. [Mealie](#mealie) anbinden: vier Modi (aus, nur Knopf, gemischt, nur Mealie), API-Token
+  verschlüsselt, Abgleich im Hintergrund, Mealie-Rezepte als Gerichte (Sammlung, Vorschläge,
+  „Woche füllen“, Einkaufsliste), eigene Gerichte mit einem Mealie-Rezept verknüpfen, Knopf
+  „Mealie“ in Navigationsleiste und Küchenansicht
+- [ ] 2. Feinschliff im Alltag (später: Single Sign-on, damit das Tablet kein eigenes Mealie-Login
+  braucht)
+
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 
 - [x] 1. Küchenansicht unter `/kitchen` für ein 8-Zoll-Tablet im Querformat: Termine und Essen der
@@ -1336,7 +1388,7 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 - Bilderrahmen: Fotos aus Immich (oder Nextcloud) statt nur hochgeladener Fotos, Alben
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version
   umschalten
-- Rezepte: Anbindung von [Mealie](https://mealie.io), Zerlegen eingefügter Texte mit KI
+- Rezepte: Zerlegen eingefügter Texte mit KI; bei Mealie: Single Sign-on, Einkaufsliste abgleichen
 - Einkaufsliste: mehrere Listen, Reihenfolge der Supermarkt-Bereiche je Familie (z. B. Getränke am
   Eingang), Läden mit KI erkennen, Export nach Obsidian (Markdown-Checkliste)
 - Essenswünsche der Kinder: am Display Avatar und Gericht antippen; die Eltern übernehmen den Wunsch

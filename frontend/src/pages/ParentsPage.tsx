@@ -37,6 +37,7 @@ import { EventSymbolsSection } from './parents/EventSymbolsSection'
 import { DeviceSection } from './parents/DeviceSection'
 import { FamilySection } from './parents/FamilySection'
 import { MealSettingsSection } from './parents/MealSettingsSection'
+import { MealieSection } from './parents/MealieSection'
 import { MemberEditor } from './parents/MemberEditor'
 import { MembersSection } from './parents/MembersSection'
 import { PointsEditor } from './parents/PointsEditor'
@@ -641,6 +642,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
           <>
             <FamilySection me={me} onSaved={setNotice} />
             <MealSettingsSection />
+            <MealieSection onSaved={setNotice} />
             <Section title={t('parents.pin_section')}>
               <p className="flex items-center gap-3 text-lg text-slate-600">
                 <PinStatusIcon className="size-10 shrink-0" aria-hidden="true" />
