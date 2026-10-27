@@ -517,7 +517,7 @@ test('Einkaufs-App: im Laden ohne Netz abhaken und eintragen, mit Netz wird alle
   const dialog = shop.getByRole('dialog', { name: 'Was fehlt?' })
   await dialog.getByRole('button', { name: 'Butter', exact: true }).tap()
   await dialog.getByRole('button', { name: 'Fertig' }).tap()
-  const butter = shop.getByRole('button', { name: 'Butter', exact: true })
+  const butter = shop.getByRole('button', { name: 'Butter abhaken' })
   await expect(butter).toHaveAttribute('aria-pressed', 'false')
   // Erst wenn der Service Worker die App gespeichert hat, startet sie ohne Netz.
   await shop.evaluate('navigator.serviceWorker.ready.then(() => true)')
@@ -541,7 +541,7 @@ test('Einkaufs-App: im Laden ohne Netz abhaken und eintragen, mit Netz wird alle
   await shop.reload()
   await expect(status).toHaveText('Offline · 2 Änderungen warten')
   await expect(
-    shop.getByRole('region', { name: 'Abgehakt' }).getByRole('button', { name: 'Butter' }),
+    shop.getByRole('region', { name: 'Abgehakt' }).getByRole('button', { name: 'Butter abhaken' }),
   ).toHaveAttribute('aria-pressed', 'true')
 
   await handy.setOffline(false)
