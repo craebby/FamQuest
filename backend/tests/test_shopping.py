@@ -205,6 +205,86 @@ def test_rename_to_existing_name_is_rejected(client, admin, now):
     assert response.json()["code"] == "shopping.duplicate_name"
 
 
+def edit(client, me, item_id, name, icon=MILK, note=""):
+    return client.put(
+        f"/api/shopping/list/{item_id}",
+        json={"name": name, "icon": icon, "note": note},
+        headers=csrf(me),
+    )
+
+
+def test_edit_entry_fixes_a_typo(client, admin, now):
+    typo = add(client, admin, "Mlich", icon=BREAD, note="2")
+
+    response = edit(client, admin, typo["id"], "Milch", note="2 ×")
+
+    assert response.status_code == 200, response.text
+    assert response.json()["id"] == typo["id"]
+    assert listed(client) == [response.json()]
+    assert response.json() | {"id": 0} == {
+        "id": 0,
+        "name": "Milch",
+        "icon": MILK,
+        "note": "2 ×",
+        "checked": False,
+        "area": None,
+        "position": None,
+    }
+    assert [item["name"] for item in items(client)] == ["Milch"]
+
+
+def test_edit_entry_to_known_item_drops_the_typo(client, admin, now):
+    milk = add(client, admin)
+    client.delete(f"/api/shopping/list/{milk['id']}", headers=csrf(admin))
+    typo = add(client, admin, "Mlich")
+    check(client, admin, typo["id"])
+
+    response = edit(client, admin, typo["id"], "milch")
+
+    assert response.status_code == 200, response.text
+    assert response.json()["id"] == milk["id"]
+    assert names(client) == [("Milch", True)]
+    assert [(item["name"], item["times_added"]) for item in items(client)] == [("Milch", 2)]
+
+
+def test_edit_entry_keeps_a_usual_item_as_suggestion(client, admin, now):
+    milk = add(client, admin)
+    check(client, admin, milk["id"])
+    client.delete("/api/shopping/list/checked", headers=csrf(admin))
+    add(client, admin)
+
+    response = edit(client, admin, milk["id"], "Hafermilch", note="1 l")
+
+    assert response.status_code == 200, response.text
+    assert response.json()["id"] != milk["id"]
+    assert [(item["name"], item["note"]) for item in listed(client)] == [("Hafermilch", "1 l")]
+    assert sorted((item["name"], item["times_added"]) for item in items(client)) == [
+        ("Hafermilch", 1),
+        ("Milch", 1),
+    ]
+
+
+def test_edit_entry_merges_with_item_already_on_list(client, admin, now):
+    add(client, admin)
+    typo = add(client, admin, "Mlich")
+
+    response = edit(client, admin, typo["id"], "Milch", note="3")
+
+    assert response.status_code == 200, response.text
+    assert [(item["name"], item["note"]) for item in listed(client)] == [("Milch", "3")]
+
+
+def test_edit_entry_only_on_list(client, admin, now):
+    milk = add(client, admin)
+    client.delete(f"/api/shopping/list/{milk['id']}", headers=csrf(admin))
+
+    response = edit(client, admin, milk["id"], "Hafermilch")
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "shopping.not_on_list"
+    assert edit(client, admin, milk["id"], " ").status_code == 422
+
+
 def test_delete_item(client, admin, now):
     milk = add(client, admin)
 

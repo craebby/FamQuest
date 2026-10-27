@@ -10,6 +10,8 @@ export interface ShoppingOpVariables {
   /** `name` findet den Artikel, solange er nur offline eingetragen ist (noch ohne ID). */
   check: { id: number; name: string; checked: boolean }
   remove: { id: number; name: string }
+  /** Eintrag ändern, z. B. nach einem Tippfehler; `note` "" löscht die Notiz. */
+  edit: { id: number; name: string; newName: string; icon: string; note: string }
   clear: void
   /** `area` null gibt den Artikel an die automatische Zuordnung zurück. */
   move: { id: number; name: string; area: Area | null }
@@ -81,6 +83,22 @@ export function applyOp(list: ShoppingList, op: ShoppingOp): ShoppingList {
       const { id, name } = op.variables
       const index = indexOf(items, id, name)
       return { items: items.filter((_, i) => i !== index) }
+    }
+    case 'edit': {
+      const { id, name, newName, icon, note } = op.variables
+      const index = indexOf(items, id, name)
+      if (index === -1) return list
+      const entry = items[index]
+      // Steht der neue Name schon auf der Liste, wird es ein Eintrag (wie im Server).
+      const other = items.findIndex((item, i) => i !== index && sameName(item.name, newName))
+      if (other === -1) {
+        const edited = { ...entry, name: newName, icon, note: note || null }
+        return { items: items.map((item, i) => (i === index ? edited : item)) }
+      }
+      const merged = { ...items[other], icon, note: note || null, checked: entry.checked }
+      return {
+        items: items.flatMap((item, i) => (i === index ? [] : i === other ? [merged] : [item])),
+      }
     }
     case 'clear':
       return { items: items.filter((item) => !item.checked) }

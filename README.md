@@ -632,7 +632,9 @@ with its picture and stars. Everything works without the parents' PIN.
 - **Icon:** picked automatically from the name (e.g. "Red onions" → onion, otherwise shopping bags)
   and changeable with a tap on it. The pencil on one of your items renames it, changes the icon or
   deletes it.
-- **Ticking off:** one tap on a row ticks it off, another tap brings it back. Ticked items stay at
+- **Ticking off:** one tap on the **circle** at the front ticks an item off, another tap brings it
+  back. **Tapping the item itself** opens it for editing, e.g. after a typo: name, amount or note,
+  icon, "Change store" and "Remove from list" (no PIN, works offline too). Ticked items stay at
   the bottom, crossed out, **until the end of the day** (in the family's time zone), so a wrong tap
   in the shop can still be undone; then they disappear on their own. "Remove ticked items" clears
   them right away; the × takes an item off the list.

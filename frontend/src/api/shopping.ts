@@ -143,6 +143,12 @@ async function send(queryClient: QueryClient, op: ShoppingOp): Promise<ListItem 
       if (id === undefined) return null
       return unlessGone(api<null>('DELETE', `/shopping/list/${id}`))
     }
+    case 'edit': {
+      const id = await resolveId(queryClient, op.variables.id, op.variables.name)
+      if (id === undefined) return null
+      const { newName, icon, note } = op.variables
+      return unlessGone(api<ListItem>('PUT', `/shopping/list/${id}`, { name: newName, icon, note }))
+    }
     case 'clear':
       return api<null>('DELETE', '/shopping/list/checked')
     case 'move': {
@@ -180,8 +186,10 @@ export function shoppingOpOptions<K extends ShoppingOpKind>(
       // Gleich übernehmen, damit die Liste zwischen Senden und Neuladen nicht zurückspringt.
       queryClient.setQueryData<ShoppingList>(SHOPPING_LIST_KEY, (list) => {
         if (!list) return list
-        if (result) return confirmItem(list, result)
-        return applyOp(list, { kind, variables, tempId: 0 } as ShoppingOp)
+        const op = { kind, variables, tempId: 0 } as ShoppingOp
+        // Nach dem Ändern kann der Eintrag eine andere ID haben (anderer Artikel).
+        if (result) return confirmItem(kind === 'edit' ? applyOp(list, op) : list, result)
+        return applyOp(list, op)
       })
     },
     onSettled: () => {
@@ -197,7 +205,7 @@ export function shoppingOpOptions<K extends ShoppingOpKind>(
 
 /** Gibt die Optionen für gespeicherte Änderungen als Vorgabe an den QueryClient. */
 export function registerShoppingOps(queryClient: QueryClient) {
-  for (const kind of ['add', 'check', 'remove', 'clear', 'move', 'order'] as const)
+  for (const kind of ['add', 'check', 'remove', 'edit', 'clear', 'move', 'order'] as const)
     queryClient.setMutationDefaults(
       [...SHOPPING_OP_KEY, kind],
       shoppingOpOptions(queryClient, kind),
@@ -216,6 +224,9 @@ export const useAddToList = () => useShoppingOp('add')
 export const useCheckItem = () => useShoppingOp('check')
 
 export const useRemoveFromList = () => useShoppingOp('remove')
+
+/** Name, Symbol und Notiz eines Eintrags ändern; geht auch ohne Netz. */
+export const useEditEntry = () => useShoppingOp('edit')
 
 export const useClearChecked = () => useShoppingOp('clear')
 

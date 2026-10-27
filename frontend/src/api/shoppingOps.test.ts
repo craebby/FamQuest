@@ -126,4 +126,33 @@ describe('ausstehende Änderungen', () => {
     const list = applyOps(removed, [add('Eier')])
     expect(list.items[0]).toMatchObject({ checked: false, area: 'online', position: 2 })
   })
+
+  it('ändert einen Eintrag, auch einen offline eingetragenen', () => {
+    const edit = (id: number, name: string, newName: string): ShoppingOp => ({
+      kind: 'edit',
+      variables: { id, name, newName, icon: MILK, note: '' },
+      tempId: -8,
+    })
+    const list = applyOps(LIST, [add('Mlich'), edit(-99, 'mlich', 'Hafermilch')])
+    expect(list.items.map((item) => [item.id, item.name, item.note])).toEqual([
+      [1, 'Milch', '2 ×'],
+      [-7, 'Hafermilch', null],
+      [2, 'Eier', 'Bio'],
+    ])
+  })
+
+  it('macht aus einem Eintrag mit dem Namen eines anderen einen', () => {
+    const list = applyOps(LIST, [
+      add('Mlich'),
+      {
+        kind: 'edit',
+        variables: { id: -7, name: 'Mlich', newName: 'milch', icon: MILK, note: '3' },
+        tempId: -8,
+      },
+    ])
+    expect(list.items.map((item) => [item.id, item.name, item.note, item.checked])).toEqual([
+      [1, 'Milch', '3', false],
+      [2, 'Eier', 'Bio', true],
+    ])
+  })
 })

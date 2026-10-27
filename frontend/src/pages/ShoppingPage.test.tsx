@@ -90,22 +90,69 @@ describe('Einkaufsliste', () => {
     renderApp('/shopping')
 
     const milk = await screen.findByRole('button', { name: /^Milch ?2 ×$/ })
-    expect(milk).toHaveAttribute('aria-pressed', 'false')
     expect(within(milk).getByText('2 ×')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Milch abhaken' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
     const checked = within(screen.getByRole('region', { name: 'Abgehakt' }))
-    expect(checked.getByRole('button', { name: 'Eier' })).toHaveAttribute('aria-pressed', 'true')
+    expect(checked.getByRole('button', { name: 'Eier abhaken' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 
-  it('hakt per Tipp ab und nimmt es mit einem weiteren Tipp zurück', async () => {
+  it('hakt per Tipp auf den Kreis ab und nimmt es mit einem weiteren Tipp zurück', async () => {
+    const user = userEvent.setup()
+    const calls = mockShopping()
+    renderApp('/shopping')
+
+    await user.click(await screen.findByRole('button', { name: 'Milch abhaken' }))
+    expect(bodyOf(calls, 'PUT /api/shopping/list/1/checked')).toEqual({ checked: true })
+
+    await user.click(screen.getByRole('button', { name: 'Eier abhaken' }))
+    expect(bodyOf(calls, 'PUT /api/shopping/list/3/checked')).toEqual({ checked: false })
+  })
+
+  it('öffnet per Tipp auf den Artikel die Bearbeitung, ohne abzuhaken', async () => {
+    const user = userEvent.setup()
+    const calls = mockShopping(LIST, {
+      'PUT /api/shopping/list/1': (body) =>
+        Response.json({ ...LIST.items[0], ...(body as object), id: 4 }),
+    })
+    renderApp('/shopping')
+
+    await user.click(await screen.findByRole('button', { name: /^Milch ?2 ×$/ }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Milch bearbeiten' }))
+    const name = dialog.getByRole('textbox', { name: 'Artikel' })
+    await user.clear(name)
+    await user.type(name, 'Hafermilch')
+    await user.clear(dialog.getByRole('textbox', { name: 'Menge oder Hinweis' }))
+    await user.click(dialog.getByRole('button', { name: 'Speichern' }))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    await waitFor(() =>
+      expect(bodyOf(calls, 'PUT /api/shopping/list/1')).toEqual({
+        name: 'Hafermilch',
+        icon: 'fluent-emoji-flat:beverage-box',
+        note: '',
+      }),
+    )
+    expect(calls.map((call) => call.key)).not.toContain('PUT /api/shopping/list/1/checked')
+  })
+
+  it('nimmt einen Artikel aus der Bearbeitung von der Liste', async () => {
     const user = userEvent.setup()
     const calls = mockShopping()
     renderApp('/shopping')
 
     await user.click(await screen.findByRole('button', { name: /^Milch ?2 ×$/ }))
-    expect(bodyOf(calls, 'PUT /api/shopping/list/1/checked')).toEqual({ checked: true })
+    const dialog = within(await screen.findByRole('dialog', { name: 'Milch bearbeiten' }))
+    await user.click(dialog.getByRole('button', { name: 'Von der Liste nehmen' }))
 
-    await user.click(screen.getByRole('button', { name: 'Eier' }))
-    expect(bodyOf(calls, 'PUT /api/shopping/list/3/checked')).toEqual({ checked: false })
+    await waitFor(() =>
+      expect(calls.map((call) => call.key)).toContain('DELETE /api/shopping/list/1'),
+    )
   })
 
   it('nimmt einen Artikel von der Liste und räumt Abgehakte weg', async () => {
@@ -233,12 +280,15 @@ describe('Im Laden ohne Netz', () => {
         Response.json({ id: 9, name: 'Käse', icon: 'x', note: null, ...(body as object) }),
     })
     renderApp('/shopping')
-    const milk = await screen.findByRole('button', { name: /^Milch ?2 ×$/ })
+    const milk = await screen.findByRole('button', { name: 'Milch abhaken' })
     onlineManager.setOnline(false)
 
     await user.click(milk)
     const checked = within(screen.getByRole('region', { name: 'Abgehakt' }))
-    expect(checked.getByRole('button', { name: /^Milch/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(checked.getByRole('button', { name: 'Milch abhaken' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
     expect(screen.getByRole('status')).toHaveTextContent('Offline · 1 Änderung wartet')
 
     // Ein neuer Artikel steht sofort auf der Liste und lässt sich gleich abhaken.
@@ -247,7 +297,7 @@ describe('Im Laden ohne Netz', () => {
     await user.type(dialog.getByRole('textbox', { name: 'Artikel' }), 'Käse')
     await user.click(dialog.getByRole('button', { name: 'Hinzufügen' }))
     await user.click(dialog.getByRole('button', { name: 'Fertig' }))
-    await user.click(screen.getByRole('button', { name: 'Käse' }))
+    await user.click(screen.getByRole('button', { name: 'Käse abhaken' }))
     expect(screen.getByRole('status')).toHaveTextContent('3 Änderungen warten')
 
     const sent = () => calls.map((call) => call.key).filter((key) => !key.startsWith('GET'))

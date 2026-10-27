@@ -330,12 +330,12 @@ test('Einkauf: auf der Startseite eintragen, in der Liste abhaken', async ({ pag
   await expect(tile).toContainText('Milch')
 
   await page.getByRole('link', { name: 'Einkauf', exact: true }).tap()
-  const milk = page.getByRole('button', { name: 'Milch', exact: true })
+  const milk = page.getByRole('button', { name: 'Milch abhaken' })
   await tapAndSave(page, milk)
   await page.reload()
   // Abgehakt bleibt es bis zum Ende des Tages sichtbar, auf „Heute“ fehlt es nicht mehr.
   await expect(
-    page.getByRole('region', { name: 'Abgehakt' }).getByRole('button', { name: 'Milch' }),
+    page.getByRole('region', { name: 'Abgehakt' }).getByRole('button', { name: 'Milch abhaken' }),
   ).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('link', { name: 'Heute', exact: true }).tap()
   await expect(page.getByRole('region', { name: 'Einkauf' })).toContainText('Alles da!')

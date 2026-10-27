@@ -68,3 +68,13 @@ Gerade nichts.
   wieder genau so groß wie der Bildschirm. Ein End-to-End-Test im Tablet-Format prüft das.
 - **Dazu:** Die Kalender-Tests im Frontend hingen von der echten Uhrzeit ab und schlugen seit dem
   3. Oktober nachmittags fehl; sie stellen die Uhr jetzt selbst.
+
+### 6. Einkaufsliste: vertippter Eintrag lässt sich nicht ändern
+
+- **Gemeldet:** 2026-10-27 (Stand 1.3.0)
+- **Behoben:** Phase 11, Feinschliff
+- **Bereich:** Einkaufsliste (Display, Küchenansicht, `/shop`)
+- **War:** Ein Tipp irgendwo auf die Zeile hakte ab. Wer einen Tippfehler korrigieren wollte, hakte
+  den Artikel ab und kam an den Eintrag nicht heran.
+- **Jetzt:** Nur der Kreis vorne hakt ab. Ein Tipp auf den Artikel öffnet ihn zum Ändern (Name,
+  Menge/Hinweis, Symbol, Laden, von der Liste nehmen), ohne PIN und auch offline.

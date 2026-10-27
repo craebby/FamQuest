@@ -15,6 +15,7 @@ import {
   type ListItem,
   useCheckItem,
   useClearChecked,
+  useEditEntry,
   useMoveItem,
   useOrderItems,
   usePendingShoppingCount,
@@ -27,13 +28,15 @@ import { errorMessage } from '../errors'
 import { useOnline } from '../offline'
 import { useShopApp } from '../pwa'
 import { AreaIcon } from './shopping/AreaIcon'
+import { EntryEditor } from './shopping/EntryEditor'
 import { MoveDialog } from './shopping/MoveDialog'
 import { ShoppingAdder } from './shopping/ShoppingAdder'
 import { type AreaGroup, type Store, groupItems, itemArea } from './shopping/areas'
 
 /**
- * Einkaufsliste: offene Artikel groß mit Symbol, ein Tipp hakt ab, ein weiterer nimmt es zurück.
- * Abgehakte stehen darunter bis zum Ende des Tages. Eintragen geht ohne Eltern-PIN.
+ * Einkaufsliste: offene Artikel groß mit Symbol, ein Tipp auf den Kreis hakt ab, ein weiterer nimmt
+ * es zurück; ein Tipp auf den Artikel öffnet ihn zum Ändern (Tippfehler). Abgehakte stehen darunter
+ * bis zum Ende des Tages. Eintragen geht ohne Eltern-PIN.
  * Ohne Netz (im Laden) geht alles weiter; die Änderungen werden später gesendet.
  * Offene Artikel stehen nach Laden und Bereich im Supermarkt (Laufweg); „Ordnen“ ändert die
  * Reihenfolge im Bereich und verschiebt in einen anderen Bereich.
@@ -47,9 +50,11 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
   const clear = useClearChecked()
   const move = useMoveItem()
   const order = useOrderItems()
+  const edit = useEditEntry()
   const [adding, setAdding] = useState(false)
   const [arranging, setArranging] = useState(false)
   const [moving, setMoving] = useState<ListItem | null>(null)
+  const [editing, setEditing] = useState<ListItem | null>(null)
   const items = list.data?.items ?? []
   const open = items.filter((item) => !item.checked)
   const checked = items.filter((item) => item.checked)
@@ -58,7 +63,8 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
   const otherStores = groups.filter((group) => group.store !== 'supermarket')
   // Läden nur dann als Überschrift, wenn nicht alles aus dem Supermarkt kommt.
   const showStores = groups.length > 1 || groups[0]?.store !== 'supermarket'
-  const error = check.error ?? remove.error ?? clear.error ?? move.error ?? order.error
+  const error =
+    check.error ?? remove.error ?? clear.error ?? move.error ?? order.error ?? edit.error
 
   const toggle = (item: ListItem) =>
     check.mutate({ id: item.id, name: item.name, checked: !item.checked })
@@ -77,7 +83,12 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
             onMove={() => setMoving(item)}
           />
         ) : (
-          <Row key={item.id} item={item} onToggle={() => toggle(item)}>
+          <Row
+            key={item.id}
+            item={item}
+            onToggle={() => toggle(item)}
+            onEdit={() => setEditing(item)}
+          >
             <button
               type="button"
               aria-label={t('shopping.remove', { name: item.name })}
@@ -216,7 +227,12 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
               </div>
               <ul className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-3">
                 {checked.map((item) => (
-                  <Row key={item.id} item={item} onToggle={() => toggle(item)} />
+                  <Row
+                    key={item.id}
+                    item={item}
+                    onToggle={() => toggle(item)}
+                    onEdit={() => setEditing(item)}
+                  />
                 ))}
               </ul>
             </section>
@@ -225,6 +241,28 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
       )}
 
       {adding && <ShoppingAdder onClose={() => setAdding(false)} />}
+      {editing && (
+        <EntryEditor
+          item={editing}
+          onSave={({ name, icon, note }) => {
+            edit.mutate({ id: editing.id, name: editing.name, newName: name, icon, note })
+            setEditing(null)
+          }}
+          onMove={
+            editing.checked
+              ? undefined
+              : () => {
+                  setMoving(editing)
+                  setEditing(null)
+                }
+          }
+          onRemove={() => {
+            remove.mutate({ id: editing.id, name: editing.name })
+            setEditing(null)
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
       {moving && (
         <MoveDialog
           item={moving}
@@ -239,16 +277,22 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
   )
 }
 
-/** Ein Artikel als große Zeile; der Kreis links zeigt, ob er schon im Wagen ist. */
+/**
+ * Ein Artikel als große Zeile. Der Kreis links hakt ab und zeigt, ob er schon im Wagen ist; ein
+ * Tipp auf den Artikel selbst öffnet ihn zum Ändern.
+ */
 function Row({
   item,
   onToggle,
+  onEdit,
   children,
 }: {
   item: ListItem
   onToggle: () => void
+  onEdit: () => void
   children?: ReactNode
 }) {
+  const { t } = useTranslation()
   return (
     <li
       className={`flex min-w-0 items-stretch gap-1 rounded-2xl bg-white p-1 shadow-sm ${item.checked ? 'opacity-60' : ''}`}
@@ -256,17 +300,25 @@ function Row({
       <button
         type="button"
         aria-pressed={item.checked}
+        aria-label={t('shopping.check', { name: item.name })}
+        title={t('shopping.check', { name: item.name })}
         onClick={onToggle}
-        className="flex min-h-20 min-w-0 flex-1 items-center gap-3 rounded-xl p-2 text-left hover:bg-orange-50 focus-visible:outline-4 focus-visible:outline-orange-400 active:bg-orange-100"
+        className="flex min-h-20 w-16 shrink-0 items-center justify-center rounded-xl hover:bg-orange-50 focus-visible:outline-4 focus-visible:outline-orange-400 active:bg-orange-100"
       >
         {item.checked ? (
-          <CheckIcon className="size-10 shrink-0" aria-hidden="true" />
+          <CheckIcon className="size-11" aria-hidden="true" />
         ) : (
           <span
             aria-hidden="true"
-            className="size-10 shrink-0 rounded-full bg-white ring-4 ring-slate-300"
+            className="size-11 rounded-full bg-white ring-4 ring-slate-300"
           />
         )}
+      </button>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex min-h-20 min-w-0 flex-1 items-center gap-3 rounded-xl p-2 text-left hover:bg-orange-50 focus-visible:outline-4 focus-visible:outline-orange-400 active:bg-orange-100"
+      >
         <TaskIcon icon={item.icon} className="size-14" />
         <span className="flex min-w-0 flex-col">
           <span

@@ -78,6 +78,15 @@ class AddIn(BaseModel):
     note: Note | None = None
 
 
+class EntryIn(BaseModel):
+    """Einen Eintrag auf der Liste ändern, z. B. nach einem Tippfehler."""
+
+    name: TypedName
+    icon: IconName
+    # "" löscht die Notiz.
+    note: Note
+
+
 class CheckIn(BaseModel):
     checked: bool
 
@@ -211,6 +220,45 @@ def set_checked(item_id: int, body: CheckIn, _: CurrentSession, db: DbSession) -
         item.checked_at = None
     db.commit()
     return _list_item(item)
+
+
+@router.put("/list/{item_id}")
+def edit_entry(item_id: int, body: EntryIn, _: CurrentSession, db: DbSession) -> ListItemOut:
+    """Name, Symbol und Notiz eines Eintrags ändern (ohne Eltern-PIN).
+
+    Ein Artikel, der nur für diesen Eintrag angelegt wurde (Tippfehler), wird umbenannt. Ein
+    gewohnter Artikel bleibt als Vorschlag, wie er ist; stattdessen kommt der Artikel mit dem
+    neuen Namen auf die Liste (gibt es ihn schon, der bekannte). Er übernimmt, ob abgehakt.
+    Antwortet mit dem Eintrag, der danach auf der Liste steht (womöglich mit anderer ID)."""
+    item = _get(db, item_id)
+    family = get_family(db)
+    if not _is_visible(family, item):
+        raise ApiError(status.HTTP_404_NOT_FOUND, "shopping.not_on_list")
+    target = _find(db, body.name)
+    if target is None and item.times_added <= 1 or target is item:
+        item.name = body.name
+        target = item
+    else:
+        if target is None:
+            target = ShoppingItem(name=body.name, icon=body.icon, times_added=0)
+            db.add(target)
+        if not _is_visible(family, target):
+            target.on_list, target.added_at = True, item.added_at
+            target.times_added += 1
+        target.checked_at = item.checked_at
+        _take_off(item)
+        if item.times_added <= 1:
+            # Nur für diesen Eintrag angelegt: kein Tippfehler bleibt als Vorschlag übrig.
+            db.delete(item)
+        else:
+            item.times_added -= 1
+    target.icon, target.note = body.icon, body.note or None
+    try:
+        db.commit()
+    except IntegrityError as error:
+        # Gleichzeitig auf einem anderen Gerät angelegt.
+        raise ApiError(status.HTTP_409_CONFLICT, "shopping.duplicate_name") from error
+    return _list_item(target)
 
 
 @router.delete("/list/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -643,7 +643,9 @@ Symbolen.
 - **Symbol:** kommt automatisch zum Namen („Rote Zwiebeln“ → Zwiebel, sonst Einkaufstüten) und lässt
   sich per Tipp darauf ändern. Der Stift an einem eigenen Artikel benennt ihn um, ändert das Symbol
   oder löscht ihn.
-- **Abhaken:** ein Tipp auf eine Zeile hakt ab, ein weiterer nimmt es zurück. Abgehakte stehen
+- **Abhaken:** ein Tipp auf den **Kreis** vorne hakt ab, ein weiterer nimmt es zurück. **Ein Tipp
+  auf den Artikel selbst** öffnet ihn zum Ändern, z. B. nach einem Tippfehler: Name, Menge oder
+  Hinweis, Symbol, „Laden ändern“ und „Von der Liste nehmen“ (ohne PIN, auch offline). Abgehakte stehen
   durchgestrichen darunter, **bis der Tag vorbei ist** (in der Zeitzone der Familie), damit sich ein
   falscher Tipp im Laden noch zurücknehmen lässt; danach verschwinden sie von selbst. „Abgehakte
   entfernen“ räumt sie sofort weg, das × nimmt einen Artikel von der Liste.
