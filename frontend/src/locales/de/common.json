@@ -369,6 +369,7 @@
       "validation": "Bitte prüfe deine Eingaben"
     },
     "validation": {
+      "invalid_event_times": "Das Ende liegt vor dem Beginn",
       "required": "Bitte ausfüllen",
       "too_short": "Zu kurz",
       "too_long": "Zu lang",
@@ -450,7 +451,11 @@
       "connection_not_found": "Diese Verbindung gibt es nicht mehr",
       "rate_limited": "Google bremst gerade die Abrufe. Es geht gleich von selbst weiter.",
       "calendar_unavailable": "Dieser Kalender ist bei Google nicht mehr verfügbar",
-      "calendar_not_found": "Diesen Kalender gibt es nicht mehr"
+      "calendar_not_found": "Diesen Kalender gibt es nicht mehr",
+      "event_not_found": "Diesen Termin gibt es nicht mehr",
+      "event_gone": "Diesen Termin gibt es bei Google nicht mehr",
+      "event_read_only": "Dieser Kalender lässt sich nur lesen",
+      "event_write_denied": "Google erlaubt diese Änderung nicht. Bei Einladungen kann nur die einladende Person den Termin ändern."
     },
     "weather": {
       "unavailable": "Das Wetter ist gerade nicht verfügbar"
@@ -599,7 +604,7 @@
   },
   "calendar": {
     "section": "Kalender",
-    "intro": "Verbinde ein Google-Konto, damit FamQuest die Termine anzeigen kann. FamQuest liest die Kalender nur und ändert nichts daran.",
+    "intro": "Verbinde ein Google-Konto, damit FamQuest die Termine anzeigen kann. Termine anlegen, ändern und löschen geht nur mit der Eltern-PIN.",
     "not_configured": "Der Google Kalender ist noch nicht eingerichtet. Dafür braucht die Konfiguration (.env) GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET und TOKEN_ENCRYPTION_KEY. Die Anleitung steht in der README.",
     "connect": "Google-Konto verbinden",
     "connected": "Google-Konto verbunden",
@@ -650,7 +655,22 @@
     "location": "Ort",
     "description": "Beschreibung",
     "from_calendar_one": "Aus dem Kalender {{names}}",
-    "from_calendar_other": "Aus den Kalendern {{names}}"
+    "from_calendar_other": "Aus den Kalendern {{names}}",
+    "new_event": "Neuer Termin",
+    "edit_event": "Termin bearbeiten",
+    "delete_event": "Termin löschen",
+    "delete_confirm": "Diesen Termin wirklich löschen? Er verschwindet auch im Google Kalender.",
+    "delete_confirm_series": "Diesen Termin wirklich löschen? Nur dieser eine verschwindet, die übrige Serie bleibt.",
+    "edit_series_hint": "Teil einer Serie: Die Änderung gilt nur für diesen einen Termin.",
+    "event_title": "Titel",
+    "event_calendar": "Kalender",
+    "event_all_day": "Ganztägig",
+    "event_start_date": "Beginn",
+    "event_end_date": "Ende",
+    "event_last_day": "Letzter Tag",
+    "event_start_time": "Von",
+    "event_end_time": "Bis",
+    "write_missing": "Neu verbinden, damit sich Termine in FamQuest anlegen und ändern lassen."
   },
   "regions": {
     "BW": "Baden-Württemberg",

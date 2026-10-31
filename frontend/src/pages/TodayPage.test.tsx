@@ -66,6 +66,8 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     calendars: ['Lena'],
     member_ids: [1],
     family: false,
+    recurring: false,
+    editable: false,
     icon: null,
     continues_before: false,
     continues_after: false,
@@ -101,6 +103,7 @@ const CALENDAR: CalendarWeek = {
   timezone: 'Europe/Berlin',
   family_color: 'pink',
   problem: false,
+  writable_calendars: [],
   days: DAYS.map((day) => ({
     date: `2026-${day}`,
     holidays:

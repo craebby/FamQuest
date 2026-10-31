@@ -23,6 +23,8 @@ export interface CalendarConnection {
   account_email: string
   /** `reconnect`: Zugriff widerrufen oder abgelaufen, neu verbinden nötig. */
   status: 'ok' | 'reconnect'
+  /** `false`: vor dem Schreibzugriff verbunden, nur neu verbinden erlaubt Änderungen. */
+  can_write: boolean
   created_at: string
   calendars: Calendar[]
 }
@@ -83,10 +85,22 @@ export interface WeekEvent {
   member_ids: number[]
   /** Gehört (auch) der ganzen Familie. */
   family: boolean
+  /** Vorkommen einer Serie: Ändern und Löschen betrifft nur dieses eine. */
+  recurring: boolean
+  /** FamQuest darf den Termin ändern und löschen (immer mit Eltern-PIN). */
+  editable: boolean
   /** Symbol zum Titel (Symbole für Termine), sonst `null`. */
   icon: string | null
   continues_before: boolean
   continues_after: boolean
+}
+
+/** Kalender, in dem neue Termine angelegt werden können. */
+export interface WritableCalendar {
+  id: number
+  name: string
+  /** `null`: gehört der ganzen Familie. */
+  member_id: number | null
 }
 
 export interface CalendarWeek {
@@ -96,6 +110,7 @@ export interface CalendarWeek {
   family_color: FamilyColor
   /** Mindestens ein angezeigter Kalender wird gerade nicht aktualisiert. */
   problem: boolean
+  writable_calendars: WritableCalendar[]
   days: {
     date: string
     /** Feiertage und Schulferien, falls im Elternbereich eingeschaltet. */
@@ -240,6 +255,37 @@ export const useSetHolidays = () =>
 
 export const useSyncCalendars = () =>
   useSettingsMutation(() => api<CalendarSettings>('POST', '/calendar/sync'))
+
+/** Eingaben für einen Termin; Datum und Uhrzeit gelten in der Zeitzone der Familie. */
+export interface EventInput {
+  title: string
+  location: string | null
+  description: string | null
+  all_day: boolean
+  start_date: string
+  /** Letzter Tag des Termins (inklusiv). */
+  end_date: string
+  start_time: string | null
+  end_time: string | null
+}
+
+const EVENT_KEYS = [CALENDAR_WEEK_KEY, CALENDAR_UPCOMING_KEY]
+
+export const useCreateEvent = () =>
+  useParentMutation(
+    (input: EventInput & { calendar_id: number }) => api<void>('POST', '/calendar/events', input),
+    EVENT_KEYS,
+  )
+
+export const useUpdateEvent = () =>
+  useParentMutation(
+    ({ id, input }: { id: string; input: EventInput }) =>
+      api<void>('PUT', `/calendar/events/${id}`, input),
+    EVENT_KEYS,
+  )
+
+export const useDeleteEvent = () =>
+  useParentMutation((id: string) => api<void>('DELETE', `/calendar/events/${id}`), EVENT_KEYS)
 
 /** Begriffe im Titel eines Termins, die ein Symbol bekommen (z. B. „Judo“). */
 export interface EventSymbol {

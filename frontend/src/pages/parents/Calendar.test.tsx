@@ -94,6 +94,7 @@ describe('Kalender im Elternbereich', () => {
             provider: 'google',
             account_email: 'mama@gmail.com',
             status: 'ok',
+            can_write: true,
             created_at: '2026-09-25T10:00:00Z',
             calendars: [],
           },
@@ -102,6 +103,7 @@ describe('Kalender im Elternbereich', () => {
             provider: 'google',
             account_email: 'papa@gmail.com',
             status: 'reconnect',
+            can_write: true,
             created_at: '2026-09-25T10:00:00Z',
             calendars: [],
           },
@@ -261,6 +263,7 @@ function withCalendars(calendars: Calendar[]): CalendarSettings {
         provider: 'google',
         account_email: 'mama@gmail.com',
         status: 'ok',
+        can_write: true,
         created_at: '2026-09-25T10:00:00Z',
         calendars,
       },
@@ -321,5 +324,18 @@ describe('Feiertage und Ferien im Elternbereich', () => {
 
     await screen.findByRole('heading', { name: 'Calendar', level: 2 })
     expect(screen.queryByTestId('holiday-settings')).toBeNull()
+  })
+})
+
+describe('Schreibzugriff im Elternbereich', () => {
+  it('bietet älteren Verbindungen das Neu-Verbinden an', async () => {
+    const settings = withCalendars([])
+    settings.connections[0].can_write = false
+    mockParents(settings)
+    renderApp('/parents/connections')
+
+    const section = await calendarSection()
+    expect(await section.findByText(/Neu verbinden, damit sich Termine/)).toBeVisible()
+    expect(section.getByRole('button', { name: 'Neu verbinden' })).toBeVisible()
   })
 })

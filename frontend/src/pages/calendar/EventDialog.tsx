@@ -1,17 +1,24 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import ClockIcon from '~icons/fluent-emoji-flat/alarm-clock'
 import CrossIcon from '~icons/fluent-emoji-flat/cross-mark'
 import MemoIcon from '~icons/fluent-emoji-flat/memo'
+import PencilIcon from '~icons/fluent-emoji-flat/pencil'
 import PinIcon from '~icons/fluent-emoji-flat/round-pushpin'
+import TrashIcon from '~icons/fluent-emoji-flat/wastebasket'
 
-import type { WeekEvent } from '../../api/calendar'
+import { useMe } from '../../api/auth'
+import { type WeekEvent, useDeleteEvent } from '../../api/calendar'
 import { Avatar } from '../../components/Avatar'
 import { FamilyAvatar } from '../../components/FamilyAvatar'
 import { TaskIcon } from '../../components/TaskIcon'
+import { Alert, Button } from '../../components/ui'
+import { errorMessage } from '../../errors'
 import { colorTokens } from '../../memberColors'
+import { PinDialog } from '../home/HomeEditor'
 import { ColorStripe } from './EventCard'
+import { EventForm } from './EventForm'
 import { type Owners, ownerColors } from './owners'
 
 function parseDate(isoDate: string) {
@@ -50,21 +57,31 @@ function useWhen(event: WeekEvent, timeZone: string) {
   return start.getTime() === end.getTime() ? format.format(start) : format.formatRange(start, end)
 }
 
-/** Details eines Termins: nur lesen, bearbeitet wird im Google Kalender. */
+/** Was nach dem Antippen von „Bearbeiten“ oder „Löschen“ folgt. */
+type Action = 'edit' | 'delete'
+
+/** Details eines Termins; bearbeitbare Termine lassen sich mit der Eltern-PIN ändern und löschen. */
 export function EventDialog({
   event,
   owners,
   familyColor,
   timeZone,
+  readOnly = false,
   onClose,
 }: {
   event: WeekEvent
   owners: Owners
   familyColor: string
   timeZone: string
+  /** Küchenansicht: Termine nur ansehen. */
+  readOnly?: boolean
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const { data: me } = useMe()
+  const remove = useDeleteEvent()
+  const [asked, setAsked] = useState<Action | null>(null)
+  const [action, setAction] = useState<Action | null>(null)
   const dialog = useRef<HTMLDivElement>(null)
   const colors = ownerColors(owners, familyColor)
   const main = colorTokens(colors[0])
@@ -78,11 +95,29 @@ export function EventDialog({
 
   useEffect(() => {
     const onKey = (keyEvent: KeyboardEvent) => {
-      if (keyEvent.key === 'Escape') onClose()
+      if (keyEvent.key === 'Escape' && !asked && action !== 'edit') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, asked, action])
+
+  const start = (next: Action) => (me?.parent_unlocked ? setAction(next) : setAsked(next))
+
+  if (asked) {
+    return (
+      <PinDialog
+        label={t(asked === 'edit' ? 'calendar.edit_event' : 'calendar.delete_event')}
+        onUnlocked={() => {
+          setAction(asked)
+          setAsked(null)
+        }}
+        onCancel={() => setAsked(null)}
+      />
+    )
+  }
+  if (action === 'edit') {
+    return <EventForm event={event} timeZone={timeZone} onClose={onClose} />
+  }
 
   return (
     <div
@@ -168,6 +203,39 @@ export function EventDialog({
                 names: event.calendars.join(', '),
               })}
             </p>
+          )}
+
+          {event.editable && !readOnly && action !== 'delete' && (
+            <div className="flex flex-wrap gap-3">
+              <Button variant="secondary" onClick={() => start('edit')}>
+                <PencilIcon className="size-6" aria-hidden="true" />
+                {t('calendar.edit_event')}
+              </Button>
+              <Button variant="danger" onClick={() => start('delete')}>
+                <TrashIcon className="size-6" aria-hidden="true" />
+                {t('calendar.delete_event')}
+              </Button>
+            </div>
+          )}
+          {action === 'delete' && (
+            <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
+              <p className="text-lg font-semibold text-red-800">
+                {t(event.recurring ? 'calendar.delete_confirm_series' : 'calendar.delete_confirm')}
+              </p>
+              {remove.isError && <Alert>{errorMessage(t, remove.error)}</Alert>}
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="danger"
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate(event.key, { onSuccess: onClose })}
+                >
+                  {t('calendar.delete_event')}
+                </Button>
+                <Button variant="secondary" onClick={() => setAction(null)}>
+                  {t('actions.cancel')}
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>

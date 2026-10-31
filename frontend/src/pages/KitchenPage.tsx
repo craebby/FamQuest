@@ -145,6 +145,7 @@ export function KitchenPage() {
                 showEvents
                 showMeals
                 row
+                readOnly
               />
             )}
             {id === 'tasks' && <RoutineWidget from={KITCHEN_PATH} more={false} />}

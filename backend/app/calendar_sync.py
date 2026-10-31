@@ -68,6 +68,7 @@ def parse_event(item: dict) -> dict | None:
     fields: dict = {
         "external_id": item["id"],
         "ical_uid": item.get("iCalUID"),
+        "recurring": bool(item.get("recurringEventId")),
         "title": (item.get("summary") or "").strip()[:TITLE_MAX_LENGTH] or None,
         "location": (item.get("location") or "").strip()[:TITLE_MAX_LENGTH] or None,
         "description": plain_text(item.get("description"), DESCRIPTION_MAX_LENGTH),
@@ -105,6 +106,7 @@ def refresh_calendar_list(db: Session, connection: CalendarConnection, token: st
             db.delete(calendar)
         else:
             calendar.name, calendar.primary = info.name, info.primary
+            calendar.access_role = info.access_role
     for external_id, info in found.items():
         if external_id not in known:
             db.add(
@@ -113,6 +115,7 @@ def refresh_calendar_list(db: Session, connection: CalendarConnection, token: st
                     external_id=external_id,
                     name=info.name,
                     primary=info.primary,
+                    access_role=info.access_role,
                 )
             )
     db.commit()

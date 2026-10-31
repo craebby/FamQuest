@@ -60,7 +60,7 @@ Bei Widersprüchen gilt `docs/SPEC.md`, beim Stack gilt diese Datei.
 
 ## Etappen (Phase 2: Google Kalender)
 
-Entschieden: Anbindung per Google-OAuth (nur lesend, `calendar.readonly`); iCal/ICS und andere
+Entschieden: Anbindung per Google-OAuth (`calendar.readonly`, seit Phase 13 auch `calendar.events`); iCal/ICS und andere
 Anbieter erst später. Hauptansicht am Display: Woche.
 
 1. Google-Konto verbinden: OAuth mit state + PKCE, Tokens verschlüsselt, Refresh, Trennen, Abschnitt im Elternbereich
@@ -220,6 +220,17 @@ beim Eintragen; Single Sign-on erst später. Gearbeitet wird auf dem Branch `pha
 
 1. Mealie anbinden: Abschnitt im Elternbereich, Abgleich im Hintergrund, Mealie-Rezepte als
    Gerichte, Gericht von Hand verknüpfen, Knopf „Mealie“ in Leiste und Küchenansicht
+2. Feinschliff im Alltag
+
+## Etappen (Phase 13: Termine ändern)
+
+Entschieden: Termine anlegen, bearbeiten und löschen direkt in FamQuest, immer mit Eltern-PIN; nur in
+Kalendern mit Schreibrecht; bei Serien nur der einzelne Termin; die Küchenansicht zeigt Termine nur
+an. Das Zurückführen in den Hauptkalender ist Sache des eigenen Sync-Skripts, nicht von FamQuest.
+Gearbeitet wird auf dem Branch `phase-13-termine` (abgezweigt von `phase-12-mealie`).
+
+1. Termine ändern: Schreibzugriff (Neu verbinden im Elternbereich), **+** in der Kalenderansicht,
+   Bearbeiten und Löschen in den Termindetails
 2. Feinschliff im Alltag
 
 ## Befehle

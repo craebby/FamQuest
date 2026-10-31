@@ -348,7 +348,7 @@ class RewardRedemption(Base):
 
 
 class CalendarConnection(Base):
-    """Verbindung zu einem Kalenderkonto (Phase 2: Google, nur lesend).
+    """Verbindung zu einem Kalenderkonto (Phase 2: Google).
 
     Die Tokens liegen verschlüsselt in der Datenbank (siehe app.crypto). Ein Konto kann nur einmal
     verbunden sein; erneutes Verbinden ersetzt die Tokens.
@@ -368,6 +368,8 @@ class CalendarConnection(Base):
     access_token_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # "ok" oder "reconnect" (Zugriff widerrufen, Token ungültig); siehe app.google.
     status: Mapped[str] = mapped_column(String(20), server_default="ok")
+    # Schreibzugriff erlaubt; ältere Verbindungen lesen nur, bis sie neu verbunden sind.
+    can_write: Mapped[bool] = mapped_column(default=False, server_default="false")
     created_by_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL")
     )
@@ -394,6 +396,8 @@ class Calendar(Base):
     # Hauptkalender des Kontos.
     primary: Mapped[bool] = mapped_column(default=False, server_default="false")
     selected: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # Rolle des Kontos beim Anbieter, z. B. "owner", "writer" oder "reader".
+    access_role: Mapped[str | None] = mapped_column(String(20))
     member_id: Mapped[int | None] = mapped_column(
         ForeignKey("family_members.id", ondelete="SET NULL"), index=True
     )
@@ -431,6 +435,8 @@ class CalendarEvent(Base):
     external_id: Mapped[str] = mapped_column(String(1024))
     # Gleicher Termin in mehreren Kalendern (z. B. Einladung an beide Eltern) → eine Anzeige.
     ical_uid: Mapped[str | None] = mapped_column(String(1024))
+    # Vorkommen eines Serientermins.
+    recurring: Mapped[bool] = mapped_column(default=False, server_default="false")
     # Ohne Titel (z. B. nur „beschäftigt“ freigegeben) zeigt das Frontend einen Platzhalter.
     title: Mapped[str | None] = mapped_column(String(500))
     location: Mapped[str | None] = mapped_column(String(500))

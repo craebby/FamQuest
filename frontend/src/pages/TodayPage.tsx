@@ -80,7 +80,11 @@ export function TodayPage() {
         )}
       </header>
       {editing === 'pin' && (
-        <PinDialog onUnlocked={startEditing} onCancel={() => setEditing(null)} />
+        <PinDialog
+          label={t('home.customize')}
+          onUnlocked={startEditing}
+          onCancel={() => setEditing(null)}
+        />
       )}
       {draft && <EditMode draft={draft} onChange={setEditing} onClose={() => setEditing(null)} />}
       <Sections shown={shown} week={current.week} today={today?.date} />

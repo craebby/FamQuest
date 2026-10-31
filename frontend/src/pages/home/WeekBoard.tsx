@@ -65,6 +65,7 @@ export function WeekBoard({
   showMeals,
   days: dayCount = BOARD_DAYS,
   row = false,
+  readOnly = false,
 }: {
   /** Heute in der Zeitzone der Familie (`YYYY-MM-DD`). */
   today: string
@@ -78,6 +79,8 @@ export function WeekBoard({
    * doppelt so breit.
    */
   row?: boolean
+  /** Termine nur ansehen, nicht ändern. */
+  readOnly?: boolean
 }) {
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage ?? i18n.language
@@ -231,6 +234,7 @@ export function WeekBoard({
           owners={openEvent.owners}
           familyColor={calendar.family_color}
           timeZone={calendar.timezone}
+          readOnly={readOnly}
           onClose={() => setOpenEvent(null)}
         />
       )}

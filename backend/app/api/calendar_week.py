@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
-from sqlalchemy import and_, or_, select
+from sqlalchemy import Select, and_, or_, select
 
 from app.auth import CurrentSession, DbSession, get_family
 from app.calendar_sync import local_midnight
@@ -25,6 +25,8 @@ router = APIRouter(prefix="/calendar", tags=["calendar"])
 
 # So weit lässt sich vor- und zurückblättern (die Synchronisation lädt ohnehin weniger).
 MAX_WEEK_OFFSET = 52
+# Rollen, mit denen ein Konto Termine eines Kalenders ändern darf.
+WRITE_ROLES = ("owner", "writer")
 # Die Startseite zeigt die nächsten Termine aus diesem Zeitraum (ab heute).
 UPCOMING_DAYS = 14
 MAX_UPCOMING = 20
@@ -45,6 +47,10 @@ class WeekEventOut(BaseModel):
     member_ids: list[int]
     # Gehört (auch) der ganzen Familie.
     family: bool
+    # Vorkommen einer Serie: Ändern und Löschen betrifft nur dieses eine.
+    recurring: bool
+    # FamQuest darf den Termin ändern und löschen.
+    editable: bool
     # Symbol zum Titel (siehe app/event_symbols.py), falls eine der Personen Symbole bekommt.
     icon: str | None
     # Begann vor diesem Tag bzw. geht über ihn hinaus.
@@ -64,6 +70,13 @@ class WeekDayOut(BaseModel):
     events: list[WeekEventOut]
 
 
+class WritableCalendarOut(BaseModel):
+    id: int
+    name: str
+    # None = gehört der ganzen Familie.
+    member_id: int | None
+
+
 class WeekOut(BaseModel):
     start: dt.date
     today: dt.date
@@ -71,6 +84,8 @@ class WeekOut(BaseModel):
     family_color: str
     # Mindestens ein angezeigter Kalender wird gerade nicht aktualisiert.
     problem: bool
+    # Kalender, in denen neue Termine angelegt werden können.
+    writable_calendars: list[WritableCalendarOut]
     days: list[WeekDayOut]
 
 
@@ -116,6 +131,7 @@ class _Merged:
         self.event = event
         self.member_ids: set[int] = set()
         self.family = False
+        self.editable = False
         self.calendars: list[str] = []
 
 
@@ -171,6 +187,10 @@ def week(
         timezone=family.timezone,
         family_color=family.calendar_color,
         problem=_has_problem(db),
+        writable_calendars=[
+            WritableCalendarOut(id=c.id, name=c.name, member_id=c.member_id)
+            for c in db.scalars(writable_calendars().order_by(Calendar.name, Calendar.id))
+        ],
         days=days,
     )
 
@@ -216,6 +236,20 @@ def upcoming(
         problem=_has_problem(db),
         holidays=[HolidayOut(kind=h.kind, name=h.name) for h in holidays],
         events=[event for _, event in found[:limit]],
+    )
+
+
+def writable_calendars() -> Select[tuple[Calendar]]:
+    """Angezeigte Kalender, in die FamQuest schreiben darf."""
+    return (
+        select(Calendar)
+        .join(CalendarConnection)
+        .where(
+            Calendar.selected,
+            Calendar.access_role.in_(WRITE_ROLES),
+            CalendarConnection.can_write,
+            CalendarConnection.status == "ok",
+        )
     )
 
 
@@ -265,6 +299,7 @@ def _merged_events(
         .order_by(CalendarEvent.id)
     ).all()
 
+    writable = set(db.scalars(writable_calendars().with_only_columns(Calendar.id)))
     merged: dict[tuple, _Merged] = {}
     for event, member_id, calendar_name in rows:
         times = (
@@ -272,6 +307,7 @@ def _merged_events(
         )
         key = (event.ical_uid or f"event:{event.id}", event.all_day, *times)
         entry = merged.setdefault(key, _Merged(event))
+        entry.editable = entry.editable or event.calendar_id in writable
         if member_id is None:
             entry.family = True
         else:
@@ -322,6 +358,8 @@ def _event_on_day(
             entry.member_ids, key=lambda m: people.positions.get(m, len(people.positions))
         ),
         family=entry.family,
+        recurring=event.recurring,
+        editable=entry.editable,
         icon=people.icon_for(entry),
         continues_before=before,
         continues_after=after,

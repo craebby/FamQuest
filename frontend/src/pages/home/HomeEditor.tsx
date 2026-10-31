@@ -13,11 +13,13 @@ import { Alert, Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { TILES } from './tileMeta'
 
-/** PIN-Abfrage über der Startseite, bevor die Eltern den Aufbau ändern. */
+/** PIN-Abfrage über der Seite, bevor die Eltern etwas ändern (Startseite, Termine). */
 export function PinDialog({
+  label,
   onUnlocked,
   onCancel,
 }: {
+  label: string
   onUnlocked: () => void
   onCancel: () => void
 }) {
@@ -36,7 +38,7 @@ export function PinDialog({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={t('home.customize')}
+      aria-label={label}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4"
       onClick={onCancel}
     >

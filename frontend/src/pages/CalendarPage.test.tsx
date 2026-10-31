@@ -34,6 +34,8 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     calendars: ['Lena'],
     member_ids: [1],
     family: false,
+    recurring: false,
+    editable: false,
     icon: null,
     continues_before: false,
     continues_after: false,
@@ -49,6 +51,7 @@ function makeWeek(saturday: WeekEvent[], overrides: Partial<CalendarWeek> = {}):
     timezone: 'Europe/Berlin',
     family_color: 'pink',
     problem: false,
+    writable_calendars: [],
     days: dates.map((date) => ({
       date: `2026-${date}`,
       holidays: [],
@@ -293,5 +296,156 @@ describe('Kalender (Woche)', () => {
     expect(holiday).toHaveTextContent('Feiertag: Tag der Deutschen Einheit')
     expect(school).toHaveTextContent('Ferien: Herbstferien')
     expect(day.queryByText('Keine Termine')).toBeNull()
+  })
+})
+
+describe('Termine ändern', () => {
+  const CALENDAR = { id: 7, name: 'Lena', member_id: 1 }
+  const editable = () => makeEvent({ key: '5', location: 'Halle', editable: true })
+
+  function mockWrites(week: CalendarWeek, unlocked = false) {
+    return mockApi({
+      'GET /api/setup/status': setupDone,
+      'GET /api/auth/me': Response.json(makeMe({ parent_unlocked: unlocked })),
+      'GET /api/today': Response.json(makeToday()),
+      'GET /api/members': Response.json([LENA, PAPA]),
+      'GET /api/calendar/status': Response.json({ enabled: true }),
+      'GET /api/calendar/week': Response.json(week),
+      'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
+      'POST /api/calendar/events': () => new Response(null, { status: 204 }),
+      'PUT /api/calendar/events/5': () => new Response(null, { status: 204 }),
+      'DELETE /api/calendar/events/5': () => new Response(null, { status: 204 }),
+    })
+  }
+
+  async function enterPin(user: ReturnType<typeof userEvent.setup>) {
+    for (const digit of ['1', '2', '3', '4']) {
+      await user.click(await screen.findByRole('button', { name: digit }))
+    }
+    await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+  }
+
+  async function openEvent(user: ReturnType<typeof userEvent.setup>) {
+    const day = await saturday()
+    await user.click(day.getByRole('button', { name: /Schwimmen/ }))
+    return within(await screen.findByRole('dialog'))
+  }
+
+  it('zeigt ohne Schreibzugriff weder Plus noch Bearbeiten', async () => {
+    const user = userEvent.setup()
+    mockWrites(makeWeek([makeEvent()]))
+    renderApp('/calendar')
+
+    const dialog = await openEvent(user)
+
+    expect(dialog.queryByRole('button', { name: 'Termin bearbeiten' })).toBeNull()
+    expect(dialog.queryByRole('button', { name: 'Termin löschen' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Neuer Termin' })).toBeNull()
+  })
+
+  it('fragt vor dem Anlegen die PIN ab und legt den Termin an', async () => {
+    const user = userEvent.setup()
+    const calls = mockWrites(makeWeek([], { writable_calendars: [CALENDAR] }))
+    renderApp('/calendar')
+
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    await enterPin(user)
+    await user.type(await screen.findByLabelText('Titel'), 'Zahnarzt')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'POST /api/calendar/events')?.body).toEqual({
+        calendar_id: 7,
+        title: 'Zahnarzt',
+        location: null,
+        description: null,
+        all_day: false,
+        start_date: '2026-10-03',
+        end_date: '2026-10-03',
+        start_time: '09:00',
+        end_time: '10:00',
+      })
+    })
+    expect(calls.some((call) => call.key === 'POST /api/parent/unlock')).toBe(true)
+  })
+
+  it('fragt nicht erneut, wenn der Elternbereich schon entsperrt ist', async () => {
+    const user = userEvent.setup()
+    mockWrites(makeWeek([], { writable_calendars: [CALENDAR] }), true)
+    renderApp('/calendar')
+
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+
+    expect(await screen.findByLabelText('Titel')).toBeVisible()
+  })
+
+  it('sperrt Speichern, wenn das Ende vor dem Beginn liegt', async () => {
+    const user = userEvent.setup()
+    mockWrites(makeWeek([], { writable_calendars: [CALENDAR] }), true)
+    renderApp('/calendar')
+
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    const end = await screen.findByLabelText('Bis')
+    await user.clear(end)
+    await user.type(end, '08:00')
+
+    expect(await screen.findByText('Das Ende liegt vor dem Beginn')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Speichern' })).toBeDisabled()
+  })
+
+  it('füllt beim Bearbeiten die Ortszeit der Familie ein', async () => {
+    const user = userEvent.setup()
+    const calls = mockWrites(makeWeek([editable()]), true)
+    renderApp('/calendar')
+
+    const dialog = await openEvent(user)
+    await user.click(dialog.getByRole('button', { name: 'Termin bearbeiten' }))
+    const title = await screen.findByLabelText('Titel')
+    await user.clear(title)
+    await user.type(title, 'Schwimmkurs')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'PUT /api/calendar/events/5')?.body).toEqual({
+        title: 'Schwimmkurs',
+        location: 'Halle',
+        description: null,
+        all_day: false,
+        start_date: '2026-10-03',
+        end_date: '2026-10-03',
+        start_time: '15:00',
+        end_time: '16:00',
+      })
+    })
+  })
+
+  it('löscht erst nach PIN und Rückfrage', async () => {
+    const user = userEvent.setup()
+    const calls = mockWrites(makeWeek([editable()]))
+    renderApp('/calendar')
+
+    const dialog = await openEvent(user)
+    await user.click(dialog.getByRole('button', { name: 'Termin löschen' }))
+    await enterPin(user)
+
+    expect(await screen.findByText(/wirklich löschen/)).toBeVisible()
+    expect(calls.some((call) => call.key === 'DELETE /api/calendar/events/5')).toBe(false)
+
+    await user.click(screen.getByRole('button', { name: 'Termin löschen' }))
+
+    await vi.waitFor(() => {
+      expect(calls.some((call) => call.key === 'DELETE /api/calendar/events/5')).toBe(true)
+    })
+  })
+
+  it('sagt bei Serien, dass nur dieser eine Termin gelöscht wird', async () => {
+    const user = userEvent.setup()
+    mockWrites(makeWeek([{ ...editable(), recurring: true }]), true)
+    renderApp('/calendar')
+
+    const dialog = await openEvent(user)
+    await user.click(dialog.getByRole('button', { name: 'Termin löschen' }))
+
+    expect(await screen.findByText(/die übrige Serie bleibt/)).toBeVisible()
   })
 })

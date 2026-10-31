@@ -369,6 +369,7 @@
       "validation": "Please check your input"
     },
     "validation": {
+      "invalid_event_times": "The end is before the start",
       "required": "Please fill in",
       "too_short": "Too short",
       "too_long": "Too long",
@@ -450,7 +451,11 @@
       "connection_not_found": "This connection no longer exists",
       "rate_limited": "Google is slowing down requests right now. It will continue on its own shortly.",
       "calendar_unavailable": "This calendar is no longer available at Google",
-      "calendar_not_found": "This calendar no longer exists"
+      "calendar_not_found": "This calendar no longer exists",
+      "event_not_found": "This event no longer exists",
+      "event_gone": "This event no longer exists at Google",
+      "event_read_only": "This calendar is read-only",
+      "event_write_denied": "Google doesn't allow this change. For invitations, only the organiser can change the event."
     },
     "weather": {
       "unavailable": "The weather is not available right now"
@@ -599,7 +604,7 @@
   },
   "calendar": {
     "section": "Calendar",
-    "intro": "Connect a Google account so FamQuest can show your events. FamQuest only reads the calendars and never changes them.",
+    "intro": "Connect a Google account so FamQuest can show the events. Creating, changing and deleting events needs the parent PIN.",
     "not_configured": "Google Calendar is not set up yet. The configuration (.env) needs GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and TOKEN_ENCRYPTION_KEY. See the README for instructions.",
     "connect": "Connect Google account",
     "connected": "Google account connected",
@@ -650,7 +655,22 @@
     "location": "Location",
     "description": "Description",
     "from_calendar_one": "From the calendar {{names}}",
-    "from_calendar_other": "From the calendars {{names}}"
+    "from_calendar_other": "From the calendars {{names}}",
+    "new_event": "New event",
+    "edit_event": "Edit event",
+    "delete_event": "Delete event",
+    "delete_confirm": "Really delete this event? It will also disappear from Google Calendar.",
+    "delete_confirm_series": "Really delete this event? Only this one disappears, the rest of the series stays.",
+    "edit_series_hint": "Part of a series: the change applies to this one event only.",
+    "event_title": "Title",
+    "event_calendar": "Calendar",
+    "event_all_day": "All day",
+    "event_start_date": "Start",
+    "event_end_date": "End",
+    "event_last_day": "Last day",
+    "event_start_time": "From",
+    "event_end_time": "To",
+    "write_missing": "Reconnect to create and change events in FamQuest."
   },
   "regions": {
     "BW": "Baden-Württemberg",

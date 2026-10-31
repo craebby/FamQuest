@@ -70,6 +70,10 @@ class FakeGoogle:
         # Kalender-Id → (HTTP-Status, Grund), z. B. (403, "rateLimitExceeded").
         self.api_errors: dict[str, tuple[int, str]] = {}
         self.expired_sync_tokens: set[str] = set()
+        # Anlegen, Ändern, Löschen: (Methode, Kalender-Id, Termin-Id, Inhalt).
+        self.writes: list[tuple[str, str, str | None, dict | None]] = []
+        # Termin-Ids, die nur die einladende Person ändern darf.
+        self.locked_events: set[str] = set()
         self.unreachable = False
         self.page_size: int | None = None
 
@@ -133,6 +137,8 @@ class FakeGoogle:
         if self.unreachable:
             raise httpx.ConnectError("keine Verbindung")
         assert request.headers["Authorization"].startswith("Bearer access-")
+        if request.method != "GET":
+            return self._write(request)
         path = request.url.path.removeprefix("/calendar/v3")
         params = dict(request.url.params)
         self.api_requests.append((path, params))
@@ -160,6 +166,49 @@ class FakeGoogle:
             return self._page(self.events.get(calendar_id, []), params)
         # Erster Abruf ohne Zeitraum: nur für den Sync-Token.
         return httpx.Response(200, json={"nextSyncToken": self.sync_token(calendar_id)})
+
+    def _write(self, request: httpx.Request) -> httpx.Response:
+        parts = request.url.raw_path.decode().split("?")[0].split("/")
+        assert parts[3] == "calendars" and parts[5] == "events"
+        calendar_id = unquote(parts[4])
+        event_id = unquote(parts[6]) if len(parts) > 6 else None
+        body = json.loads(request.content) if request.content else None
+        self.writes.append((request.method, calendar_id, event_id, body))
+        if calendar_id in self.api_errors:
+            status, reason = self.api_errors[calendar_id]
+            error = {"code": status, "errors": [{"reason": reason}]}
+            return httpx.Response(status, json={"error": error})
+        if event_id in self.locked_events:
+            error = {"code": 403, "errors": [{"reason": "forbiddenForNonOrganizer"}]}
+            return httpx.Response(403, json={"error": error})
+
+        events = self.events.setdefault(calendar_id, [])
+        if request.method == "POST":
+            created = {
+                **body,
+                "id": f"neu-{len(self.writes)}",
+                "iCalUID": f"neu-{len(self.writes)}@google.com",
+                "status": "confirmed",
+            }
+            self.set_events(calendar_id, [*events, created])
+            return httpx.Response(200, json=created)
+
+        event = next((item for item in events if item["id"] == event_id), None)
+        if event is None:
+            return httpx.Response(410 if request.method == "DELETE" else 404)
+        if request.method == "DELETE":
+            self.set_events(calendar_id, [item for item in events if item is not event])
+            return httpx.Response(204)
+        assert request.method == "PATCH"
+        for key, value in body.items():
+            if isinstance(value, dict):
+                # Wie bei Google: verschachtelte Felder zusammenführen, null entfernt ein Feld.
+                merged = {**event.get(key, {}), **value}
+                event[key] = {k: v for k, v in merged.items() if v is not None}
+            else:
+                event[key] = value
+        self.set_events(calendar_id, events)
+        return httpx.Response(200, json=event)
 
     def _page(self, items: list[dict], params: dict[str, str]) -> httpx.Response:
         if self.page_size is None:

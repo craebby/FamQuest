@@ -52,6 +52,8 @@ class ConnectionOut(BaseModel):
     provider: str
     account_email: str
     status: Literal["ok", "reconnect"]
+    # False: Das Konto wurde verbunden, bevor FamQuest Termine ändern konnte; neu verbinden hilft.
+    can_write: bool
     created_at: datetime
     calendars: list[CalendarOut]
 
@@ -124,6 +126,7 @@ def settings_out(request: Request, db: DbSession) -> CalendarSettingsOut:
                 provider=c.provider,
                 account_email=c.account_email,
                 status=c.status,
+                can_write=c.can_write,
                 created_at=c.created_at,
                 calendars=[
                     CalendarOut(
@@ -323,6 +326,7 @@ def google_callback(
         )
         db.add(connection)
     connection.account_email = claims["email"]
+    connection.can_write = google.EVENTS_SCOPE in tokens.scope.split()
     google.store_tokens(connection, tokens)
     # Die Anmeldung bei Google hat etwas gedauert: Elternbereich wieder offen halten.
     unlock_parent_area(auth_session)

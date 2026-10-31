@@ -1,4 +1,4 @@
-"""Google OAuth 2.0 und Kalender-API (nur lesend), direkt über die REST-Endpunkte.
+"""Google OAuth 2.0 und Kalender-API, direkt über die REST-Endpunkte.
 
 Ablauf: Eltern starten die Anmeldung (`authorization_url`), Google leitet mit einem Code zurück,
 der Code wird gegen Tokens getauscht (`exchange_code`). Das Refresh-Token bleibt verschlüsselt
@@ -28,7 +28,9 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 REVOKE_URL = "https://oauth2.googleapis.com/revoke"
 API_URL = "https://www.googleapis.com/calendar/v3"
 CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly"
-SCOPES = f"openid email {CALENDAR_SCOPE}"
+# Termine anlegen, ändern, löschen; die Kalenderliste darf dieser Zugriff allein nicht lesen.
+EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events"
+SCOPES = f"openid email {CALENDAR_SCOPE} {EVENTS_SCOPE}"
 # Zugriffstoken so rechtzeitig erneuern, dass es während eines Abrufs nicht abläuft.
 EXPIRY_MARGIN = timedelta(minutes=1)
 
@@ -220,6 +222,7 @@ def revoke(connection: CalendarConnection) -> None:
 
 # Größte erlaubte Seite; die meisten Abrufe passen damit auf eine Seite.
 PAGE_SIZE = 2500
+_EVENT_FIELDS = "id,iCalUID,status,summary,location,description,start,end,recurringEventId"
 # Gründe bei 403/429, nach denen es einfach später nochmal versucht wird.
 _RATE_LIMIT_REASONS = {"rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded"}
 
@@ -228,29 +231,44 @@ class SyncTokenExpired(Exception):
     """Google kennt den Stand der inkrementellen Synchronisation nicht mehr (HTTP 410)."""
 
 
-def _api_get(token: str, path: str, params: dict[str, str]) -> dict:
+def _api_request(
+    token: str,
+    method: str,
+    path: str,
+    params: dict[str, str],
+    body: dict | None = None,
+) -> httpx.Response:
     try:
         with _client() as client:
-            response = client.get(
-                f"{API_URL}{path}", params=params, headers={"Authorization": f"Bearer {token}"}
+            return client.request(
+                method,
+                f"{API_URL}{path}",
+                params=params,
+                json=body,
+                headers={"Authorization": f"Bearer {token}"},
             )
     except httpx.HTTPError as exc:
         logger.warning("Google Kalender nicht erreichbar: %s", type(exc).__name__)
         raise GoogleError("calendar.google_unreachable") from exc
 
-    if response.status_code == 200:
-        return response.json()
-    if response.status_code == 410:
-        raise SyncTokenExpired
+
+def _is_rate_limited(response: httpx.Response) -> bool:
     try:
         errors = response.json().get("error", {}).get("errors", [])
     except ValueError:
         errors = []
     reasons = {error.get("reason") for error in errors if isinstance(error, dict)}
-    logger.warning(
-        "Google-Kalender-Abruf fehlgeschlagen: %s %s", response.status_code, sorted(reasons)
-    )
-    if response.status_code == 429 or reasons & _RATE_LIMIT_REASONS:
+    logger.warning("Google-Kalender-Aufruf fehlgeschlagen: %s %s", response.status_code, reasons)
+    return response.status_code == 429 or bool(reasons & _RATE_LIMIT_REASONS)
+
+
+def _api_get(token: str, path: str, params: dict[str, str]) -> dict:
+    response = _api_request(token, "GET", path, params)
+    if response.status_code == 200:
+        return response.json()
+    if response.status_code == 410:
+        raise SyncTokenExpired
+    if _is_rate_limited(response):
         raise GoogleError("calendar.rate_limited")
     if response.status_code in (403, 404):
         # Kalender gelöscht oder nicht mehr freigegeben.
@@ -272,22 +290,28 @@ def _events_path(calendar_id: str) -> str:
     return f"/calendars/{quote(calendar_id, safe='')}/events"
 
 
+def _event_path(calendar_id: str, event_id: str) -> str:
+    return f"{_events_path(calendar_id)}/{quote(event_id, safe='')}"
+
+
 @dataclass
 class CalendarInfo:
     id: str
     name: str
     primary: bool
+    access_role: str | None
 
 
 def list_calendars(token: str) -> list[CalendarInfo]:
     """Kalender in der Liste des Kontos (eigene, abonnierte und freigegebene)."""
-    fields = "nextPageToken,items(id,summary,summaryOverride,primary)"
+    fields = "nextPageToken,items(id,summary,summaryOverride,primary,accessRole)"
     return [
         CalendarInfo(
             id=item["id"],
             # Eigener Name, den das Konto dem Kalender gegeben hat, sonst der Originalname.
             name=(item.get("summaryOverride") or item.get("summary") or item["id"])[:255],
             primary=bool(item.get("primary")),
+            access_role=item.get("accessRole"),
         )
         for page in _pages(token, "/users/me/calendarList", {"fields": fields})
         for item in page.get("items", [])
@@ -321,10 +345,42 @@ def events_between(
         "singleEvents": "true",
         "timeMin": time_min.isoformat(),
         "timeMax": time_max.isoformat(),
-        "fields": "nextPageToken,items(id,iCalUID,status,summary,location,description,start,end)",
+        "fields": f"nextPageToken,items({_EVENT_FIELDS})",
     }
     return [
         item
         for page in _pages(token, _events_path(calendar_id), params)
         for item in page.get("items", [])
     ]
+
+
+def _api_write(token: str, method: str, path: str, body: dict | None = None) -> dict:
+    response = _api_request(token, method, path, {"fields": _EVENT_FIELDS}, body)
+    if response.status_code in (200, 204):
+        return response.json() if response.content else {}
+    if _is_rate_limited(response):
+        raise GoogleError("calendar.rate_limited")
+    if response.status_code in (404, 410):
+        raise GoogleError("calendar.event_gone")
+    if response.status_code == 403:
+        # Z. B. Einladung eines anderen: Nur die einladende Person darf den Termin ändern.
+        raise GoogleError("calendar.event_write_denied")
+    raise GoogleError("calendar.google_failed")
+
+
+def create_event(token: str, calendar_id: str, body: dict) -> dict:
+    return _api_write(token, "POST", _events_path(calendar_id), body)
+
+
+def update_event(token: str, calendar_id: str, event_id: str, changes: dict) -> dict:
+    """Nur die genannten Felder ändern; bei einer Serie nur dieses eine Vorkommen."""
+    return _api_write(token, "PATCH", _event_path(calendar_id, event_id), changes)
+
+
+def delete_event(token: str, calendar_id: str, event_id: str) -> None:
+    """Termin löschen, bei einer Serie nur dieses eine Vorkommen; schon gelöscht ist auch gut."""
+    try:
+        _api_write(token, "DELETE", _event_path(calendar_id, event_id))
+    except GoogleError as exc:
+        if exc.code != "calendar.event_gone":
+            raise

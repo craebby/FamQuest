@@ -203,6 +203,9 @@ function ConnectionRow({
           ))}
         </ul>
       )}
+      {ok && !connection.can_write && (
+        <p className="text-base font-semibold text-amber-800">{t('calendar.write_missing')}</p>
+      )}
       {confirming ? (
         <div className="flex flex-col gap-3 rounded-2xl bg-red-50 p-4">
           <p className="text-lg font-semibold text-red-800">
@@ -219,7 +222,7 @@ function ConnectionRow({
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
-          {!ok && (
+          {(!ok || !connection.can_write) && (
             <Button disabled={busy} onClick={onReconnect}>
               {t('calendar.reconnect')}
             </Button>

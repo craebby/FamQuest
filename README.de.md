@@ -11,7 +11,7 @@ Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohn
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
 > **Status:** Version 1.3. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
-> Belohnungen, Kontrolle durch die Eltern), den Google Kalender (nur lesend), die Startseite „Heute“
+> Belohnungen, Kontrolle durch die Eltern), den Google Kalender, die Startseite „Heute“
 > als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan, die
 > Einkaufsliste, den Haushalt (Putzplan mit Ampel, „Zu erledigen“), die Küchenansicht fürs
 > kleine Tablet, Rezepte und die Einkaufsliste als installierbare App, die im Laden auch ohne Netz
@@ -42,8 +42,9 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
 - Belohnungen je Kind aus einer Vorschlagsliste, am Display einlösen
 - Kontrolle durch die Eltern für ausgewählte Aufgaben
 - Faire Verteilung: wer wie viel im Haushalt erledigt hat
-- Google Kalender (nur lesend): Wochenansicht am Display, Termine in der Farbe der Person, Symbole
-  für Termine der Kinder (z. B. Judo, Reiten, Verabredung), damit sie sie ohne Lesen erkennen
+- Google Kalender: Wochenansicht am Display, Termine in der Farbe der Person, Symbole für Termine
+  der Kinder (z. B. Judo, Reiten, Verabredung), damit sie sie ohne Lesen erkennen; mit der
+  Eltern-PIN lassen sich Termine anlegen, bearbeiten und löschen
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
 - Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
   auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
@@ -431,8 +432,8 @@ eine Person dabei wäre, entfällt die Anzeige.
 ![Kalenderwoche mit Terminen in Personenfarbe, Termine der Kinder mit Symbolen](docs/screenshots/de/calendar.png)
 
 FamQuest zeigt eure Google-Kalender als Woche am Display: eine Spalte pro Tag (Montag bis
-Sonntag), Termine in der Farbe der Person, der sie gehören, mit ihrem Avatar. FamQuest liest die
-Kalender nur und ändert nichts daran.
+Sonntag), Termine in der Farbe der Person, der sie gehören, mit ihrem Avatar. Ändern lassen sich
+Termine nur mit der Eltern-PIN.
 
 **Im Elternbereich unter Kalender:**
 
@@ -445,6 +446,8 @@ Kalender nur und ändert nichts daran.
   sind für die Familie reserviert; Farben, die schon eine Person hat, sind ausgegraut.
 - Jeder Kalender zeigt, wann er zuletzt aktualisiert wurde oder was schiefging. **Jetzt
   aktualisieren** holt sofort den neuesten Stand.
+- Konten, die vor dieser Funktion verbunden wurden, können nur lesen. Einmal **Neu verbinden**
+  erlaubt auch Änderungen.
 
 **Am Display:** Sobald mindestens ein Kalender eingeschaltet ist, zeigt die Navigationsleiste ein
 Kalender-Symbol. Mit den Pfeilen blättert man wochenweise; heute ist hervorgehoben, vergangene
@@ -454,8 +457,7 @@ Einladung an beide Eltern), erscheint er einmal mit allen Avataren. Kann ein Kal
 aktualisiert werden, erscheint über der Woche ein Hinweis; die zuletzt bekannten Termine bleiben
 sichtbar. Ganztägige Termine sehen aus wie alle anderen, nur mit „Ganztägig“ statt einer Uhrzeit.
 Ein Tipp auf einen Termin zeigt die Details: Datum und Uhrzeit, Personen, Ort, Beschreibung und die
-Kalender, aus denen er stammt. Bearbeitet werden Termine im Google Kalender; FamQuest zeigt sie nur
-an.
+Kalender, aus denen er stammt. 
 
 **Feiertage und Ferien:** Ist die Familiensprache Deutsch, gibt es im Elternbereich unter
 **Kalender** die Einstellung **Bundesland** mit zwei Schaltern, **Feiertage** und **Schulferien**.
@@ -465,6 +467,14 @@ von [OpenHolidays](https://www.openholidaysapi.org) geladen (übertragen wird nu
 keine persönlichen Daten). Steht dasselbe auch als ganztägiger Termin in einem Kalender, etwa
 „Herbstferien 2026 Nordrhein-Westfalen“ oder einfach „Ferien“, blendet FamQuest diesen Termin an
 den Ferien- bzw. Feiertagen aus, damit nichts doppelt steht. In Google bleibt er, wie er ist.
+
+**Termine ändern:** Mit der Eltern-PIN lassen sich Termine auch direkt in FamQuest anlegen,
+bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender legt
+einen Termin in einem der Kalender an, in die FamQuest schreiben darf; in den Details eines Termins
+stehen **Bearbeiten** und **Löschen**. Änderungen landen sofort im Google Kalender. Bei
+Serienterminen ändert sich nur der einzelne Termin, ganze Serien bearbeitet ihr im Google Kalender.
+Termine aus Kalendern, die sich nur lesen lassen (z. B. abonnierte), zeigen keine Knöpfe; bei
+Einladungen kann nur die einladende Person ändern. Die Küchenansicht zeigt Termine nur an.
 
 **Symbole für Termine:** Kinder, die noch nicht lesen, erkennen ihre Termine nicht am Titel. Unter
 **Kalender & Wetter → Symbole für Termine** legt ihr fest, welche Begriffe ein Symbol bekommen:
@@ -503,8 +513,9 @@ Weiterleitung an eine IP-Adresse oder an `http://`, nur an `http://localhost` zu
    z. B. „FamQuest“.
 2. Unter **APIs & Dienste → Bibliothek** die **Google Calendar API** aktivieren.
 3. Unter **Google Auth Platform** die App einrichten: Name (z. B. FamQuest) und Support-E-Mail,
-   Zielgruppe **Extern**. Unter **Datenzugriff** den Bereich
-   `https://www.googleapis.com/auth/calendar.readonly` hinzufügen.
+   Zielgruppe **Extern**. Unter **Datenzugriff** die Bereiche
+   `https://www.googleapis.com/auth/calendar.readonly` (lesen) und
+   `https://www.googleapis.com/auth/calendar.events` (Termine anlegen, ändern, löschen) hinzufügen.
 
    Startseite, Datenschutzerklärung und Nutzungsbedingungen sind für den eigenen Gebrauch
    optional (Pflicht erst für eine Überprüfung durch Google). Wer sie angeben möchte, kann die
@@ -1383,7 +1394,6 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 
 **Ideen ohne Version**
 
-- Termine in FamQuest anlegen und bearbeiten (braucht Schreibzugriff auf den Google Kalender statt nur lesend)
 - Weitere Kalender: iCal-/ICS-Links und andere Anbieter (z. B. iCloud, Outlook, Nextcloud)
 - Bilderrahmen: Fotos aus Immich (oder Nextcloud) statt nur hochgeladener Fotos, Alben
 - Urlaubsmodus: Routinen für eine Zeit pausieren (z. B. im Urlaub) oder auf eine abgespeckte Version

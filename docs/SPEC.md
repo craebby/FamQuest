@@ -187,6 +187,15 @@ Kinder, die nicht lesen können, erkennen ihre Termine im Kalender sonst nicht. 
 - Ob die Termine einer Person Symbole bekommen, ist ein Schalter an der Person: Standard an bei Kindern, aus bei Erwachsenen; für ältere Kinder einfach ausschalten. Ein Termin bekommt das Symbol, wenn eine seiner Personen es an hat; Familientermine, wenn es bei irgendjemandem an ist.
 - Das Symbol erscheint überall, wo Termine stehen: Kalender, Wochen-Dashboard „Heute“, Termindetails und Einblendung im Bilderrahmen. Die Zuordnung macht der Server.
 
+**Termine ändern** *(Phase 13, entschieden am 2026-10-31)*
+
+- Termine lassen sich in FamQuest anlegen, bearbeiten und löschen, nur mit der Eltern-PIN (serverseitig geprüft), damit Kinder nichts aus Versehen ändern. Berechtigung `calendar.events` zusätzlich zu `calendar.readonly`; ältere Verbindungen lesen weiter und zeigen im Elternbereich „Neu verbinden“.
+- Angeboten werden nur angezeigte Kalender mit Rolle `owner` oder `writer`. Das **+** steht in der Kalenderansicht, „Bearbeiten“ und „Löschen“ in den Termindetails (auch auf „Heute“); die Küchenansicht zeigt Termine nur an.
+- Bei Serien gilt alles nur für das eine Vorkommen, neue Serien gibt es nicht; ganze Serien bearbeitet man am Handy.
+- Geändert wird nur, was sich geändert hat, damit gekürzte oder von HTML befreite Beschreibungen das Original bei Google nicht überschreiben.
+- Steht ein Termin in mehreren Kalendern, gilt die Aktion für alle beschreibbaren Kopien; sie schlägt nur fehl, wenn keine klappt (bei Einladungen darf nur die einladende Person ändern).
+- Bewusst nicht: Termin in einen anderen Kalender verschieben, Gäste, Erinnerungen. Eigene Sync-Skripte zwischen Kalendern liegen außerhalb von FamQuest.
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -432,9 +441,9 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | PointTransaction | Punktebuchung | Person, Betrag, Grund, Quelle |
 | Reward | Belohnung eines Kindes | Person, Name, Beschreibung, Icon, Kosten, aktiv |
 | RewardRedemption | Einlösung | Reward, Person, Status, Zeitpunkt |
-| CalendarConnection | Phase 2 | OAuth-Verbindung: Konto, Tokens verschlüsselt, Status |
-| Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Sync-Stand |
-| CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine), ganztägig oder mit Uhrzeit |
+| CalendarConnection | Phase 2 | OAuth-Verbindung: Konto, Tokens verschlüsselt, Status, Schreibzugriff erlaubt |
+| Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Rolle des Kontos, Sync-Stand |
+| CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine mit Kennzeichen), ganztägig oder mit Uhrzeit |
 | Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
 | Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol, optional eigenes Foto (512 × 512 WebP) |
 | MealPlanEntry | Phase 5 | Gericht an einem Tag zu einer Mahlzeit (Frühstück, Mittag, Abend, Snack); höchstens eins je Tag und Mahlzeit |

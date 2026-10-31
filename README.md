@@ -12,7 +12,7 @@ services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
 > **Status:** version 1.3. Contains the task system (routines, family view, points, rewards,
-> parent checks), Google Calendar (read-only), the start page "Today" as a week dashboard with
+> parent checks), Google Calendar, the start page "Today" as a week dashboard with
 > weather, the picture frame with night mode, the meal plan, the shopping list, the household
 > (cleaning plan with a traffic light, "To do"), the kitchen view for a small tablet, recipes and
 > the shopping list as an installable app that works offline in the shop. Polish continues in everyday use (see
@@ -42,8 +42,9 @@ The screenshots show a sample family (demo data, see [Development](#development)
 - Rewards per child from a list of suggestions, redeemed on the display
 - Parent checks for selected tasks
 - Fair sharing: who did how much of the housework
-- Google Calendar (read-only): week view on the display, events in each person's colour, symbols
-  for children's events (e.g. judo, riding, playdate) so they recognise them without reading
+- Google Calendar: week view on the display, events in each person's colour, symbols for
+  children's events (e.g. judo, riding, playdate) so they recognise them without reading; with the
+  parent PIN, events can be created, edited and deleted
 - Weather for your town (Open-Meteo, no API key needed)
 - Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
   with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
@@ -425,8 +426,8 @@ person would be listed, the display is hidden.
 ![Calendar week with events in each person's colour, with symbols for the children's events](docs/screenshots/en/calendar.png)
 
 FamQuest shows your Google calendars as a week on the display: one column per day (Monday to
-Sunday), events in the colour of the person they belong to, with their avatar. FamQuest only
-reads the calendars and never changes them.
+Sunday), events in the colour of the person they belong to, with their avatar. Events can be
+changed only with the parent PIN.
 
 **In the parents' area under Calendar:**
 
@@ -438,6 +439,7 @@ reads the calendars and never changes them.
   reserved for the family; colours already used by people are greyed out.
 - Each calendar shows when it was last updated, or what went wrong. **Update now** fetches
   immediately.
+- Accounts connected before this feature can only read. **Reconnect** once to allow changes.
 
 **On the display:** once at least one calendar is switched on, the navigation bar shows a
 calendar symbol. The arrows browse weeks; today is highlighted and events that are over fade out.
@@ -445,7 +447,7 @@ Tapping an avatar at the top shows only that person's events (plus family events
 shows everyone. If the same event is in several calendars (e.g. an invite to both parents), it
 appears once with all avatars. All-day events look like the others, with "All day" instead of a
 time. Tapping an event shows its details: date and time, people, location, description and the
-calendars it comes from. Events are edited in Google Calendar; FamQuest only shows them. If a
+calendars it comes from. If a
 calendar can't be updated, a note appears above the week; the last known events stay visible.
 
 **Public and school holidays (Germany):** if the family language is German, the parents' area
@@ -456,6 +458,14 @@ offline; school holidays are loaded once a day from [OpenHolidays](https://www.o
 (only the state is sent, no personal data). If a calendar has the same as an all-day event, e.g.
 "Herbstferien 2026 Nordrhein-Westfalen" or just "Ferien", FamQuest hides that event on those days
 so nothing shows up twice. It stays as it is in Google.
+
+**Changing events:** with the parent PIN you can also create, edit and delete events directly in
+FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar
+creates an event in one of the calendars FamQuest may write to; the details of an event offer
+**Edit** and **Delete**. Changes go to Google Calendar straight away. For a recurring event, only
+the single occurrence changes; whole series are changed in Google Calendar. Events in read-only
+calendars (subscribed calendars, for example) show no buttons, and for invitations only the
+organiser can change an event. The kitchen view only shows events.
 
 **Symbols for events:** children who can't read yet don't recognise their events by the title.
 Under **Calendar & weather → Symbols for events**, choose which words get a symbol: pick from
@@ -493,8 +503,9 @@ address or to `http://`, except `http://localhost` for development.
    "FamQuest".
 2. Under **APIs & Services → Library**, enable the **Google Calendar API**.
 3. Under **Google Auth Platform**, set up the app: name (e.g. FamQuest) and support email,
-   audience **External**. Under **Data access**, add the scope
-   `https://www.googleapis.com/auth/calendar.readonly`.
+   audience **External**. Under **Data access**, add the scopes
+   `https://www.googleapis.com/auth/calendar.readonly` (reading) and
+   `https://www.googleapis.com/auth/calendar.events` (creating, editing and deleting events).
 
    Home page, privacy policy and terms of service are optional for your own use (only required
    for a review by Google). If you want to fill them in, you can use the project pages:
@@ -1354,7 +1365,6 @@ them; the children's routines stay.
 
 **Ideas without a version yet**
 
-- Create and edit events from FamQuest (needs write access to Google Calendar instead of read-only)
 - More calendars: iCal/ICS links and other providers (e.g. iCloud, Outlook, Nextcloud)
 - Picture frame: photos from Immich (or Nextcloud) instead of uploads only, albums
 - Holiday mode: pause routines for a while (e.g. on holiday) or switch to a slimmed-down version
