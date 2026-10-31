@@ -460,7 +460,7 @@ offline; school holidays are loaded once a day from [OpenHolidays](https://www.o
 so nothing shows up twice. It stays as it is in Google.
 
 **Changing events:** with the parent PIN you can also create, edit and delete events directly in
-FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar
+FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar and of "Today"
 creates an event in one of the calendars FamQuest may write to; the details of an event offer
 **Edit** and **Delete**. Changes go to Google Calendar straight away. For a recurring event, only
 the single occurrence changes; whole series are changed in Google Calendar. Events in read-only

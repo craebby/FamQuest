@@ -2,12 +2,10 @@ import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import LeftIcon from '~icons/fluent-emoji-flat/left-arrow'
-import PlusIcon from '~icons/fluent-emoji-flat/plus'
 import RightIcon from '~icons/fluent-emoji-flat/right-arrow'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import WarningIcon from '~icons/fluent-emoji-flat/warning'
 
-import { useMe } from '../api/auth'
 import {
   type CalendarWeek,
   type WeekEvent,
@@ -21,10 +19,9 @@ import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { EventCard } from './calendar/EventCard'
 import { EventDialog } from './calendar/EventDialog'
-import { EventForm } from './calendar/EventForm'
 import { HolidayChip } from './calendar/HolidayChip'
+import { NewEventButton } from './calendar/NewEventButton'
 import { type Owners, isAllDayOnThisDay, ownersOf } from './calendar/owners'
-import { PinDialog } from './home/HomeEditor'
 
 /** Wessen Termine gezeigt werden: alle, nur eine Person (mit Familie) oder nur die Familie. */
 type Focus = number | 'family' | null
@@ -42,8 +39,6 @@ export function CalendarPage() {
   const status = useCalendarStatus()
   const week = useCalendarWeek(offset, i18n.resolvedLanguage ?? i18n.language)
   const members = useMembers()
-  const { data: me } = useMe()
-  const [creating, setCreating] = useState<'pin' | 'form' | null>(null)
 
   if (status.data && !status.data.enabled) return <NothingSelected />
 
@@ -55,16 +50,9 @@ export function CalendarPage() {
           {data ? <WeekTitle week={data} /> : t('calendar.title')}
         </h1>
         <div className="ml-auto flex gap-2">
-          {data && data.writable_calendars.length > 0 && (
-            <Button
-              variant="secondary"
-              aria-label={t('calendar.new_event')}
-              title={t('calendar.new_event')}
-              onClick={() => setCreating(me?.parent_unlocked ? 'form' : 'pin')}
-              className="px-4"
-            >
-              <PlusIcon className="size-8" aria-hidden="true" />
-            </Button>
+          {data && (
+            // In der aktuellen Woche heute, sonst der Montag der angezeigten Woche.
+            <NewEventButton week={data} date={offset === 0 ? data.today : data.start} />
           )}
           <Button
             variant="secondary"
@@ -91,23 +79,6 @@ export function CalendarPage() {
           </Button>
         </div>
       </header>
-      {creating === 'pin' && (
-        <PinDialog
-          label={t('calendar.new_event')}
-          onUnlocked={() => setCreating('form')}
-          onCancel={() => setCreating(null)}
-        />
-      )}
-      {creating === 'form' && data && (
-        <EventForm
-          calendars={data.writable_calendars}
-          // In der aktuellen Woche heute, sonst der Montag der angezeigten Woche.
-          date={offset === 0 ? data.today : data.start}
-          timeZone={data.timezone}
-          familyColor={data.family_color}
-          onClose={() => setCreating(null)}
-        />
-      )}
       {data?.problem && (
         <p className="flex items-center gap-3 rounded-2xl bg-amber-100 px-4 py-3 text-lg font-semibold text-amber-900">
           <WarningIcon className="size-8 shrink-0" aria-hidden="true" />

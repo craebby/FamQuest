@@ -296,6 +296,111 @@ describe('Startseite „Heute“', () => {
     expect(await screen.findByRole('dialog', { name: 'Oma besuchen' })).toBeVisible()
   })
 
+  it('ändert und löscht Termine direkt auf der Startseite (mit Eltern-PIN)', async () => {
+    const user = userEvent.setup()
+    const event = makeEvent({ key: '5', editable: true })
+    const calls = mockHome({
+      extra: {
+        'GET /api/calendar/week': Response.json({
+          ...CALENDAR,
+          days: [{ date: '2026-10-03', holidays: [], events: [event] }],
+        }),
+        'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
+        'PUT /api/calendar/events/5': () => new Response(null, { status: 204 }),
+        'DELETE /api/calendar/events/5': () => new Response(null, { status: 204 }),
+      },
+    })
+    renderApp('/')
+
+    const openDialog = async () => {
+      const board = await region('Die nächsten sieben Tage')
+      await user.click(await board.findByRole('button', { name: /Schwimmen/ }))
+      return within(await screen.findByRole('dialog', { name: 'Schwimmen' }))
+    }
+
+    await user.click((await openDialog()).getByRole('button', { name: 'Termin bearbeiten' }))
+    for (const digit of ['1', '2', '3', '4']) {
+      await user.click(await screen.findByRole('button', { name: digit }))
+    }
+    await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+    const title = await screen.findByLabelText('Titel')
+    await user.clear(title)
+    await user.type(title, 'Schwimmkurs')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'PUT /api/calendar/events/5')?.body).toMatchObject({
+        title: 'Schwimmkurs',
+      })
+    })
+
+    await user.click((await openDialog()).getByRole('button', { name: 'Termin löschen' }))
+    for (const digit of ['1', '2', '3', '4']) {
+      await user.click(await screen.findByRole('button', { name: digit }))
+    }
+    await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+    expect(await screen.findByText(/wirklich löschen/)).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Termin löschen' }))
+    await vi.waitFor(() => {
+      expect(calls.some((call) => call.key === 'DELETE /api/calendar/events/5')).toBe(true)
+    })
+  })
+
+  it('legt über das Plus im Kopf einen Termin für eine Person an (mit Eltern-PIN)', async () => {
+    const user = userEvent.setup()
+    const source = { id: 8, name: 'Quelle', member_id: null, person_choices: [null, 1, 2] }
+    const calls = mockHome({
+      extra: {
+        'GET /api/calendar/week': Response.json({ ...CALENDAR, writable_calendars: [source] }),
+        'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
+        'POST /api/calendar/events': () => new Response(null, { status: 204 }),
+      },
+    })
+    renderApp('/')
+
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    for (const digit of ['1', '2', '3', '4']) {
+      await user.click(await screen.findByRole('button', { name: digit }))
+    }
+    await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+    await user.type(await screen.findByLabelText('Titel'), 'Zahnarzt')
+    await user.click(screen.getByRole('radio', { name: 'Papa' }))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'POST /api/calendar/events')?.body).toMatchObject({
+        calendar_id: 8,
+        member_id: 2,
+        title: 'Zahnarzt',
+        start_date: '2026-10-03',
+      })
+    })
+  })
+
+  it('zeigt das Plus nicht ohne Schreibzugriff und nicht ohne Termine auf der Startseite', async () => {
+    const source = { id: 8, name: 'Quelle', member_id: null, person_choices: [] }
+    const week = { ...CALENDAR, writable_calendars: [source] }
+    const tiles: Tile[] = DEFAULT_TILES.map((tile) => ({
+      ...tile,
+      visible: tile.id !== 'events',
+    }))
+
+    mockHome()
+    const { unmount } = renderApp('/')
+    expect(await screen.findByText('Schwimmen')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Neuer Termin' })).toBeNull()
+    unmount()
+
+    mockHome({
+      extra: {
+        'GET /api/calendar/week': Response.json(week),
+        'GET /api/home/layout': Response.json({ tiles, week: 'rolling' }),
+      },
+    })
+    renderApp('/')
+    expect(await screen.findByRole('button', { name: 'Startseite anpassen' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Neuer Termin' })).toBeNull()
+  })
+
   it('trägt das Essen direkt auf der Startseite ein', async () => {
     const user = userEvent.setup()
     const calls = mockHome({

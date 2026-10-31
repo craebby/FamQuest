@@ -469,7 +469,7 @@ keine persönlichen Daten). Steht dasselbe auch als ganztägiger Termin in einem
 den Ferien- bzw. Feiertagen aus, damit nichts doppelt steht. In Google bleibt er, wie er ist.
 
 **Termine ändern:** Mit der Eltern-PIN lassen sich Termine auch direkt in FamQuest anlegen,
-bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender legt
+bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender und auf „Heute“ legt
 einen Termin in einem der Kalender an, in die FamQuest schreiben darf; in den Details eines Termins
 stehen **Bearbeiten** und **Löschen**. Änderungen landen sofort im Google Kalender. Bei
 Serienterminen ändert sich nur der einzelne Termin, ganze Serien bearbeitet ihr im Google Kalender.
