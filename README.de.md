@@ -469,12 +469,12 @@ keine persönlichen Daten). Steht dasselbe auch als ganztägiger Termin in einem
 den Ferien- bzw. Feiertagen aus, damit nichts doppelt steht. In Google bleibt er, wie er ist.
 
 **Termine ändern:** Mit der Eltern-PIN lassen sich Termine auch direkt in FamQuest anlegen,
-bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender und auf „Heute“ legt
+bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender, auf „Heute“ und in der Küchenansicht legt
 einen Termin in einem der Kalender an, in die FamQuest schreiben darf; in den Details eines Termins
 stehen **Bearbeiten** und **Löschen**. Änderungen landen sofort im Google Kalender. Bei
 Serienterminen ändert sich nur der einzelne Termin, ganze Serien bearbeitet ihr im Google Kalender.
 Termine aus Kalendern, die sich nur lesen lassen (z. B. abonnierte), zeigen keine Knöpfe; bei
-Einladungen kann nur die einladende Person ändern. Die Küchenansicht zeigt Termine nur an.
+Einladungen kann nur die einladende Person ändern. In der Küchenansicht lassen sich vorhandene Termine nur ansehen.
 
 **Personen nach Farbe:** Pflegt ihr alle Termine in einem Kalender und erkennt die Person an der
 Terminfarbe? Dann ordnet ihr unter **Kalender & Wetter** beim Kalender mit **Farben zuordnen** jede

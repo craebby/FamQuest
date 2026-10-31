@@ -163,4 +163,71 @@ describe('Küchenansicht', () => {
       await screen.findByRole('navigation', { name: 'Seiten der Küchenansicht' }),
     ).toBeVisible()
   })
+
+  it('legt nur auf der ersten Seite neue Termine an; vorhandene bleiben nur lesbar', async () => {
+    const user = userEvent.setup()
+    const calendar = { id: 8, name: 'Familie', member_id: null, person_choices: [] }
+    const event = {
+      key: '5',
+      title: 'Schwimmen',
+      start: '2026-10-03T13:00:00Z',
+      end: '2026-10-03T14:00:00Z',
+      all_day: false,
+      location: null,
+      description: null,
+      calendars: ['Familie'],
+      member_ids: [],
+      family: true,
+      recurring: false,
+      editable: true,
+      person_choices: [],
+      icon: null,
+      continues_before: false,
+      continues_after: false,
+    }
+    const calls = mockKitchen(
+      {},
+      {
+        'GET /api/calendar/status': Response.json({ enabled: true }),
+        'GET /api/calendar/week': Response.json({
+          start: '2026-09-28',
+          today: '2026-10-03',
+          timezone: 'Europe/Berlin',
+          family_color: 'pink',
+          problem: false,
+          writable_calendars: [calendar],
+          days: [{ date: '2026-10-03', holidays: [], events: [event] }],
+        }),
+        'POST /api/parent/unlock': Response.json(makeMe({ parent_unlocked: true })),
+        'POST /api/calendar/events': () => new Response(null, { status: 204 }),
+      },
+    )
+    renderApp('/kitchen')
+
+    const week = await page('Termine und Essen')
+    await user.click(await week.findByRole('button', { name: /Schwimmen/ }))
+    const details = within(await screen.findByRole('dialog', { name: 'Schwimmen' }))
+    expect(details.queryByRole('button', { name: 'Termin bearbeiten' })).toBeNull()
+    expect(details.queryByRole('button', { name: 'Termin löschen' })).toBeNull()
+    await user.click(details.getByRole('button', { name: 'Schließen' }))
+
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    for (const digit of ['1', '2', '3', '4']) {
+      await user.click(await screen.findByRole('button', { name: digit }))
+    }
+    await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+    await user.type(await screen.findByLabelText('Titel'), 'Zahnarzt')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'POST /api/calendar/events')?.body).toMatchObject({
+        calendar_id: 8,
+        title: 'Zahnarzt',
+        start_date: '2026-10-03',
+      })
+    })
+
+    const tabs = within(screen.getByRole('navigation', { name: 'Seiten der Küchenansicht' }))
+    await user.click(tabs.getByRole('button', { name: 'Einkauf' }))
+    expect(screen.queryByRole('button', { name: 'Neuer Termin' })).toBeNull()
+  })
 })

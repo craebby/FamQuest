@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import GearIcon from '~icons/fluent-emoji-flat/gear'
 
 import { useLockParent, useMe } from '../api/auth'
-import { useCalendarStatus, useCalendarWeek } from '../api/calendar'
 import {
   DEFAULT_LAYOUT,
   type HomeLayout,
@@ -18,7 +17,7 @@ import { useIdleTimeout } from '../useIdleTimeout'
 import { useNow } from '../useNow'
 import { formatLongDate } from '../weekdays'
 import { PARENT_IDLE_TIMEOUT_MS } from './ParentsPage'
-import { NewEventButton } from './calendar/NewEventButton'
+import { NewEventToday } from './calendar/NewEventButton'
 import { ChoresWidget } from './home/ChoresWidget'
 import { HomeEditor, PinDialog } from './home/HomeEditor'
 import { RoutineWidget } from './home/RoutineWidget'
@@ -69,7 +68,7 @@ export function TodayPage() {
           <span className="sr-only">{t('home.time')}: </span>
           <time>{time}</time>
         </p>
-        {editing === null && shown.has('events') && <HeaderNewEvent />}
+        {editing === null && shown.has('events') && <NewEventToday />}
         {editing === null && layout.data && (
           <button
             type="button"
@@ -93,15 +92,6 @@ export function TodayPage() {
       <Sections shown={shown} week={current.week} today={today?.date} />
     </main>
   )
-}
-
-/** Plus im Kopf: neuer Termin ab heute, sobald ein Kalender verbunden ist. */
-function HeaderNewEvent() {
-  const { i18n } = useTranslation()
-  const status = useCalendarStatus()
-  const language = i18n.resolvedLanguage ?? i18n.language
-  const week = useCalendarWeek(0, language, status.data?.enabled ?? false).data
-  return week ? <NewEventButton week={week} date={week.today} /> : null
 }
 
 /** Bearbeiten mit Vorschau; beim Verlassen (auch nach Leerlauf) sperrt die Seite wieder. */

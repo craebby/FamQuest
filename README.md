@@ -460,12 +460,12 @@ offline; school holidays are loaded once a day from [OpenHolidays](https://www.o
 so nothing shows up twice. It stays as it is in Google.
 
 **Changing events:** with the parent PIN you can also create, edit and delete events directly in
-FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar and of "Today"
+FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar, "Today" and the kitchen view
 creates an event in one of the calendars FamQuest may write to; the details of an event offer
 **Edit** and **Delete**. Changes go to Google Calendar straight away. For a recurring event, only
 the single occurrence changes; whole series are changed in Google Calendar. Events in read-only
 calendars (subscribed calendars, for example) show no buttons, and for invitations only the
-organiser can change an event. The kitchen view only shows events.
+organiser can change an event. In the kitchen view, existing events can only be viewed.
 
 **People by color:** do you keep all events in one calendar and tell people apart by event color?
 Then use **Assign colors** on that calendar under **Calendar & weather** to give each color to a

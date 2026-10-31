@@ -3,10 +3,19 @@ import { useTranslation } from 'react-i18next'
 import PlusIcon from '~icons/fluent-emoji-flat/plus'
 
 import { useMe } from '../../api/auth'
-import type { CalendarWeek } from '../../api/calendar'
+import { type CalendarWeek, useCalendarStatus, useCalendarWeek } from '../../api/calendar'
 import { Button } from '../../components/ui'
 import { PinDialog } from '../home/HomeEditor'
 import { EventForm } from './EventForm'
+
+/** Plus im Kopf von „Heute“ und Küchenansicht: neuer Termin ab heute, wenn ein Kalender da ist. */
+export function NewEventToday() {
+  const { i18n } = useTranslation()
+  const status = useCalendarStatus()
+  const language = i18n.resolvedLanguage ?? i18n.language
+  const week = useCalendarWeek(0, language, status.data?.enabled ?? false).data
+  return week ? <NewEventButton week={week} date={week.today} /> : null
+}
 
 /** Plus für einen neuen Termin mit Eltern-PIN; ohne Kalender mit Schreibzugriff nicht sichtbar. */
 export function NewEventButton({ week, date }: { week: CalendarWeek; date: string }) {

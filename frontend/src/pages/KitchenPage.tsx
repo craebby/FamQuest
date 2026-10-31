@@ -15,6 +15,7 @@ import { useNow } from '../useNow'
 import { formatLongDate } from '../weekdays'
 import { ChoresPage } from './ChoresPage'
 import { ShoppingPage } from './ShoppingPage'
+import { NewEventToday } from './calendar/NewEventButton'
 import { NightScreen } from './frame/NightScreen'
 import { MealieOverlay } from './mealie/MealieFrame'
 import { isNightTime } from './frame/night'
@@ -119,6 +120,7 @@ export function KitchenPage() {
           <span className="sr-only">{t('home.time')}: </span>
           <time>{time}</time>
         </p>
+        {page === 0 && <NewEventToday />}
       </header>
 
       <div

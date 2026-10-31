@@ -190,7 +190,7 @@ Kinder, die nicht lesen können, erkennen ihre Termine im Kalender sonst nicht. 
 **Termine ändern** *(Phase 13, entschieden am 2026-10-31)*
 
 - Termine lassen sich in FamQuest anlegen, bearbeiten und löschen, nur mit der Eltern-PIN (serverseitig geprüft), damit Kinder nichts aus Versehen ändern. Berechtigung `calendar.events` zusätzlich zu `calendar.readonly`; ältere Verbindungen lesen weiter und zeigen im Elternbereich „Neu verbinden“.
-- Angeboten werden nur angezeigte Kalender mit Rolle `owner` oder `writer`. Das **+** steht in der Kalenderansicht und im Kopf von „Heute“, „Bearbeiten“ und „Löschen“ in den Termindetails (auch auf „Heute“); die Küchenansicht zeigt Termine nur an.
+- Angeboten werden nur angezeigte Kalender mit Rolle `owner` oder `writer`. Das **+** steht in der Kalenderansicht und im Kopf von „Heute“ und Küchenansicht, „Bearbeiten“ und „Löschen“ in den Termindetails (auch auf „Heute“); in der Küchenansicht lassen sich vorhandene Termine nur ansehen.
 - Bei Serien gilt alles nur für das eine Vorkommen, neue Serien gibt es nicht; ganze Serien bearbeitet man am Handy.
 - Geändert wird nur, was sich geändert hat, damit gekürzte oder von HTML befreite Beschreibungen das Original bei Google nicht überschreiben.
 - Steht ein Termin in mehreren Kalendern, gilt die Aktion für alle beschreibbaren Kopien; sie schlägt nur fehl, wenn keine klappt (bei Einladungen darf nur die einladende Person ändern).
