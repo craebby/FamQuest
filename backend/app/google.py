@@ -222,7 +222,7 @@ def revoke(connection: CalendarConnection) -> None:
 
 # Größte erlaubte Seite; die meisten Abrufe passen damit auf eine Seite.
 PAGE_SIZE = 2500
-_EVENT_FIELDS = "id,iCalUID,status,summary,location,description,start,end,recurringEventId"
+_EVENT_FIELDS = "id,iCalUID,status,summary,location,description,colorId,start,end,recurringEventId"
 # Gründe bei 403/429, nach denen es einfach später nochmal versucht wird.
 _RATE_LIMIT_REASONS = {"rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded"}
 

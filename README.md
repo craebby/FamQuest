@@ -467,6 +467,13 @@ the single occurrence changes; whole series are changed in Google Calendar. Even
 calendars (subscribed calendars, for example) show no buttons, and for invitations only the
 organiser can change an event. The kitchen view only shows events.
 
+**People by color:** do you keep all events in one calendar and tell people apart by event color?
+Then use **Assign colors** on that calendar under **Calendar & weather** to give each color to a
+person or hide it (for example the color for public holidays, which FamQuest already knows). A
+person can have several colors. Events without a color or an assignment follow “Belongs to” of the
+calendar. When creating or changing an event, FamQuest then asks “For whom?” and writes the person's
+color back to Google Calendar; with several colors, the first one.
+
 **Symbols for events:** children who can't read yet don't recognise their events by the title.
 Under **Calendar & weather → Symbols for events**, choose which words get a symbol: pick from
 about 20 suggestions (gymnastics, judo, riding, swimming, football, music lesson, playdate,

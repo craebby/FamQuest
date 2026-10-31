@@ -8,8 +8,12 @@ import {
   useCreateEvent,
   useUpdateEvent,
 } from '../../api/calendar'
+import { useMembers } from '../../api/members'
+import { Avatar } from '../../components/Avatar'
+import { FamilyAvatar } from '../../components/FamilyAvatar'
 import { Alert, Button, Switch, TextAreaField, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
+import { OwnerOption } from './OwnerOption'
 
 const DEFAULT_START = '09:00'
 const DEFAULT_END = '10:00'
@@ -82,17 +86,28 @@ export function EventForm({
   calendars = [],
   date = '',
   timeZone,
+  familyColor,
   onClose,
 }: {
   event?: WeekEvent
   calendars?: WritableCalendar[]
   date?: string
   timeZone: string
+  familyColor: string
   onClose: () => void
 }) {
   const { t } = useTranslation()
   const [input, setInput] = useState(() => initialInput(event, date, timeZone))
   const [calendarId, setCalendarId] = useState(calendars[0]?.id)
+  const members = useMembers().data ?? []
+  // Nur in Kalendern, die Personen über Farben unterscheiden.
+  const choices =
+    event?.person_choices ?? calendars.find((item) => item.id === calendarId)?.person_choices ?? []
+  const [chosen, setChosen] = useState<number | null | undefined>(
+    event ? (event.member_ids[0] ?? null) : undefined,
+  )
+  // Beim Wechsel des Kalenders gilt ohne eigene Wahl dessen Person.
+  const person = chosen !== undefined && choices.includes(chosen) ? chosen : (choices[0] ?? null)
   const create = useCreateEvent()
   const update = useUpdateEvent()
   const saving = event ? update : create
@@ -126,6 +141,7 @@ export function EventForm({
       description: input.description?.trim() || null,
       start_time: input.all_day ? null : input.start_time,
       end_time: input.all_day ? null : input.end_time,
+      ...(choices.length > 0 && { member_id: person }),
     }
     if (event) update.mutate({ id: event.key, input: payload }, { onSuccess: onClose })
     else if (calendarId) {
@@ -178,6 +194,38 @@ export function EventForm({
               ))}
             </select>
           </div>
+        )}
+        {choices.length > 0 && (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1.5 text-base font-bold text-slate-700">
+              {t('calendar.event_person')}
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {choices.map((choice) => {
+                const member = members.find((item) => item.id === choice)
+                return (
+                  <OwnerOption
+                    key={choice ?? 'family'}
+                    name="event-person"
+                    label={member?.name ?? t('calendar.family')}
+                    checked={person === choice}
+                    onSelect={() => setChosen(choice)}
+                  >
+                    {member ? (
+                      <Avatar
+                        name={member.name}
+                        color={member.color}
+                        src={member.avatar_url}
+                        size="xs"
+                      />
+                    ) : (
+                      <FamilyAvatar color={familyColor} size="xs" />
+                    )}
+                  </OwnerOption>
+                )
+              })}
+            </div>
+          </fieldset>
         )}
         <Switch
           checked={input.all_day}

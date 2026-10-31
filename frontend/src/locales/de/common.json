@@ -670,7 +670,26 @@
     "event_last_day": "Letzter Tag",
     "event_start_time": "Von",
     "event_end_time": "Bis",
-    "write_missing": "Neu verbinden, damit sich Termine in FamQuest anlegen und ändern lassen."
+    "write_missing": "Neu verbinden, damit sich Termine in FamQuest anlegen und ändern lassen.",
+    "colors_title": "Farben zuordnen",
+    "colors_hint": "Für Kalender, in denen die Farbe des Termins die Person zeigt. Termine ohne Farbe oder ohne Zuordnung gehören zu dem, was unter „Gehört zu“ steht. Beim Anlegen und Ändern schreibt FamQuest die Farbe der Person zurück, bei mehreren Farben die erste.",
+    "color_for": "{{color}} in {{name}}",
+    "color_default": "Wie der Kalender",
+    "color_hide": "Ausblenden",
+    "event_person": "Für wen?",
+    "google_colors": {
+      "1": "Lavendel",
+      "2": "Salbei",
+      "3": "Traube",
+      "4": "Flamingo",
+      "5": "Banane",
+      "6": "Mandarine",
+      "7": "Pfau",
+      "8": "Graphit",
+      "9": "Heidelbeere",
+      "10": "Basilikum",
+      "11": "Tomate"
+    }
   },
   "regions": {
     "BW": "Baden-Württemberg",

@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from typing import Literal
+from typing import Annotated, Literal
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, BackgroundTasks, Request, status
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import delete, exists, func, select
 
 from app import google
@@ -17,13 +17,21 @@ from app.auth import (
     unlock_parent_area,
     utcnow,
 )
+from app.calendar_colors import COLOR_IDS, ColorRules
 from app.calendar_sync import clear_events, refresh_calendar_list, sync_all
 from app.config import get_settings
 from app.demo_mode import NotInDemo
 from app.errors import ApiError
 from app.holidays import REGIONS
 from app.logs import logger
-from app.models import AuthSession, Calendar, CalendarConnection, FamilyMember, OAuthState
+from app.models import (
+    AuthSession,
+    Calendar,
+    CalendarColorRule,
+    CalendarConnection,
+    FamilyMember,
+    OAuthState,
+)
 from app.schemas import FamilyColor
 from app.security import new_token, token_hash
 
@@ -35,6 +43,12 @@ STATE_LIFETIME = timedelta(minutes=10)
 PARENTS_PAGE = "/parents/connections"
 
 
+class ColorRule(BaseModel):
+    color_id: Literal[COLOR_IDS]  # type: ignore[valid-type]
+    # None = Termine dieser Farbe ausblenden.
+    member_id: int | None
+
+
 class CalendarOut(BaseModel):
     id: int
     name: str
@@ -42,6 +56,7 @@ class CalendarOut(BaseModel):
     selected: bool
     # None = gehört der ganzen Familie (nur relevant, wenn ausgewählt).
     member_id: int | None
+    color_rules: list[ColorRule]
     synced_at: datetime | None
     # Fehlercode der letzten Synchronisation, z. B. `calendar.google_unreachable`.
     sync_error: str | None
@@ -81,6 +96,10 @@ class CalendarIn(BaseModel):
     member_id: int | None = None
 
 
+class ColorRulesIn(BaseModel):
+    rules: Annotated[list[ColorRule], Field(max_length=len(COLOR_IDS))]
+
+
 class FamilyColorIn(BaseModel):
     color: FamilyColor
 
@@ -111,6 +130,7 @@ def settings_out(request: Request, db: DbSession) -> CalendarSettingsOut:
         select(Calendar).order_by(Calendar.primary.desc(), func.lower(Calendar.name), Calendar.id)
     ).all()
     family = get_family(db)
+    rules = ColorRules(db)
     return CalendarSettingsOut(
         configured=get_settings().calendar_configured,
         redirect_uri=redirect_uri(request),
@@ -135,6 +155,12 @@ def settings_out(request: Request, db: DbSession) -> CalendarSettingsOut:
                         primary=calendar.primary,
                         selected=calendar.selected,
                         member_id=calendar.member_id,
+                        color_rules=[
+                            ColorRule(color_id=color_id, member_id=member_id)
+                            for color_id, member_id in sorted(
+                                rules.of(calendar.id).items(), key=lambda rule: int(rule[0])
+                            )
+                        ],
                         synced_at=calendar.synced_at,
                         sync_error=calendar.sync_error,
                     )
@@ -190,6 +216,31 @@ def update_calendar(
     if newly_selected and get_settings().calendar_configured:
         # Termine gleich laden, nicht erst beim nächsten Durchlauf im Hintergrund.
         background.add_task(sync_all)
+    return settings_out(request, db)
+
+
+@router.put("/calendars/{calendar_id}/colors")
+def set_color_rules(
+    calendar_id: int,
+    body: ColorRulesIn,
+    request: Request,
+    auth_session: ParentSession,
+    db: DbSession,
+) -> CalendarSettingsOut:
+    """Terminfarben eines Kalenders Personen zuordnen oder ausblenden; ersetzt alle Regeln."""
+    if db.get(Calendar, calendar_id) is None:
+        raise ApiError(status.HTTP_404_NOT_FOUND, "calendar.calendar_not_found")
+    rules = {rule.color_id: rule.member_id for rule in body.rules}
+    for member_id in set(rules.values()) - {None}:
+        if db.get(FamilyMember, member_id) is None:
+            raise ApiError(status.HTTP_404_NOT_FOUND, "member.not_found")
+
+    db.execute(delete(CalendarColorRule).where(CalendarColorRule.calendar_id == calendar_id))
+    db.add_all(
+        CalendarColorRule(calendar_id=calendar_id, color_id=color_id, member_id=member_id)
+        for color_id, member_id in rules.items()
+    )
+    db.commit()
     return settings_out(request, db)
 
 

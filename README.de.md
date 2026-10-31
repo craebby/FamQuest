@@ -476,6 +476,13 @@ Serienterminen ändert sich nur der einzelne Termin, ganze Serien bearbeitet ihr
 Termine aus Kalendern, die sich nur lesen lassen (z. B. abonnierte), zeigen keine Knöpfe; bei
 Einladungen kann nur die einladende Person ändern. Die Küchenansicht zeigt Termine nur an.
 
+**Personen nach Farbe:** Pflegt ihr alle Termine in einem Kalender und erkennt die Person an der
+Terminfarbe? Dann ordnet ihr unter **Kalender & Wetter** beim Kalender mit **Farben zuordnen** jede
+Farbe einer Person zu oder blendet sie aus (etwa die Farbe für Feiertage, die FamQuest selbst
+kennt). Eine Person kann mehrere Farben haben. Termine ohne Farbe oder ohne Zuordnung gehören zu dem,
+was beim Kalender unter „Gehört zu“ steht. Beim Anlegen und Ändern fragt FamQuest dann „Für wen?“ und
+schreibt die Farbe der Person in den Google Kalender zurück, bei mehreren Farben die erste.
+
 **Symbole für Termine:** Kinder, die noch nicht lesen, erkennen ihre Termine nicht am Titel. Unter
 **Kalender & Wetter → Symbole für Termine** legt ihr fest, welche Begriffe ein Symbol bekommen:
 aus rund 20 Vorschlägen ankreuzen (Turnen, Judo, Reiten, Schwimmen, Fußball, Musikschule,

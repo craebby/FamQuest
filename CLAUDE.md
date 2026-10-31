@@ -226,12 +226,15 @@ beim Eintragen; Single Sign-on erst später. Gearbeitet wird auf dem Branch `pha
 
 Entschieden: Termine anlegen, bearbeiten und löschen direkt in FamQuest, immer mit Eltern-PIN; nur in
 Kalendern mit Schreibrecht; bei Serien nur der einzelne Termin; die Küchenansicht zeigt Termine nur
-an. Das Zurückführen in den Hauptkalender ist Sache des eigenen Sync-Skripts, nicht von FamQuest.
+an. Personen lassen sich je Kalender auch über die Terminfarbe zuordnen (1 und 3 → eine Person,
+Farbe ausblenden), die Wahl im Terminformular geht als Farbe zurück; so liest und schreibt FamQuest
+direkt den Quellkalender, das eigene Sync-Skript muss nichts zurückführen.
 Gearbeitet wird auf dem Branch `phase-13-termine` (abgezweigt von `phase-12-mealie`).
 
 1. Termine ändern: Schreibzugriff (Neu verbinden im Elternbereich), **+** in der Kalenderansicht,
    Bearbeiten und Löschen in den Termindetails
-2. Feinschliff im Alltag
+2. Personen nach Terminfarbe: Farbe speichern, „Farben zuordnen“ je Kalender, Rückschreiben
+3. Feinschliff im Alltag
 
 ## Befehle
 

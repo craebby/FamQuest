@@ -4,6 +4,12 @@ import type { FamilyColor } from '../memberColors'
 import { api, apiGet } from './client'
 import { useParentMutation } from './mutations'
 
+/** Terminfarbe von Google (`1` bis `11`) → Person; `null`: Termine dieser Farbe ausblenden. */
+export interface ColorRule {
+  color_id: string
+  member_id: number | null
+}
+
 export interface Calendar {
   id: number
   name: string
@@ -12,6 +18,7 @@ export interface Calendar {
   selected: boolean
   /** `null`: gehört der ganzen Familie. */
   member_id: number | null
+  color_rules: ColorRule[]
   synced_at: string | null
   /** Fehlercode der letzten Synchronisation (übersetzt unter `errors.*`). */
   sync_error: string | null
@@ -89,6 +96,8 @@ export interface WeekEvent {
   recurring: boolean
   /** FamQuest darf den Termin ändern und löschen (immer mit Eltern-PIN). */
   editable: boolean
+  /** Wem der Termin per Farbe gehören kann (`null`: Familie); leer, wenn das keine Rolle spielt. */
+  person_choices: (number | null)[]
   /** Symbol zum Titel (Symbole für Termine), sonst `null`. */
   icon: string | null
   continues_before: boolean
@@ -101,6 +110,8 @@ export interface WritableCalendar {
   name: string
   /** `null`: gehört der ganzen Familie. */
   member_id: number | null
+  /** Wem ein neuer Termin per Farbe gehören kann (`null`: Familie); sonst leer. */
+  person_choices: (number | null)[]
 }
 
 export interface CalendarWeek {
@@ -243,6 +254,12 @@ export const useUpdateCalendar = () =>
       }),
   )
 
+/** Ersetzt alle Regeln des Kalenders. */
+export const useSetColorRules = () =>
+  useSettingsMutation(({ id, rules }: { id: number; rules: ColorRule[] }) =>
+    api<CalendarSettings>('PUT', `/calendar/calendars/${id}/colors`, { rules }),
+  )
+
 export const useSetFamilyColor = () =>
   useSettingsMutation((color: FamilyColor) =>
     api<CalendarSettings>('PUT', '/calendar/family-color', { color }),
@@ -267,6 +284,8 @@ export interface EventInput {
   end_date: string
   start_time: string | null
   end_time: string | null
+  /** Wem der Termin gehört (`null`: Familie); nur bei Kalendern mit Farben. */
+  member_id?: number | null
 }
 
 const EVENT_KEYS = [CALENDAR_WEEK_KEY, CALENDAR_UPCOMING_KEY]

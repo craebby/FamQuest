@@ -36,6 +36,7 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     family: false,
     recurring: false,
     editable: false,
+    person_choices: [],
     icon: null,
     continues_before: false,
     continues_after: false,
@@ -300,7 +301,7 @@ describe('Kalender (Woche)', () => {
 })
 
 describe('Termine ändern', () => {
-  const CALENDAR = { id: 7, name: 'Lena', member_id: 1 }
+  const CALENDAR = { id: 7, name: 'Lena', member_id: 1, person_choices: [] }
   const editable = () => makeEvent({ key: '5', location: 'Halle', editable: true })
 
   function mockWrites(week: CalendarWeek, unlocked = false) {
@@ -367,6 +368,45 @@ describe('Termine ändern', () => {
       })
     })
     expect(calls.some((call) => call.key === 'POST /api/parent/unlock')).toBe(true)
+  })
+
+  it('fragt in Kalendern mit Farben nach der Person', async () => {
+    const user = userEvent.setup()
+    const source = { id: 8, name: 'Quelle', member_id: null, person_choices: [null, 1, 2] }
+    const calls = mockWrites(makeWeek([], { writable_calendars: [source] }), true)
+    renderApp('/calendar')
+
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    await user.type(await screen.findByLabelText('Titel'), 'Zahnarzt')
+    expect(screen.getByRole('radio', { name: 'Familie' })).toBeChecked()
+    await user.click(screen.getByRole('radio', { name: 'Papa' }))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'POST /api/calendar/events')?.body).toMatchObject({
+        calendar_id: 8,
+        member_id: 2,
+      })
+    })
+  })
+
+  it('ändert die Person eines Termins', async () => {
+    const user = userEvent.setup()
+    const event = makeEvent({ key: '5', editable: true, person_choices: [null, 1, 2] })
+    const calls = mockWrites(makeWeek([event]), true)
+    renderApp('/calendar')
+
+    const dialog = await openEvent(user)
+    await user.click(dialog.getByRole('button', { name: 'Termin bearbeiten' }))
+    expect(await screen.findByRole('radio', { name: 'Lena' })).toBeChecked()
+    await user.click(screen.getByRole('radio', { name: 'Familie' }))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    await vi.waitFor(() => {
+      expect(calls.find((call) => call.key === 'PUT /api/calendar/events/5')?.body).toMatchObject({
+        member_id: null,
+      })
+    })
   })
 
   it('fragt nicht erneut, wenn der Elternbereich schon entsperrt ist', async () => {

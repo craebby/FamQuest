@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy import Select, and_, or_, select
 
 from app.auth import CurrentSession, DbSession, get_family
+from app.calendar_colors import ColorRules
 from app.calendar_sync import local_midnight
 from app.event_symbols import SymbolMatcher
 from app.holidays import Holiday, holidays_between, repeats_holiday
@@ -51,6 +52,8 @@ class WeekEventOut(BaseModel):
     recurring: bool
     # FamQuest darf den Termin ändern und löschen.
     editable: bool
+    # Wem der Termin per Farbe gehören kann (None = Familie); leer, wenn das keine Rolle spielt.
+    person_choices: list[int | None]
     # Symbol zum Titel (siehe app/event_symbols.py), falls eine der Personen Symbole bekommt.
     icon: str | None
     # Begann vor diesem Tag bzw. geht über ihn hinaus.
@@ -75,6 +78,8 @@ class WritableCalendarOut(BaseModel):
     name: str
     # None = gehört der ganzen Familie.
     member_id: int | None
+    # Wem ein neuer Termin per Farbe gehören kann (None = Familie); sonst leer.
+    person_choices: list[int | None]
 
 
 class WeekOut(BaseModel):
@@ -132,6 +137,7 @@ class _Merged:
         self.member_ids: set[int] = set()
         self.family = False
         self.editable = False
+        self.person_choices: list[int | None] = []
         self.calendars: list[str] = []
 
 
@@ -152,6 +158,7 @@ def week(
 
     merged = _merged_events(db, start, end, range_start, range_end)
     people = _People(db, family.event_symbols)
+    rules = ColorRules(db)
     holidays = holidays_between(db, family, start, end, lang or family.default_language)
     known = _holiday_names(db, family, start, end)
     days = []
@@ -188,7 +195,9 @@ def week(
         family_color=family.calendar_color,
         problem=_has_problem(db),
         writable_calendars=[
-            WritableCalendarOut(id=c.id, name=c.name, member_id=c.member_id)
+            WritableCalendarOut(
+                id=c.id, name=c.name, member_id=c.member_id, person_choices=rules.choices(c)
+            )
             for c in db.scalars(writable_calendars().order_by(Calendar.name, Calendar.id))
         ],
         days=days,
@@ -275,10 +284,11 @@ def _merged_events(
 ) -> list[_Merged]:
     """Termine ausgewählter Kalender, die in den Zeitraum fallen; doppelte zusammengeführt.
 
-    Ganztägige zählen nach Datum (`start` bis `end` exklusiv), andere nach Zeitpunkt.
+    Ganztägige zählen nach Datum (`start` bis `end` exklusiv), andere nach Zeitpunkt. Die Person
+    ergibt sich aus Kalender und Farbe, ausgeblendete Farben fehlen.
     """
     rows = db.execute(
-        select(CalendarEvent, Calendar.member_id, Calendar.name)
+        select(CalendarEvent, Calendar)
         .join(Calendar, CalendarEvent.calendar_id == Calendar.id)
         .where(
             Calendar.selected,
@@ -300,20 +310,26 @@ def _merged_events(
     ).all()
 
     writable = set(db.scalars(writable_calendars().with_only_columns(Calendar.id)))
+    rules = ColorRules(db)
     merged: dict[tuple, _Merged] = {}
-    for event, member_id, calendar_name in rows:
+    for event, calendar in rows:
+        if rules.hidden(calendar.id, event.color_id):
+            continue
         times = (
             (event.start_date, event.end_date) if event.all_day else (event.start_at, event.end_at)
         )
         key = (event.ical_uid or f"event:{event.id}", event.all_day, *times)
         entry = merged.setdefault(key, _Merged(event))
-        entry.editable = entry.editable or event.calendar_id in writable
+        if calendar.id in writable:
+            entry.editable = True
+            entry.person_choices = entry.person_choices or rules.choices(calendar)
+        member_id = rules.member(calendar, event.color_id)
         if member_id is None:
             entry.family = True
         else:
             entry.member_ids.add(member_id)
-        if calendar_name not in entry.calendars:
-            entry.calendars.append(calendar_name)
+        if calendar.name not in entry.calendars:
+            entry.calendars.append(calendar.name)
         # Aus mehreren Kalendern die ausführlichste Fassung zeigen.
         if (entry.event.title is None and event.title) or (
             entry.event.description is None and event.description
@@ -360,6 +376,7 @@ def _event_on_day(
         family=entry.family,
         recurring=event.recurring,
         editable=entry.editable,
+        person_choices=entry.person_choices,
         icon=people.icon_for(entry),
         continues_before=before,
         continues_after=after,

@@ -413,6 +413,21 @@ class Calendar(Base):
     connection: Mapped[CalendarConnection] = relationship(lazy="joined")
 
 
+class CalendarColorRule(Base):
+    """Eine Terminfarbe eines Kalenders gehört einer Person (siehe app.calendar_colors)."""
+
+    __tablename__ = "calendar_color_rules"
+
+    calendar_id: Mapped[int] = mapped_column(
+        ForeignKey("calendars.id", ondelete="CASCADE"), primary_key=True
+    )
+    color_id: Mapped[str] = mapped_column(String(8), primary_key=True)
+    # Ohne Person: Termine dieser Farbe werden ausgeblendet. Geht die Person, geht auch die Regel.
+    member_id: Mapped[int | None] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE")
+    )
+
+
 class CalendarEvent(Base):
     """Termin eines ausgewählten Kalenders im geladenen Zeitraum.
 
@@ -442,6 +457,8 @@ class CalendarEvent(Base):
     location: Mapped[str | None] = mapped_column(String(500))
     # Als reiner Text (HTML aus Google wird beim Abruf entfernt).
     description: Mapped[str | None] = mapped_column(Text)
+    # Terminfarbe bei Google ("1" bis "11"); ohne eigene Farbe None.
+    color_id: Mapped[str | None] = mapped_column(String(8))
     all_day: Mapped[bool]
     start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

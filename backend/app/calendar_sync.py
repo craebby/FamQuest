@@ -72,6 +72,7 @@ def parse_event(item: dict) -> dict | None:
         "title": (item.get("summary") or "").strip()[:TITLE_MAX_LENGTH] or None,
         "location": (item.get("location") or "").strip()[:TITLE_MAX_LENGTH] or None,
         "description": plain_text(item.get("description"), DESCRIPTION_MAX_LENGTH),
+        "color_id": item.get("colorId"),
     }
     try:
         if "date" in start:

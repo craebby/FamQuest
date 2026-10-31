@@ -191,6 +191,43 @@ describe('Kalender im Elternbereich', () => {
     })
   })
 
+  it('ordnet Farben Personen zu und blendet sie aus', async () => {
+    const user = userEvent.setup()
+    const settings = withCalendars([
+      makeCalendar({
+        id: 1,
+        name: 'Quelle',
+        selected: true,
+        color_rules: [{ color_id: '7', member_id: 2 }],
+      }),
+    ])
+    const calls = mockParents(settings, {
+      'GET /api/members': Response.json([
+        makeMember(),
+        makeMember({ id: 2, name: 'Papa', role: 'parent', color: 'blue' }),
+      ]),
+      'PUT /api/calendar/calendars/1/colors': Response.json(settings),
+    })
+    renderApp('/parents/connections')
+
+    const section = await calendarSection()
+    await user.click(await section.findByText('Farben zuordnen'))
+    const tomato = section.getByRole('combobox', { name: 'Tomate in Quelle' })
+    expect(tomato).toHaveValue('')
+    expect(section.getByRole('combobox', { name: 'Pfau in Quelle' })).toHaveValue('2')
+
+    await user.selectOptions(tomato, 'Ausblenden')
+
+    expect(calls.find((call) => call.key === 'PUT /api/calendar/calendars/1/colors')?.body).toEqual(
+      {
+        rules: [
+          { color_id: '7', member_id: 2 },
+          { color_id: '11', member_id: null },
+        ],
+      },
+    )
+  })
+
   it('zeigt Fehler der Synchronisation am Kalender', async () => {
     mockParents(
       withCalendars([
@@ -245,6 +282,7 @@ function makeCalendar(overrides: Partial<Calendar> = {}): Calendar {
     primary: true,
     selected: false,
     member_id: null,
+    color_rules: [],
     synced_at: '2026-09-25T10:00:00Z',
     sync_error: null,
     ...overrides,

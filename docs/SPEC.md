@@ -196,6 +196,15 @@ Kinder, die nicht lesen können, erkennen ihre Termine im Kalender sonst nicht. 
 - Steht ein Termin in mehreren Kalendern, gilt die Aktion für alle beschreibbaren Kopien; sie schlägt nur fehl, wenn keine klappt (bei Einladungen darf nur die einladende Person ändern).
 - Bewusst nicht: Termin in einen anderen Kalender verschieben, Gäste, Erinnerungen. Eigene Sync-Skripte zwischen Kalendern liegen außerhalb von FamQuest.
 
+**Personen nach Terminfarbe** *(Phase 13, entschieden am 2026-10-31)*
+
+Manche Familien pflegen alle Termine in einem Kalender und erkennen die Person an der Farbe. Damit das ohne Hilfskalender geht:
+
+- Die Terminfarbe von Google (`colorId` 1–11) wird mit jedem Termin gespeichert.
+- Im Elternbereich lässt sich je angezeigtem Kalender unter „Farben zuordnen“ jede Farbe einer Person zuordnen oder ausblenden. Eine Person kann mehrere Farben haben. Termine ohne Farbe oder ohne Zuordnung gehören der Person des Kalenders bzw. der Familie.
+- Die Regeln gelten beim Anzeigen, Änderungen wirken sofort und ohne neuen Abruf. Ausgeblendete Termine fehlen überall, wo Termine stehen.
+- Ist einer Farbe mindestens eine Person zugeordnet, fragt das Terminformular „Für wen?“ und schreibt die Wahl als Farbe zurück: bei mehreren Farben die kleinste Nummer, für die Person des Kalenders wird die Farbe entfernt. Gehört der Termin der Person schon (z. B. zweite Farbe), bleibt die Farbe unverändert.
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -443,7 +452,8 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | RewardRedemption | Einlösung | Reward, Person, Status, Zeitpunkt |
 | CalendarConnection | Phase 2 | OAuth-Verbindung: Konto, Tokens verschlüsselt, Status, Schreibzugriff erlaubt |
 | Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Rolle des Kontos, Sync-Stand |
-| CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine mit Kennzeichen), ganztägig oder mit Uhrzeit |
+| CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine mit Kennzeichen), ganztägig oder mit Uhrzeit, Terminfarbe |
+| CalendarColorRule | Phase 13 | Terminfarbe eines Kalenders → Person; ohne Person ausgeblendet |
 | Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
 | Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol, optional eigenes Foto (512 × 512 WebP) |
 | MealPlanEntry | Phase 5 | Gericht an einem Tag zu einer Mahlzeit (Frühstück, Mittag, Abend, Snack); höchstens eins je Tag und Mahlzeit |

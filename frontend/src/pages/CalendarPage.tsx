@@ -104,6 +104,7 @@ export function CalendarPage() {
           // In der aktuellen Woche heute, sonst der Montag der angezeigten Woche.
           date={offset === 0 ? data.today : data.start}
           timeZone={data.timezone}
+          familyColor={data.family_color}
           onClose={() => setCreating(null)}
         />
       )}

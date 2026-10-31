@@ -67,6 +67,7 @@ const UPCOMING: CalendarUpcoming = {
       family: false,
       recurring: false,
       editable: false,
+      person_choices: [],
       icon: null,
       continues_before: false,
       continues_after: false,

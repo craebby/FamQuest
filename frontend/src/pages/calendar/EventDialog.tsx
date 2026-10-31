@@ -116,7 +116,9 @@ export function EventDialog({
     )
   }
   if (action === 'edit') {
-    return <EventForm event={event} timeZone={timeZone} onClose={onClose} />
+    return (
+      <EventForm event={event} timeZone={timeZone} familyColor={familyColor} onClose={onClose} />
+    )
   }
 
   return (

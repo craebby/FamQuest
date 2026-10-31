@@ -3,7 +3,8 @@
 Die Änderung geht zuerst an Google und landet dann gleich in der eigenen Tabelle, damit sie
 sofort sichtbar ist; die nächste Synchronisation gleicht alles Übrige ab. Steht ein Termin in
 mehreren Kalendern (z. B. Einladung an beide Eltern), wird er überall geändert, wo FamQuest
-schreiben darf. Bei Serien gilt alles nur für das eine Vorkommen.
+schreiben darf. Bei Serien gilt alles nur für das eine Vorkommen. Unterscheidet ein Kalender die
+Personen über Farben, wird die gewählte Person als Farbe zurückgeschrieben.
 """
 
 import datetime as dt
@@ -20,6 +21,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app import google
 from app.api.calendar_week import writable_calendars
 from app.auth import DbSession, ParentSession, get_family, utcnow
+from app.calendar_colors import ColorRules
 from app.calendar_sync import DESCRIPTION_MAX_LENGTH, TITLE_MAX_LENGTH, parse_event
 from app.demo_mode import NotInDemo
 from app.errors import ApiError
@@ -47,6 +49,9 @@ class EventIn(BaseModel):
     # Uhrzeiten in der Zeitzone der Familie; bei ganztägigen Terminen ohne Bedeutung.
     start_time: dt.time | None = None
     end_time: dt.time | None = None
+    # Wem der Termin gehört (None = Familie), siehe app.calendar_colors. Fehlt das Feld, bleibt
+    # die Farbe, wie sie ist.
+    member_id: int | None = None
 
     @model_validator(mode="after")
     def check_times(self) -> Self:
@@ -151,7 +156,7 @@ def _token(db: DbSession, calendar: Calendar) -> str:
 def _at_google(
     db: DbSession,
     copies: list[CalendarEvent],
-    action: Callable[[str, str, str], dict | None],
+    action: Callable[[str, Calendar, CalendarEvent], dict | None],
 ) -> list[tuple[CalendarEvent, dict | None]]:
     """Führt die Änderung je Kopie aus. Sie gilt als gescheitert, wenn keine Kopie klappt: Bei
     Einladungen darf nur die einladende Person ändern, und die Änderung erreicht alle Gäste."""
@@ -160,7 +165,7 @@ def _at_google(
     for copy in copies:
         calendar = db.get(Calendar, copy.calendar_id)
         try:
-            result = action(_token(db, calendar), calendar.external_id, copy.external_id)
+            result = action(_token(db, calendar), calendar, copy)
         except google.GoogleError as exc:
             failure = failure or exc
         else:
@@ -180,6 +185,8 @@ def create_event(body: EventCreate, _: ParentSession, db: DbSession) -> None:
         "summary": body.title,
         **body.google_times(ZoneInfo(get_family(db).timezone)),
     }
+    if "member_id" in body.model_fields_set:
+        request.update(ColorRules(db).color_change(calendar, None, body.member_id))
     if body.location:
         request["location"] = body.location
     if body.description:
@@ -202,24 +209,36 @@ def create_event(body: EventCreate, _: ParentSession, db: DbSession) -> None:
 @router.put("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[NotInDemo])
 def update_event(event_id: int, body: EventIn, _: ParentSession, db: DbSession) -> None:
     copies, allowed = _copies(db, event_id)
-    changes = _changes(db.get(CalendarEvent, event_id), body, ZoneInfo(get_family(db).timezone))
-    if not changes:
+    shared = _changes(db.get(CalendarEvent, event_id), body, ZoneInfo(get_family(db).timezone))
+    rules = ColorRules(db)
+    # Die Farbe gilt je Kalender, die übrigen Änderungen für alle Kopien.
+    changes = {copy.id: dict(shared) for copy in allowed}
+    if "member_id" in body.model_fields_set:
+        for copy in allowed:
+            calendar = db.get(Calendar, copy.calendar_id)
+            changes[copy.id].update(rules.color_change(calendar, copy.color_id, body.member_id))
+    pending = [copy for copy in allowed if changes[copy.id]]
+    if not pending:
         return
     done = _at_google(
         db,
-        allowed,
-        lambda token, calendar, event: google.update_event(token, calendar, event, changes),
+        pending,
+        lambda token, calendar, copy: google.update_event(
+            token, calendar.external_id, copy.external_id, changes[copy.id]
+        ),
     )
 
     fields = parse_event(done[0][1] or {})
     if fields:
         # Auch Kopien, in die FamQuest nicht schreibt: Sonst stünde der Termin bis zur nächsten
-        # Synchronisation doppelt da. Die Kennungen bleiben je Kalender verschieden.
-        del fields["external_id"], fields["ical_uid"]
+        # Synchronisation doppelt da. Die Kennungen und Farben bleiben je Kalender verschieden.
+        del fields["external_id"], fields["ical_uid"], fields["color_id"]
         for copy in copies:
             copy.start_date = copy.end_date = copy.start_at = copy.end_at = None
             for name, value in fields.items():
                 setattr(copy, name, value)
+    for copy, result in done:
+        copy.color_id = (result or {}).get("colorId")
     db.commit()
     logger.info("Termin %s geändert", event_id)
 
@@ -229,7 +248,14 @@ def update_event(event_id: int, body: EventIn, _: ParentSession, db: DbSession) 
 )
 def delete_event(event_id: int, _: ParentSession, db: DbSession) -> None:
     allowed = _copies(db, event_id)[1]
-    for copy, _result in _at_google(db, allowed, google.delete_event):
+    done = _at_google(
+        db,
+        allowed,
+        lambda token, calendar, copy: google.delete_event(
+            token, calendar.external_id, copy.external_id
+        ),
+    )
+    for copy, _result in done:
         db.delete(copy)
     db.commit()
     logger.info("Termin %s gelöscht", event_id)

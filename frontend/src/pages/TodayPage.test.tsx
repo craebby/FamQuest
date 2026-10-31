@@ -68,6 +68,7 @@ function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
     family: false,
     recurring: false,
     editable: false,
+    person_choices: [],
     icon: null,
     continues_before: false,
     continues_after: false,

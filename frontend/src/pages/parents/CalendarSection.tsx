@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import RefreshIcon from '~icons/fluent-emoji-flat/counterclockwise-arrows-button'
@@ -9,12 +9,14 @@ import WarningIcon from '~icons/fluent-emoji-flat/warning'
 import {
   type Calendar,
   type CalendarConnection,
+  type ColorRule,
   HOLIDAY_REGIONS,
   type HolidayRegion,
   type HolidaySettings,
   useCalendarSettings,
   useConnectGoogle,
   useDisconnectCalendar,
+  useSetColorRules,
   useSetFamilyColor,
   useSetHolidays,
   useSyncCalendars,
@@ -26,6 +28,12 @@ import { FamilyAvatar } from '../../components/FamilyAvatar'
 import { Alert, Button, Section, Switch } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { COLOR_TOKENS, FAMILY_COLORS, type FamilyColor } from '../../memberColors'
+import { GOOGLE_COLORS } from '../calendar/googleColors'
+import { OwnerOption } from '../calendar/OwnerOption'
+
+// Werte der Auswahl je Farbe; alle anderen sind Personen-Ids.
+const DEFAULT_RULE = ''
+const HIDE_RULE = 'hide'
 
 /**
  * Google-Konten verbinden und trennen (nur lesender Zugriff), Kalender auswählen und einer
@@ -44,6 +52,7 @@ export function CalendarSection({
   const connect = useConnectGoogle()
   const disconnect = useDisconnectCalendar()
   const update = useUpdateCalendar()
+  const setColorRules = useSetColorRules()
   const setFamilyColor = useSetFamilyColor()
   const sync = useSyncCalendars()
   const setHolidays = useSetHolidays()
@@ -52,9 +61,16 @@ export function CalendarSection({
 
   const data = settings.data
   const anySelected = data?.connections.some((c) => c.calendars.some((cal) => cal.selected))
-  const errors = [settings, connect, disconnect, update, setFamilyColor, sync, setHolidays].filter(
-    (request) => request.isError,
-  )
+  const errors = [
+    settings,
+    connect,
+    disconnect,
+    update,
+    setColorRules,
+    setFamilyColor,
+    sync,
+    setHolidays,
+  ].filter((request) => request.isError)
   return (
     <Section title={t('calendar.section')}>
       {errors.map((request, index) => (
@@ -90,7 +106,7 @@ export function CalendarSection({
                     members={members}
                     familyColor={data.family_color}
                     busy={connect.isPending || disconnect.isPending}
-                    updating={update.isPending}
+                    updating={update.isPending || setColorRules.isPending}
                     onReconnect={() => connect.mutate()}
                     onDisconnect={() =>
                       disconnect.mutate(connection.id, {
@@ -99,6 +115,9 @@ export function CalendarSection({
                     }
                     onChange={(calendar, selected, memberId) =>
                       update.mutate({ id: calendar.id, selected, memberId })
+                    }
+                    onColorRules={(calendar, rules) =>
+                      setColorRules.mutate({ id: calendar.id, rules })
                     }
                   />
                 ))}
@@ -156,6 +175,7 @@ function ConnectionRow({
   onReconnect,
   onDisconnect,
   onChange,
+  onColorRules,
 }: {
   connection: CalendarConnection
   members: Member[]
@@ -165,6 +185,7 @@ function ConnectionRow({
   onReconnect: () => void
   onDisconnect: () => void
   onChange: (calendar: Calendar, selected: boolean, memberId: number | null) => void
+  onColorRules: (calendar: Calendar, rules: ColorRule[]) => void
 }) {
   const { t } = useTranslation()
   const [confirming, setConfirming] = useState(false)
@@ -199,6 +220,7 @@ function ConnectionRow({
               familyColor={familyColor}
               disabled={updating}
               onChange={(selected, memberId) => onChange(calendar, selected, memberId)}
+              onColorRules={(rules) => onColorRules(calendar, rules)}
             />
           ))}
         </ul>
@@ -242,12 +264,14 @@ function CalendarRow({
   familyColor,
   disabled,
   onChange,
+  onColorRules,
 }: {
   calendar: Calendar
   members: Member[]
   familyColor: FamilyColor
   disabled: boolean
   onChange: (selected: boolean, memberId: number | null) => void
+  onColorRules: (rules: ColorRule[]) => void
 }) {
   const { t } = useTranslation()
   const owner = members.find((member) => member.id === calendar.member_id)
@@ -308,6 +332,12 @@ function CalendarRow({
               ))}
             </div>
           </fieldset>
+          <ColorRules
+            calendar={calendar}
+            members={members}
+            disabled={disabled}
+            onChange={onColorRules}
+          />
           <SyncState calendar={calendar} />
         </>
       )}
@@ -315,36 +345,63 @@ function CalendarRow({
   )
 }
 
-function OwnerOption({
-  name,
-  label,
-  checked,
+function ColorRules({
+  calendar,
+  members,
   disabled,
-  onSelect,
-  children,
+  onChange,
 }: {
-  name: string
-  label: string
-  checked: boolean
+  calendar: Calendar
+  members: Member[]
   disabled: boolean
-  onSelect: () => void
-  children: ReactNode
+  onChange: (rules: ColorRule[]) => void
 }) {
+  const { t } = useTranslation()
+  const rules = new Map(calendar.color_rules.map((rule) => [rule.color_id, rule.member_id]))
+
+  const change = (colorId: string, value: string) => {
+    const others = calendar.color_rules.filter((rule) => rule.color_id !== colorId)
+    if (value === DEFAULT_RULE) return onChange(others)
+    const memberId = value === HIDE_RULE ? null : Number(value)
+    onChange([...others, { color_id: colorId, member_id: memberId }])
+  }
+
   return (
-    <label className="cursor-pointer has-disabled:cursor-not-allowed">
-      <input
-        type="radio"
-        name={name}
-        checked={checked}
-        disabled={disabled}
-        onChange={onSelect}
-        className="peer sr-only"
-      />
-      <span className="flex min-h-12 items-center gap-2 rounded-full bg-slate-50 py-1 pr-4 pl-1 text-base font-bold text-slate-700 ring-2 ring-slate-200 peer-checked:bg-orange-50 peer-checked:ring-4 peer-checked:ring-slate-800 peer-focus-visible:outline-4 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange-400">
-        {children}
-        {label}
-      </span>
-    </label>
+    <details className="text-base text-slate-700">
+      <summary className="cursor-pointer py-2 font-bold">{t('calendar.colors_title')}</summary>
+      <p className="mb-3 text-slate-500">{t('calendar.colors_hint')}</p>
+      <ul className="flex flex-col gap-2">
+        {GOOGLE_COLORS.map(({ id, hex }) => {
+          const name = t(`calendar.google_colors.${id}`)
+          const rule = rules.get(id)
+          return (
+            <li key={id} className="flex items-center gap-3">
+              <span
+                className="size-8 shrink-0 rounded-full"
+                style={{ backgroundColor: hex }}
+                aria-hidden="true"
+              />
+              <span className="min-w-28 font-semibold">{name}</span>
+              <select
+                aria-label={t('calendar.color_for', { color: name, name: calendar.name })}
+                value={rule === undefined ? DEFAULT_RULE : rule === null ? HIDE_RULE : rule}
+                disabled={disabled}
+                onChange={(event) => change(id, event.target.value)}
+                className="min-h-12 min-w-0 flex-1 rounded-2xl border-2 border-slate-200 bg-white px-3 text-base outline-none focus:border-orange-400"
+              >
+                <option value={DEFAULT_RULE}>{t('calendar.color_default')}</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+                <option value={HIDE_RULE}>{t('calendar.color_hide')}</option>
+              </select>
+            </li>
+          )
+        })}
+      </ul>
+    </details>
   )
 }
 

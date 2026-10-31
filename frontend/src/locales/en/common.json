@@ -670,7 +670,26 @@
     "event_last_day": "Last day",
     "event_start_time": "From",
     "event_end_time": "To",
-    "write_missing": "Reconnect to create and change events in FamQuest."
+    "write_missing": "Reconnect to create and change events in FamQuest.",
+    "colors_title": "Assign colors",
+    "colors_hint": "For calendars where an event's color shows the person. Events without a color or without an assignment follow “Belongs to”. When creating or changing an event, FamQuest writes the person's color back; with several colors, the first one.",
+    "color_for": "{{color}} in {{name}}",
+    "color_default": "Same as calendar",
+    "color_hide": "Hide",
+    "event_person": "For whom?",
+    "google_colors": {
+      "1": "Lavender",
+      "2": "Sage",
+      "3": "Grape",
+      "4": "Flamingo",
+      "5": "Banana",
+      "6": "Tangerine",
+      "7": "Peacock",
+      "8": "Graphite",
+      "9": "Blueberry",
+      "10": "Basil",
+      "11": "Tomato"
+    }
   },
   "regions": {
     "BW": "Baden-Württemberg",
