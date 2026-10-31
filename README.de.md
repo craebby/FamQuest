@@ -10,12 +10,12 @@ Self-hosted, zweisprachige (Deutsch/Englisch) Familien-App für ein Touchscreen-
 Eine Installation gehört genau einer Familie. Alles läuft lokal in Docker, ohne Cloud-Dienste und
 ohne externe CDNs. Die vollständige Spezifikation steht in [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** Version 1.3. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
+> **Status:** Version 1.4. Enthält das Aufgabensystem (Routinen, Familienansicht, Punkte,
 > Belohnungen, Kontrolle durch die Eltern), den Google Kalender, die Startseite „Heute“
 > als Wochen-Dashboard mit Wetter, den Bilderrahmen mit Nachtmodus, den Essensplan, die
 > Einkaufsliste, den Haushalt (Putzplan mit Ampel, „Zu erledigen“), die Küchenansicht fürs
-> kleine Tablet, Rezepte und die Einkaufsliste als installierbare App, die im Laden auch ohne Netz
-> funktioniert. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
+> kleine Tablet, Rezepte mit optionaler Mealie-Anbindung und die Einkaufsliste als installierbare
+> App, die im Laden auch ohne Netz funktioniert und sich nach Läden sortiert. Der Feinschliff läuft im Alltag weiter (siehe [Roadmap](#roadmap)).
 
 **Ausprobieren ohne Installation:** [demo-de.kaufmann.city](https://demo-de.kaufmann.city/) –
 „Demo öffnen“ antippen, die Eltern-PIN steht auf der Anmeldeseite. Die Beispielfamilie setzt sich
@@ -28,6 +28,14 @@ zur vollen Stunde zurück. (Auf Englisch: [demo-en.kaufmann.city](https://demo-e
 | ![Wochenansicht der Aufgaben](docs/screenshots/de/tasks-week.png) | ![Termindetails mit Symbol](docs/screenshots/de/calendar-event.png) | ![Symbole für Termine im Elternbereich](docs/screenshots/de/parents-symbols.png) | ![„Heute“ am Handy](docs/screenshots/de/phone-today.png) |
 
 Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#entwicklung)).
+
+> **Ideen, Wünsche, Fehler? Meldet euch gerne!** In FamQuest stecken viel Liebe und Herzblut. Ich
+> möchte das Projekt weiterführen, und es soll von dem leben, was ihr braucht. Ob Änderungswunsch,
+> Vorschlag, Fehler oder einfach eine Frage: Scheut euch nicht und
+> [schreibt ein Issue auf GitHub](https://github.com/craebby/FamQuest/issues/new), gerne auf Deutsch
+> oder Englisch (dafür reicht ein kostenloses GitHub-Konto). Issues sind öffentlich, entfernt also
+> bitte persönliche Daten aus Logs und Screenshots. Und wer FamQuest geforkt hat: Ich würde mich
+> freuen zu hören, was ihr damit macht.
 
 ## Features
 
@@ -99,7 +107,7 @@ docker compose up -d --build
 ```
 
 `main` hat immer den neuesten Stand. Für eine feste Version stattdessen ein
-[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.3.0`,
+[Release](https://github.com/craebby/FamQuest/releases) auschecken, z. B. `git fetch --tags && git checkout v1.4.0`,
 danach `docker compose up -d --build`.
 
 Unter macOS `sed -i ''` statt `sed -i` verwenden oder die `.env` einfach von Hand bearbeiten.
@@ -435,9 +443,46 @@ FamQuest zeigt eure Google-Kalender als Woche am Display: eine Spalte pro Tag (M
 Sonntag), Termine in der Farbe der Person, der sie gehören, mit ihrem Avatar. Ändern lassen sich
 Termine nur mit der Eltern-PIN.
 
+Der Kalender ist optional: Alles andere in FamQuest funktioniert ohne Google-Konto, auch Feiertage
+und Schulferien. Es gibt keinen FamQuest-Server dazwischen. Termine gehen direkt zwischen Google und
+eurer eigenen Installation hin und her, die Zugangs-Tokens liegen dort verschlüsselt.
+
+### Was geht und was nicht
+
+**Das geht:**
+
+- Ein oder mehrere Google-Konten mit beliebigen ihrer Kalender
+- Termine in der Kalenderansicht, auf „Heute“, in der Küchenansicht und im Bilderrahmen
+- Ganztägige, mehrtägige und wiederkehrende Termine
+- Termine in FamQuest anlegen, bearbeiten und löschen, mit Eltern-PIN; die Küchenansicht kann nur
+  anlegen
+- Termine über den Kalender oder über die Terminfarbe Personen zuordnen
+- Änderungen in FamQuest landen sofort bei Google; Änderungen bei Google erscheinen in FamQuest
+  innerhalb von etwa 5 Minuten
+
+**Das geht (noch) nicht:**
+
+- **Andere Kalender:** Nur Google. iCal/ICS-Links, Apple-, Outlook- und Nextcloud-Kalender werden
+  nicht unterstützt; sie stehen als Idee in der [Roadmap](#roadmap).
+- **Ganze Serien (mit Absicht):** FamQuest ist für den Termin, der einem einfällt, wenn man eh am
+  Küchentablet steht. Es ändert oder löscht nur einen einzelnen Termin und legt keine
+  wiederkehrenden Termine an; das geht im Google Kalender, z. B. am Handy.
+- **Gäste, Erinnerungen, Anhänge und Videokonferenzen:** Diese lassen sich in FamQuest nicht
+  einstellen. Was ein Termin schon hat, bleibt beim Bearbeiten erhalten.
+- **Termin in einen anderen Kalender verschieben:** Das geht im Google Kalender.
+- **Termine, die ihr bei Google nicht ändern dürft:** abonnierte oder nur lesbare Kalender und
+  Einladungen von anderen.
+- **Weit voraus oder lange her:** Geladen werden nur Termine von 4 Wochen zurück bis etwa 5 Monate
+  voraus. Blättern geht weiter, die Wochen bleiben dann aber leer.
+- **Ohne HTTPS unter einer Domain:** Eine Installation, die nur per IP-Adresse oder `http://`
+  erreichbar ist, kann sich nicht mit Google verbinden (siehe
+  [Einrichtung](#zugang-bei-google-einrichten)).
+
+### Kalender benutzen
+
 **Im Elternbereich unter Kalender:**
 
-- Ein oder mehrere Google-Konten verbinden (Einrichtung siehe unten).
+- Ein oder mehrere Google-Konten verbinden ([Einrichtung](#zugang-bei-google-einrichten)).
 - Alle Kalender des Kontos erscheinen in einer Liste. Die, die am Display zu sehen sein sollen,
   einschalten.
 - Je Kalender wählen, wem er **gehört**: einer Person oder der **Familie** (für alles, was alle
@@ -446,8 +491,9 @@ Termine nur mit der Eltern-PIN.
   sind für die Familie reserviert; Farben, die schon eine Person hat, sind ausgegraut.
 - Jeder Kalender zeigt, wann er zuletzt aktualisiert wurde oder was schiefging. **Jetzt
   aktualisieren** holt sofort den neuesten Stand.
-- Konten, die vor dieser Funktion verbunden wurden, können nur lesen. Einmal **Neu verbinden**
-  erlaubt auch Änderungen.
+- Konten, die verbunden wurden, bevor sich Termine ändern ließen, können nur lesen. Bei Google den
+  Bereich `calendar.events` ergänzen ([Schritt 3](#zugang-bei-google-einrichten)), dann einmal
+  **Neu verbinden**.
 
 **Am Display:** Sobald mindestens ein Kalender eingeschaltet ist, zeigt die Navigationsleiste ein
 Kalender-Symbol. Mit den Pfeilen blättert man wochenweise; heute ist hervorgehoben, vergangene
@@ -469,12 +515,13 @@ keine persönlichen Daten). Steht dasselbe auch als ganztägiger Termin in einem
 den Ferien- bzw. Feiertagen aus, damit nichts doppelt steht. In Google bleibt er, wie er ist.
 
 **Termine ändern:** Mit der Eltern-PIN lassen sich Termine auch direkt in FamQuest anlegen,
-bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender, auf „Heute“ und in der Küchenansicht legt
-einen Termin in einem der Kalender an, in die FamQuest schreiben darf; in den Details eines Termins
-stehen **Bearbeiten** und **Löschen**. Änderungen landen sofort im Google Kalender. Bei
+bearbeiten und löschen, so kann ein Kind nichts aus Versehen ändern. Das **+** oben im Kalender, auf
+„Heute“ und in der Küchenansicht legt einen Termin in einem der Kalender an, in die FamQuest
+schreiben darf; in den Details eines Termins stehen **Bearbeiten** und **Löschen**. Änderungen landen sofort im Google Kalender. Bei
 Serienterminen ändert sich nur der einzelne Termin, ganze Serien bearbeitet ihr im Google Kalender.
 Termine aus Kalendern, die sich nur lesen lassen (z. B. abonnierte), zeigen keine Knöpfe; bei
-Einladungen kann nur die einladende Person ändern. In der Küchenansicht lassen sich vorhandene Termine nur ansehen.
+Einladungen kann nur die einladende Person ändern. In der Küchenansicht lassen sich vorhandene
+Termine nur ansehen.
 
 **Personen nach Farbe:** Pflegt ihr alle Termine in einem Kalender und erkennt die Person an der
 Terminfarbe? Dann ordnet ihr unter **Kalender & Wetter** beim Kalender mit **Farben zuordnen** jede
@@ -494,22 +541,14 @@ einer Person Symbole bekommen, ist ein Schalter bei der Person (**Symbole bei Te
 standardmäßig an bei Kindern, aus bei Erwachsenen; für ältere Kinder einfach ausschalten. Das
 Symbol erscheint im Kalender, auf „Heute“, in den Termindetails und im Bilderrahmen.
 
-## Wetter
-
-Die Startseite zeigt das Wetter für einen Ort. Die Vorhersage kommt von
-[Open-Meteo](https://open-meteo.com) (für nicht kommerzielle Nutzung kostenlos, ohne API-Schlüssel).
-Die Anfrage stellt der Server, nicht der Browser; übertragen werden nur die Koordinaten des Orts und
-die Zeitzone. Vorhersagen werden 15 Minuten zwischengespeichert; ist Open-Meteo nicht erreichbar,
-bleibt die letzte Vorhersage bis zu 6 Stunden mit Hinweis stehen. Auch die Ortssuche im
-Elternbereich läuft über den Server (Open-Meteo Geocoding). Ohne Ort stellt FamQuest keine
-Wetter-Anfragen.
-
 **Synchronisation:** Alle 5 Minuten (`CALENDAR_SYNC_MINUTES`) fragt FamQuest bei Google nach, ob
 sich etwas geändert hat (inkrementell per Sync-Token). Nur dann, beim Wochenwechsel oder zur
-Sicherheit alle 6 Stunden werden die Termine neu geladen, und zwar für einen Zeitraum von 4 Wochen
-vor der aktuellen Woche bis etwa ein halbes Jahr voraus. Serientermine werden als einzelne Termine
-gespeichert; ganztägige und mehrtägige Termine werden unterstützt. Ist Google nicht erreichbar oder
-bremst die Abrufe, versucht es der nächste Durchlauf einfach wieder.
+Sicherheit alle 6 Stunden werden die Termine neu geladen. Der geladene Zeitraum beginnt 4 Wochen vor
+der aktuellen Woche und umfasst insgesamt ein halbes Jahr, reicht also etwa 5 Monate voraus.
+Serientermine werden als einzelne Termine gespeichert. Ist Google nicht erreichbar oder bremst die
+Abrufe, versucht es der nächste Durchlauf einfach wieder.
+
+### Zugang bei Google einrichten
 
 Weil FamQuest selbst gehostet ist, braucht jede Installation einen eigenen Zugang bei Google.
 Das ist einmalig und kostenlos. Voraussetzung ist, dass FamQuest per **HTTPS unter einer Domain**
@@ -547,12 +586,23 @@ Weiterleitung an eine IP-Adresse oder an `http://`, nur an `http://localhost` zu
    werden. Eine Überprüfung durch Google ist für den eigenen Gebrauch nicht nötig.
 
 Beim Verbinden zeigt Google dann den Hinweis „Google hat diese App nicht überprüft“. Das ist bei
-einer selbst gehosteten App normal: **Erweitert → Weiter zu FamQuest** wählen und den
-Kalenderzugriff ankreuzen. Mehrere Google-Konten sind möglich, z. B. eins je Elternteil.
+einer selbst gehosteten App normal: **Erweitert → Weiter zu FamQuest** wählen und beide
+Kalender-Berechtigungen ankreuzen. Ohne die Berechtigung zum Ändern von Terminen kann FamQuest nur
+lesen. Mehrere Google-Konten sind möglich, z. B. eins je Elternteil.
 
 Den `TOKEN_ENCRYPTION_KEY` zusammen mit der `.env` sichern. Geht er verloren oder wird er geändert,
 zeigt der Elternbereich bei jedem Konto „Neu verbinden“; sonst geht nichts verloren. Ein Konto zu
 trennen widerruft den Zugriff auch bei Google.
+
+## Wetter
+
+Die Startseite zeigt das Wetter für einen Ort. Die Vorhersage kommt von
+[Open-Meteo](https://open-meteo.com) (für nicht kommerzielle Nutzung kostenlos, ohne API-Schlüssel).
+Die Anfrage stellt der Server, nicht der Browser; übertragen werden nur die Koordinaten des Orts und
+die Zeitzone. Vorhersagen werden 15 Minuten zwischengespeichert; ist Open-Meteo nicht erreichbar,
+bleibt die letzte Vorhersage bis zu 6 Stunden mit Hinweis stehen. Auch die Ortssuche im
+Elternbereich läuft über den Server (Open-Meteo Geocoding). Ohne Ort stellt FamQuest keine
+Wetter-Anfragen.
 
 ## Essensplan
 
@@ -1217,8 +1267,12 @@ einziges App-Image, das als unprivilegierter Benutzer läuft.
 
 ## Roadmap
 
-Aktueller Stand: **1.3** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
-nach 1.3 sind ein erster Plan und können sich noch ändern.
+Aktueller Stand: **1.4** ([Releases](https://github.com/craebby/FamQuest/releases)). Die Versionen
+nach 1.4 sind ein erster Plan und können sich noch ändern.
+
+**1.4: veröffentlicht.** Termine direkt in FamQuest ändern, auch auf „Heute“ und in der Küchenansicht,
+und Personen nach Terminfarbe (Phase 13 unten), die Einkaufsliste nach Läden sortiert (Phase 11
+unten) und Mealie als optionale Rezeptquelle (Phase 12 unten).
 
 **1.3: veröffentlicht.** Rezepte (Phase 9 unten) zu den Gerichten des Essensplans, mit „Woche
 füllen“ und Zutaten auf die Einkaufsliste, dazu die Einkaufsliste als installierbare App, die im
@@ -1313,20 +1367,20 @@ Beispielfamilie, die sich zur vollen Stunde zurücksetzt (siehe [Öffentliche De
 
 **Einkaufsliste als App (Phase 10):** veröffentlicht mit 1.3, Feinschliff am echten Handy folgt.
 
-Vorgezogen aus 1.5 („Unterwegs“): der Teil, den man im Laden braucht.
+Vorgezogen aus 1.6 („Unterwegs“): der Teil, den man im Laden braucht.
 
 - [x] 1. Installierbare App (PWA) für die Einkaufsliste unter `/shop`, funktioniert im Laden ohne
   Netz; was offline geändert wurde, wird gesendet, sobald wieder Verbindung besteht
 - [ ] 2. Feinschliff am echten Handy (Android und iPhone)
 
-**Einkaufsliste nach Laden (Phase 11), in Arbeit**
+**Einkaufsliste nach Laden (Phase 11):** veröffentlicht mit 1.4, der Feinschliff läuft im Alltag weiter.
 
 - [x] 1. Artikel nach Laden (Supermarkt, Drogerie, Baumarkt, Online) und im Supermarkt nach
   Bereichen entlang des Laufwegs, automatisch erkannt; in einen anderen Laden oder Bereich
   verschieben und die Reihenfolge ändern, gemerkt je Artikel, auch offline
 - [ ] 2. Feinschliff im Alltag
 
-**Mealie (Phase 12), in Arbeit**
+**Mealie (Phase 12):** veröffentlicht mit 1.4, der Feinschliff läuft im Alltag weiter.
 
 - [x] 1. [Mealie](#mealie) anbinden: vier Modi (aus, nur Knopf, gemischt, nur Mealie), API-Token
   verschlüsselt, Abgleich im Hintergrund, Mealie-Rezepte als Gerichte (Sammlung, Vorschläge,
@@ -1335,6 +1389,14 @@ Vorgezogen aus 1.5 („Unterwegs“): der Teil, den man im Laden braucht.
 - [ ] 2. Feinschliff im Alltag (später: Single Sign-on, damit das Tablet kein eigenes Mealie-Login
   braucht)
 
+**Termine ändern (Phase 13):** veröffentlicht mit 1.4, der Feinschliff läuft im Alltag weiter.
+
+- [x] 1. Termine mit der Eltern-PIN anlegen, bearbeiten und löschen: **+** im Kalender, auf „Heute“
+  und in der Küchenansicht, Bearbeiten und Löschen in den Termindetails (nicht in der Küchenansicht)
+- [x] 2. Personen nach Terminfarbe: Farben je Kalender zuordnen, die Wahl im Terminformular geht als
+  Farbe zurück in den Google Kalender
+- [ ] 3. Feinschliff im Alltag
+
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 
 - [x] 1. Küchenansicht unter `/kitchen` für ein 8-Zoll-Tablet im Querformat: Termine und Essen der
@@ -1342,7 +1404,7 @@ Vorgezogen aus 1.5 („Unterwegs“): der Teil, den man im Laden braucht.
   Uhr, Nachtmodus; dazu im Essensplan der Knopf „Foto für …“ direkt beim geplanten Gericht
 - [ ] 2. Feinschliff am echten Tablet
 
-**1.4: Anpassen**
+**1.5: Anpassen**
 
 - Vorlagen bearbeiten: Familien können Aufgaben-Vorlagen und Belohnungs-Vorschläge ändern,
   ergänzen und entfernen (in der Datenbank statt im Code); überarbeitete Beispiel-Vorlagen
@@ -1354,7 +1416,7 @@ Vorgezogen aus 1.5 („Unterwegs“): der Teil, den man im Laden braucht.
 - Mehr als sieben Personen (mehr Farben)
 - About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
 
-**1.5: Unterwegs**
+**1.6: Unterwegs**
 
 - Installierbare Web-App (PWA) fürs Smartphone der Eltern: Aufgaben prüfen, Punkte buchen und
   Aufgaben anlegen von unterwegs (die Einkaufsliste als App kommt vorher, siehe Phase 10)

@@ -189,7 +189,7 @@ Branch `phase-9-rezepte`.
 
 ## Etappen (Phase 10: Einkaufsliste als App)
 
-Entschieden: Aus „Unterwegs“ (jetzt 1.5) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
+Entschieden: Aus „Unterwegs“ (jetzt 1.6) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
 ohne Navigationsleiste, installierbar (PWA), im Laden ohne Netz: Abhaken, Eintragen, Entfernen
 landen in einer Warteschlange und werden mit Netz der Reihe nach gesendet. Gearbeitet wird auf dem
 Branch `phase-10-pwa` (abgezweigt von `phase-9-rezepte`).

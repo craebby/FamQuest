@@ -11,12 +11,12 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 1.3. Contains the task system (routines, family view, points, rewards,
+> **Status:** version 1.4. Contains the task system (routines, family view, points, rewards,
 > parent checks), Google Calendar, the start page "Today" as a week dashboard with
 > weather, the picture frame with night mode, the meal plan, the shopping list, the household
-> (cleaning plan with a traffic light, "To do"), the kitchen view for a small tablet, recipes and
-> the shopping list as an installable app that works offline in the shop. Polish continues in everyday use (see
-> [Roadmap](#roadmap)).
+> (cleaning plan with a traffic light, "To do"), the kitchen view for a small tablet, recipes with
+> optional Mealie connection and the shopping list as an installable app that works offline in the
+> shop and sorts itself by shop. Polish continues in everyday use (see [Roadmap](#roadmap)).
 
 **Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
 "Open the demo"; the parent PIN is shown on the sign-in page. The sample family resets itself on
@@ -29,6 +29,13 @@ the hour. (In German: [demo-de.kaufmann.city](https://demo-de.kaufmann.city/).)
 | ![Week view of the tasks](docs/screenshots/en/tasks-week.png) | ![Event details with symbol](docs/screenshots/en/calendar-event.png) | ![Symbols for events in the parents' area](docs/screenshots/en/parents-symbols.png) | ![“Today” on a phone](docs/screenshots/en/phone-today.png) |
 
 The screenshots show a sample family (demo data, see [Development](#development)).
+
+> **Ideas, wishes, bugs? Please get in touch!** A lot of love has gone into FamQuest. I want to keep
+> it going, and it should grow with what its users need. Whether it's a change you'd like, a
+> suggestion, a bug or just a question: don't be shy, simply
+> [open an issue on GitHub](https://github.com/craebby/FamQuest/issues/new), in English or German
+> (a free GitHub account is all you need). Issues are public, so please remove personal data from
+> logs and screenshots. And if you've forked FamQuest, I'd love to hear what you're doing with it.
 
 ## Features
 
@@ -99,7 +106,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.3.0`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.4.0`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -429,9 +436,45 @@ FamQuest shows your Google calendars as a week on the display: one column per da
 Sunday), events in the colour of the person they belong to, with their avatar. Events can be
 changed only with the parent PIN.
 
+The calendar is optional: everything else in FamQuest works without a Google account, including
+public and school holidays. There is no FamQuest server in between. Events travel directly between
+Google and your own installation, and the access tokens are stored encrypted there.
+
+### What works and what doesn't
+
+**Works:**
+
+- One or more Google accounts, with any of their calendars
+- Events in the calendar view, on "Today", in the kitchen view and on the picture frame
+- All-day, multi-day and recurring events
+- Creating, editing and deleting events in FamQuest with the parent PIN; the kitchen view can only
+  create
+- Assigning events to people by calendar or by event colour
+- Changes in FamQuest reach Google straight away; changes in Google appear in FamQuest within about
+  5 minutes
+
+**Doesn't work (yet):**
+
+- **Other calendars:** Google only. iCal/ICS links, Apple, Outlook and Nextcloud calendars aren't
+  supported; they're on the [roadmap](#roadmap) as an idea.
+- **Whole series (on purpose):** FamQuest is for the event that comes to mind while you're standing
+  at the kitchen tablet. It changes or deletes one occurrence only and can't create recurring
+  events; do those in Google Calendar, e.g. on your phone.
+- **Guests, reminders, attachments and video calls:** these can't be set in FamQuest. What an event
+  already has stays untouched when you edit it.
+- **Moving an event to another calendar:** do that in Google Calendar.
+- **Events you can't change at Google:** subscribed or read-only calendars, and invitations from
+  someone else.
+- **Far ahead or long ago:** only events from 4 weeks back to about 5 months ahead are loaded. You
+  can browse further, but those weeks stay empty.
+- **Without HTTPS on a domain:** an installation reachable only by IP address or `http://` can't
+  connect to Google (see [setup](#setting-up-google-access)).
+
+### Using the calendar
+
 **In the parents' area under Calendar:**
 
-- Connect one or more Google accounts (setup below).
+- Connect one or more Google accounts ([setup](#setting-up-google-access)).
 - All calendars of the account are listed. Switch on the ones that should appear on the display.
 - For each calendar, choose who it **belongs to**: a person or **Family** (for everything that
   concerns everyone, e.g. a shared family calendar, bin collection or holidays).
@@ -439,7 +482,8 @@ changed only with the parent PIN.
   reserved for the family; colours already used by people are greyed out.
 - Each calendar shows when it was last updated, or what went wrong. **Update now** fetches
   immediately.
-- Accounts connected before this feature can only read. **Reconnect** once to allow changes.
+- Accounts connected before changing events was possible can only read. Add the
+  `calendar.events` scope at Google ([step 3](#setting-up-google-access)), then **Reconnect** once.
 
 **On the display:** once at least one calendar is switched on, the navigation bar shows a
 calendar symbol. The arrows browse weeks; today is highlighted and events that are over fade out.
@@ -460,9 +504,9 @@ offline; school holidays are loaded once a day from [OpenHolidays](https://www.o
 so nothing shows up twice. It stays as it is in Google.
 
 **Changing events:** with the parent PIN you can also create, edit and delete events directly in
-FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar, "Today" and the kitchen view
-creates an event in one of the calendars FamQuest may write to; the details of an event offer
-**Edit** and **Delete**. Changes go to Google Calendar straight away. For a recurring event, only
+FamQuest, so a child can't change anything by accident. The **+** at the top of the calendar,
+"Today" and the kitchen view creates an event in one of the calendars FamQuest may write to; the
+details of an event offer **Edit** and **Delete**. Changes go to Google Calendar straight away. For a recurring event, only
 the single occurrence changes; whole series are changed in Google Calendar. Events in read-only
 calendars (subscribed calendars, for example) show no buttons, and for invitations only the
 organiser can change an event. In the kitchen view, existing events can only be viewed.
@@ -485,21 +529,14 @@ events get symbols is a switch in their profile (**Symbols for events**): on for
 adults by default; switch it off for older children. The symbol appears in the calendar, on
 "Today", in the event details and on the picture frame.
 
-## Weather
-
-The start page shows the weather for one town. The forecast comes from
-[Open-Meteo](https://open-meteo.com) (free for non-commercial use, no API key). The server makes
-the request, not the browser; only the town's coordinates and the time zone are sent. Forecasts
-are cached for 15 minutes; if Open-Meteo is unreachable, the last forecast is shown for up to
-6 hours with a note. The town search in the parents' area also goes through the server
-(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all.
-
 **Sync:** every 5 minutes (`CALENDAR_SYNC_MINUTES`) FamQuest asks Google whether anything has
 changed (incremental, via sync token). Only then, when the week changes, or every 6 hours as a
-safety net are the events reloaded, for a window from 4 weeks before the current week to about
-half a year ahead. Recurring events are stored as individual occurrences; all-day and multi-day
-events are supported. If Google is unreachable or throttles requests, the next run simply tries
+safety net are the events reloaded. The loaded window starts 4 weeks before the current week and
+covers half a year in total, so it reaches about 5 months ahead. Recurring events are stored as
+individual occurrences. If Google is unreachable or throttles requests, the next run simply tries
 again.
+
+### Setting up Google access
 
 Because FamQuest is self-hosted, every installation needs its own access to Google. This is a
 one-time, free setup. FamQuest must be reachable via **HTTPS on a domain** (e.g.
@@ -535,12 +572,22 @@ address or to `http://`, except `http://localhost` for development.
    Google isn't needed for your own use.
 
 When connecting, Google then shows "Google hasn't verified this app". That's normal for a
-self-hosted app: choose **Advanced → Go to FamQuest** and tick calendar access. You can connect
-several Google accounts, e.g. one per parent.
+self-hosted app: choose **Advanced → Go to FamQuest** and tick both calendar permissions. Without
+the permission to edit events, FamQuest can only read. You can connect several Google accounts,
+e.g. one per parent.
 
 Back up `TOKEN_ENCRYPTION_KEY` together with `.env`. If it's lost or changed, the parents' area
 shows "Reconnect" for every account; nothing else is lost. Disconnecting an account also revokes
 access at Google.
+
+## Weather
+
+The start page shows the weather for one town. The forecast comes from
+[Open-Meteo](https://open-meteo.com) (free for non-commercial use, no API key). The server makes
+the request, not the browser; only the town's coordinates and the time zone are sent. Forecasts
+are cached for 15 minutes; if Open-Meteo is unreachable, the last forecast is shown for up to
+6 hours with a note. The town search in the parents' area also goes through the server
+(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all.
 
 ## Meal plan
 
@@ -1190,8 +1237,12 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **1.3** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
-1.3 are a first plan and may still change.
+Current state: **1.4** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.4 are a first plan and may still change.
+
+**1.4: released.** Changing events right in FamQuest, also on "Today" and in the kitchen view, and
+people by event colour (phase 13 below), the shopping list sorted by shop (phase 11 below) and
+Mealie as an optional recipe source (phase 12 below).
 
 **1.3: released.** Recipes (phase 9 below) for the dishes in the meal plan, with "Fill the week"
 and ingredients onto the shopping list, plus the shopping list as an installable app that works
@@ -1282,20 +1333,20 @@ resets itself on the hour (see [Public demo](#public-demo)).
 
 **Shopping list as an app (phase 10):** released with 1.3, polish on a real phone to follow.
 
-Brought forward from 1.5 ("on the go"): the part that's needed in the shop.
+Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
 
 - [x] 1. Installable app (PWA) for the shopping list at `/shop`, works without a connection in the
   shop; changes made offline are sent once there's a connection again
 - [ ] 2. Polish on a real phone (Android and iPhone)
 
-**Shopping list by shop (phase 11), in progress**
+**Shopping list by shop (phase 11):** released with 1.4, polish continues in everyday use.
 
 - [x] 1. Items grouped by shop (supermarket, drugstore, DIY store, online) and in the supermarket
   by section along the way through the shop, recognised automatically; move items to another
   shop or section and change their order, remembered per item, also offline
 - [ ] 2. Polish in everyday use
 
-**Mealie (phase 12), in progress**
+**Mealie (phase 12):** released with 1.4, polish continues in everyday use.
 
 - [x] 1. Connect [Mealie](#mealie): four modes (off, button only, mixed, Mealie only), API token
   stored encrypted, background sync, Mealie recipes as dishes (collection, suggestions, "Fill the
@@ -1304,6 +1355,14 @@ Brought forward from 1.5 ("on the go"): the part that's needed in the shop.
 - [ ] 2. Polish in everyday use (later: single sign-on, so the tablet doesn't need its own Mealie
   login)
 
+**Changing events (phase 13):** released with 1.4, polish continues in everyday use.
+
+- [x] 1. Create, edit and delete events with the parent PIN: **+** in the calendar, on "Today" and
+  in the kitchen view, edit and delete in the event details (not in the kitchen view)
+- [x] 2. People by event colour: assign colours per calendar, the choice in the event form goes back
+  to Google Calendar as the colour
+- [ ] 3. Polish in everyday use
+
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
 - [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
@@ -1311,7 +1370,7 @@ Brought forward from 1.5 ("on the go"): the part that's needed in the shop.
   clock, night mode; plus a "Photo for …" button right at the planned dish in the meal plan
 - [ ] 2. Polish on the real tablet
 
-**1.4: make it your own**
+**1.5: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
@@ -1324,7 +1383,7 @@ Brought forward from 1.5 ("on the go"): the part that's needed in the shop.
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
 
-**1.5: on the go**
+**1.6: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
   anywhere (the shopping list as an app comes earlier, see phase 10)
