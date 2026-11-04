@@ -163,6 +163,47 @@ const KEYWORDS: Record<Area, readonly string[]> = {
     'muffin',
   ],
   pantry: [
+    'pulver',
+    'paprikapulver',
+    'currypulver',
+    'zimt',
+    'oregano',
+    'curry',
+    'kurkuma',
+    'muskat',
+    'muskatnuss',
+    'kreuzkummel',
+    'chiliflocken',
+    'gewurzgurke',
+    'gewurzgurken',
+    'essiggurken',
+    'gurkenglas',
+    'oliven',
+    'kapern',
+    'gehackte tomaten',
+    'stuckige tomaten',
+    'geschalte tomaten',
+    'getrocknete tomaten',
+    'passata',
+    'paniermehl',
+    'semmelbrosel',
+    'starke',
+    'speisestarke',
+    'kartoffelpuree',
+    'puree',
+    'knodel',
+    'powder',
+    'cinnamon',
+    'paprika powder',
+    'chilli flakes',
+    'pickles',
+    'gherkins',
+    'olives',
+    'capers',
+    'chopped tomatoes',
+    'breadcrumbs',
+    'cornflour',
+    'cornstarch',
     'nudel',
     'pasta',
     'spaghetti',
@@ -336,6 +377,9 @@ const KEYWORDS: Record<Area, readonly string[]> = {
     'squash',
   ],
   household: [
+    'kaffeefilter',
+    'filtertuten',
+    'coffee filters',
     'mullbeutel',
     'mullsack',
     'mullsacke',
@@ -381,6 +425,22 @@ const KEYWORDS: Record<Area, readonly string[]> = {
     'treats',
   ],
   chilled: [
+    'skyr',
+    'mascarpone',
+    'ricotta',
+    'halloumi',
+    'tortellini',
+    'gnocchi',
+    'maultaschen',
+    'teig',
+    'blatterteig',
+    'pizzateig',
+    'hefeteig',
+    'hummus',
+    'pastry',
+    'puff pastry',
+    'pizza dough',
+    'fresh pasta',
     'milch',
     'joghurt',
     'jogurt',
@@ -443,6 +503,11 @@ const KEYWORDS: Record<Area, readonly string[]> = {
     'eggs',
   ],
   frozen: [
+    'rahmspinat',
+    'kroketten',
+    'rosti',
+    'croquettes',
+    'hash browns',
     'tiefkuhl',
     'eis',
     'eiscreme',
@@ -460,6 +525,19 @@ const KEYWORDS: Record<Area, readonly string[]> = {
   ],
   other: [],
   drugstore: [
+    'waschpulver',
+    'spulmaschinenpulver',
+    'wasserfilter',
+    'filterkartusche',
+    'filterkartuschen',
+    'kartusche',
+    'kartuschen',
+    'filterpatrone',
+    'filterpatronen',
+    'brita',
+    'water filter',
+    'filter cartridge',
+    'filter cartridges',
     'zahnpasta',
     'zahncreme',
     'zahnburste',
@@ -852,15 +930,18 @@ function areaByName(name: string): Area | undefined {
   return best?.area
 }
 
-/** „TK-Erbsen“, „Tiefkühlgemüse“, „frozen peas“: Tiefkühl, egal was dahinter steht. */
-const FROZEN_PREFIX = /^ (tk[ -]|tiefkuhl|frozen )/
+/**
+ * „TK-Erbsen“, „Spinat TK“, „Beeren (tiefgekühlt)“, „Tiefkühlgemüse“, „frozen peas“: Tiefkühl,
+ * egal wo es im Namen steht und was sonst dabei ist.
+ */
+const FROZEN = / (tk[ -]|tiefkuhl|tiefgekuhlt|gefroren|frozen )/
 
 /**
  * Automatischer Bereich eines Artikels: nach Stichwörtern im Namen, sonst nach dem Symbol, sonst
  * „Sonstiges“ im Supermarkt.
  */
 export function autoArea(name: string, icon: string): Area {
-  if (FROZEN_PREFIX.test(padded(name))) return 'frozen'
+  if (FROZEN.test(padded(name))) return 'frozen'
   return areaByName(name) ?? ICON_AREAS[iconName(icon) ?? ''] ?? FALLBACK_AREA
 }
 

@@ -766,7 +766,15 @@ Symbolen.
   Baumarkt, „Druckerpatronen“ → Online, „Orangensaft“ → Getränke; bei zusammengesetzten Wörtern
   zählt das letzte, „Milchschokolade“ → Süßes), sonst am Symbol. Überschriften für die Läden
   erscheinen nur, wenn nicht alles aus dem Supermarkt kommt. Artikel für andere Läden ohne
-  passendes Symbol bekommen das des Ladens (Werkzeugkasten, Paket, Lotionflasche).
+  passendes Symbol bekommen das des Ladens (Werkzeugkasten, Paket, Lotionflasche). „TK“ oder
+  „tiefgekühlt“ irgendwo im Namen heißt Tiefkühl („Spinat TK“, „Erbsen (TK)“).
+- **Nur ein Laden:** Stehen Artikel für mehrere Läden auf der Liste, zeigen Knöpfe darüber (mit
+  Symbol und Anzahl) nur einen davon, z. B. im Supermarkt nur den Supermarkt. Jedes Gerät merkt
+  sich die Wahl; „Alle“ zeigt wieder alles.
+- **Aus dem Rezept:** Zutaten aus einem Rezept tragen ein kleines Buch mit dem Namen des Rezepts.
+  Steht der Artikel unter leicht anderem Namen schon auf der Liste („rote Paprika“ und „Paprika“,
+  „Zwiebeln“ und „Zwiebel“), kommt er nicht doppelt drauf; das Rezept steht dann beim vorhandenen
+  Eintrag.
 - **Ordnen:** Der Knopf „Ordnen“ zeigt an jedem Artikel Pfeile für die Reihenfolge im Bereich (z. B.
   nach dem Laufweg in eurem Supermarkt) und einen Knopf mit dem Symbol des Bereichs, der ihn in
   einen anderen Laden oder Bereich verschiebt. Beides merkt sich FamQuest am Artikel, beim nächsten

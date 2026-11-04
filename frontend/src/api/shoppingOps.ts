@@ -6,7 +6,8 @@ import type { ListItem, ShoppingList } from './shopping'
  * warten sie, bis wieder eine Verbindung da ist; bis dahin zeigt die Liste sie schon an.
  */
 export interface ShoppingOpVariables {
-  add: { name: string; icon: string; note?: string }
+  /** `recipes`: kommt als Zutat dieser Rezepte (werden an die Rezepte des Eintrags angehängt). */
+  add: { name: string; icon: string; note?: string; recipes?: string[] }
   /** `name` findet den Artikel, solange er nur offline eingetragen ist (noch ohne ID). */
   check: { id: number; name: string; checked: boolean }
   remove: { id: number; name: string }
@@ -30,6 +31,17 @@ export type ShoppingOp = {
   }
 }[ShoppingOpKind]
 
+/** So lang darf die Angabe der Rezepte werden (wie im Backend). */
+const RECIPES_MAX = 200
+
+/** Hängt ein Rezept an („Chili, Lasagne“) wie der Server: schon genannte und zu lange bleiben weg. */
+export function addRecipe(recipes: string | null, recipe: string): string | null {
+  const names = (recipes ?? '').split(', ').filter(Boolean)
+  if (names.includes(recipe)) return recipes
+  const joined = [...names, recipe].join(', ')
+  return joined.length <= RECIPES_MAX ? joined : recipes
+}
+
 /** Gleicher Name in anderer Schreibweise ist derselbe Artikel (wie `lower()` im Server). */
 export const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
@@ -50,7 +62,7 @@ export function applyOp(list: ShoppingList, op: ShoppingOp): ShoppingList {
   const items = list.items
   switch (op.kind) {
     case 'add': {
-      const { name, icon, note } = op.variables
+      const { name, icon, note, recipes = [] } = op.variables
       const index = items.findIndex((item) => sameName(item.name, name))
       const existing = index === -1 ? undefined : items[index]
       if (existing && !existing.checked) {
@@ -58,6 +70,7 @@ export function applyOp(list: ShoppingList, op: ShoppingOp): ShoppingList {
           ...existing,
           icon,
           note: note === undefined ? existing.note : note || null,
+          recipes: recipes.reduce(addRecipe, existing.recipes),
         }
         return { items: items.map((item, i) => (i === index ? updated : item)) }
       }
@@ -68,6 +81,7 @@ export function applyOp(list: ShoppingList, op: ShoppingOp): ShoppingList {
         name: existing?.name ?? name,
         icon,
         note: note || null,
+        recipes: recipes.reduce<string | null>(addRecipe, null),
         checked: false,
         area: existing?.area ?? null,
         position: existing?.position ?? null,

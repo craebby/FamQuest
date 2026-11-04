@@ -8,13 +8,16 @@ import { TaskIcon } from '../../components/TaskIcon'
 import { Alert, Button } from '../../components/ui'
 import { errorMessage } from '../../errors'
 import { normalize } from '../../icons/catalog'
+import { sameArticle } from '../shopping/match'
 import { iconForItem } from '../shopping/suggest'
-import { combineIngredients, isPantry } from './ingredients'
+import { type RecipeLine, combineIngredients, isPantry } from './ingredients'
 
 /**
  * Zutaten eines oder mehrerer Rezepte auf die Einkaufsliste: Gleiches ist zusammengefasst, die
  * Menge steht als Hinweis dabei. Angehakt ist zunächst alles außer dem, was fast jeder im Haus
- * hat (Salz, Öl …) und was schon offen auf der Liste steht. Ein Tipp hakt an oder ab.
+ * hat (Salz, Öl …) und was schon offen auf der Liste steht, auch unter anderem Namen („rote
+ * Paprika“ und „Paprika“). Ein Tipp hakt an oder ab. Auf der Liste steht dann dabei, aus welchem
+ * Rezept ein Artikel kommt.
  */
 export function IngredientsDialog({
   title,
@@ -22,7 +25,7 @@ export function IngredientsDialog({
   onClose,
 }: {
   title: string
-  lines: readonly string[]
+  lines: readonly RecipeLine[]
   onClose: () => void
 }) {
   const { t } = useTranslation()
@@ -31,10 +34,9 @@ export function IngredientsDialog({
   const add = useAddToList()
   const dialog = useRef<HTMLDivElement>(null)
   const ingredients = useMemo(() => combineIngredients(lines), [lines])
-  const open = new Set(
-    (list.data?.items ?? []).filter((item) => !item.checked).map((item) => normalize(item.name)),
-  )
-  const onList = (name: string) => open.has(normalize(name))
+  const open = (list.data?.items ?? []).filter((item) => !item.checked)
+  /** Der offene Eintrag, der diese Zutat schon ist (womöglich unter anderem Namen). */
+  const onList = (name: string) => open.find((item) => sameArticle(item.name, name))
   // Erst wenn die Liste da ist, steht fest, was schon drauf ist.
   const [chosen, setChosen] = useState<Set<string> | null>(null)
   const [busy, setBusy] = useState(false)
@@ -62,6 +64,12 @@ export function IngredientsDialog({
         : [],
     )
 
+  // Unter anderem Namen auf der Liste: Dann sagt der Hinweis, unter welchem.
+  const onListText = (ingredient: string, listed: string) =>
+    normalize(ingredient) === normalize(listed)
+      ? t('recipes.on_list')
+      : t('recipes.on_list_as', { name: listed })
+
   const toggle = (name: string) => {
     const next = new Set(selected)
     const key = normalize(name)
@@ -76,12 +84,18 @@ export function IngredientsDialog({
     try {
       for (const ingredient of ingredients) {
         if (!selected.has(normalize(ingredient.name))) continue
-        await add.mutateAsync({
-          name: ingredient.name,
-          icon: iconForItem(t, ingredient.name, items.data ?? []),
-          // Steht es schon offen drauf, bleibt dessen Hinweis.
-          ...(onList(ingredient.name) ? {} : { note: ingredient.note }),
-        })
+        const existing = onList(ingredient.name)
+        await add.mutateAsync(
+          existing
+            ? // Steht es schon offen drauf, bleiben dessen Name, Symbol und Hinweis.
+              { name: existing.name, icon: existing.icon, recipes: ingredient.recipes }
+            : {
+                name: ingredient.name,
+                icon: iconForItem(t, ingredient.name, items.data ?? []),
+                note: ingredient.note,
+                recipes: ingredient.recipes,
+              },
+        )
         count += 1
       }
       setAdded(count)
@@ -122,6 +136,7 @@ export function IngredientsDialog({
           >
             {ingredients.map((ingredient) => {
               const checked = selected.has(normalize(ingredient.name))
+              const existing = onList(ingredient.name)
               return (
                 <li key={normalize(ingredient.name)}>
                   <button
@@ -146,9 +161,12 @@ export function IngredientsDialog({
                       <span className="block text-lg leading-tight font-bold break-words text-slate-800">
                         {ingredient.name}
                       </span>
-                      {(ingredient.note || onList(ingredient.name)) && (
+                      {(ingredient.note || existing) && (
                         <span className="block text-base text-slate-500">
-                          {[ingredient.note, onList(ingredient.name) ? t('recipes.on_list') : '']
+                          {[
+                            ingredient.note,
+                            existing ? onListText(ingredient.name, existing.name) : '',
+                          ]
                             .filter(Boolean)
                             .join(' · ')}
                         </span>

@@ -406,7 +406,7 @@ function Recipe({ dish }: { dish: Dish }) {
           {shopping && (
             <IngredientsDialog
               title={t('recipes.ingredients_for', { name: dish.name })}
-              lines={ingredients}
+              lines={ingredients.map((line) => ({ line, recipe: dish.name }))}
               onClose={() => setShopping(false)}
             />
           )}

@@ -53,6 +53,7 @@ def test_add_without_parent_pin(client, admin, now):
         "name": "Milch",
         "icon": MILK,
         "note": "2 ×",
+        "recipes": None,
         "checked": False,
         "area": None,
         "position": None,
@@ -79,6 +80,30 @@ def test_note_stays_unless_given(client, admin, now):
     assert add(client, admin)["note"] == "laktosefrei"
     assert add(client, admin, note="2 ×")["note"] == "2 ×"
     assert add(client, admin, note="  ")["note"] is None
+
+
+def test_recipes_are_collected_while_on_list(client, admin, now):
+    assert add(client, admin, "Paprika", recipes=["Chili"])["recipes"] == "Chili"
+    assert add(client, admin, "Paprika", recipes=["Lasagne"])["recipes"] == "Chili, Lasagne"
+    both = add(client, admin, "Paprika", recipes=["Gulasch", "Chili"])
+    assert both["recipes"] == "Chili, Lasagne, Gulasch"
+    # Dasselbe Rezept noch einmal und von Hand eingetragen ändert nichts.
+    assert add(client, admin, "Paprika", recipes=["Chili"])["recipes"] == "Chili, Lasagne, Gulasch"
+    item = add(client, admin, "Paprika")
+    assert item["recipes"] == "Chili, Lasagne, Gulasch"
+
+    # Abgehakt und neu eingetragen gilt wieder von vorn.
+    check(client, admin, item["id"])
+    assert add(client, admin, "Paprika")["recipes"] is None
+    client.delete(f"/api/shopping/list/{item['id']}", headers=csrf(admin))
+    assert add(client, admin, "Paprika", recipes=["Gulasch"])["recipes"] == "Gulasch"
+
+
+def test_recipes_never_get_too_long(client, admin, now):
+    for index in range(30):
+        item = add(client, admin, "Zwiebeln", recipes=[f"Rezept Nummer {index}"])
+    assert len(item["recipes"]) <= 200
+    assert item["recipes"].startswith("Rezept Nummer 0, ")
 
 
 def test_open_items_in_order_then_checked(client, admin, now):
@@ -185,6 +210,7 @@ def test_rename_and_change_icon(client, admin, now):
         "name": "Hafermilch",
         "icon": BREAD,
         "note": None,
+        "recipes": None,
         "checked": False,
         "area": None,
         "position": None,
@@ -226,6 +252,7 @@ def test_edit_entry_fixes_a_typo(client, admin, now):
         "name": "Milch",
         "icon": MILK,
         "note": "2 ×",
+        "recipes": None,
         "checked": False,
         "area": None,
         "position": None,

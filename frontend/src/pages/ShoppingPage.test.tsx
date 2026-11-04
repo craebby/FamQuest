@@ -20,12 +20,22 @@ const MILK = 'fluent-emoji-flat:glass-of-milk'
 
 const LIST: ShoppingList = {
   items: [
-    { id: 1, name: 'Milch', icon: MILK, note: '2 ×', checked: false, area: null, position: null },
+    {
+      id: 1,
+      name: 'Milch',
+      icon: MILK,
+      note: '2 ×',
+      recipes: null,
+      checked: false,
+      area: null,
+      position: null,
+    },
     {
       id: 2,
       name: 'Brot',
       icon: 'fluent-emoji-flat:bread',
       note: null,
+      recipes: null,
       checked: false,
       area: null,
       position: null,
@@ -35,6 +45,7 @@ const LIST: ShoppingList = {
       name: 'Eier',
       icon: 'fluent-emoji-flat:egg',
       note: null,
+      recipes: null,
       checked: true,
       area: null,
       position: null,
@@ -66,7 +77,7 @@ function mockShopping(list: ShoppingList = LIST, extra: Parameters<typeof mockAp
     'DELETE /api/shopping/list/1': new Response(null, { status: 204 }),
     'DELETE /api/shopping/list/checked': new Response(null, { status: 204 }),
     'POST /api/shopping/list': (body) =>
-      Response.json({ id: 9, note: null, checked: false, ...(body as object) }),
+      Response.json({ id: 9, note: null, recipes: null, checked: false, ...(body as object) }),
     ...extra,
   })
 }
@@ -201,6 +212,38 @@ describe('Nach Laden und Bereich', () => {
     ])
     const drugstore = within(screen.getByRole('region', { name: 'Drogerie' }))
     expect(drugstore.getByRole('button', { name: 'Zahnpasta' })).toBeVisible()
+  })
+
+  it('zeigt auf Wunsch nur einen Laden und merkt sich das', async () => {
+    const user = userEvent.setup()
+    localStorage.removeItem('famquest.shopping.store')
+    mockShopping(SORTED)
+    const { unmount } = renderApp('/shopping')
+
+    const filter = within(await screen.findByRole('group', { name: 'Nur einen Laden zeigen' }))
+    expect(filter.getByRole('button', { name: 'Alle' })).toHaveAttribute('aria-pressed', 'true')
+    await user.click(filter.getByRole('button', { name: /^Drogerie ?1$/ }))
+
+    expect(screen.queryByRole('region', { name: 'Supermarkt' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Zahnpasta' })).toBeVisible()
+    unmount()
+
+    renderApp('/shopping')
+    await screen.findByRole('button', { name: 'Zahnpasta' })
+    expect(screen.queryByRole('region', { name: 'Supermarkt' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /^Supermarkt ?3$/ }))
+    expect(screen.queryByRole('region', { name: 'Drogerie' })).toBeNull()
+    expect(screen.getByRole('region', { name: 'Supermarkt' })).toBeVisible()
+    localStorage.removeItem('famquest.shopping.store')
+  })
+
+  it('zeigt, aus welchem Rezept ein Artikel kommt', async () => {
+    mockShopping({ items: [{ ...LIST.items[0], recipes: 'Chili, Lasagne' }] })
+    renderApp('/shopping')
+
+    const milk = await screen.findByRole('button', { name: /^Milch ?2 ×/ })
+    expect(milk).toHaveTextContent('Aus dem Rezept: Chili, Lasagne')
+    expect(screen.queryByRole('group', { name: 'Nur einen Laden zeigen' })).toBeNull()
   })
 
   it('zeigt keine Laden-Überschrift, wenn alles aus dem Supermarkt kommt', async () => {

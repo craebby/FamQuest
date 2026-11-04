@@ -148,6 +148,7 @@ const SHOPPING: ShoppingList = {
       name: 'Milch',
       icon: 'fluent-emoji-flat:glass-of-milk',
       note: '2 ×',
+      recipes: null,
       checked: false,
       area: null,
       position: null,
@@ -157,6 +158,7 @@ const SHOPPING: ShoppingList = {
       name: 'Brot',
       icon: 'fluent-emoji-flat:bread',
       note: null,
+      recipes: null,
       checked: false,
       area: null,
       position: null,
@@ -166,6 +168,7 @@ const SHOPPING: ShoppingList = {
       name: 'Eier',
       icon: 'fluent-emoji-flat:egg',
       note: null,
+      recipes: null,
       checked: true,
       area: null,
       position: null,
@@ -487,7 +490,7 @@ describe('Startseite „Heute“', () => {
     const calls = mockHome({
       extra: {
         'POST /api/shopping/list': (body) =>
-          Response.json({ id: 4, note: null, checked: false, ...(body as object) }),
+          Response.json({ id: 4, note: null, recipes: null, checked: false, ...(body as object) }),
       },
     })
     renderApp('/')
@@ -520,6 +523,7 @@ describe('Startseite „Heute“', () => {
             name,
             icon: 'fluent-emoji-flat:bread',
             note: null,
+            recipes: null,
             checked: false,
           })),
         }),

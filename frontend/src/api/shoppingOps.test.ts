@@ -8,12 +8,22 @@ const BREAD = 'fluent-emoji-flat:bread'
 
 const LIST: ShoppingList = {
   items: [
-    { id: 1, name: 'Milch', icon: MILK, note: '2 ×', checked: false, area: null, position: null },
+    {
+      id: 1,
+      name: 'Milch',
+      icon: MILK,
+      note: '2 ×',
+      recipes: null,
+      checked: false,
+      area: null,
+      position: null,
+    },
     {
       id: 2,
       name: 'Eier',
       icon: 'fluent-emoji-flat:egg',
       note: 'Bio',
+      recipes: null,
       checked: true,
       area: null,
       position: null,
@@ -44,6 +54,24 @@ describe('ausstehende Änderungen', () => {
   it('lässt bei Offenem den Hinweis stehen, wenn keiner mitkommt', () => {
     expect(applyOps(LIST, [add('Milch')]).items[0].note).toBe('2 ×')
     expect(applyOps(LIST, [add('Milch', '')]).items[0].note).toBeNull()
+  })
+
+  it('sammelt die Rezepte, aus denen ein Artikel kommt', () => {
+    const recipe = (name: string, recipes: string[]): ShoppingOp => ({
+      kind: 'add',
+      variables: { name, icon: BREAD, recipes },
+      tempId: -7,
+    })
+    const list = applyOps(LIST, [
+      recipe('Paprika', ['Chili']),
+      recipe('Paprika', ['Lasagne', 'Chili']),
+      recipe('Milch', ['Pudding']),
+    ])
+    expect(list.items.map((item) => [item.name, item.recipes])).toEqual([
+      ['Milch', 'Pudding'],
+      ['Paprika', 'Chili, Lasagne'],
+      ['Eier', null],
+    ])
   })
 
   it('hakt offline Eingetragenes über den Namen ab und nimmt es wieder herunter', () => {
@@ -83,6 +111,7 @@ describe('ausstehende Änderungen', () => {
       name: 'Brot',
       icon: BREAD,
       note: null,
+      recipes: null,
       checked: false,
       area: null,
       position: null,

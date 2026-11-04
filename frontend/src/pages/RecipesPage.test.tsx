@@ -344,8 +344,48 @@ describe('Rezepte', () => {
         name: 'Hähnchenstreifen',
         icon: expect.stringMatching(/^fluent-emoji-flat:/),
         note: '200 g',
+        recipes: ['Hähnchen-Wraps'],
       },
     ])
+  })
+
+  it('erkennt eine Zutat unter anderem Namen auf der Liste und ergänzt dort das Rezept', async () => {
+    const user = userEvent.setup()
+    const calls = mockRecipes([{ ...WRAPS, ingredients: ['2 rote Paprikaschoten'] }], {
+      'GET /api/shopping/list': Response.json({
+        items: [
+          {
+            id: 5,
+            name: 'Paprika',
+            icon: 'fluent-emoji-flat:bell-pepper',
+            note: '3',
+            recipes: null,
+            checked: false,
+          },
+        ],
+      }),
+      'GET /api/shopping/items': Response.json([]),
+      'POST /api/shopping/list': (body) =>
+        Response.json({ id: 5, checked: false, note: '3', ...(body as object) }),
+    })
+    renderApp('/meals/recipes')
+
+    await user.click(await screen.findByRole('button', { name: /Hähnchen-Wraps/ }))
+    await user.click(screen.getByRole('button', { name: 'Auf die Einkaufsliste' }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Zutaten für „Hähnchen-Wraps“' }))
+    const box = dialog.getByRole('checkbox', { name: /Paprikaschoten/ })
+    await waitFor(() => expect(box).toHaveTextContent('steht schon drauf als „Paprika“'))
+    expect(box).toHaveAttribute('aria-checked', 'false')
+
+    await user.click(box)
+    await user.click(dialog.getByRole('button', { name: '1 Artikel auf die Liste' }))
+
+    await dialog.findByText('1 Artikel steht jetzt auf der Einkaufsliste.')
+    expect(calls.find((call) => call.key === 'POST /api/shopping/list')?.body).toEqual({
+      name: 'Paprika',
+      icon: 'fluent-emoji-flat:bell-pepper',
+      recipes: ['Hähnchen-Wraps'],
+    })
   })
 
   it('sammelt die Zutaten der geplanten Rezepte der Woche', async () => {

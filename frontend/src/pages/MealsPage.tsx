@@ -55,12 +55,13 @@ export function MealsPage() {
   const weekIngredients = data
     ? data.entries
         .filter((entry) => entry.date >= data.today)
-        .flatMap(
-          (entry) =>
-            // Eine Variante für den Tag gilt statt des Rezepts.
+        .flatMap((entry) =>
+          // Eine Variante für den Tag gilt statt des Rezepts.
+          (
             entry.variant?.ingredients ??
             dishes.data?.find((dish) => dish.id === entry.dish_id)?.ingredients ??
-            [],
+            []
+          ).map((line) => ({ line, recipe: entry.name })),
         )
     : []
   const [filled, setFilled] = useState<number | null>(null)

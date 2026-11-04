@@ -25,6 +25,9 @@ from app.today import family_now
 
 router = APIRouter(prefix="/shopping", tags=["shopping"])
 
+# Name eines Rezepts, aus dem ein Artikel kommt.
+RecipeName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+
 # Menge oder Hinweis; leer = keiner.
 Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=60)]
 
@@ -50,6 +53,8 @@ class ListItemOut(BaseModel):
     name: str
     icon: str
     note: str | None
+    # Aus welchen Rezepten („Chili, Lasagne“); None = von Hand eingetragen.
+    recipes: str | None
     checked: bool
     # Von Hand gesetzt; None = automatisch.
     area: Area | None
@@ -76,6 +81,8 @@ class AddIn(BaseModel):
     icon: IconName
     # None lässt die Notiz eines schon offenen Artikels stehen, "" löscht sie.
     note: Note | None = None
+    # Rezepte, aus denen der Artikel als Zutat kommt; werden an die Rezepte des Eintrags angehängt.
+    recipes: Annotated[list[RecipeName], Field(max_length=20)] = []
 
 
 class EntryIn(BaseModel):
@@ -132,6 +139,7 @@ def _list_item(item: ShoppingItem) -> ListItemOut:
         name=item.name,
         icon=item.icon,
         note=item.note,
+        recipes=item.recipes,
         checked=item.checked_at is not None,
         area=item.area,
         position=item.position,
@@ -139,7 +147,20 @@ def _list_item(item: ShoppingItem) -> ListItemOut:
 
 
 def _take_off(item: ShoppingItem) -> None:
-    item.on_list, item.note, item.checked_at = False, None, None
+    item.on_list, item.note, item.recipes, item.checked_at = False, None, None, None
+
+
+# So lang darf die Angabe der Rezepte werden (wie in der Datenbank).
+RECIPES_MAX = 200
+
+
+def _add_recipe(recipes: str | None, recipe: str) -> str | None:
+    """Hängt ein Rezept an („Chili, Lasagne“); schon genannte und zu lange bleiben weg."""
+    names = [name for name in (recipes or "").split(", ") if name]
+    if recipe in names:
+        return recipes
+    joined = ", ".join([*names, recipe])
+    return joined if len(joined) <= RECIPES_MAX else recipes
 
 
 def _find(db: DbSession, name: str) -> ShoppingItem | None:
@@ -186,11 +207,13 @@ def add_to_list(body: AddIn, _: CurrentSession, db: DbSession) -> ListItemOut:
             assert item is not None
     item.icon = body.icon
     if not item.on_list or item.checked_at is not None:
-        item.on_list, item.checked_at, item.note = True, None, None
+        item.on_list, item.checked_at, item.note, item.recipes = True, None, None, None
         item.added_at = family_now(get_family(db))
         item.times_added += 1
     if body.note is not None:
         item.note = body.note or None
+    for recipe in body.recipes:
+        item.recipes = _add_recipe(item.recipes, recipe)
     db.commit()
     return _list_item(item)
 
@@ -202,7 +225,7 @@ def clear_checked(_: CurrentSession, db: DbSession) -> None:
     db.execute(
         update(ShoppingItem)
         .where(ShoppingItem.on_list, ShoppingItem.checked_at.is_not(None))
-        .values(on_list=False, note=None, checked_at=None)
+        .values(on_list=False, note=None, recipes=None, checked_at=None)
     )
     db.commit()
 
@@ -246,6 +269,9 @@ def edit_entry(item_id: int, body: EntryIn, _: CurrentSession, db: DbSession) ->
             target.on_list, target.added_at = True, item.added_at
             target.times_added += 1
         target.checked_at = item.checked_at
+        for recipe in (item.recipes or "").split(", "):
+            if recipe:
+                target.recipes = _add_recipe(target.recipes, recipe)
         _take_off(item)
         if item.times_added <= 1:
             # Nur für diesen Eintrag angelegt: kein Tippfehler bleibt als Vorschlag übrig.

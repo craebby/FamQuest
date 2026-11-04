@@ -865,6 +865,7 @@
     "ingredients_for": "Zutaten für „{{name}}“",
     "no_ingredients": "In den geplanten Rezepten ab heute stehen keine Zutaten.",
     "on_list": "steht schon drauf",
+    "on_list_as": "steht schon drauf als „{{name}}“",
     "add_to_list_one": "{{count}} Artikel auf die Liste",
     "add_to_list_other": "{{count}} Artikel auf die Liste",
     "added_to_list_one": "{{count}} Artikel steht jetzt auf der Einkaufsliste.",
@@ -969,6 +970,9 @@
     "no_recipes": "Noch keine Rezepte aus Mealie. Der Abgleich läuft alle paar Minuten; im Elternbereich geht es auch sofort."
   },
   "shopping": {
+    "from_recipes": "Aus dem Rezept",
+    "store_filter": "Nur einen Laden zeigen",
+    "all_stores": "Alle",
     "title": "Einkaufsliste",
     "add_button": "Eintragen",
     "add_title": "Was fehlt?",

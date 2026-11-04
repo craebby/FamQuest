@@ -7,6 +7,7 @@ import { ApiError } from './api/client'
 import { AppShell } from './components/AppShell'
 import { Button, FullScreenMessage } from './components/ui'
 import { errorMessage } from './errors'
+import { useReloadOnNewVersion } from './newVersion'
 import { applyFamilyLanguage } from './i18n'
 import { CalendarPage } from './pages/CalendarPage'
 import { ChoresPage } from './pages/ChoresPage'
@@ -104,6 +105,8 @@ function LoginRoute() {
 }
 
 export default function App() {
+  // Die Einkaufs-App bekommt neue Versionen über ihren Service Worker.
+  useReloadOnNewVersion(useLocation().pathname !== SHOP_PATH)
   return (
     <Routes>
       <Route element={<SetupGate />}>

@@ -2,6 +2,7 @@ import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
+import BookIcon from '~icons/fluent-emoji-flat/open-book'
 import ArrangeIcon from '~icons/lucide/arrow-up-down'
 import ArrowDownIcon from '~icons/lucide/arrow-down'
 import ArrowUpIcon from '~icons/lucide/arrow-up'
@@ -31,7 +32,14 @@ import { AreaIcon } from './shopping/AreaIcon'
 import { EntryEditor } from './shopping/EntryEditor'
 import { MoveDialog } from './shopping/MoveDialog'
 import { ShoppingAdder } from './shopping/ShoppingAdder'
-import { type AreaGroup, type Store, groupItems, itemArea } from './shopping/areas'
+import {
+  type AreaGroup,
+  STORES,
+  type Store,
+  type StoreGroup,
+  groupItems,
+  itemArea,
+} from './shopping/areas'
 
 /**
  * Einkaufsliste: offene Artikel groß mit Symbol, ein Tipp auf den Kreis hakt ab, ein weiterer nimmt
@@ -59,8 +67,12 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
   const open = items.filter((item) => !item.checked)
   const checked = items.filter((item) => item.checked)
   const groups = groupItems(open)
-  const supermarket = groups.find((group) => group.store === 'supermarket')
-  const otherStores = groups.filter((group) => group.store !== 'supermarket')
+  const [storeFilter, setStoreFilter] = useStoreFilter()
+  // Ist im gewählten Laden nichts mehr offen, stehen wieder alle da.
+  const store = groups.some((group) => group.store === storeFilter) ? storeFilter : null
+  const shown = store ? groups.filter((group) => group.store === store) : groups
+  const supermarket = shown.find((group) => group.store === 'supermarket')
+  const otherStores = shown.filter((group) => group.store !== 'supermarket')
   // Läden nur dann als Überschrift, wenn nicht alles aus dem Supermarkt kommt.
   const showStores = groups.length > 1 || groups[0]?.store !== 'supermarket'
   const error =
@@ -136,6 +148,8 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
           )}
         </div>
       </header>
+
+      {groups.length > 1 && <StoreFilter groups={groups} store={store} onChange={setStoreFilter} />}
 
       {arranging && <p className="text-lg text-slate-600">{t('shopping.arrange_hint')}</p>}
 
@@ -329,10 +343,90 @@ function Row({
           {item.note && (
             <span className="text-lg leading-tight break-words text-slate-500">{item.note}</span>
           )}
+          {item.recipes && (
+            <span className="flex items-start gap-1 text-base leading-tight text-slate-500">
+              <BookIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 break-words">
+                <span className="sr-only">{t('shopping.from_recipes')}: </span>
+                {item.recipes}
+              </span>
+            </span>
+          )}
         </span>
       </button>
       {children}
     </li>
+  )
+}
+
+const STORE_FILTER_KEY = 'famquest.shopping.store'
+
+/** Welcher Laden gezeigt wird, gemerkt je Gerät (im Laden steht man oft vor demselben). */
+function useStoreFilter() {
+  const [store, setStore] = useState<Store | null>(() => {
+    try {
+      const saved = localStorage.getItem(STORE_FILTER_KEY)
+      return STORES.find((store) => store === saved) ?? null
+    } catch {
+      return null
+    }
+  })
+  const change = (next: Store | null) => {
+    setStore(next)
+    try {
+      if (next) localStorage.setItem(STORE_FILTER_KEY, next)
+      else localStorage.removeItem(STORE_FILTER_KEY)
+    } catch {
+      // Ohne Speicher gilt die Wahl nur bis zum Neuladen.
+    }
+  }
+  return [store, change] as const
+}
+
+/**
+ * Nur einen Laden zeigen: Im Supermarkt stört die Drogerie nicht, am Handy wird weniger
+ * gescrollt. Jeder Knopf zeigt Symbol und Anzahl, auch für Kinder lesbar.
+ */
+function StoreFilter({
+  groups,
+  store,
+  onChange,
+}: {
+  groups: StoreGroup[]
+  store: Store | null
+  onChange: (store: Store | null) => void
+}) {
+  const { t } = useTranslation()
+  const count = (group: StoreGroup) => group.areas.reduce((sum, area) => sum + area.items.length, 0)
+  const chip =
+    'flex min-h-14 items-center gap-2 rounded-2xl px-4 text-lg font-bold ring-2 focus-visible:outline-4 focus-visible:outline-orange-400 aria-pressed:bg-orange-100 aria-pressed:text-orange-800 aria-pressed:ring-orange-400 bg-white text-slate-600 ring-slate-200'
+  return (
+    <div role="group" aria-label={t('shopping.store_filter')} className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        aria-pressed={store === null}
+        onClick={() => onChange(null)}
+        className={chip}
+      >
+        <CartIcon className="size-7" aria-hidden="true" />
+        {t('shopping.all_stores')}
+      </button>
+      {groups.map((group) => (
+        <button
+          key={group.store}
+          type="button"
+          aria-pressed={store === group.store}
+          onClick={() => onChange(group.store)}
+          className={chip}
+        >
+          <AreaIcon area={group.store} className="size-7" />
+          {t(`shopping.store.${group.store}`)}
+          <span className="rounded-full bg-slate-100 px-2 text-base tabular-nums">
+            {count(group)}
+          </span>
+        </button>
+      ))}
+    </div>
   )
 }
 

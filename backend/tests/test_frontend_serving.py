@@ -50,3 +50,10 @@ def test_does_not_serve_files_outside_static_dir(spa_client):
 def test_api_routes_are_not_swallowed_by_spa(spa_client):
     assert spa_client.get("/api/health").json()["status"] == "ok"
     assert spa_client.get("/api/unknown").json() == {"code": "common.not_found"}
+
+
+def test_index_is_always_revalidated(spa_client):
+    # Sonst hält ein Tablet, das nie neu lädt, die alte Version mit ihren alten Dateien fest.
+    for path in ("/", "/kitchen", "/index.html"):
+        assert spa_client.get(path).headers["cache-control"] == "no-cache"
+    assert "cache-control" not in spa_client.get("/assets/app.js").headers

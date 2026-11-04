@@ -28,6 +28,8 @@ export interface ListItem {
   icon: string
   /** Menge oder Hinweis, z. B. „2 ×“ oder „laktosefrei“. */
   note: string | null
+  /** Aus welchen Rezepten („Chili, Lasagne“); null = von Hand eingetragen. */
+  recipes: string | null
   checked: boolean
   /** Laden bzw. Bereich, wenn von Hand verschoben; null = automatisch (siehe areas.ts). */
   area: Area | null

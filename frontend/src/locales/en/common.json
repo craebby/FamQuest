@@ -865,6 +865,7 @@
     "ingredients_for": "Ingredients for “{{name}}”",
     "no_ingredients": "The recipes planned from today on list no ingredients.",
     "on_list": "already on the list",
+    "on_list_as": "already on the list as “{{name}}”",
     "add_to_list_one": "Add {{count}} item to the list",
     "add_to_list_other": "Add {{count}} items to the list",
     "added_to_list_one": "{{count}} item is now on the shopping list.",
@@ -969,6 +970,9 @@
     "no_recipes": "No recipes from Mealie yet. Syncing runs every few minutes; in the parents' area you can sync right away."
   },
   "shopping": {
+    "from_recipes": "From the recipe",
+    "store_filter": "Show one store only",
+    "all_stores": "All",
     "title": "Shopping list",
     "add_button": "Add",
     "add_title": "What do we need?",

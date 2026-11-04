@@ -616,6 +616,9 @@ class ShoppingItem(Base):
     on_list: Mapped[bool] = mapped_column(default=False, server_default="false")
     # Menge oder Hinweis („2 ×“, „laktosefrei“); gilt nur, solange der Artikel auf der Liste steht.
     note: Mapped[str | None] = mapped_column(String(60))
+    # Aus welchen Rezepten der Artikel auf die Liste kam („Chili, Lasagne“); gilt wie `note` nur,
+    # solange er auf der Liste steht.
+    recipes: Mapped[str | None] = mapped_column(String(200))
     # Wann auf die Liste gesetzt (Reihenfolge) und wann abgehakt. Abgehakte bleiben bis zum Ende
     # des Tages (Zeitzone der Familie) sichtbar, danach gelten sie als nicht mehr auf der Liste.
     added_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -137,8 +137,18 @@ def _mount_frontend(app: FastAPI, static_dir: Path) -> None:
     def spa(path: str) -> FileResponse:
         candidate = (static_dir / path).resolve()
         if path and candidate.is_file() and candidate.is_relative_to(static_dir.resolve()):
-            return FileResponse(candidate)
-        return FileResponse(index)
+            return FileResponse(candidate, headers=_revalidate(candidate))
+        return FileResponse(index, headers=NO_CACHE)
+
+
+# Die Startseite verweist auf die Dateien der aktuellen Version; ohne Nachfragen beim Server hielte
+# ein Gerät (Tablet in der Küche) die alte Version fest. Die Dateien unter /assets tragen ihren
+# Inhalt im Namen und dürfen bleiben.
+NO_CACHE = {"Cache-Control": "no-cache"}
+
+
+def _revalidate(path: Path) -> dict[str, str]:
+    return NO_CACHE if path.suffix == ".html" else {}
 
 
 app = create_app()

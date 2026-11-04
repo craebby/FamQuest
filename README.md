@@ -749,7 +749,15 @@ again. Saving checks the connection and imports the recipes right away.
   "Printer ink" → online, "Orange juice" → drinks; in German the last part of a compound word
   counts, "Milchschokolade" → sweets), otherwise from the icon. Shop headings only appear when not
   everything comes from the supermarket. Items for other shops without a matching icon get that
-  shop's icon (toolbox, parcel, lotion bottle).
+  shop's icon (toolbox, parcel, lotion bottle). "TK" or "tiefgekühlt" anywhere in the name means
+  frozen ("Spinat TK", "Erbsen (TK)").
+- **One shop only:** when items for several shops are on the list, buttons above it (with icon
+  and count) show just one shop, e.g. only the supermarket while you are there. Each device
+  remembers its choice; "All" shows everything again.
+- **From the recipe:** ingredients added from a recipe show a small book with the recipe's name.
+  If the item is already on the list under a slightly different name ("red peppers" and
+  "Peppers", "Zwiebeln" and "Zwiebel"), it is not added twice; the recipe is noted on the
+  existing item instead.
 - **Arrange:** the "Arrange" button shows arrows on every item to change the order within its
   section (e.g. the way through your supermarket) and a button with the section's icon to move it
   to another shop or section. FamQuest remembers both for the item, so next time it lands in the

@@ -1,4 +1,5 @@
 import { normalize } from '../../icons/catalog'
+import { sameArticle } from '../shopping/match'
 
 /**
  * Aus einer Zutat wird ein Artikel für die Einkaufsliste: „ca. 600 g Pellkartoffeln“ →
@@ -113,23 +114,36 @@ const PANTRY = [
 
 export const isPantry = (name: string) => PANTRY.includes(normalize(name))
 
+/** Eine Zeile aus der Zutatenliste eines Rezepts, mit dessen Namen. */
+export interface RecipeLine {
+  line: string
+  recipe: string
+}
+
+/** Zutat für die Einkaufsliste mit den Rezepten, aus denen sie kommt. */
+export interface RecipeIngredient extends Ingredient {
+  recipes: string[]
+}
+
 /**
- * Zutaten mehrerer Rezepte zusammengefasst: gleiche Namen (Schreibweise egal) werden ein Artikel,
- * ihre Mengen stehen mit „+“ im Hinweis („1 + 2“).
+ * Zutaten mehrerer Rezepte zusammengefasst: Derselbe Artikel (Schreibweise und Mehrzahl egal,
+ * „rote Zwiebeln“ = „Zwiebel“, siehe `sameArticle`) wird einer unter dem zuerst genannten Namen;
+ * die Mengen stehen mit „+“ im Hinweis („1 + 2“).
  */
-export function combineIngredients(lines: readonly string[]): Ingredient[] {
-  const byName = new Map<string, Ingredient>()
-  for (const line of lines) {
+export function combineIngredients(lines: readonly (string | RecipeLine)[]): RecipeIngredient[] {
+  const combined: RecipeIngredient[] = []
+  for (const entry of lines) {
+    const { line, recipe } = typeof entry === 'string' ? { line: entry, recipe: '' } : entry
     const ingredient = parseIngredient(line)
     if (!ingredient.name) continue
-    const key = normalize(ingredient.name)
-    const known = byName.get(key)
+    const known = combined.find((other) => sameArticle(other.name, ingredient.name))
     if (!known) {
-      byName.set(key, ingredient)
+      combined.push({ ...ingredient, recipes: recipe ? [recipe] : [] })
       continue
     }
     const note = [known.note, ingredient.note].filter(Boolean).join(' + ')
     known.note = note.slice(0, NOTE_MAX)
+    if (recipe && !known.recipes.includes(recipe)) known.recipes.push(recipe)
   }
-  return [...byName.values()]
+  return combined
 }
