@@ -4,17 +4,7 @@ Fehler und Lücken aus dem Alltag, die noch behoben werden. Erledigtes wandert m
 
 ## Offen
 
-### 7. Küchenansicht: kein Plus für neue Termine
-
-- **Gemeldet:** 2026-11-04 (Stand 1.4.0), am Küchentablet
-- **Behoben:** Branch `einkauf-feinschliff` (noch nicht veröffentlicht)
-- **Bereich:** Küchenansicht (`/kitchen`), Kopf neben der Uhr
-- **War:** Das Plus für neue Termine fehlte. Im Code war es da, im Nachbau mit Tablet-Format
-  funktionierte es. Ursache vermutlich: Das Tablet lädt die Seite nie neu und lief noch mit dem
-  Stand vor 1.4.0; die Startseite konnte außerdem im Browser-Cache hängen.
-- **Jetzt:** Der Server liefert `index.html` mit `Cache-Control: no-cache`. Die App fragt alle
-  10 Minuten nach, ob eine neue Version läuft, und lädt sich neu, sobald 10 Minuten niemand
-  getippt hat (nicht in der Einkaufs-App `/shop`, die ihren Service Worker hat).
+Zurzeit nichts.
 
 ## Erledigt
 
@@ -88,3 +78,15 @@ Fehler und Lücken aus dem Alltag, die noch behoben werden. Erledigtes wandert m
   den Artikel ab und kam an den Eintrag nicht heran.
 - **Jetzt:** Nur der Kreis vorne hakt ab. Ein Tipp auf den Artikel öffnet ihn zum Ändern (Name,
   Menge/Hinweis, Symbol, Laden, von der Liste nehmen), ohne PIN und auch offline.
+
+### 7. Küchenansicht: kein Plus für neue Termine
+
+- **Gemeldet:** 2026-11-04 (Stand 1.4.0), am Küchentablet
+- **Behoben:** 1.4.1
+- **Bereich:** Küchenansicht (`/kitchen`), Kopf neben der Uhr
+- **War:** Das Plus für neue Termine fehlte. Im Code war es da, im Nachbau mit Tablet-Format
+  funktionierte es. Ursache vermutlich: Das Tablet lädt die Seite nie neu und lief noch mit dem
+  Stand vor 1.4.0; die Startseite konnte außerdem im Browser-Cache hängen.
+- **Jetzt:** Der Server liefert `index.html` mit `Cache-Control: no-cache`. Die App fragt alle
+  10 Minuten nach, ob eine neue Version läuft, und lädt sich neu, sobald 10 Minuten niemand
+  getippt hat (nicht in der Einkaufs-App `/shop`, die ihren Service Worker hat).
