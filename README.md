@@ -1456,6 +1456,14 @@ them; the children's routines stay.
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
   family per installation.
 
+## Contact and support
+
+- **Bugs and wishes:** please open an [issue](https://github.com/craebby/FamQuest/issues) – I'm
+  happy to hear what you'd like, what you changed for your family and what works well.
+- **Everything else:** [famquest@zx0.de](mailto:famquest@zx0.de)
+- **Say thanks:** FamQuest is free and stays free. If you'd like to support it, you can do so via
+  [GitHub Sponsors](https://github.com/sponsors/craebby) or [Ko-fi](https://ko-fi.com/craebby).
+
 ## License
 
 Copyright © 2026 Craebby
