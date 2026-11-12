@@ -222,6 +222,26 @@ def test_receipt_wraps_long_names(client, parent):
     assert any(line.startswith("    ") and line.strip() for line in lines)
 
 
+def test_receipt_markup(client, parent, read_key):
+    add(client, parent, "Milch", MILK, note="2 l")
+    add(client, parent, "Zahnpasta", "fluent-emoji-flat:tooth")
+    response = client.get("/api/v1/shopping/receipt?format=markup", headers=bearer(read_key))
+    assert response.text.splitlines() == [
+        "# Einkauf",
+        "## Supermarkt",
+        "- Milch (2 l)",
+        "## Drogerie",
+        "- Zahnpasta",
+        "---",
+    ]
+    empty = client.get("/api/v1/shopping/receipt?format=markup&store=hardware&lang=en")
+    assert empty.status_code == 401
+    text = client.get(
+        "/api/v1/shopping/receipt?format=markup&store=hardware&lang=en", headers=bearer(read_key)
+    ).text
+    assert text.splitlines() == ["# Shopping", "Nothing missing.", "---"]
+
+
 def test_empty_receipt(client, parent, read_key):
     text = client.get("/api/v1/shopping/receipt?lang=en", headers=bearer(read_key)).text
     assert "Nothing missing." in text
@@ -351,6 +371,7 @@ def test_print_sends_list(client, parent, printer):
     assert sent["items"][0]["name"] == "Milch"
     assert "[ ] Milch (2 l)" in sent["text"]
     assert all(len(line) <= 24 for line in sent["text"].splitlines())
+    assert sent["markup"] == "# Shopping\n## Supermarket\n- Milch (2 l)\n---"
 
 
 def test_print_failure(client, parent, printer):

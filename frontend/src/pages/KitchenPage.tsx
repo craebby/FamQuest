@@ -10,6 +10,7 @@ import PrinterIcon from '~icons/fluent-emoji-flat/printer'
 import { useMe } from '../api/auth'
 import { DEFAULT_FRAME_SETTINGS, useFrameSettings } from '../api/frame'
 import { usePrinter } from '../api/integrations'
+import { opensInTab } from '../mixedContent'
 import { mealieUrl, useMealie } from '../api/mealie'
 import { useToday } from '../api/today'
 import { useIdleTimeout } from '../useIdleTimeout'
@@ -118,7 +119,11 @@ export function KitchenPage() {
               type="button"
               aria-label={t('integrations.app_open')}
               title={t('integrations.app_open')}
-              onClick={() => setPrinting(true)}
+              onClick={() =>
+                opensInTab(printApp)
+                  ? window.open(printApp, '_blank', 'noopener')
+                  : setPrinting(true)
+              }
               className="flex size-14 items-center justify-center rounded-2xl opacity-50 hover:bg-white/80 focus-visible:outline-4 focus-visible:outline-orange-400"
             >
               <PrinterIcon className="size-9" aria-hidden="true" />

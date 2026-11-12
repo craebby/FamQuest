@@ -1028,7 +1028,7 @@ Schnittstellen**.
 | Anfrage | Schlüssel | Was sie tut |
 | --- | --- | --- |
 | `GET /api/v1/shopping` | lesen | Offene Artikel in der Reihenfolge des Laufwegs, mit Laden und Bereich; `?store=supermarket`, `?include_checked=true`, `?lang=en` |
-| `GET /api/v1/shopping/receipt` | lesen | Dasselbe als Text für einen Bon-Drucker; `?width=32` (16–80 Zeichen), `?store=…`, `?lang=…` |
+| `GET /api/v1/shopping/receipt` | lesen | Dasselbe als Text für einen Bon-Drucker; `?width=32` (16–80 Zeichen), `?store=…`, `?lang=…`, `?format=markup` für `# Titel` / `## Laden` / `- Artikel` |
 | `POST /api/v1/shopping` | eintragen | Artikel auf die Liste setzen: `{"name": "Milch", "note": "2 l"}` (Hinweis optional) |
 | `PUT /api/v1/shopping/{id}/checked` | eintragen | Abhaken: `{"checked": true}` (oder `false` zum Zurücknehmen) |
 | `POST /api/v1/shopping/print` | eintragen | Liste an den Bon-Drucker schicken (wie der Knopf am Display) |
@@ -1083,22 +1083,25 @@ Ein Tipp schickt ein `POST` mit JSON an die Adresse:
   "language": "de",
   "width": 32,
   "text": "================================\n      Familie Sonnenschein\n…",
+  "markup": "# Einkauf\n## Supermarkt\n- Milch (2 l)\n---",
   "items": [
     { "id": 3, "name": "Milch", "note": "2 l", "recipes": null, "store": "supermarket", "area": "chilled" }
   ]
 }
 ```
 
-`text` ist der fertige Bon (Zeilen getrennt mit `\n`); `items` ist für Apps, die selbst gestalten
-wollen. Antwortet die Adresse nicht mit einem 2xx-Status, sagt das Display Bescheid. Deine
+`text` ist der fertige Bon in fester Zeichenbreite (Zeilen getrennt mit `\n`). `markup` ist
+dieselbe Liste für Apps mit eigener Schrift: `# Titel`, `## Laden`, `- Artikel` (mit Kästchen) in
+der Reihenfolge des Laufwegs, `---` am Ende. `items` ist für Apps, die ganz selbst gestalten wollen. Antwortet die Adresse nicht mit einem 2xx-Status, sagt das Display Bescheid. Deine
 Drucker-App kann den Bon auch jederzeit selbst abholen, mit einem Schlüssel zum Lesen
 (`GET /api/v1/shopping/receipt`).
 
 Hat die Drucker-App eine eigene Webseite (z. B. für Etiketten), kommt deren Adresse unter
 **Adresse der Druck-App** hin (z. B. `http://druck.fritz.box:8200`). Die Küchenansicht zeigt dann
 oben ein Drucker-Symbol, das die Seite als Ebene über der Küche öffnet; ✕ führt zurück. Bleibt der
-Rahmen leer, öffnet „Im Browser öffnen“ sie direkt. Läuft FamQuest über HTTPS, muss auch die
-Druck-App über HTTPS erreichbar sein, sonst blockiert der Browser die Seite im Rahmen.
+Rahmen leer, öffnet „Im Browser öffnen“ sie direkt. Läuft FamQuest über HTTPS und die Druck-App
+nur über `http://`, würde der Browser sie im Rahmen blockieren; das Symbol öffnet die Druck-App dann
+in einem eigenen Tab.
 
 ### Home Assistant
 

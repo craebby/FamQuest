@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.errors import ApiError
 from app.logs import logger
 from app.models import Family
-from app.receipt import Entry, entries, language, receipt_text
+from app.receipt import Entry, entries, language, receipt_markup, receipt_text
 from app.today import family_now
 
 # Tests setzen hier einen httpx.MockTransport ein.
@@ -42,6 +42,8 @@ def payload(db: Session, family: Family, lang: str | None = None) -> dict:
         "language": lang,
         "width": family.print_width,
         "text": receipt_text(family, items, width=family.print_width, lang=lang, now=now),
+        # Dasselbe als Markup (`# Titel`, `## Laden`, `- Artikel`), für Apps mit eigener Schrift.
+        "markup": receipt_markup(items, lang=lang),
         "items": [_item(entry) for entry in items],
     }
 

@@ -23,6 +23,7 @@ _WEEKDAYS = {
 _TITLE = {"de": "Einkaufsliste", "en": "Shopping list"}
 _COUNT = {"de": ("Artikel", "Artikel"), "en": ("item", "items")}
 _EMPTY = {"de": "Alles da.", "en": "Nothing missing."}
+_MARKUP_TITLE = {"de": "Einkauf", "en": "Shopping"}
 
 
 @dataclass
@@ -137,4 +138,21 @@ def receipt_text(
     one, many = _COUNT[lang]
     open_count = sum(not entry.checked for entry in items)
     lines += ["", "-" * width, f"{open_count} {one if open_count == 1 else many}", ""]
+    return "\n".join(lines)
+
+
+def receipt_markup(items: list[Entry], *, lang: str = "de") -> str:
+    """Bon im einfachen Markup für Drucker-Apps, die selbst setzen: `# Titel`, `## Laden`,
+    `- Artikel` (mit Kästchen), `---` am Ende. Die Reihenfolge folgt dem Laufweg."""
+    labels = LABELS[lang]
+    lines = [f"# {_MARKUP_TITLE[lang]}"]
+    if not items:
+        lines.append(_EMPTY[lang])
+    store = None
+    for entry in items:
+        if entry.store != store:
+            store = entry.store
+            lines.append(f"## {labels[store]}")
+        lines.append("- " + entry.name + (f" ({entry.note})" if entry.note else ""))
+    lines.append("---")
     return "\n".join(lines)

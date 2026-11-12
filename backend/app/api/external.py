@@ -24,7 +24,16 @@ from app.api.today import get_today
 from app.api_tokens import ReadToken, WriteToken
 from app.auth import DbSession, get_family
 from app.models import ChoreRoom, FamilyMember
-from app.receipt import DEFAULT_WIDTH, MAX_WIDTH, MIN_WIDTH, Entry, entries, language, receipt_text
+from app.receipt import (
+    DEFAULT_WIDTH,
+    MAX_WIDTH,
+    MIN_WIDTH,
+    Entry,
+    entries,
+    language,
+    receipt_markup,
+    receipt_text,
+)
 from app.schemas import TypedName
 from app.shopping_areas import LABELS, Store, default_icon
 from app.today import family_now
@@ -175,11 +184,16 @@ def get_receipt(
     width: Annotated[int, Query(ge=MIN_WIDTH, le=MAX_WIDTH)] = DEFAULT_WIDTH,
     store: Store | None = None,
     lang: Lang = None,
+    format: Literal["text", "markup"] = "text",
 ) -> str:
-    """Die offene Liste als Text für einen Bon-Drucker, `width` Zeichen breit."""
+    """Die offene Liste als Text für einen Bon-Drucker, `width` Zeichen breit; mit
+    `format=markup` als `# Titel`, `## Laden`, `- Artikel` für Apps mit eigener Schrift."""
     family = get_family(db)
     items = _filtered(entries(db, family), store)
-    return receipt_text(family, items, width=width, lang=language(family, lang))
+    lang = language(family, lang)
+    if format == "markup":
+        return receipt_markup(items, lang=lang)
+    return receipt_text(family, items, width=width, lang=lang)
 
 
 @router.post("/shopping", status_code=status.HTTP_201_CREATED)

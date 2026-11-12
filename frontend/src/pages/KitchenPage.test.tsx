@@ -17,6 +17,7 @@ import {
   renderApp,
   setupDone,
 } from '../test/utils'
+import { opensInTab } from '../mixedContent'
 import { KITCHEN_DAYS } from './KitchenPage'
 
 beforeEach(async () => {
@@ -147,6 +148,12 @@ describe('Küchenansicht', () => {
     expect(dialog.getByTitle('Druck-App')).toHaveAttribute('src', 'http://druck.fritz.box:8200')
     await user.click(dialog.getByRole('button', { name: 'Druck-App schließen' }))
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('öffnet eine Druck-App nur über http von einer https-Seite aus in einem eigenen Tab', () => {
+    expect(opensInTab('http://druck.fritz.box:8200', 'https:')).toBe(true)
+    expect(opensInTab('https://druck.example.com', 'https:')).toBe(false)
+    expect(opensInTab('http://druck.fritz.box:8200', 'http:')).toBe(false)
   })
 
   it('zeigt ohne Druck-App kein Drucker-Symbol', async () => {

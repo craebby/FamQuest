@@ -999,7 +999,7 @@ add items. Set this up in the parents' area under **Calendar & weather → Integ
 | Request | Key | What it does |
 | --- | --- | --- |
 | `GET /api/v1/shopping` | read | Open items in the order of the way through the shop, with shop and section; `?store=supermarket`, `?include_checked=true`, `?lang=en` |
-| `GET /api/v1/shopping/receipt` | read | The same as plain text for a receipt printer; `?width=32` (16–80 characters), `?store=…`, `?lang=…` |
+| `GET /api/v1/shopping/receipt` | read | The same as plain text for a receipt printer; `?width=32` (16–80 characters), `?store=…`, `?lang=…`, `?format=markup` for `# title` / `## store` / `- item` |
 | `POST /api/v1/shopping` | add | Put an item on the list: `{"name": "Milk", "note": "2 l"}` (note optional) |
 | `PUT /api/v1/shopping/{id}/checked` | add | Tick off: `{"checked": true}` (or `false` to undo) |
 | `POST /api/v1/shopping/print` | add | Send the list to the receipt printer (as the button on the display does) |
@@ -1053,22 +1053,25 @@ A tap sends a `POST` with JSON to the address:
   "language": "de",
   "width": 32,
   "text": "================================\n      Familie Sonnenschein\n…",
+  "markup": "# Einkauf\n## Supermarkt\n- Milch (2 l)\n---",
   "items": [
     { "id": 3, "name": "Milch", "note": "2 l", "recipes": null, "store": "supermarket", "area": "chilled" }
   ]
 }
 ```
 
-`text` is the finished receipt (lines separated by `\n`); `items` is there if your app prefers to
-lay it out itself. If the address doesn't answer with a 2xx status, the display says so. Your
+`text` is the finished receipt in a fixed-width font (lines separated by `\n`). `markup` is the
+same list for apps with their own fonts: `# title`, `## store`, `- item` (with a tick box) in the
+order of the way through the shop, `---` at the end. `items` is there if your app prefers to lay it
+out itself. If the address doesn't answer with a 2xx status, the display says so. Your
 printer app can also fetch the receipt itself whenever you like with a read-only key
 (`GET /api/v1/shopping/receipt`).
 
 If your printer app has its own web page (e.g. for labels), enter it under **Printer app address**
 (e.g. `http://printer.fritz.box:8200`). The kitchen view then shows a printer icon at the top that
 opens the page as a layer over the kitchen; ✕ goes back. If the frame stays empty, "Open in
-browser" opens it directly. If FamQuest runs over HTTPS, the printer app has to be reachable over
-HTTPS too, otherwise the browser blocks it inside the frame.
+browser" opens it directly. If FamQuest runs over HTTPS and the printer app only over `http://`,
+the browser would block it inside the frame; the icon then opens the printer app in its own tab.
 
 ### Home Assistant
 
