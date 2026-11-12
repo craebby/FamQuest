@@ -1493,6 +1493,7 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 
 - **Fehler und Wünsche:** gern als [Issue](https://github.com/craebby/FamQuest/issues) – ich freue
   mich zu hören, was ihr euch wünscht, was ihr für eure Familie angepasst habt und was gut klappt.
+- **Fragen, Ideen, euer Aufbau:** [Discussions](https://github.com/craebby/FamQuest/discussions)
 - **Alles andere:** [famquest@zx0.de](mailto:famquest@zx0.de)
 - **Danke sagen:** FamQuest ist kostenlos und bleibt es. Wer es unterstützen möchte, kann das über
   [GitHub Sponsors](https://github.com/sponsors/craebby) oder [Ko-fi](https://ko-fi.com/craebby).
