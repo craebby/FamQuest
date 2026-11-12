@@ -18,9 +18,11 @@ from app.api import (
     chores,
     demo,
     event_symbols,
+    external,
     frame,
     health,
     home,
+    integrations,
     mealie,
     meals,
     members,
@@ -107,6 +109,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         shopping,
         chores,
         todos,
+        integrations,
+        external,
     ):
         api.include_router(module.router)
     app.include_router(api)

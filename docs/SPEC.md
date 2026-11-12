@@ -207,6 +207,20 @@ Manche Familien pflegen alle Termine in einem Kalender und erkennen die Person a
 - Die Regeln gelten beim Anzeigen, Änderungen wirken sofort und ohne neuen Abruf. Ausgeblendete Termine fehlen überall, wo Termine stehen.
 - Ist einer Farbe mindestens eine Person zugeordnet, fragt das Terminformular „Für wen?“ und schreibt die Wahl als Farbe zurück: bei mehreren Farben die kleinste Nummer, für die Person des Kalenders wird die Farbe entfernt. Gehört der Termin der Person schon (z. B. zweite Farbe), bleibt die Farbe unverändert.
 
+**Schnittstellen** *(Phase 14, entschieden am 2026-11-12, zur Prüfung)*
+
+- Andere Programme (Bon-Drucker, Home Assistant) melden sich mit einem API-Schlüssel an (`Authorization: Bearer fq_…`), nicht mit Session und CSRF-Token. Schlüssel legen die Eltern mit PIN im Elternbereich unter „Kalender & Wetter → Schnittstellen“ an; jeder hat einen Namen und ein Recht („nur lesen“ oder „lesen und eintragen“). Der Schlüssel erscheint nur einmal, gespeichert wird sein SHA-256-Hash. Nicht in der Demo.
+- Die Schnittstelle liegt unter `/api/v1` und bleibt über Versionen stabil: Einkaufsliste (JSON und Bon-Text mit fester Breite, nach Laden und Laufweg), Artikel eintragen und abhaken, „Zu erledigen“ lesen, eintragen und abhaken, Übersicht von heute (Einkauf, Haushalt, Essen, Termine, Aufgaben und Punkte je Person). Schreiben kann sie nur, was am Display ohne Eltern-PIN geht.
+- Bereiche der Einkaufsliste: Die Regeln (Stichwörter, Symbole) stehen in `frontend/src/pages/shopping/area-rules.json`; das Backend liest dieselbe Datei (im Image kopiert), damit Bon und Display gleich ordnen.
+- Bon-Drucker: FamQuest druckt nicht selbst. Die Eltern tragen eine Adresse und die Breite des Bons ein (32, 42 oder 48 Zeichen); „Drucken“ auf der Einkaufsliste (ohne PIN) schickt per POST den fertigen Text und die Artikel als JSON dorthin. Die Adresse darf im Heimnetz liegen und lässt sich deshalb nur mit PIN und nicht in der Demo ändern.
+- Home Assistant: über die RESTful-Integration (Sensoren aus der Übersicht) und `rest_command`, Beispiele in der README. Eine eigene HA-Integration (z. B. Einkaufsliste als To-do-Liste) bleibt eine Idee.
+
+**Kalender im Bilderrahmen** *(Phase 14, entschieden am 2026-11-12, zur Prüfung)*
+
+- In bis zu sechs Zeitfenstern (z. B. Frühstück, Abendessen; auch über Mitternacht, Zeitzone der Familie) zeigt der Bilderrahmen den Kalender statt Fotos; außerhalb davon auf Wunsch nach 3, 5, 10 oder 20 Fotos einmal für die Anzeigedauer eines Fotos.
+- Ansicht „nur heute“ oder „heute und die nächsten Tage“ (wie die Küchenansicht), jeweils mit Terminen und Essen, oben Datum, Wetter und Uhr; ohne Einblendungen. Das Nachtfenster geht vor, ein Tipp führt zu „Heute“.
+- Ob jemand vor dem Display steht, erkennt FamQuest nicht; das bleibt Sache des Geräts (z. B. Bewegungserkennung von Fully Kiosk).
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -456,6 +470,7 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | Calendar | Phase 2 | Kalender eines Kontos: ausgewählt, Person oder Familie (ohne Person), Rolle des Kontos, Sync-Stand |
 | CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine mit Kennzeichen), ganztägig oder mit Uhrzeit, Terminfarbe |
 | CalendarColorRule | Phase 13 | Terminfarbe eines Kalenders → Person; ohne Person ausgeblendet |
+| ApiToken | Phase 14 | Schlüssel für `/api/v1`: Name, Hash, Anfang, Recht, letzte Nutzung |
 | Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
 | Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol, optional eigenes Foto (512 × 512 WebP) |
 | MealPlanEntry | Phase 5 | Gericht an einem Tag zu einer Mahlzeit (Frühstück, Mittag, Abend, Snack); höchstens eins je Tag und Mahlzeit |

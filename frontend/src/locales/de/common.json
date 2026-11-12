@@ -510,6 +510,17 @@
       "token_missing": "Für Rezepte aus Mealie braucht es einen API-Token.",
       "off": "Rezepte aus Mealie sind gerade ausgeschaltet.",
       "not_found": "Dieses Rezept gibt es in Mealie nicht mehr."
+    },
+    "api": {
+      "token_missing": "Der API-Schlüssel fehlt.",
+      "token_invalid": "Dieser API-Schlüssel gilt nicht (mehr).",
+      "read_only": "Dieser API-Schlüssel darf nur lesen.",
+      "too_many_tokens": "Es gibt schon 20 Schlüssel. Lösche erst einen alten.",
+      "token_not_found": "Diesen Schlüssel gibt es nicht mehr."
+    },
+    "print": {
+      "not_configured": "Es ist kein Bon-Drucker eingetragen (Elternbereich → Kalender & Wetter → Schnittstellen).",
+      "failed": "Der Drucker hat nicht geantwortet. Ist er an und die Adresse richtig?"
     }
   },
   "rewards": {
@@ -828,6 +839,21 @@
     "night_style": {
       "dark": "Schwarz",
       "clock": "Gedimmte Uhr"
+    },
+    "calendar": "Kalender statt Fotos",
+    "calendar_hint": "Zu bestimmten Zeiten, z. B. morgens und zum Abendessen, zeigt der Bilderrahmen den Kalender mit Terminen und Essen. Das Nachtfenster geht vor.",
+    "calendar_start": "Von",
+    "calendar_end": "Bis",
+    "calendar_add": "Zeitfenster hinzufügen",
+    "calendar_remove": "Zeitfenster {{start}}–{{end}} entfernen",
+    "calendar_every": "Zwischendurch den Kalender zeigen",
+    "calendar_never": "Nie",
+    "calendar_after_one": "Nach jedem Foto",
+    "calendar_after_other": "Nach {{count}} Fotos",
+    "calendar_view": "Ansicht",
+    "calendar_views": {
+      "day": "Nur heute",
+      "days": "Heute und die nächsten Tage"
     }
   },
   "meals": {
@@ -1035,7 +1061,12 @@
       "drugstore": "Drogerie",
       "hardware": "Baumarkt",
       "online": "Online"
-    }
+    },
+    "print": "Drucken",
+    "print_label": "Einkaufsliste drucken",
+    "printing": "Wird gedruckt …",
+    "printed_one": "Bon mit 1 Artikel geschickt.",
+    "printed_other": "Bon mit {{count}} Artikeln geschickt."
   },
   "event_symbols": {
     "section": "Symbole für Termine",
@@ -1191,5 +1222,39 @@
     "repeat": "„{{title}}“ kommt wieder: in den Putzplan übernehmen",
     "repeat_hint": "Kommt wieder: Wählt Raum und Abstand. Der Eintrag wandert damit von „Zu erledigen“ in den Putzplan.",
     "need_room": "„{{title}}“ kommt wieder? Dafür braucht der Putzplan zuerst einen Raum."
+  },
+  "integrations": {
+    "section": "Schnittstellen",
+    "intro": "Für andere Programme im Heimnetz, z. B. einen Bon-Drucker oder Home Assistant. Wie das geht, steht in der README.",
+    "printer": "Bon-Drucker",
+    "printer_hint": "Ist eine Adresse eingetragen, hat die Einkaufsliste einen Drucker-Knopf. FamQuest schickt die offene Liste dann als fertigen Bon-Text und als Artikel an diese Adresse.",
+    "printer_url": "Adresse des Druckers",
+    "printer_url_hint": "Zum Beispiel deine Drucker-App oder ein Webhook in Home Assistant. Leer lassen = kein Drucker.",
+    "printer_width": "Breite des Bons",
+    "chars_one": "{{count}} Zeichen",
+    "chars_other": "{{count}} Zeichen",
+    "paper_32": "58 mm",
+    "paper_42": "72 mm",
+    "paper_48": "80 mm",
+    "printer_saved": "Drucker gespeichert.",
+    "printer_removed": "Kein Drucker mehr eingetragen.",
+    "tokens": "API-Schlüssel",
+    "tokens_hint": "Mit einem Schlüssel können andere Programme die Einkaufsliste, „Zu erledigen“ und eine Übersicht von heute abrufen. Adresse: {{url}}",
+    "token_name": "Wofür ist der Schlüssel?",
+    "token_name_placeholder": "z. B. Home Assistant",
+    "scope": "Was darf der Schlüssel?",
+    "scope_read": "Nur lesen",
+    "scope_read_hint": "Liste und Übersicht abrufen, z. B. für den Drucker",
+    "scope_write": "Lesen und eintragen",
+    "scope_write_hint": "Auch Artikel eintragen, abhaken und drucken",
+    "create": "Schlüssel anlegen",
+    "created": "Schlüssel „{{name}}“ angelegt. Kopiere ihn jetzt, er wird nur dieses eine Mal angezeigt.",
+    "created_done": "Fertig",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "last_used": "zuletzt benutzt {{time}}",
+    "never_used": "noch nie benutzt",
+    "delete": "Schlüssel „{{name}}“ löschen",
+    "delete_confirm": "Wirklich löschen"
   }
 }

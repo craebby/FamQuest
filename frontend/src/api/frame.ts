@@ -11,7 +11,27 @@ export type PhotoSeconds = (typeof PHOTO_SECONDS)[number]
 export const NIGHT_STYLES = ['dark', 'clock'] as const
 export type NightStyle = (typeof NIGHT_STYLES)[number]
 
-/** Einblendungen, Anzeigedauer und Nachtmodus des Bilderrahmens; gilt für die ganze Familie. */
+/** Kalender im Bilderrahmen: nur heute groß oder heute und die nächsten Tage (wie die Küche). */
+export const CALENDAR_VIEWS = ['day', 'days'] as const
+export type CalendarView = (typeof CALENDAR_VIEWS)[number]
+
+/** Nach so vielen Fotos kommt einmal der Kalender; 0 = nie (wie api/frame.py). */
+export const CALENDAR_EVERY = [0, 3, 5, 10, 20] as const
+export type CalendarEvery = (typeof CALENDAR_EVERY)[number]
+
+/** So viele Zeitfenster für den Kalender (wie api/frame.py). */
+export const MAX_CALENDAR_WINDOWS = 6
+
+/** Zeitfenster „HH:MM“–„HH:MM“, in dem statt Fotos der Kalender steht. */
+export interface CalendarWindow {
+  start: string
+  end: string
+}
+
+/**
+ * Einblendungen, Anzeigedauer, Kalender und Nachtmodus des Bilderrahmens; gilt für die ganze
+ * Familie.
+ */
 export interface FrameSettings {
   show_clock: boolean
   show_weather: boolean
@@ -23,11 +43,16 @@ export interface FrameSettings {
   night_start: string
   night_end: string
   night_style: NightStyle
+  /** In diesen Zeitfenstern statt Fotos der Kalender (das Nachtfenster geht vor). */
+  calendar_windows: CalendarWindow[]
+  calendar_view: CalendarView
+  /** Außerhalb der Zeitfenster: nach so vielen Fotos einmal der Kalender. */
+  calendar_every: CalendarEvery
 }
 
 /**
  * Standard wie im Backend: ruhig, mit Uhr, Wetter und nächstem Termin, ohne Aufgaben; Nachtmodus
- * aus.
+ * und Kalender aus.
  */
 export const DEFAULT_FRAME_SETTINGS: FrameSettings = {
   show_clock: true,
@@ -39,6 +64,9 @@ export const DEFAULT_FRAME_SETTINGS: FrameSettings = {
   night_start: '22:00',
   night_end: '06:00',
   night_style: 'clock',
+  calendar_windows: [],
+  calendar_view: 'days',
+  calendar_every: 0,
 }
 
 export const FRAME_SETTINGS_KEY = ['frame-settings'] as const

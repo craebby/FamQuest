@@ -278,3 +278,91 @@ describe('Nachtmodus', () => {
     expect(screen.queryByTestId('frame-night')).not.toBeInTheDocument()
   })
 })
+
+describe('Kalender im Bilderrahmen', () => {
+  const MEALS = {
+    start: '2026-01-12',
+    today: '2026-01-15',
+    meals: ['dinner'],
+    entries: [
+      {
+        date: '2026-01-15',
+        meal: 'dinner',
+        dish_id: 1,
+        name: 'Lasagne',
+        icon: 'fluent-emoji-flat:spaghetti',
+        image_url: null,
+        note: null,
+        variant: null,
+      },
+    ],
+  }
+  const calendarApi = {
+    'GET /api/calendar/status': Response.json({ enabled: false }),
+    'GET /api/meals/week': Response.json(MEALS),
+  }
+
+  it('zeigt im Zeitfenster den Kalender statt Fotos und danach wieder Fotos', async () => {
+    // 17:59:50 in Berlin (Winter), das Fenster endet um 18:00.
+    vi.useFakeTimers({ shouldAdvanceTime: true, now: new Date('2026-01-15T16:59:50Z') })
+    mockFrame(
+      [makePhoto()],
+      { calendar_windows: [{ start: '17:30', end: '18:00' }], calendar_view: 'day' },
+      { ...calendarApi, 'GET /api/today': Response.json(makeToday({ date: '2026-01-15' })) },
+    )
+    renderApp('/frame')
+
+    const calendar = await screen.findByTestId('frame-calendar')
+    expect(await within(calendar).findByText('Lasagne')).toBeInTheDocument()
+    // Nur heute: eine Spalte.
+    expect(within(calendar).getAllByRole('region', { name: /Januar/ })).toHaveLength(1)
+    expect(screen.queryByTestId('frame-photo')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('frame-overlays')).not.toBeInTheDocument()
+
+    await act(() => vi.advanceTimersByTimeAsync(20 * 1000))
+    expect(await screen.findByTestId('frame-photo')).toBeInTheDocument()
+    expect(screen.queryByTestId('frame-calendar')).not.toBeInTheDocument()
+  })
+
+  it('zeigt zwischendurch nach der eingestellten Zahl Fotos den Kalender', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, now: new Date('2026-01-15T10:00:00Z') })
+    mockFrame(
+      [makePhoto({ id: 1 }), makePhoto({ id: 2 }), makePhoto({ id: 3 })],
+      { calendar_every: 3, photo_seconds: 15 },
+      { ...calendarApi, 'GET /api/today': Response.json(makeToday({ date: '2026-01-15' })) },
+    )
+    renderApp('/frame')
+
+    await screen.findByTestId('frame-photo')
+    await act(() => vi.advanceTimersByTimeAsync(15 * 1000 + 100))
+    await act(() => vi.advanceTimersByTimeAsync(15 * 1000 + 100))
+    expect(screen.queryByTestId('frame-calendar')).not.toBeInTheDocument()
+    await act(() => vi.advanceTimersByTimeAsync(15 * 1000 + 100))
+    const calendar = await screen.findByTestId('frame-calendar')
+    // Heute und die nächsten Tage.
+    expect(within(calendar).getAllByRole('region', { name: /Januar/ }).length).toBeGreaterThan(1)
+    expect(screen.queryByTestId('frame-overlays')).not.toBeInTheDocument()
+
+    await act(() => vi.advanceTimersByTimeAsync(15 * 1000 + 100))
+    expect(screen.queryByTestId('frame-calendar')).not.toBeInTheDocument()
+    expect(screen.getAllByTestId('frame-photo').length).toBeGreaterThan(0)
+  })
+
+  it('lässt nachts den Nachtbildschirm vorgehen', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, now: new Date('2026-01-15T23:00:00Z') })
+    mockFrame(
+      [makePhoto()],
+      {
+        night_enabled: true,
+        night_start: '22:00',
+        night_end: '06:00',
+        calendar_windows: [{ start: '23:30', end: '01:00' }],
+      },
+      calendarApi,
+    )
+    renderApp('/frame')
+
+    expect(await screen.findByTestId('frame-night')).toBeInTheDocument()
+    expect(screen.queryByTestId('frame-calendar')).not.toBeInTheDocument()
+  })
+})

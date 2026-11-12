@@ -236,6 +236,23 @@ Gearbeitet wird auf dem Branch `phase-13-termine` (abgezweigt von `phase-12-meal
 2. Personen nach Terminfarbe: Farbe speichern, „Farben zuordnen“ je Kalender, Rückschreiben
 3. Feinschliff im Alltag
 
+## Etappen (Phase 14: Schnittstellen)
+
+Entschieden (von Claude, während der Nutzer unterwegs war, zur Prüfung): API-Schlüssel statt
+OAuth (nur lesen oder lesen und eintragen, gespeichert als Hash, im Elternbereich unter „Kalender &
+Wetter“); stabile Schnittstelle unter `/api/v1`; FamQuest druckt nicht selbst, sondern schickt die
+Liste an eine eingetragene Adresse (Drucker-App oder Webhook); Home Assistant per RESTful-Sensoren
+und `rest_command` (eigene HA-Integration erst später); die Bereichsregeln der Einkaufsliste stehen
+in `frontend/src/pages/shopping/area-rules.json` und gelten auch im Backend. Im Bilderrahmen
+Kalender statt Fotos zu festen Zeiten, Präsenz erkennt FamQuest nicht. Gearbeitet wird auf dem
+Branch `phase-14-schnittstellen`.
+
+1. Schnittstellen: API-Schlüssel, Einkaufsliste und Bon-Text, eintragen und abhaken, „Zu
+   erledigen“, Übersicht für Home Assistant, Bon-Drucker mit Knopf „Drucken“
+2. Kalender im Bilderrahmen: Zeitfenster, zwischendurch nach einigen Fotos, nur heute oder die
+   nächsten Tage
+3. Feinschliff im Alltag
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

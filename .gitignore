@@ -26,3 +26,6 @@ frontend/playwright-report/
 
 # Backups (scripts/backup.sh)
 /backup/
+
+# Kopie der Bereichsregeln im Image (Dockerfile)
+backend/app/area-rules.json

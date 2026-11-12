@@ -67,6 +67,7 @@ def database() -> None:
 def clean_state() -> Iterator[None]:
     """Jeder Test startet mit leerer Datenbank und zurückgesetzten Rate-Limits."""
     yield
+    from app.api_tokens import token_limiter
     from app.db import Base, engine
     from app.security import login_limiter, pin_limiter
 
@@ -75,6 +76,7 @@ def clean_state() -> Iterator[None]:
         conn.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
     login_limiter.clear()
     pin_limiter.clear()
+    token_limiter.clear()
     shutil.rmtree(UPLOAD_DIR / "avatars", ignore_errors=True)
     shutil.rmtree(UPLOAD_DIR / "photos", ignore_errors=True)
     shutil.rmtree(UPLOAD_DIR / "dishes", ignore_errors=True)

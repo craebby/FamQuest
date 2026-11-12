@@ -510,6 +510,17 @@
       "token_missing": "Recipes from Mealie need an API token.",
       "off": "Recipes from Mealie are switched off right now.",
       "not_found": "This recipe no longer exists in Mealie."
+    },
+    "api": {
+      "token_missing": "The API key is missing.",
+      "token_invalid": "This API key is not valid (any more).",
+      "read_only": "This API key may only read.",
+      "too_many_tokens": "There are already 20 keys. Delete an old one first.",
+      "token_not_found": "This key no longer exists."
+    },
+    "print": {
+      "not_configured": "No receipt printer is set (parent area → Calendar & weather → Integrations).",
+      "failed": "The printer didn't answer. Is it on and the address right?"
     }
   },
   "rewards": {
@@ -828,6 +839,21 @@
     "night_style": {
       "dark": "Black",
       "clock": "Dimmed clock"
+    },
+    "calendar": "Calendar instead of photos",
+    "calendar_hint": "At certain times, e.g. in the morning and at dinner, the picture frame shows the calendar with events and meals. The night window comes first.",
+    "calendar_start": "From",
+    "calendar_end": "Until",
+    "calendar_add": "Add time window",
+    "calendar_remove": "Remove time window {{start}}–{{end}}",
+    "calendar_every": "Show the calendar in between",
+    "calendar_never": "Never",
+    "calendar_after_one": "After every photo",
+    "calendar_after_other": "After {{count}} photos",
+    "calendar_view": "View",
+    "calendar_views": {
+      "day": "Today only",
+      "days": "Today and the next days"
     }
   },
   "meals": {
@@ -1035,7 +1061,12 @@
       "drugstore": "Drugstore",
       "hardware": "DIY store",
       "online": "Online"
-    }
+    },
+    "print": "Print",
+    "print_label": "Print shopping list",
+    "printing": "Printing …",
+    "printed_one": "Sent a receipt with 1 item.",
+    "printed_other": "Sent a receipt with {{count}} items."
   },
   "event_symbols": {
     "section": "Symbols for events",
@@ -1191,5 +1222,39 @@
     "repeat": "“{{title}}” comes back: move it to the cleaning plan",
     "repeat_hint": "Comes back: pick a room and an interval. This moves the entry from “To do” to the cleaning plan.",
     "need_room": "“{{title}}” comes back? The cleaning plan needs a room first."
+  },
+  "integrations": {
+    "section": "Integrations",
+    "intro": "For other programs on your home network, e.g. a receipt printer or Home Assistant. The README explains how.",
+    "printer": "Receipt printer",
+    "printer_hint": "With an address set, the shopping list gets a printer button. FamQuest then sends the open list to this address as ready-made receipt text and as items.",
+    "printer_url": "Printer address",
+    "printer_url_hint": "For example your printer app or a webhook in Home Assistant. Leave empty for no printer.",
+    "printer_width": "Receipt width",
+    "chars_one": "{{count}} character",
+    "chars_other": "{{count}} characters",
+    "paper_32": "58 mm",
+    "paper_42": "72 mm",
+    "paper_48": "80 mm",
+    "printer_saved": "Printer saved.",
+    "printer_removed": "No printer set any more.",
+    "tokens": "API keys",
+    "tokens_hint": "With a key, other programs can read the shopping list, “To do” and an overview of today. Address: {{url}}",
+    "token_name": "What is the key for?",
+    "token_name_placeholder": "e.g. Home Assistant",
+    "scope": "What may the key do?",
+    "scope_read": "Read only",
+    "scope_read_hint": "Get the list and overview, e.g. for the printer",
+    "scope_write": "Read and add",
+    "scope_write_hint": "Also add items, tick them off and print",
+    "create": "Create key",
+    "created": "Key “{{name}}” created. Copy it now, it is shown only this once.",
+    "created_done": "Done",
+    "copy": "Copy",
+    "copied": "Copied",
+    "last_used": "last used {{time}}",
+    "never_used": "never used",
+    "delete": "Delete key “{{name}}”",
+    "delete_confirm": "Really delete"
   }
 }

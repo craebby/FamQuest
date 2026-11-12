@@ -163,7 +163,7 @@ def _add_recipe(recipes: str | None, recipe: str) -> str | None:
     return joined if len(joined) <= RECIPES_MAX else recipes
 
 
-def _find(db: DbSession, name: str) -> ShoppingItem | None:
+def find_item(db: DbSession, name: str) -> ShoppingItem | None:
     return db.scalar(select(ShoppingItem).where(func.lower(ShoppingItem.name) == name.lower()))
 
 
@@ -194,7 +194,7 @@ def shopping_list(_: CurrentSession, db: DbSession) -> ShoppingListOut:
 def add_to_list(body: AddIn, _: CurrentSession, db: DbSession) -> ListItemOut:
     """Setzt einen Artikel auf die Liste. Ein unbekannter Name legt ihn an; das Symbol gilt für den
     Artikel. Steht er schon offen darauf, ändern sich nur Symbol und Notiz."""
-    item = _find(db, body.name)
+    item = find_item(db, body.name)
     if item is None:
         item = ShoppingItem(name=body.name, icon=body.icon, times_added=0)
         db.add(item)
@@ -203,7 +203,7 @@ def add_to_list(body: AddIn, _: CurrentSession, db: DbSession) -> ListItemOut:
         except IntegrityError:
             # Gleichzeitig auf einem anderen Gerät angelegt.
             db.rollback()
-            item = _find(db, body.name)
+            item = find_item(db, body.name)
             assert item is not None
     item.icon = body.icon
     if not item.on_list or item.checked_at is not None:
@@ -257,7 +257,7 @@ def edit_entry(item_id: int, body: EntryIn, _: CurrentSession, db: DbSession) ->
     family = get_family(db)
     if not _is_visible(family, item):
         raise ApiError(status.HTTP_404_NOT_FOUND, "shopping.not_on_list")
-    target = _find(db, body.name)
+    target = find_item(db, body.name)
     if target is None and item.times_added <= 1 or target is item:
         item.name = body.name
         target = item
@@ -345,7 +345,7 @@ def _item_out(item: ShoppingItem) -> ShoppingItemOut:
 def update_item(item_id: int, body: ItemIn, _: CurrentSession, db: DbSession) -> ShoppingItemOut:
     """Name und Symbol ändern; gilt auch auf der Liste."""
     item = _get(db, item_id)
-    other = _find(db, body.name)
+    other = find_item(db, body.name)
     if other is not None and other.id != item.id:
         raise ApiError(status.HTTP_409_CONFLICT, "shopping.duplicate_name")
     item.name, item.icon = body.name, body.icon

@@ -55,8 +55,9 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
   Eltern-PIN lassen sich Termine anlegen, bearbeiten und löschen
 - Wetter für euren Ort (Open-Meteo, ohne API-Schlüssel)
 - Bilderrahmen: hochgeladene Fotos im Vollbild mit Überblendung, per Symbol oder nach Leerlauf,
-  auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, dazu ein Nachtmodus (schwarz
-  oder gedimmte Uhr)
+  auf Wunsch mit Uhr, Wetter, nächstem Termin und offenen Aufgaben, zu festen Zeiten (z. B.
+  Frühstück und Abendessen) oder zwischendurch der Kalender, dazu ein Nachtmodus (schwarz oder
+  gedimmte Uhr)
 - Essensplan: Gerichte für die Woche direkt am Display eintippen, mit Vorschlägen und Symbolen;
   dazu eine Rezeptsammlung zum Einfügen per Text, mit Sternen bewertet, auf Wunsch mit Rezepten aus
   [Mealie](#mealie)
@@ -69,6 +70,8 @@ Die Screenshots zeigen eine Beispielfamilie (Demodaten, siehe [Entwicklung](#ent
   eine gemeinsame Liste für Einmaliges wie „Hühnerfutter holen“
 - Küchenansicht für ein kleines Tablet: Termine und Essen der nächsten Tage, per Wisch Aufgaben,
   Haushalt und Einkauf
+- Schnittstellen: API-Schlüssel für andere Programme, die Einkaufsliste als Bon für einen Drucker
+  (Knopf am Display), Sensoren und Befehle für [Home Assistant](#home-assistant)
 - Elternbereich mit Eltern-PIN
 - Profilbilder mit Zuschnitt, eine Farbe pro Person
 - Deutsch und Englisch, weitere Sprachen über Übersetzungsdateien
@@ -985,6 +988,186 @@ Welcher Befehl funktioniert, hängt vom Gerät und vom Desktop ab; `wlr-randr` o
 die Namen der Ausgänge. Auf älterem Raspberry Pi OS ohne KMS-Treiber geht auch
 `vcgencmd display_power 0`/`1`.
 
+**Kalender statt Fotos**
+
+Auf derselben Karte zeigt **Kalender statt Fotos** zu bestimmten Zeiten den Kalender mit Terminen
+und Essen im Bilderrahmen, zum Beispiel beim Frühstück und zum Abendessen. Ab Werk ist das aus.
+
+- **Zeitfenster hinzufügen** legt ein Fenster (von, bis) in der Zeitzone der Familie fest, bis zu
+  sechs. In diesen Fenstern zeigt der Bilderrahmen den Kalender statt Fotos, danach geht es mit den
+  Fotos weiter.
+- **Zwischendurch den Kalender zeigen**: Außerhalb der Fenster kommt nach 3, 5, 10 oder 20 Fotos
+  einmal der Kalender, so lange wie ein Foto. Standard ist „Nie“.
+- **Ansicht**: **Nur heute** (ein großer Tag) oder **Heute und die nächsten Tage** (wie die
+  Küchenansicht, heute doppelt breit).
+- Oben stehen Datum, Wetter und eine große Uhr, die Einblendungen entfallen. Das Nachtfenster geht
+  vor. Ein Tipp führt wie immer zu „Heute“.
+
+Ob jemand im Raum ist, weiß der Bilderrahmen nicht. Weckt ein Bewegungsmelder das Display (z. B.
+Fully Kiosk Browser mit Bewegungserkennung), gelten die Kalender-Zeitfenster trotzdem wie eingestellt.
+
+## Schnittstellen (Bon-Drucker, Home Assistant)
+
+Andere Programme im Heimnetz können Teile von FamQuest lesen und ändern: Ein Bon-Drucker druckt die
+Einkaufsliste, Home Assistant zeigt, was fehlt, was fällig ist und was es zum Abendessen gibt, und
+kann Artikel eintragen. Eingerichtet wird das im Elternbereich unter **Kalender & Wetter →
+Schnittstellen**.
+
+### API-Schlüssel
+
+- **Schlüssel anlegen**: Namen vergeben (z. B. „Home Assistant“) und **Nur lesen** oder **Lesen und
+  eintragen** wählen. Der Schlüssel (`fq_…`) wird **nur einmal** angezeigt, gleich kopieren.
+  FamQuest speichert nur einen Hash davon.
+- Die Liste zeigt den Anfang jedes Schlüssels und wann er zuletzt benutzt wurde. **Löschen**
+  (Mülleimer) schaltet einen Schlüssel sofort ab.
+- Der Schlüssel geht als Header mit: `Authorization: Bearer fq_…`. Er gilt nur unter `/api/v1`,
+  nicht für den Rest der App. Nach 20 falschen Schlüsseln von einer Adresse in 15 Minuten ist Pause.
+- Übers Internet die API nur per HTTPS nutzen (siehe [Reverse Proxy](#hinter-einem-reverse-proxy)).
+
+| Anfrage | Schlüssel | Was sie tut |
+| --- | --- | --- |
+| `GET /api/v1/shopping` | lesen | Offene Artikel in der Reihenfolge des Laufwegs, mit Laden und Bereich; `?store=supermarket`, `?include_checked=true`, `?lang=en` |
+| `GET /api/v1/shopping/receipt` | lesen | Dasselbe als Text für einen Bon-Drucker; `?width=32` (16–80 Zeichen), `?store=…`, `?lang=…` |
+| `POST /api/v1/shopping` | eintragen | Artikel auf die Liste setzen: `{"name": "Milch", "note": "2 l"}` (Hinweis optional) |
+| `PUT /api/v1/shopping/{id}/checked` | eintragen | Abhaken: `{"checked": true}` (oder `false` zum Zurücknehmen) |
+| `POST /api/v1/shopping/print` | eintragen | Liste an den Bon-Drucker schicken (wie der Knopf am Display) |
+| `GET /api/v1/todos` | lesen | „Zu erledigen“: Offenes, danach heute Abgehaktes |
+| `POST /api/v1/todos` | eintragen | Bei „Zu erledigen“ eintragen: `{"title": "Hühnerfutter holen"}` |
+| `POST /api/v1/todos/{id}/done` | eintragen | Einen Eintrag bei „Zu erledigen“ abhaken |
+| `GET /api/v1/summary` | lesen | Heute auf einen Blick (siehe unten) |
+
+Die Antworten unter `/api/v1` bleiben über Versionen stabil; alle anderen Adressen unter `/api`
+gehören zur App selbst und können sich ändern. Alle Anfragen mit ihren Feldern stehen unter
+`/api/docs`.
+
+Ein Bon mit `GET /api/v1/shopping/receipt?width=32`:
+
+```text
+================================
+      Familie Sonnenschein
+ Einkaufsliste - Do 12.11.2026
+================================
+
+SUPERMARKT
+-- Obst & Gemüse ---------------
+[ ] Äpfel
+[ ] Paprika (2 Stk)
+-- Kühlung ---------------------
+[ ] Milch (2 l)
+-- Tiefkühl --------------------
+[ ] Spinat TK
+
+DROGERIE
+[ ] Wasserfilter-Kartuschen
+
+--------------------------------
+5 Artikel
+```
+
+### Bon-Drucker
+
+FamQuest steuert keinen Drucker selbst. Unter **Bon-Drucker** kommt die Adresse einer kleinen
+Drucker-App oder eines Webhooks hin (z. B. `http://drucker.fritz.box:8090/print`) und die Breite des
+Bons (32 Zeichen für 58-mm-Papier, 48 für 80 mm). Die Einkaufsliste zeigt dann einen Knopf
+**Drucken** (Drucker). Er braucht keine Eltern-PIN, erscheint nur mit Netz und wartet, bis
+Änderungen vom Handy angekommen sind.
+
+Ein Tipp schickt ein `POST` mit JSON an die Adresse:
+
+```json
+{
+  "kind": "shopping_list",
+  "family": "Familie Sonnenschein",
+  "date": "2026-11-12",
+  "language": "de",
+  "width": 32,
+  "text": "================================\n      Familie Sonnenschein\n…",
+  "items": [
+    { "id": 3, "name": "Milch", "note": "2 l", "recipes": null, "store": "supermarket", "area": "chilled" }
+  ]
+}
+```
+
+`text` ist der fertige Bon (Zeilen getrennt mit `\n`); `items` ist für Apps, die selbst gestalten
+wollen. Antwortet die Adresse nicht mit einem 2xx-Status, sagt das Display Bescheid. Deine
+Drucker-App kann den Bon auch jederzeit selbst abholen, mit einem Schlüssel zum Lesen
+(`GET /api/v1/shopping/receipt`).
+
+### Home Assistant
+
+Mit einem Schlüssel zum Lesen macht die [RESTful](https://www.home-assistant.io/integrations/rest/)-Integration
+aus `/api/v1/summary` Sensoren; mit einem Schlüssel zum Eintragen setzt `rest_command` Artikel auf
+die Liste oder druckt. In `secrets.yaml`:
+
+```yaml
+famquest_auth: "Bearer fq_…"
+```
+
+In `configuration.yaml` (Adresse durch deine ersetzen):
+
+```yaml
+rest:
+  - resource: http://famquest.local:8080/api/v1/summary
+    headers:
+      Authorization: !secret famquest_auth
+    scan_interval: 300
+    sensor:
+      - name: "FamQuest Einkauf"
+        unique_id: famquest_shopping
+        value_template: "{{ value_json.shopping_open }}"
+        json_attributes: [shopping]
+      - name: "FamQuest Haushalt fällig"
+        unique_id: famquest_chores_due
+        value_template: "{{ value_json.chores_due }}"
+        json_attributes: [chores]
+      - name: "FamQuest Abendessen"
+        unique_id: famquest_dinner
+        value_template: >-
+          {{ value_json.meals_today | selectattr('meal', 'eq', 'dinner')
+             | map(attribute='name') | first | default('–') }}
+      - name: "FamQuest nächster Termin"
+        unique_id: famquest_next_event
+        value_template: "{{ value_json.next_event.title if value_json.next_event else '–' }}"
+        json_attributes: [next_event, events_today]
+      - name: "FamQuest Kinder"
+        unique_id: famquest_members
+        value_template: "{{ value_json.members | map(attribute='tasks_done') | sum }}"
+        json_attributes: [members]
+
+rest_command:
+  famquest_add_shopping:
+    url: http://famquest.local:8080/api/v1/shopping
+    method: post
+    headers:
+      Authorization: !secret famquest_auth
+    content_type: application/json
+    payload: '{"name": {{ name | to_json }}}'
+  famquest_print_shopping:
+    url: http://famquest.local:8080/api/v1/shopping/print
+    method: post
+    headers:
+      Authorization: !secret famquest_auth
+```
+
+Dann ruft zum Beispiel ein Knopf im Dashboard `rest_command.famquest_print_shopping` auf, ein
+Sprachbefehl oder eine Automation `rest_command.famquest_add_shopping` mit `name: "Milch"`, und
+eine Automation erinnert, wenn `sensor.famquest_haushalt_fallig` über 0 liegt. Andersherum kann die
+Adresse des Bon-Druckers auch ein [Webhook](https://www.home-assistant.io/docs/automation/trigger/#webhook-trigger)
+in Home Assistant sein, der die Liste dann druckt oder weiterschickt (`trigger.json.text`).
+
+Was `/api/v1/summary` liefert:
+
+| Feld | Inhalt |
+| --- | --- |
+| `date`, `time_of_day` | Heute in der Zeitzone der Familie, `morning`/`afternoon`/`evening` |
+| `shopping_open`, `shopping` | Zahl und Namen der offenen Artikel (mit Hinweis) |
+| `todos_open`, `todos` | Offenes bei „Zu erledigen“ |
+| `chores_due`, `chores_soon`, `chores` | Rote und gelbe Hausarbeit mit Raum und Tagen bis fällig |
+| `meals_today` | Heutige Mahlzeiten (`meal`, `name`) |
+| `events_today`, `next_event` | Heutige Termine und der nächste, der noch nicht begonnen hat, mit Personen |
+| `members` | Je Person: Name, Rolle, Farbe, Punkte (gesamt und heute), heute erledigte von allen Aufgaben |
+| `pending_approvals` | Erledigungen, die auf die Kontrolle der Eltern warten |
+
 ## Konfiguration
 
 Die Konfiguration erfolgt ausschließlich über Umgebungsvariablen in `.env`. Alle Variablen sind in
@@ -1403,6 +1586,17 @@ Vorgezogen aus 1.6 („Unterwegs“): der Teil, den man im Laden braucht.
   und in der Küchenansicht, Bearbeiten und Löschen in den Termindetails (nicht in der Küchenansicht)
 - [x] 2. Personen nach Terminfarbe: Farben je Kalender zuordnen, die Wahl im Terminformular geht als
   Farbe zurück in den Google Kalender
+- [ ] 3. Feinschliff im Alltag
+
+**Schnittstellen und Kalender im Bilderrahmen (Phase 14):** in Arbeit auf dem Branch
+`phase-14-schnittstellen`.
+
+- [x] 1. [Schnittstellen](#schnittstellen-bon-drucker-home-assistant): API-Schlüssel (nur lesen oder
+  lesen und eintragen), Einkaufsliste und Bon-Text nach Laufweg, eintragen und abhaken, „Zu
+  erledigen“, eine Übersicht von heute für Home Assistant; Adresse eines Bon-Druckers mit Knopf
+  **Drucken** auf der Einkaufsliste
+- [x] 2. Kalender statt Fotos im Bilderrahmen: Zeitfenster (z. B. Frühstück und Abendessen), auf
+  Wunsch zwischendurch nach einigen Fotos, nur heute oder die nächsten Tage
 - [ ] 3. Feinschliff im Alltag
 
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.

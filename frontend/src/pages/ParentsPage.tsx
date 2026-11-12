@@ -52,6 +52,7 @@ import { WeatherSection } from './parents/WeatherSection'
 import { ParentsNav } from './parents/ParentsNav'
 import { PhotosSection } from './parents/PhotosSection'
 import { FrameSettingsSection } from './parents/FrameSettingsSection'
+import { IntegrationsSection } from './parents/IntegrationsSection'
 import { DEFAULT_AREA, type ParentArea, isParentArea } from './parents/areas'
 
 /** Nach dieser Zeit ohne Eingabe kehrt das Display zur Familienansicht zurück. */
@@ -636,6 +637,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
             />
             <EventSymbolsSection />
             <WeatherSection onSaved={setNotice} />
+            <IntegrationsSection onSaved={setNotice} />
           </>
         )}
         {area === 'settings' && (

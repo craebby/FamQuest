@@ -447,3 +447,42 @@ describe('Eintragen', () => {
     })
   })
 })
+
+describe('Einkaufsliste drucken', () => {
+  it('zeigt den Drucker-Knopf nur mit eingetragenem Drucker', async () => {
+    mockShopping(LIST, {
+      'GET /api/integrations/printer': Response.json({ url: null, width: 32 }),
+    })
+    renderApp('/shopping')
+
+    await screen.findByRole('button', { name: /^Milch ?2 ×$/ })
+    expect(screen.queryByRole('button', { name: 'Einkaufsliste drucken' })).not.toBeInTheDocument()
+  })
+
+  it('schickt die Liste an den Drucker und meldet, wie viele Artikel', async () => {
+    const user = userEvent.setup()
+    const calls = mockShopping(LIST, {
+      'GET /api/integrations/printer': Response.json({ url: 'http://drucker/print', width: 32 }),
+      'POST /api/shopping/print': Response.json({ items: 2 }),
+    })
+    renderApp('/shopping')
+
+    await user.click(await screen.findByRole('button', { name: 'Einkaufsliste drucken' }))
+
+    expect(await screen.findByText('Bon mit 2 Artikeln geschickt.')).toBeVisible()
+    expect(bodyOf(calls, 'POST /api/shopping/print')).toEqual({ lang: 'de' })
+  })
+
+  it('erklärt, wenn der Drucker nicht antwortet', async () => {
+    const user = userEvent.setup()
+    mockShopping(LIST, {
+      'GET /api/integrations/printer': Response.json({ url: 'http://drucker/print', width: 32 }),
+      'POST /api/shopping/print': Response.json({ code: 'print.failed' }, { status: 502 }),
+    })
+    renderApp('/shopping')
+
+    await user.click(await screen.findByRole('button', { name: 'Einkaufsliste drucken' }))
+
+    expect(await screen.findByText(/Der Drucker hat nicht geantwortet/)).toBeVisible()
+  })
+})
