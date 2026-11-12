@@ -1706,6 +1706,14 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst
   genau eine Familie pro Installation.
 
+## Kontakt und Unterstützung
+
+- **Fehler und Wünsche:** gern als [Issue](https://github.com/craebby/FamQuest/issues) – ich freue
+  mich zu hören, was ihr euch wünscht, was ihr für eure Familie angepasst habt und was gut klappt.
+- **Alles andere:** [famquest@zx0.de](mailto:famquest@zx0.de)
+- **Danke sagen:** FamQuest ist kostenlos und bleibt es. Wer es unterstützen möchte, kann das über
+  [GitHub Sponsors](https://github.com/sponsors/craebby) oder [Ko-fi](https://ko-fi.com/craebby).
+
 ## Lizenz
 
 Copyright © 2026 Craebby
