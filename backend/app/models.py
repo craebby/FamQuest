@@ -48,6 +48,8 @@ class Family(Base):
     weather_place: Mapped[str | None] = mapped_column(String(200))
     weather_latitude: Mapped[float | None] = mapped_column(Float)
     weather_longitude: Mapped[float | None] = mapped_column(Float)
+    # Einheit der Temperatur: "celsius" oder "fahrenheit" (Open-Meteo liefert Celsius).
+    weather_unit: Mapped[str] = mapped_column(String(10), server_default="celsius")
     # Kacheln der Startseite in Reihenfolge, [{"id": "weather", "visible": true}, …];
     # None = Standardaufbau (siehe api/home.py).
     home_layout: Mapped[list[dict] | None] = mapped_column(JSONB)

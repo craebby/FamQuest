@@ -589,7 +589,8 @@ The start page shows the weather for one town. The forecast comes from
 the request, not the browser; only the town's coordinates and the time zone are sent. Forecasts
 are cached for 15 minutes; if Open-Meteo is unreachable, the last forecast is shown for up to
 6 hours with a note. The town search in the parents' area also goes through the server
-(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all.
+(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all. Below it you
+can switch temperatures from **°C** to **°F**; this applies to all of the family's devices.
 
 ## Meal plan
 
@@ -1320,6 +1321,17 @@ path). The parents' area shows it under **Calendar → Google setup**, and the l
 [Behind a reverse proxy](#behind-a-reverse-proxy)). The simplest fix: set `PUBLIC_URL` in `.env`,
 e.g. `PUBLIC_URL=https://family.example.com`, then `docker compose up -d`.
 
+**Google sign-in on a LAN-only `http://` install.** Google only accepts `http://` redirects for
+`localhost`; an IP address or `http://famquest.local` is refused. The clean way is HTTPS with a
+real hostname: a reverse proxy with a Let's Encrypt certificate (the DNS challenge works without
+opening any port, see [Behind a reverse proxy](#behind-a-reverse-proxy)) or
+[Tailscale Serve](https://tailscale.com/kb/1312/serve) with its own HTTPS name. Set that address
+as `PUBLIC_URL`. Quick workaround for a single connection: open FamQuest on the server itself as
+`http://localhost:8080`, or forward a port from your device (`ssh -L 8080:localhost:8080 server`),
+set `PUBLIC_URL=http://localhost:8080`, add `http://localhost:8080/api/calendar/google/callback`
+as a redirect URI in the Google Cloud Console, sign in and connect the calendar there, then remove
+`PUBLIC_URL` again. The tokens are stored on the server, so the calendar keeps syncing.
+
 **Forgot the password.** There is no e-mail reset on purpose; reset it on the server instead:
 
 ```sh
@@ -1578,7 +1590,7 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
 - [x] 1. [Integrations](#integrations-receipt-printer-home-assistant): API keys (read only or read
   and add), shopping list and receipt text sorted along the way through the shop, adding and ticking
   off, "To do", an overview of today for Home Assistant; a receipt printer address with a **Print**
-  button on the shopping list
+  button on the shopping list, printer app in the kitchen view; temperatures optionally in °F
 - [x] 2. Calendar instead of photos in the picture frame: time windows (e.g. breakfast and dinner),
   optionally in between after a number of photos, today only or the next days
 - [ ] 3. Polish in everyday use
@@ -1602,6 +1614,9 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
 - More icons: additional icons to choose from for tasks, chores, dishes, shopping and events
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
+- Custom links: other web apps (e.g. your home server dashboard) as an icon in the bar and the
+  kitchen view, opened in a frame like Mealie
+- Evening mode: warm, dimmed colours with less blue light, in the same time window as night mode
 
 **1.6: on the go**
 
@@ -1664,6 +1679,7 @@ them; the children's routines stay.
 
 - Symbols or fixed colours for weekdays (e.g. Monday always green, as in many nurseries) so children
   who can't read yet find their way around the week
+- Region for the shopping list (e.g. US): own suggestions and keywords for the areas
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
   family per installation.

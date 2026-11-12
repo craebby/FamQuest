@@ -782,7 +782,14 @@
     "no_results": "Kein Ort gefunden",
     "saved": "Wetter für {{name}}",
     "remove": "Entfernen",
-    "removed": "Das Wetter ist ausgeschaltet."
+    "removed": "Das Wetter ist ausgeschaltet.",
+    "unit": "Temperatur in",
+    "unit_celsius": "Celsius",
+    "unit_fahrenheit": "Fahrenheit",
+    "unit_celsius_symbol": "°C",
+    "unit_fahrenheit_symbol": "°F",
+    "unit_saved_celsius": "Temperaturen in Celsius",
+    "unit_saved_fahrenheit": "Temperaturen in Fahrenheit"
   },
   "task_week": {
     "views": "Ansicht",

@@ -69,7 +69,13 @@ def get_weather(client) -> dict:
 
 
 def test_without_place_there_is_no_weather(client, admin, open_meteo):
-    assert get_weather(client) == {"place": None, "current": None, "days": [], "stale": False}
+    assert get_weather(client) == {
+        "place": None,
+        "current": None,
+        "days": [],
+        "stale": False,
+        "unit": "celsius",
+    }
     assert open_meteo.requests == []
 
 
@@ -89,7 +95,7 @@ def test_search_needs_unlocked_parent_area(client, admin, open_meteo):
 
 
 def test_set_place_and_show_forecast(client, parent, now, open_meteo):
-    assert set_place(client, parent) == {"place": KOELN}
+    assert set_place(client, parent) == {"place": KOELN, "unit": "celsius"}
 
     data = get_weather(client)
 
@@ -145,7 +151,7 @@ def test_remove_place(client, parent, now, open_meteo):
     set_place(client, parent)
     response = client.delete("/api/weather/place", headers=csrf(parent))
 
-    assert response.json() == {"place": None}
+    assert response.json() == {"place": None, "unit": "celsius"}
     assert get_weather(client)["place"] is None
 
 
@@ -161,3 +167,24 @@ def test_place_is_validated_and_needs_parent_area(client, admin, open_meteo):
 def test_weather_needs_login(client, admin):
     client.cookies.clear()
     assert client.get("/api/weather").status_code == 401
+
+
+def test_fahrenheit(client, parent, now, open_meteo):
+    set_place(client, parent)
+    response = client.put("/api/weather/unit", json={"unit": "fahrenheit"}, headers=csrf(parent))
+    assert response.json() == {"place": KOELN, "unit": "fahrenheit"}
+
+    data = get_weather(client)
+
+    assert data["unit"] == "fahrenheit"
+    assert data["current"]["temperature"] == 54.3  # 12.4 °C
+    assert (data["days"][0]["max"], data["days"][0]["min"]) == (57.4, 46.8)
+    # Zurück auf Celsius ohne neue Anfrage bei Open-Meteo.
+    client.put("/api/weather/unit", json={"unit": "celsius"}, headers=csrf(parent))
+    assert get_weather(client)["current"]["temperature"] == 12.4
+    assert len(open_meteo.requests) == 1
+
+
+def test_unit_is_validated_and_needs_parent_area(client, admin, open_meteo):
+    body = {"unit": "fahrenheit"}
+    assert client.put("/api/weather/unit", json=body, headers=csrf(admin)).status_code == 403

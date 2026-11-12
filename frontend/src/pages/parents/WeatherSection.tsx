@@ -4,13 +4,16 @@ import PinIcon from '~icons/fluent-emoji-flat/round-pushpin'
 
 import {
   type PlaceResult,
+  TEMPERATURE_UNITS,
   usePlaceSearch,
   useRemoveWeatherPlace,
   useSetWeatherPlace,
+  useSetWeatherUnit,
   useWeather,
 } from '../../api/weather'
 import { Alert, Button, Section, TextField } from '../../components/ui'
 import { errorMessage } from '../../errors'
+import { ChoiceTile, Field } from './formParts'
 
 const placeLabel = (place: PlaceResult) =>
   [place.name, place.region, place.country].filter(Boolean).join(', ')
@@ -26,7 +29,9 @@ export function WeatherSection({ onSaved }: { onSaved: (message: string) => void
   const search = usePlaceSearch(query, i18n.resolvedLanguage ?? i18n.language)
   const setPlace = useSetWeatherPlace()
   const remove = useRemoveWeatherPlace()
-  const error = setPlace.error ?? remove.error
+  const setUnit = useSetWeatherUnit()
+  const unit = weather.data?.unit ?? 'celsius'
+  const error = setPlace.error ?? remove.error ?? setUnit.error
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -109,6 +114,27 @@ export function WeatherSection({ onSaved }: { onSaved: (message: string) => void
               ))}
             </ul>
           ))}
+        <Field label={t('weather_settings.unit')}>
+          <div className="grid grid-cols-2 gap-3 sm:max-w-md">
+            {TEMPERATURE_UNITS.map((option) => (
+              <ChoiceTile
+                key={option}
+                name="weather-unit"
+                checked={unit === option}
+                onChange={() =>
+                  setUnit.mutate(option, {
+                    onSuccess: () => onSaved(t(`weather_settings.unit_saved_${option}`)),
+                  })
+                }
+              >
+                <span className="text-3xl">{t(`weather_settings.unit_${option}_symbol`)}</span>
+                <span className="text-base font-normal text-slate-500">
+                  {t(`weather_settings.unit_${option}`)}
+                </span>
+              </ChoiceTile>
+            ))}
+          </div>
+        </Field>
       </div>
     </Section>
   )

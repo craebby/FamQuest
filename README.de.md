@@ -605,7 +605,8 @@ Die Anfrage stellt der Server, nicht der Browser; übertragen werden nur die Koo
 die Zeitzone. Vorhersagen werden 15 Minuten zwischengespeichert; ist Open-Meteo nicht erreichbar,
 bleibt die letzte Vorhersage bis zu 6 Stunden mit Hinweis stehen. Auch die Ortssuche im
 Elternbereich läuft über den Server (Open-Meteo Geocoding). Ohne Ort stellt FamQuest keine
-Wetter-Anfragen.
+Wetter-Anfragen. Darunter lässt sich die Temperatur von **°C** auf **°F** umstellen; das gilt für
+alle Geräte der Familie.
 
 ## Essensplan
 
@@ -1355,6 +1356,19 @@ sie oft mit `http://` statt `https://`, weil die App den Headern des Proxys nich
 einfachsten: in der `.env` `PUBLIC_URL` setzen, z. B. `PUBLIC_URL=https://familie.example.com`,
 danach `docker compose up -d`.
 
+**Google-Anmeldung bei einer Installation nur im Heimnetz über `http://`.** Google erlaubt
+`http://` als Weiterleitung nur für `localhost`; eine IP-Adresse oder `http://famquest.local` lehnt
+es ab. Sauber geht es mit HTTPS und einem echten Namen: ein Reverse Proxy mit Zertifikat von
+Let's Encrypt (die DNS-Challenge braucht keinen offenen Port, siehe
+[Hinter einem Reverse Proxy](#hinter-einem-reverse-proxy)) oder
+[Tailscale Serve](https://tailscale.com/kb/1312/serve) mit eigenem HTTPS-Namen. Diese Adresse dann
+als `PUBLIC_URL` eintragen. Notlösung für ein einmaliges Verbinden: FamQuest auf dem Server selbst
+als `http://localhost:8080` öffnen oder einen Port vom eigenen Gerät weiterleiten
+(`ssh -L 8080:localhost:8080 server`), `PUBLIC_URL=http://localhost:8080` setzen,
+`http://localhost:8080/api/calendar/google/callback` in der Google Cloud Console als
+Weiterleitungs-URI eintragen, dort anmelden und den Kalender verbinden, danach `PUBLIC_URL` wieder
+entfernen. Die Schlüssel liegen auf dem Server, der Kalender gleicht also weiter ab.
+
 **Passwort vergessen.** Einen Reset per E-Mail gibt es bewusst nicht; stattdessen auf dem Server:
 
 ```sh
@@ -1617,7 +1631,7 @@ Vorgezogen aus 1.6 („Unterwegs“): der Teil, den man im Laden braucht.
 - [x] 1. [Schnittstellen](#schnittstellen-bon-drucker-home-assistant): API-Schlüssel (nur lesen oder
   lesen und eintragen), Einkaufsliste und Bon-Text nach Laufweg, eintragen und abhaken, „Zu
   erledigen“, eine Übersicht von heute für Home Assistant; Adresse eines Bon-Druckers mit Knopf
-  **Drucken** auf der Einkaufsliste
+  **Drucken** auf der Einkaufsliste, Druck-App in der Küchenansicht; Temperatur wahlweise in °F
 - [x] 2. Kalender statt Fotos im Bilderrahmen: Zeitfenster (z. B. Frühstück und Abendessen), auf
   Wunsch zwischendurch nach einigen Fotos, nur heute oder die nächsten Tage
 - [ ] 3. Feinschliff im Alltag
@@ -1640,6 +1654,9 @@ Vorgezogen aus 1.6 („Unterwegs“): der Teil, den man im Laden braucht.
 - Mehr Symbole: weitere Icons zur Auswahl für Aufgaben, Hausarbeit, Gerichte, Einkauf und Termine
 - Mehr als sieben Personen (mehr Farben)
 - About-Seite: Autor, Lizenz, Version und Prüfung auf Updates
+- Eigene Links: weitere Web-Apps (z. B. Dashboard des Heimservers) als Symbol in der Leiste und
+  der Küchenansicht, geöffnet im Rahmen wie Mealie
+- Abendmodus: warme, gedimmte Farben mit weniger Blaulicht, im selben Zeitfenster wie der Nachtmodus
 
 **1.6: Unterwegs**
 
@@ -1702,6 +1719,7 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 
 - Symbole oder feste Farben für Wochentage (z. B. Montag immer grün, wie in vielen Kitas), damit
   sich Kinder, die noch nicht lesen können, in der Woche zurechtfinden
+- Region für die Einkaufsliste (z. B. USA): eigene Vorschläge und Stichwörter für die Bereiche
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst
   genau eine Familie pro Installation.

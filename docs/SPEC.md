@@ -214,6 +214,7 @@ Manche Familien pflegen alle Termine in einem Kalender und erkennen die Person a
 - Bereiche der Einkaufsliste: Die Regeln (Stichwörter, Symbole) stehen in `frontend/src/pages/shopping/area-rules.json`; das Backend liest dieselbe Datei (im Image kopiert), damit Bon und Display gleich ordnen.
 - Bon-Drucker: FamQuest druckt nicht selbst. Die Eltern tragen eine Adresse und die Breite des Bons ein (32, 42 oder 48 Zeichen); „Drucken“ auf der Einkaufsliste (ohne PIN) schickt per POST den fertigen Text und die Artikel als JSON dorthin. Die Adresse darf im Heimnetz liegen und lässt sich deshalb nur mit PIN und nicht in der Demo ändern.
 - Druck-App in der Küche: Optional eine zweite Adresse, die Webseite der Drucker-App (z. B. Druckstation am Pi für Etiketten). Die Küchenansicht zeigt dann oben ein Drucker-Symbol, das die Seite wie Mealie als Ebene öffnet. Per Sprache druckt Home Assistant über `POST /api/v1/shopping/print` (Skript, Alexa-Routine).
+- Temperatur: Die Eltern wählen unter „Wetter“ °C oder °F (`families.weather_unit`, gilt für die ganze Familie). Open-Meteo liefert immer Celsius, umgerechnet wird beim Ausliefern, damit sich alle denselben Zwischenspeicher teilen.
 - Home Assistant: über die RESTful-Integration (Sensoren aus der Übersicht) und `rest_command`, Beispiele in der README. Eine eigene HA-Integration (z. B. Einkaufsliste als To-do-Liste) bleibt eine Idee.
 
 **Kalender im Bilderrahmen** *(Phase 14, entschieden am 2026-11-12, zur Prüfung)*

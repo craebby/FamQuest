@@ -782,7 +782,14 @@
     "no_results": "No town found",
     "saved": "Weather for {{name}}",
     "remove": "Remove",
-    "removed": "The weather is turned off."
+    "removed": "The weather is turned off.",
+    "unit": "Temperature in",
+    "unit_celsius": "Celsius",
+    "unit_fahrenheit": "Fahrenheit",
+    "unit_celsius_symbol": "°C",
+    "unit_fahrenheit_symbol": "°F",
+    "unit_saved_celsius": "Temperatures in Celsius",
+    "unit_saved_fahrenheit": "Temperatures in Fahrenheit"
   },
   "task_week": {
     "views": "View",

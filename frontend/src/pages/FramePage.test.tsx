@@ -157,6 +157,7 @@ describe('Einblendungen im Bilderrahmen', () => {
           current: { temperature: 12.4, code: 61, is_day: true },
           days: [],
           stale: false,
+          unit: 'celsius',
         }),
         'GET /api/calendar/upcoming': Response.json(UPCOMING),
       },
