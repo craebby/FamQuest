@@ -47,20 +47,27 @@ function PrinterSettings({ onSaved }: { onSaved: (message: string) => void }) {
   const save = useSavePrinter()
   const [url, setUrl] = useState<string | null>(null)
   const [width, setWidth] = useState<number | null>(null)
+  const [appUrl, setAppUrl] = useState<string | null>(null)
   const data = printer.data
   if (!data) return printer.error ? <Alert>{errorMessage(t, printer.error)}</Alert> : null
   const shownUrl = url ?? data.url ?? ''
   const shownWidth = width ?? data.width
+  const shownAppUrl = appUrl ?? data.app_url ?? ''
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     save.mutate(
-      { url: shownUrl.trim() || null, width: shownWidth },
+      { url: shownUrl.trim() || null, width: shownWidth, app_url: shownAppUrl.trim() || null },
       {
         onSuccess: (saved) => {
           setUrl(null)
           setWidth(null)
-          onSaved(saved.url ? t('integrations.printer_saved') : t('integrations.printer_removed'))
+          setAppUrl(null)
+          onSaved(
+            saved.url || saved.app_url
+              ? t('integrations.printer_saved')
+              : t('integrations.printer_removed'),
+          )
         },
       },
     )
@@ -102,6 +109,17 @@ function PrinterSettings({ onSaved }: { onSaved: (message: string) => void }) {
           ))}
         </div>
       </Field>
+      <TextField
+        label={t('integrations.app_url')}
+        hint={t('integrations.app_url_hint')}
+        type="url"
+        inputMode="url"
+        placeholder="http://druck.fritz.box:8200"
+        value={shownAppUrl}
+        onChange={(event) => setAppUrl(event.target.value)}
+        maxLength={300}
+        autoComplete="off"
+      />
       <Button type="submit" className="self-start" disabled={save.isPending}>
         {t('actions.save')}
       </Button>

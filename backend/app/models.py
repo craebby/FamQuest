@@ -65,6 +65,8 @@ class Family(Base):
     print_url: Mapped[str | None] = mapped_column(String(300))
     # Breite des Bons in Zeichen (32 passt auf 58-mm-Papier).
     print_width: Mapped[int] = mapped_column(SmallInteger, server_default="32")
+    # Webseite der Druck-App, in der Küchenansicht zu öffnen; None = kein Knopf.
+    print_app_url: Mapped[str | None] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

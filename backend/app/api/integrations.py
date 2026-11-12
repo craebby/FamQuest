@@ -17,7 +17,7 @@ from app.api_tokens import create_token
 from app.auth import CurrentSession, DbSession, ParentSession, get_family
 from app.demo_mode import NotInDemo
 from app.errors import ApiError
-from app.models import ApiToken
+from app.models import ApiToken, Family
 
 router = APIRouter(tags=["integrations"])
 
@@ -61,12 +61,15 @@ class TokenIn(BaseModel):
 class PrinterOut(BaseModel):
     url: str | None
     width: int
+    # Webseite der Druck-App (z. B. Druckstation am Pi), öffnet sich in der Küchenansicht.
+    app_url: str | None
 
 
 class PrinterIn(BaseModel):
     # None = kein Drucker.
     url: PrintUrl | None
     width: Annotated[int, Field(ge=16, le=80)] = 32
+    app_url: PrintUrl | None = None
 
 
 class PrintIn(BaseModel):
@@ -113,19 +116,23 @@ def delete_token(token_id: int, _: ParentSession, db: DbSession) -> None:
     db.commit()
 
 
+def _printer(family: Family) -> PrinterOut:
+    return PrinterOut(url=family.print_url, width=family.print_width, app_url=family.print_app_url)
+
+
 @router.get("/integrations/printer")
 def get_printer(_: CurrentSession, db: DbSession) -> PrinterOut:
     """Auch ohne PIN: Die Einkaufsliste zeigt den Drucker-Knopf nur, wenn es einen gibt."""
-    family = get_family(db)
-    return PrinterOut(url=family.print_url, width=family.print_width)
+    return _printer(get_family(db))
 
 
 @router.put("/integrations/printer", dependencies=[NotInDemo])
 def set_printer(body: PrinterIn, _: ParentSession, db: DbSession) -> PrinterOut:
     family = get_family(db)
     family.print_url, family.print_width = body.url, body.width
+    family.print_app_url = body.app_url
     db.commit()
-    return PrinterOut(url=family.print_url, width=family.print_width)
+    return _printer(family)
 
 
 @router.post("/shopping/print", dependencies=[NotInDemo])

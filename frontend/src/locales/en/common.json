@@ -1255,6 +1255,11 @@
     "last_used": "last used {{time}}",
     "never_used": "never used",
     "delete": "Delete key “{{name}}”",
-    "delete_confirm": "Really delete"
+    "delete_confirm": "Really delete",
+    "app_url": "Printer app address",
+    "app_url_hint": "Web page of your printer app, e.g. http://printer.local:8200. The kitchen view then shows a printer icon at the top that opens it (labels, your own receipts). Leave empty for no icon.",
+    "app_title": "Printer app",
+    "app_open": "Open printer app",
+    "app_close": "Close printer app"
   }
 }

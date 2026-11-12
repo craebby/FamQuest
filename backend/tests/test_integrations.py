@@ -301,10 +301,29 @@ def set_printer(client, parent, url, width=32):
 
 
 def test_printer_settings(client, parent):
-    assert client.get("/api/integrations/printer").json() == {"url": None, "width": 32}
+    assert client.get("/api/integrations/printer").json() == {
+        "url": None,
+        "width": 32,
+        "app_url": None,
+    }
     assert set_printer(client, parent, "ftp://x").status_code == 422
     response = set_printer(client, parent, "http://drucker.fritz.box:8090/print", 48)
-    assert response.json() == {"url": "http://drucker.fritz.box:8090/print", "width": 48}
+    assert response.json() == {
+        "url": "http://drucker.fritz.box:8090/print",
+        "width": 48,
+        "app_url": None,
+    }
+
+
+def test_print_app_url(client, parent):
+    """Die Webseite der Druck-App für die Küchenansicht, auch ohne Bon-Adresse."""
+    body = {"url": None, "width": 32, "app_url": "http://druck.fritz.box:8200"}
+    response = client.put("/api/integrations/printer", json=body, headers=csrf(parent))
+    assert response.json()["app_url"] == "http://druck.fritz.box:8200"
+    assert client.get("/api/integrations/printer").json()["app_url"] == body["app_url"]
+    bad = {**body, "app_url": "javascript:alert(1)"}
+    response = client.put("/api/integrations/printer", json=bad, headers=csrf(parent))
+    assert response.status_code == 422
 
 
 def test_printer_needs_parent_pin(client, admin):

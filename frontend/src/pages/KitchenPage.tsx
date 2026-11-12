@@ -5,9 +5,11 @@ import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import CalendarIcon from '~icons/fluent-emoji-flat/spiral-calendar'
 import CookIcon from '~icons/fluent-emoji-flat/cook'
+import PrinterIcon from '~icons/fluent-emoji-flat/printer'
 
 import { useMe } from '../api/auth'
 import { DEFAULT_FRAME_SETTINGS, useFrameSettings } from '../api/frame'
+import { usePrinter } from '../api/integrations'
 import { mealieUrl, useMealie } from '../api/mealie'
 import { useToday } from '../api/today'
 import { useIdleTimeout } from '../useIdleTimeout'
@@ -66,6 +68,8 @@ export function KitchenPage() {
   const mealie = mealieUrl(useMealie().data)
   // Bleibt beim Zurückspringen nach Ruhe offen: Wer nach Rezept kocht, tippt selten.
   const [cooking, setCooking] = useState(false)
+  const printApp = usePrinter().data?.app_url ?? null
+  const [printing, setPrinting] = useState(false)
   const night =
     settings.night_enabled && isNightTime(now, settings.night_start, settings.night_end, timeZone)
 
@@ -107,6 +111,17 @@ export function KitchenPage() {
               className="flex size-14 items-center justify-center rounded-2xl opacity-50 hover:bg-white/80 focus-visible:outline-4 focus-visible:outline-orange-400"
             >
               <CookIcon className="size-9" aria-hidden="true" />
+            </button>
+          )}
+          {printApp && (
+            <button
+              type="button"
+              aria-label={t('integrations.app_open')}
+              title={t('integrations.app_open')}
+              onClick={() => setPrinting(true)}
+              className="flex size-14 items-center justify-center rounded-2xl opacity-50 hover:bg-white/80 focus-visible:outline-4 focus-visible:outline-orange-400"
+            >
+              <PrinterIcon className="size-9" aria-hidden="true" />
             </button>
           )}
         </nav>
@@ -158,6 +173,14 @@ export function KitchenPage() {
       </div>
 
       {cooking && mealie && <MealieOverlay src={mealie} onClose={() => setCooking(false)} />}
+      {printing && printApp && (
+        <MealieOverlay
+          src={printApp}
+          title={t('integrations.app_title')}
+          closeLabel={t('integrations.app_close')}
+          onClose={() => setPrinting(false)}
+        />
+      )}
 
       {night && !awake && (
         <button

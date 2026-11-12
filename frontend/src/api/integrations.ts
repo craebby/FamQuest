@@ -27,6 +27,8 @@ export interface NewApiToken extends ApiToken {
 export interface Printer {
   url: string | null
   width: number
+  /** Webseite der Druck-App (Etiketten, eigene Bons), in der Küchenansicht hinter dem Drucker-Symbol. */
+  app_url: string | null
 }
 
 export const TOKENS_KEY = ['integrations', 'tokens'] as const

@@ -248,7 +248,8 @@ Kalender statt Fotos zu festen Zeiten, Präsenz erkennt FamQuest nicht. Gearbeit
 Branch `phase-14-schnittstellen`.
 
 1. Schnittstellen: API-Schlüssel, Einkaufsliste und Bon-Text, eintragen und abhaken, „Zu
-   erledigen“, Übersicht für Home Assistant, Bon-Drucker mit Knopf „Drucken“
+   erledigen“, Übersicht für Home Assistant, Bon-Drucker mit Knopf „Drucken“, Druck-App in der
+   Küchenansicht
 2. Kalender im Bilderrahmen: Zeitfenster, zwischendurch nach einigen Fotos, nur heute oder die
    nächsten Tage
 3. Feinschliff im Alltag

@@ -1255,6 +1255,11 @@
     "last_used": "zuletzt benutzt {{time}}",
     "never_used": "noch nie benutzt",
     "delete": "Schlüssel „{{name}}“ löschen",
-    "delete_confirm": "Wirklich löschen"
+    "delete_confirm": "Wirklich löschen",
+    "app_url": "Adresse der Druck-App",
+    "app_url_hint": "Webseite deiner Drucker-App, z. B. http://druck.fritz.box:8200. Die Küchenansicht zeigt dann oben ein Drucker-Symbol, das sie öffnet (Etiketten, eigene Bons). Leer lassen = kein Symbol.",
+    "app_title": "Druck-App",
+    "app_open": "Druck-App öffnen",
+    "app_close": "Druck-App schließen"
   }
 }

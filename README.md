@@ -1063,6 +1063,12 @@ lay it out itself. If the address doesn't answer with a 2xx status, the display 
 printer app can also fetch the receipt itself whenever you like with a read-only key
 (`GET /api/v1/shopping/receipt`).
 
+If your printer app has its own web page (e.g. for labels), enter it under **Printer app address**
+(e.g. `http://printer.fritz.box:8200`). The kitchen view then shows a printer icon at the top that
+opens the page as a layer over the kitchen; ✕ goes back. If the frame stays empty, "Open in
+browser" opens it directly. If FamQuest runs over HTTPS, the printer app has to be reachable over
+HTTPS too, otherwise the browser blocks it inside the frame.
+
 ### Home Assistant
 
 With a read-only key, the [RESTful](https://www.home-assistant.io/integrations/rest/) integration
@@ -1124,6 +1130,23 @@ command or an automation calls `rest_command.famquest_add_shopping` with `name: 
 automation reminds you when `sensor.famquest_chores_due` is above 0. The other way round, the
 receipt printer address can also be a [webhook](https://www.home-assistant.io/docs/automation/trigger/#webhook-trigger)
 in Home Assistant, which then prints or sends the list on (`trigger.json.text`).
+
+**Printing by voice ("Alexa, print the shopping list"):** the key needs "read and add". A script
+in `scripts.yaml` calls the command:
+
+```yaml
+famquest_print_shopping_list:
+  alias: "Print shopping list"
+  icon: mdi:printer
+  sequence:
+    - action: rest_command.famquest_print_shopping
+```
+
+FamQuest then sends the list to the receipt printer address, just like the button on the display.
+Expose the script to Alexa (Settings → Voice assistants → Alexa, or `alexa: smart_home: filter:
+include_entities`, or Nabu Casa), create a routine with your phrase in the Alexa app and turn on
+the script "Print shopping list" as its action. Without a routine Alexa only starts scripts with
+"Alexa, turn on …".
 
 What `/api/v1/summary` returns:
 

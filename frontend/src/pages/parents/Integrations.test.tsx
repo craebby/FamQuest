@@ -30,7 +30,7 @@ function mockParents(tokens: () => ApiToken[], extra: Parameters<typeof mockApi>
     'GET /api/members': Response.json([]),
     'GET /api/today': Response.json(makeToday()),
     'GET /api/integrations/tokens': () => Response.json(tokens()),
-    'GET /api/integrations/printer': Response.json({ url: null, width: 32 }),
+    'GET /api/integrations/printer': Response.json({ url: null, width: 32, app_url: null }),
     ...extra,
   })
 }
@@ -109,12 +109,17 @@ describe('Schnittstellen im Elternbereich', () => {
       'http://drucker.fritz.box:8090/print',
     )
     await user.click(integrations.getByRole('radio', { name: /48 Zeichen/ }))
+    await user.type(
+      integrations.getByLabelText('Adresse der Druck-App'),
+      'http://druck.fritz.box:8200',
+    )
     await user.click(integrations.getAllByRole('button', { name: 'Speichern' })[0])
 
     expect(await screen.findByText('Drucker gespeichert.')).toBeVisible()
     expect(calls.find((call) => call.key === 'PUT /api/integrations/printer')?.body).toEqual({
       url: 'http://drucker.fritz.box:8090/print',
       width: 48,
+      app_url: 'http://druck.fritz.box:8200',
     })
   })
 })

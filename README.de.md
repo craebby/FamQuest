@@ -1093,6 +1093,12 @@ wollen. Antwortet die Adresse nicht mit einem 2xx-Status, sagt das Display Besch
 Drucker-App kann den Bon auch jederzeit selbst abholen, mit einem Schlüssel zum Lesen
 (`GET /api/v1/shopping/receipt`).
 
+Hat die Drucker-App eine eigene Webseite (z. B. für Etiketten), kommt deren Adresse unter
+**Adresse der Druck-App** hin (z. B. `http://druck.fritz.box:8200`). Die Küchenansicht zeigt dann
+oben ein Drucker-Symbol, das die Seite als Ebene über der Küche öffnet; ✕ führt zurück. Bleibt der
+Rahmen leer, öffnet „Im Browser öffnen“ sie direkt. Läuft FamQuest über HTTPS, muss auch die
+Druck-App über HTTPS erreichbar sein, sonst blockiert der Browser die Seite im Rahmen.
+
 ### Home Assistant
 
 Mit einem Schlüssel zum Lesen macht die [RESTful](https://www.home-assistant.io/integrations/rest/)-Integration
@@ -1154,6 +1160,23 @@ Sprachbefehl oder eine Automation `rest_command.famquest_add_shopping` mit `name
 eine Automation erinnert, wenn `sensor.famquest_haushalt_fallig` über 0 liegt. Andersherum kann die
 Adresse des Bon-Druckers auch ein [Webhook](https://www.home-assistant.io/docs/automation/trigger/#webhook-trigger)
 in Home Assistant sein, der die Liste dann druckt oder weiterschickt (`trigger.json.text`).
+
+**Per Sprache drucken („Alexa, drucke die Einkaufsliste“):** Der Schlüssel braucht das Recht
+„lesen und eintragen“. Ein Skript in `scripts.yaml` ruft den Befehl auf:
+
+```yaml
+famquest_einkaufsliste_drucken:
+  alias: "Einkaufsliste drucken"
+  icon: mdi:printer
+  sequence:
+    - action: rest_command.famquest_print_shopping
+```
+
+FamQuest schickt die Liste dann an die eingetragene Adresse des Bon-Druckers, genau wie der Knopf
+am Display. Das Skript für Alexa freigeben (Einstellungen → Sprachassistenten → Alexa, oder
+`alexa: smart_home: filter: include_entities` bzw. Nabu Casa), in der Alexa-App eine Routine mit
+dem Wunschsatz anlegen und als Aktion das Skript „Einkaufsliste drucken“ einschalten. Ohne Routine
+startet Alexa Skripte nur mit „Alexa, schalte … ein“.
 
 Was `/api/v1/summary` liefert:
 
