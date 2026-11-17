@@ -26,6 +26,10 @@ export interface WeatherDay {
   precipitation: number | null
 }
 
+/** Einheit aller Temperaturen; umgerechnet wird auf dem Server. */
+export const TEMPERATURE_UNITS = ['celsius', 'fahrenheit'] as const
+export type TemperatureUnit = (typeof TEMPERATURE_UNITS)[number]
+
 export interface Weather {
   /** null: Die Eltern haben noch keinen Ort festgelegt. */
   place: Place | null
@@ -34,6 +38,7 @@ export interface Weather {
   days: WeatherDay[]
   /** Open-Meteo war zuletzt nicht erreichbar; das ist eine ältere Vorhersage. */
   stale: boolean
+  unit: TemperatureUnit
 }
 
 export const WEATHER_KEY = ['weather'] as const
@@ -82,3 +87,9 @@ export const useSetWeatherPlace = () =>
 
 export const useRemoveWeatherPlace = () =>
   usePlaceMutation(() => api<{ place: null }>('DELETE', '/weather/place'))
+
+export const useSetWeatherUnit = () =>
+  useParentMutation(
+    (unit: TemperatureUnit) => api<{ unit: TemperatureUnit }>('PUT', '/weather/unit', { unit }),
+    [WEATHER_KEY],
+  )

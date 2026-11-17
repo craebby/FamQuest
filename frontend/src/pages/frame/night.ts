@@ -17,8 +17,8 @@ export function minutesOfDay(now: Date, timeZone?: string): number {
 }
 
 /**
- * Liegt `now` im Nachtfenster? Das Fenster kann über Mitternacht gehen (22:00–06:00); der Beginn
- * gehört dazu, das Ende nicht. Gleiche Zeiten ergeben ein leeres Fenster.
+ * Liegt `now` im Zeitfenster (Nachtfenster, Kalender)? Das Fenster kann über Mitternacht gehen
+ * (22:00–06:00); der Beginn gehört dazu, das Ende nicht. Gleiche Zeiten ergeben ein leeres Fenster.
  */
 export function isNightTime(now: Date, start: string, end: string, timeZone?: string): boolean {
   const from = parseClockTime(start)
@@ -26,6 +26,15 @@ export function isNightTime(now: Date, start: string, end: string, timeZone?: st
   if (from === null || to === null || from === to) return false
   const minutes = minutesOfDay(now, timeZone)
   return from < to ? minutes >= from && minutes < to : minutes >= from || minutes < to
+}
+
+/** Liegt `now` in einem der Zeitfenster? */
+export function inAnyWindow(
+  now: Date,
+  windows: readonly { start: string; end: string }[],
+  timeZone?: string,
+): boolean {
+  return windows.some(({ start, end }) => isNightTime(now, start, end, timeZone))
 }
 
 /** Alle so viele Minuten wandert die gedimmte Uhr ein Stück, damit sie sich nicht einbrennt. */

@@ -12,10 +12,15 @@ import { Button } from '../../components/ui'
 export function MealieFrame({
   src,
   onClose,
+  title,
+  closeLabel,
 }: {
   src: string
   /** Als Ebene über einer Ansicht (Rezept, Küche): schließt sie wieder. */
   onClose?: () => void
+  /** Für andere Web-Apps im selben Rahmen (z. B. die Druck-App); sonst „Mealie“. */
+  title?: string
+  closeLabel?: string
 }) {
   const { t } = useTranslation()
   return (
@@ -31,13 +36,17 @@ export function MealieFrame({
           {t('mealie.open_browser')}
         </a>
         {onClose && (
-          <Button variant="secondary" onClick={onClose} aria-label={t('mealie.close')}>
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            aria-label={closeLabel ?? t('mealie.close')}
+          >
             <CloseIcon className="size-7" aria-hidden="true" />
           </Button>
         )}
       </div>
       <iframe
-        title={t('mealie.title')}
+        title={title ?? t('mealie.title')}
         src={src}
         className="min-h-0 w-full flex-1 rounded-2xl border-0 bg-white shadow-sm"
         allow="clipboard-write; fullscreen; screen-wake-lock"
@@ -46,17 +55,30 @@ export function MealieFrame({
   )
 }
 
-/** Mealie als Ebene über der ganzen Ansicht (aus einem Rezept oder der Küchenansicht). */
-export function MealieOverlay({ src, onClose }: { src: string; onClose: () => void }) {
+/**
+ * Mealie (oder eine andere Web-App wie die Druck-App) als Ebene über der ganzen Ansicht, aus einem
+ * Rezept oder der Küchenansicht.
+ */
+export function MealieOverlay({
+  src,
+  onClose,
+  title,
+  closeLabel,
+}: {
+  src: string
+  onClose: () => void
+  title?: string
+  closeLabel?: string
+}) {
   const { t } = useTranslation()
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={t('mealie.title')}
+      aria-label={title ?? t('mealie.title')}
       className="fixed inset-0 z-50 flex flex-col bg-slate-900/80 p-2 sm:p-4"
     >
-      <MealieFrame src={src} onClose={onClose} />
+      <MealieFrame src={src} onClose={onClose} title={title} closeLabel={closeLabel} />
     </div>
   )
 }

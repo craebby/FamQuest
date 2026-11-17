@@ -17,6 +17,7 @@ import {
   renderApp,
   setupDone,
 } from '../test/utils'
+import { opensInTab } from '../mixedContent'
 import { KITCHEN_DAYS } from './KitchenPage'
 
 beforeEach(async () => {
@@ -125,6 +126,42 @@ describe('Küchenansicht', () => {
     expect(tabs.getByRole('button', { name: 'Termine und Essen' })).not.toHaveAttribute(
       'aria-current',
     )
+  })
+
+  it('öffnet die Druck-App aus dem Elternbereich über das Drucker-Symbol oben', async () => {
+    const user = userEvent.setup()
+    mockKitchen(
+      {},
+      {
+        'GET /api/integrations/printer': Response.json({
+          url: null,
+          width: 32,
+          app_url: 'http://druck.fritz.box:8200',
+        }),
+      },
+    )
+    renderApp('/kitchen')
+
+    const tabs = within(await screen.findByRole('navigation', { name: 'Seiten der Küchenansicht' }))
+    await user.click(await tabs.findByRole('button', { name: 'Druck-App öffnen' }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Druck-App' }))
+    expect(dialog.getByTitle('Druck-App')).toHaveAttribute('src', 'http://druck.fritz.box:8200')
+    await user.click(dialog.getByRole('button', { name: 'Druck-App schließen' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('öffnet eine Druck-App nur über http von einer https-Seite aus in einem eigenen Tab', () => {
+    expect(opensInTab('http://druck.fritz.box:8200', 'https:')).toBe(true)
+    expect(opensInTab('https://druck.example.com', 'https:')).toBe(false)
+    expect(opensInTab('http://druck.fritz.box:8200', 'http:')).toBe(false)
+  })
+
+  it('zeigt ohne Druck-App kein Drucker-Symbol', async () => {
+    mockKitchen()
+    renderApp('/kitchen')
+    const tabs = within(await screen.findByRole('navigation', { name: 'Seiten der Küchenansicht' }))
+    await tabs.findByRole('button', { name: 'Einkauf' })
+    expect(tabs.queryByRole('button', { name: 'Druck-App öffnen' })).toBeNull()
   })
 
   it('zeigt im Nachtfenster des Bilderrahmens den Nachtbildschirm; ein Tipp weckt', async () => {

@@ -11,12 +11,12 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 1.4. Contains the task system (routines, family view, points, rewards,
+> **Status:** version 1.5. Contains the task system (routines, family view, points, rewards,
 > parent checks), Google Calendar, the start page "Today" as a week dashboard with
 > weather, the picture frame with night mode, the meal plan, the shopping list, the household
 > (cleaning plan with a traffic light, "To do"), the kitchen view for a small tablet, recipes with
 > optional Mealie connection and the shopping list as an installable app that works offline in the
-> shop and sorts itself by shop. Polish continues in everyday use (see [Roadmap](#roadmap)).
+> shop and sorts itself by shop, plus API keys for Home Assistant and a receipt printer. Polish continues in everyday use (see [Roadmap](#roadmap)).
 
 **Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
 "Open the demo"; the parent PIN is shown on the sign-in page. The sample family resets itself on
@@ -54,8 +54,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
   parent PIN, events can be created, edited and deleted
 - Weather for your town (Open-Meteo, no API key needed)
 - Picture frame: uploaded photos full screen with cross-fades, started from an icon or when idle,
-  with optional clock, weather, next event and open tasks on top, and a night mode (black or dimmed
-  clock)
+  with optional clock, weather, next event and open tasks on top, the calendar at set times (e.g.
+  breakfast and dinner) or in between, and a night mode (black or dimmed clock)
 - Meal plan: type the week's dishes right on the display, with suggestions and icons; plus a
   recipe collection you fill by pasting text, rated with stars, optionally with recipes from
   [Mealie](#mealie)
@@ -69,6 +69,8 @@ The screenshots show a sample family (demo data, see [Development](#development)
   shared list for one-off things like "Get chicken feed"
 - Kitchen view for a small tablet: events and meals of the next days, swipe for tasks, household
   and shopping
+- Integrations: API keys for other programs, the shopping list as a receipt for a printer (button
+  on the display), sensors and commands for [Home Assistant](#home-assistant)
 - Parents' area protected by a PIN
 - Profile photos with cropping, one colour per person
 - English and German; more languages via translation files
@@ -106,7 +108,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.4.1`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.5.0`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -587,7 +589,8 @@ The start page shows the weather for one town. The forecast comes from
 the request, not the browser; only the town's coordinates and the time zone are sent. Forecasts
 are cached for 15 minutes; if Open-Meteo is unreachable, the last forecast is shown for up to
 6 hours with a note. The town search in the parents' area also goes through the server
-(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all.
+(Open-Meteo geocoding). Without a town, FamQuest makes no weather requests at all. Below it you
+can switch temperatures from **°C** to **°F**; this applies to all of the family's devices.
 
 ## Meal plan
 
@@ -960,6 +963,208 @@ Which command works depends on the device and the desktop; `wlr-randr` without a
 output names. On older Raspberry Pi OS without the KMS driver, `vcgencmd display_power 0`/`1` also
 works.
 
+**Calendar instead of photos**
+
+On the same card, **Calendar instead of photos** shows the calendar with events and meals on the
+picture frame at certain times, for example at breakfast and at dinner. It is off by default.
+
+- **Add time window** sets a window (from, until) in the family's time zone, up to six of them. In
+  these windows the picture frame shows the calendar instead of photos; afterwards the photos go on.
+- **Show the calendar in between**: outside the windows, the calendar comes once after every 3, 5,
+  10 or 20 photos, for as long as a photo is shown. "Never" is the default.
+- **View**: **Today only** (one large day) or **Today and the next days** (like the kitchen view,
+  today twice as wide).
+- At the top there are the date, the weather and a large clock; the overlays are left out. The night
+  window comes first. A tap still goes to "Today".
+
+The picture frame can't tell whether someone is in the room. If the display wakes up through motion
+(e.g. Fully Kiosk Browser with its motion detection), the calendar windows still apply as set.
+
+## Integrations (receipt printer, Home Assistant)
+
+Other programs on your home network can read and change parts of FamQuest: a receipt printer prints
+the shopping list, Home Assistant shows what's missing, what's due and what's for dinner, and can
+add items. Set this up in the parents' area under **Calendar & weather → Integrations**.
+
+### API keys
+
+- **Create key**: give it a name (e.g. "Home Assistant") and choose **Read only** or **Read and
+  add**. The key (`fq_…`) is shown **only once**; copy it right away. FamQuest stores only a hash.
+- The list shows the start of each key and when it was last used. **Delete** (wastebasket) switches
+  a key off immediately.
+- Send the key as a header: `Authorization: Bearer fq_…`. It only works under `/api/v1`, not for
+  the rest of the app. After 20 wrong keys from one address within 15 minutes there's a pause.
+- Over the internet, only use the API through HTTPS (see [reverse proxy](#behind-a-reverse-proxy)).
+
+| Request | Key | What it does |
+| --- | --- | --- |
+| `GET /api/v1/shopping` | read | Open items in the order of the way through the shop, with shop and section; `?store=supermarket`, `?include_checked=true`, `?lang=en` |
+| `GET /api/v1/shopping/receipt` | read | The same as plain text for a receipt printer; `?width=32` (16–80 characters), `?store=…`, `?lang=…`, `?format=markup` for `# title` / `## store` / `- item` |
+| `POST /api/v1/shopping` | add | Put an item on the list: `{"name": "Milk", "note": "2 l"}` (note optional) |
+| `PUT /api/v1/shopping/{id}/checked` | add | Tick off: `{"checked": true}` (or `false` to undo) |
+| `POST /api/v1/shopping/print` | add | Send the list to the receipt printer (as the button on the display does) |
+| `GET /api/v1/todos` | read | "To do": open entries, then the ones ticked off today |
+| `POST /api/v1/todos` | add | Add to "To do": `{"title": "Get chicken feed"}` |
+| `POST /api/v1/todos/{id}/done` | add | Tick off a "To do" entry |
+| `GET /api/v1/summary` | read | Today at a glance (see below) |
+
+The answers of `/api/v1` stay stable across versions; all other addresses under `/api` belong to
+the app itself and may change. All requests are listed with their fields at `/api/docs`.
+
+A receipt with `GET /api/v1/shopping/receipt?width=32`:
+
+```text
+================================
+      Familie Sonnenschein
+ Einkaufsliste - Do 12.11.2026
+================================
+
+SUPERMARKT
+-- Obst & Gemüse ---------------
+[ ] Äpfel
+[ ] Paprika (2 Stk)
+-- Kühlung ---------------------
+[ ] Milch (2 l)
+-- Tiefkühl --------------------
+[ ] Spinat TK
+
+DROGERIE
+[ ] Wasserfilter-Kartuschen
+
+--------------------------------
+5 Artikel
+```
+
+### Receipt printer
+
+FamQuest doesn't drive a printer itself. Under **Receipt printer**, enter the address of a small
+printer app or a webhook (e.g. `http://printer.fritz.box:8090/print`) and the receipt width (32
+characters for 58 mm paper, 48 for 80 mm). The shopping list then shows a **Print** button
+(printer). It needs no parent PIN, appears only with a connection and waits until changes from the
+phone have arrived.
+
+A tap sends a `POST` with JSON to the address:
+
+```json
+{
+  "kind": "shopping_list",
+  "family": "Familie Sonnenschein",
+  "date": "2026-11-12",
+  "language": "de",
+  "width": 32,
+  "text": "================================\n      Familie Sonnenschein\n…",
+  "markup": "# Einkauf\n## Supermarkt\n- Milch (2 l)\n---",
+  "items": [
+    { "id": 3, "name": "Milch", "note": "2 l", "recipes": null, "store": "supermarket", "area": "chilled" }
+  ]
+}
+```
+
+`text` is the finished receipt in a fixed-width font (lines separated by `\n`). `markup` is the
+same list for apps with their own fonts: `# title`, `## store`, `- item` (with a tick box) in the
+order of the way through the shop, `---` at the end. `items` is there if your app prefers to lay it
+out itself. If the address doesn't answer with a 2xx status, the display says so. Your
+printer app can also fetch the receipt itself whenever you like with a read-only key
+(`GET /api/v1/shopping/receipt`).
+
+If your printer app has its own web page (e.g. for labels), enter it under **Printer app address**
+(e.g. `http://printer.fritz.box:8200`). The kitchen view then shows a printer icon at the top that
+opens the page as a layer over the kitchen; ✕ goes back. If the frame stays empty, "Open in
+browser" opens it directly. If FamQuest runs over HTTPS and the printer app only over `http://`,
+the browser would block it inside the frame; the icon then opens the printer app in its own tab.
+
+### Home Assistant
+
+With a read-only key, the [RESTful](https://www.home-assistant.io/integrations/rest/) integration
+turns `/api/v1/summary` into sensors; with a key that may add, `rest_command` puts items on the
+list or prints. In `secrets.yaml`:
+
+```yaml
+famquest_auth: "Bearer fq_…"
+```
+
+In `configuration.yaml` (replace the address with yours):
+
+```yaml
+rest:
+  - resource: http://famquest.local:8080/api/v1/summary
+    headers:
+      Authorization: !secret famquest_auth
+    scan_interval: 300
+    sensor:
+      - name: "FamQuest shopping"
+        unique_id: famquest_shopping
+        value_template: "{{ value_json.shopping_open }}"
+        json_attributes: [shopping]
+      - name: "FamQuest chores due"
+        unique_id: famquest_chores_due
+        value_template: "{{ value_json.chores_due }}"
+        json_attributes: [chores]
+      - name: "FamQuest dinner"
+        unique_id: famquest_dinner
+        value_template: >-
+          {{ value_json.meals_today | selectattr('meal', 'eq', 'dinner')
+             | map(attribute='name') | first | default('–') }}
+      - name: "FamQuest next event"
+        unique_id: famquest_next_event
+        value_template: "{{ value_json.next_event.title if value_json.next_event else '–' }}"
+        json_attributes: [next_event, events_today]
+      - name: "FamQuest children"
+        unique_id: famquest_members
+        value_template: "{{ value_json.members | map(attribute='tasks_done') | sum }}"
+        json_attributes: [members]
+
+rest_command:
+  famquest_add_shopping:
+    url: http://famquest.local:8080/api/v1/shopping
+    method: post
+    headers:
+      Authorization: !secret famquest_auth
+    content_type: application/json
+    payload: '{"name": {{ name | to_json }}}'
+  famquest_print_shopping:
+    url: http://famquest.local:8080/api/v1/shopping/print
+    method: post
+    headers:
+      Authorization: !secret famquest_auth
+```
+
+Then e.g. a button on the dashboard calls `rest_command.famquest_print_shopping`, a voice
+command or an automation calls `rest_command.famquest_add_shopping` with `name: "Milk"`, and an
+automation reminds you when `sensor.famquest_chores_due` is above 0. The other way round, the
+receipt printer address can also be a [webhook](https://www.home-assistant.io/docs/automation/trigger/#webhook-trigger)
+in Home Assistant, which then prints or sends the list on (`trigger.json.text`).
+
+**Printing by voice ("Alexa, print the shopping list"):** the key needs "read and add". A script
+in `scripts.yaml` calls the command:
+
+```yaml
+famquest_print_shopping_list:
+  alias: "Print shopping list"
+  icon: mdi:printer
+  sequence:
+    - action: rest_command.famquest_print_shopping
+```
+
+FamQuest then sends the list to the receipt printer address, just like the button on the display.
+Expose the script to Alexa (Settings → Voice assistants → Alexa, or `alexa: smart_home: filter:
+include_entities`, or Nabu Casa), create a routine with your phrase in the Alexa app and turn on
+the script "Print shopping list" as its action. Without a routine Alexa only starts scripts with
+"Alexa, turn on …".
+
+What `/api/v1/summary` returns:
+
+| Field | Content |
+| --- | --- |
+| `date`, `time_of_day` | Today in the family's time zone, `morning`/`afternoon`/`evening` |
+| `shopping_open`, `shopping` | Number and names of open items (with note) |
+| `todos_open`, `todos` | Open "To do" entries |
+| `chores_due`, `chores_soon`, `chores` | Red and yellow chores with room and days left |
+| `meals_today` | Today's meals (`meal`, `name`) |
+| `events_today`, `next_event` | Today's events and the next one that hasn't started, with people |
+| `members` | Per person: name, role, colour, points (total and today), today's tasks done of total |
+| `pending_approvals` | Completions waiting for the parents' check |
+
 ## Configuration
 
 Configuration is done exclusively through environment variables in `.env`. All variables are
@@ -1119,6 +1324,17 @@ path). The parents' area shows it under **Calendar → Google setup**, and the l
 [Behind a reverse proxy](#behind-a-reverse-proxy)). The simplest fix: set `PUBLIC_URL` in `.env`,
 e.g. `PUBLIC_URL=https://family.example.com`, then `docker compose up -d`.
 
+**Google sign-in on a LAN-only `http://` install.** Google only accepts `http://` redirects for
+`localhost`; an IP address or `http://famquest.local` is refused. The clean way is HTTPS with a
+real hostname: a reverse proxy with a Let's Encrypt certificate (the DNS challenge works without
+opening any port, see [Behind a reverse proxy](#behind-a-reverse-proxy)) or
+[Tailscale Serve](https://tailscale.com/kb/1312/serve) with its own HTTPS name. Set that address
+as `PUBLIC_URL`. Quick workaround for a single connection: open FamQuest on the server itself as
+`http://localhost:8080`, or forward a port from your device (`ssh -L 8080:localhost:8080 server`),
+set `PUBLIC_URL=http://localhost:8080`, add `http://localhost:8080/api/calendar/google/callback`
+as a redirect URI in the Google Cloud Console, sign in and connect the calendar there, then remove
+`PUBLIC_URL` again. The tokens are stored on the server, so the calendar keeps syncing.
+
 **Forgot the password.** There is no e-mail reset on purpose; reset it on the server instead:
 
 ```sh
@@ -1245,8 +1461,11 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **1.4** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
-1.4 are a first plan and may still change.
+Current state: **1.5** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.5 are a first plan and may still change.
+
+**1.5: released.** Integrations (phase 14 below): API keys, the shopping list for a receipt
+printer and Home Assistant, and the calendar instead of photos in the picture frame at set times.
 
 **1.4: released.** Changing events right in FamQuest, also on "Today" and in the kitchen view, and
 people by event colour (phase 13 below), the shopping list sorted by shop (phase 11 below) and
@@ -1341,7 +1560,7 @@ resets itself on the hour (see [Public demo](#public-demo)).
 
 **Shopping list as an app (phase 10):** released with 1.3, polish on a real phone to follow.
 
-Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
+Brought forward from 1.7 ("on the go"): the part that's needed in the shop.
 
 - [x] 1. Installable app (PWA) for the shopping list at `/shop`, works without a connection in the
   shop; changes made offline are sent once there's a connection again
@@ -1371,6 +1590,17 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
   to Google Calendar as the colour
 - [ ] 3. Polish in everyday use
 
+**Integrations and calendar in the picture frame (phase 14):** released with 1.5, polish continues
+in everyday use.
+
+- [x] 1. [Integrations](#integrations-receipt-printer-home-assistant): API keys (read only or read
+  and add), shopping list and receipt text sorted along the way through the shop, adding and ticking
+  off, "To do", an overview of today for Home Assistant; a receipt printer address with a **Print**
+  button on the shopping list, printer app in the kitchen view; temperatures optionally in °F
+- [x] 2. Calendar instead of photos in the picture frame: time windows (e.g. breakfast and dinner),
+  optionally in between after a number of photos, today only or the next days
+- [ ] 3. Polish in everyday use
+
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 
 - [x] 1. Kitchen view at `/kitchen` for an 8-inch tablet in landscape: events and meals of the next
@@ -1378,7 +1608,7 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
   clock, night mode; plus a "Photo for …" button right at the planned dish in the meal plan
 - [ ] 2. Polish on the real tablet
 
-**1.5: make it your own**
+**1.6: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
@@ -1390,8 +1620,11 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
 - More icons: additional icons to choose from for tasks, chores, dishes, shopping and events
 - More than seven people (more colours)
 - About page: author, licence, version and a check for updates
+- Custom links: other web apps (e.g. your home server dashboard) as an icon in the bar and the
+  kitchen view, opened in a frame like Mealie
+- Evening mode: warm, dimmed colours with less blue light, in the same time window as night mode
 
-**1.6: on the go**
+**1.7: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
   anywhere (the shopping list as an app comes earlier, see phase 10)
@@ -1452,6 +1685,7 @@ them; the children's routines stay.
 
 - Symbols or fixed colours for weekdays (e.g. Monday always green, as in many nurseries) so children
   who can't read yet find their way around the week
+- Region for the shopping list (e.g. US): own suggestions and keywords for the areas
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
   family per installation.

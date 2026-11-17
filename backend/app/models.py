@@ -48,6 +48,8 @@ class Family(Base):
     weather_place: Mapped[str | None] = mapped_column(String(200))
     weather_latitude: Mapped[float | None] = mapped_column(Float)
     weather_longitude: Mapped[float | None] = mapped_column(Float)
+    # Einheit der Temperatur: "celsius" oder "fahrenheit" (Open-Meteo liefert Celsius).
+    weather_unit: Mapped[str] = mapped_column(String(10), server_default="celsius")
     # Kacheln der Startseite in Reihenfolge, [{"id": "weather", "visible": true}, …];
     # None = Standardaufbau (siehe api/home.py).
     home_layout: Mapped[list[dict] | None] = mapped_column(JSONB)
@@ -61,6 +63,12 @@ class Family(Base):
     event_symbols: Mapped[list[dict] | None] = mapped_column(JSONB)
     # Mealie: Modus, Adresse, verschlüsselter API-Token, Stand des Abgleichs (siehe app/mealie.py).
     mealie_settings: Mapped[dict | None] = mapped_column(JSONB)
+    # Bon-Drucker: Adresse, an die „Drucken“ die Einkaufsliste schickt; None = kein Drucker.
+    print_url: Mapped[str | None] = mapped_column(String(300))
+    # Breite des Bons in Zeichen (32 passt auf 58-mm-Papier).
+    print_width: Mapped[int] = mapped_column(SmallInteger, server_default="32")
+    # Webseite der Druck-App, in der Küchenansicht zu öffnen; None = kein Knopf.
+    print_app_url: Mapped[str | None] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -92,6 +100,25 @@ class AuthSession(Base):
     parent_unlocked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     user: Mapped[User] = relationship(lazy="joined")
+
+
+class ApiToken(Base):
+    """Schlüssel für andere Programme (Bon-Drucker, Home Assistant) unter `/api/v1`.
+
+    Gespeichert wird nur der Hash; der Schlüssel selbst wird beim Anlegen einmal angezeigt.
+    """
+
+    __tablename__ = "api_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(60))
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    # Die ersten Zeichen, damit man Schlüssel in der Liste auseinanderhält („fq_Ab3d…“).
+    prefix: Mapped[str] = mapped_column(String(12))
+    # "read" = nur lesen, "write" = auch eintragen und abhaken.
+    scope: Mapped[str] = mapped_column(String(10))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class FamilyMember(Base):

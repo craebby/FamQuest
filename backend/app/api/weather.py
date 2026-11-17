@@ -1,7 +1,7 @@
 """Wetter auf der Startseite; den Ort legen die Eltern im Elternbereich fest."""
 
 import datetime as dt
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field, StringConstraints
@@ -13,6 +13,8 @@ from app.schemas import LanguageCode
 from app.today import family_now
 
 router = APIRouter(prefix="/weather", tags=["weather"])
+
+Unit = Literal["celsius", "fahrenheit"]
 
 
 class PlaceIn(BaseModel):
@@ -48,10 +50,26 @@ class WeatherOut(BaseModel):
     days: list[DayOut]
     # Open-Meteo war zuletzt nicht erreichbar; gezeigt wird eine ältere Vorhersage.
     stale: bool
+    # In dieser Einheit sind alle Temperaturen oben angegeben.
+    unit: Unit
 
 
 class WeatherSettingsOut(BaseModel):
     place: PlaceIn | None
+    unit: Unit
+
+
+class UnitIn(BaseModel):
+    unit: Unit
+
+
+def _unit(db: DbSession) -> Unit:
+    return "fahrenheit" if get_family(db).weather_unit == "fahrenheit" else "celsius"
+
+
+def _degrees(celsius: float, unit: Unit) -> float:
+    """Open-Meteo liefert Celsius; umgerechnet wird erst hier, so teilen sich alle den Cache."""
+    return round(celsius * 9 / 5 + 32, 1) if unit == "fahrenheit" else celsius
 
 
 def _place(db: DbSession) -> PlaceIn | None:
@@ -68,19 +86,25 @@ def _place(db: DbSession) -> PlaceIn | None:
 @router.get("")
 def get_weather(_: CurrentSession, db: DbSession) -> WeatherOut:
     place = _place(db)
+    unit = _unit(db)
     if place is None:
-        return WeatherOut(place=None, current=None, days=[], stale=False)
+        return WeatherOut(place=None, current=None, days=[], stale=False, unit=unit)
     family = get_family(db)
     now = family_now(family)
     try:
         found = weather.forecast(place.latitude, place.longitude, family.timezone, now)
     except weather.WeatherUnavailable:
         raise ApiError(status.HTTP_503_SERVICE_UNAVAILABLE, "weather.unavailable") from None
+    current = vars(found.current) | {"temperature": _degrees(found.current.temperature, unit)}
     return WeatherOut(
         place=place,
-        current=CurrentOut(**vars(found.current)),
-        days=[DayOut(**vars(day)) for day in found.days],
+        current=CurrentOut(**current),
+        days=[
+            DayOut(**vars(day) | {"max": _degrees(day.max, unit), "min": _degrees(day.min, unit)})
+            for day in found.days
+        ],
         stale=now - found.fetched_at >= weather.REFRESH_AFTER,
+        unit=unit,
     )
 
 
@@ -104,7 +128,7 @@ def set_place(body: PlaceIn, _: ParentSession, db: DbSession) -> WeatherSettings
     family.weather_place = body.name
     family.weather_latitude, family.weather_longitude = body.latitude, body.longitude
     db.commit()
-    return WeatherSettingsOut(place=_place(db))
+    return WeatherSettingsOut(place=_place(db), unit=_unit(db))
 
 
 @router.delete("/place")
@@ -112,4 +136,11 @@ def remove_place(_: ParentSession, db: DbSession) -> WeatherSettingsOut:
     family = get_family(db)
     family.weather_place = family.weather_latitude = family.weather_longitude = None
     db.commit()
-    return WeatherSettingsOut(place=None)
+    return WeatherSettingsOut(place=None, unit=_unit(db))
+
+
+@router.put("/unit")
+def set_unit(body: UnitIn, _: ParentSession, db: DbSession) -> WeatherSettingsOut:
+    get_family(db).weather_unit = body.unit
+    db.commit()
+    return WeatherSettingsOut(place=_place(db), unit=body.unit)

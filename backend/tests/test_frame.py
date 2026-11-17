@@ -14,6 +14,9 @@ DEFAULT = {
     "night_start": "22:00",
     "night_end": "06:00",
     "night_style": "clock",
+    "calendar_windows": [],
+    "calendar_view": "days",
+    "calendar_every": 0,
 }
 
 
@@ -38,6 +41,12 @@ def test_parents_change_settings(client, parent):
         "night_start": "21:30",
         "night_end": "07:15",
         "night_style": "dark",
+        "calendar_windows": [
+            {"start": "06:30", "end": "08:00"},
+            {"start": "17:30", "end": "19:00"},
+        ],
+        "calendar_view": "day",
+        "calendar_every": 5,
     }
     response = client.put("/api/frame/settings", json=settings, headers=csrf(parent))
 
@@ -100,3 +109,17 @@ def test_changes_need_unlocked_parent_area(client, admin):
 
 def test_settings_need_login(client):
     assert client.get("/api/frame/settings").status_code == 401
+
+
+@pytest.mark.parametrize(
+    "patch",
+    [
+        {"calendar_windows": [{"start": "6:30", "end": "08:00"}]},
+        {"calendar_windows": [{"start": "06:30", "end": "08:00"}] * 7},
+        {"calendar_view": "month"},
+        {"calendar_every": 4},
+    ],
+)
+def test_invalid_calendar_settings(client, parent, patch):
+    response = client.put("/api/frame/settings", json=patch, headers=csrf(parent))
+    assert response.status_code == 422

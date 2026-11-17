@@ -189,7 +189,7 @@ Branch `phase-9-rezepte`.
 
 ## Etappen (Phase 10: Einkaufsliste als App)
 
-Entschieden: Aus „Unterwegs“ (jetzt 1.6) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
+Entschieden: Aus „Unterwegs“ (jetzt 1.7) wird nur die Einkaufsliste vorgezogen. Eigene Adresse `/shop`
 ohne Navigationsleiste, installierbar (PWA), im Laden ohne Netz: Abhaken, Eintragen, Entfernen
 landen in einer Warteschlange und werden mit Netz der Reihe nach gesendet. Gearbeitet wird auf dem
 Branch `phase-10-pwa` (abgezweigt von `phase-9-rezepte`).
@@ -234,6 +234,24 @@ Gearbeitet wird auf dem Branch `phase-13-termine` (abgezweigt von `phase-12-meal
 1. Termine ändern: Schreibzugriff (Neu verbinden im Elternbereich), **+** in der Kalenderansicht,
    Bearbeiten und Löschen in den Termindetails
 2. Personen nach Terminfarbe: Farbe speichern, „Farben zuordnen“ je Kalender, Rückschreiben
+3. Feinschliff im Alltag
+
+## Etappen (Phase 14: Schnittstellen)
+
+Entschieden (von Claude, während der Nutzer unterwegs war, zur Prüfung): API-Schlüssel statt
+OAuth (nur lesen oder lesen und eintragen, gespeichert als Hash, im Elternbereich unter „Kalender &
+Wetter“); stabile Schnittstelle unter `/api/v1`; FamQuest druckt nicht selbst, sondern schickt die
+Liste an eine eingetragene Adresse (Drucker-App oder Webhook); Home Assistant per RESTful-Sensoren
+und `rest_command` (eigene HA-Integration erst später); die Bereichsregeln der Einkaufsliste stehen
+in `frontend/src/pages/shopping/area-rules.json` und gelten auch im Backend. Im Bilderrahmen
+Kalender statt Fotos zu festen Zeiten, Präsenz erkennt FamQuest nicht. Gearbeitet wird auf dem
+Branch `phase-14-schnittstellen`.
+
+1. Schnittstellen: API-Schlüssel, Einkaufsliste und Bon-Text, eintragen und abhaken, „Zu
+   erledigen“, Übersicht für Home Assistant, Bon-Drucker mit Knopf „Drucken“, Druck-App in der
+   Küchenansicht
+2. Kalender im Bilderrahmen: Zeitfenster, zwischendurch nach einigen Fotos, nur heute oder die
+   nächsten Tage
 3. Feinschliff im Alltag
 
 ## Befehle

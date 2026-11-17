@@ -14,7 +14,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const NO_WEATHER: Weather = { place: null, current: null, days: [], stale: false }
+const NO_WEATHER: Weather = { place: null, current: null, days: [], stale: false, unit: 'celsius' }
 const KOELN = { name: 'Köln', latitude: 50.94, longitude: 6.96 }
 
 function mockParents(weather: () => Weather, extra = {}) {
@@ -88,5 +88,27 @@ describe('Wetter im Elternbereich', () => {
     await user.click(section.getByRole('button', { name: 'Entfernen' }))
     expect(await section.findByText('Noch kein Ort festgelegt')).toBeVisible()
     expect(calls.some((call) => call.key === 'DELETE /api/weather/place')).toBe(true)
+  })
+
+  it('stellt die Temperatur auf Fahrenheit um', async () => {
+    const user = userEvent.setup()
+    let unit: Weather['unit'] = 'celsius'
+    const calls = mockParents(() => ({ ...NO_WEATHER, place: KOELN, unit }), {
+      'PUT /api/weather/unit': (body: unknown) => {
+        unit = (body as { unit: Weather['unit'] }).unit
+        return Response.json({ place: KOELN, unit })
+      },
+    })
+    renderApp('/parents/connections')
+
+    const section = await weatherSection()
+    expect(await section.findByRole('radio', { name: /°C/ })).toBeChecked()
+    await user.click(section.getByRole('radio', { name: /°F/ }))
+
+    expect(await screen.findByText('Temperaturen in Fahrenheit')).toBeVisible()
+    expect(calls.find((call) => call.key === 'PUT /api/weather/unit')?.body).toEqual({
+      unit: 'fahrenheit',
+    })
+    expect(await section.findByRole('radio', { name: /°F/ })).toBeChecked()
   })
 })

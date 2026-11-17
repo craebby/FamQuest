@@ -52,6 +52,7 @@ const WEATHER: Weather = {
     { date: '2026-10-04', code: 2, max: 16, min: 7.9, precipitation: 10 },
   ],
   stale: false,
+  unit: 'celsius',
 }
 
 function makeEvent(overrides: Partial<WeekEvent> = {}): WeekEvent {
@@ -255,7 +256,7 @@ describe('Startseite „Heute“', () => {
   })
 
   it('verweist ohne Ort für das Wetter auf den Elternbereich', async () => {
-    mockHome({ weather: { place: null, current: null, days: [], stale: false } })
+    mockHome({ weather: { place: null, current: null, days: [], stale: false, unit: 'celsius' } })
     renderApp('/')
 
     expect(await screen.findByRole('link', { name: 'Wetter einrichten' })).toHaveAttribute(

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import BookIcon from '~icons/fluent-emoji-flat/open-book'
+import PrinterIcon from '~icons/fluent-emoji-flat/printer'
 import ArrangeIcon from '~icons/lucide/arrow-up-down'
 import ArrowDownIcon from '~icons/lucide/arrow-down'
 import ArrowUpIcon from '~icons/lucide/arrow-up'
@@ -23,6 +24,7 @@ import {
   useRemoveFromList,
   useShoppingList,
 } from '../api/shopping'
+import { usePrintShopping, usePrinter } from '../api/integrations'
 import { TaskIcon } from '../components/TaskIcon'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
@@ -134,6 +136,7 @@ export function ShoppingPage({ installable = false }: { installable?: boolean })
             <Button onClick={() => setArranging(false)}>{t('shopping.arrange_done')}</Button>
           ) : (
             <>
+              {open.length > 0 && <PrintButton />}
               {open.length > 0 && (
                 <Button variant="secondary" onClick={() => setArranging(true)}>
                   <ArrangeIcon className="size-6" aria-hidden="true" />
@@ -499,6 +502,44 @@ function ArrangeRow({
 }
 
 /** Zeigt, wenn das Handy offline ist oder Änderungen noch nicht beim Server sind. */
+/**
+ * Schickt die offene Liste an den Bon-Drucker aus dem Elternbereich. Nur mit Drucker und Netz, und
+ * erst wenn alle Änderungen vom Handy angekommen sind, sonst fehlte auf dem Bon etwas.
+ */
+function PrintButton() {
+  const { t, i18n } = useTranslation()
+  const printer = usePrinter().data
+  const print = usePrintShopping()
+  const online = useOnline()
+  const pending = usePendingShoppingCount()
+  if (!printer?.url || !online) return null
+  const done = print.isSuccess && !print.isPending
+  return (
+    <>
+      <Button
+        variant="secondary"
+        aria-label={t('shopping.print_label')}
+        title={t('shopping.print_label')}
+        disabled={print.isPending || pending > 0}
+        onClick={() => print.mutate(i18n.resolvedLanguage ?? i18n.language)}
+      >
+        <PrinterIcon className="size-7" aria-hidden="true" />
+        {print.isPending ? t('shopping.printing') : t('shopping.print')}
+      </Button>
+      {(done || print.error) && (
+        <p
+          role="status"
+          className={`self-center text-base font-bold ${print.error ? 'text-red-700' : 'text-green-800'}`}
+        >
+          {print.error
+            ? errorMessage(t, print.error)
+            : t('shopping.printed', { count: print.data?.items ?? 0 })}
+        </p>
+      )}
+    </>
+  )
+}
+
 function SyncStatus() {
   const { t } = useTranslation()
   const online = useOnline()

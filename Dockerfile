@@ -27,6 +27,8 @@ WORKDIR /app
 COPY backend/pyproject.toml backend/uv.lock backend/.python-version ./
 RUN uv sync --locked --no-dev
 COPY backend/ ./
+# Bereichsregeln der Einkaufsliste (Bon und API), gepflegt im Frontend.
+COPY frontend/src/pages/shopping/area-rules.json ./app/area-rules.json
 COPY --from=frontend /frontend/dist ./static
 
 USER app
