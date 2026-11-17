@@ -11,12 +11,12 @@ One installation belongs to exactly one family. Everything runs locally in Docke
 services and without external CDNs. The full specification (in German) is in
 [`docs/SPEC.md`](docs/SPEC.md).
 
-> **Status:** version 1.4. Contains the task system (routines, family view, points, rewards,
+> **Status:** version 1.5. Contains the task system (routines, family view, points, rewards,
 > parent checks), Google Calendar, the start page "Today" as a week dashboard with
 > weather, the picture frame with night mode, the meal plan, the shopping list, the household
 > (cleaning plan with a traffic light, "To do"), the kitchen view for a small tablet, recipes with
 > optional Mealie connection and the shopping list as an installable app that works offline in the
-> shop and sorts itself by shop. Polish continues in everyday use (see [Roadmap](#roadmap)).
+> shop and sorts itself by shop, plus API keys for Home Assistant and a receipt printer. Polish continues in everyday use (see [Roadmap](#roadmap)).
 
 **Try it without installing:** [demo-en.kaufmann.city](https://demo-en.kaufmann.city/) – tap
 "Open the demo"; the parent PIN is shown on the sign-in page. The sample family resets itself on
@@ -108,7 +108,7 @@ docker compose up -d --build
 ```
 
 `main` always has the latest state. For a fixed version, check out a
-[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.4.1`,
+[release](https://github.com/craebby/FamQuest/releases) instead, e.g. `git fetch --tags && git checkout v1.5.0`,
 then `docker compose up -d --build`.
 
 On macOS, use `sed -i ''` instead of `sed -i`, or simply edit `.env` by hand.
@@ -1461,8 +1461,11 @@ a single app image that runs as an unprivileged user.
 
 ## Roadmap
 
-Current state: **1.4** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
-1.4 are a first plan and may still change.
+Current state: **1.5** ([releases](https://github.com/craebby/FamQuest/releases)). Versions after
+1.5 are a first plan and may still change.
+
+**1.5: released.** Integrations (phase 14 below): API keys, the shopping list for a receipt
+printer and Home Assistant, and the calendar instead of photos in the picture frame at set times.
 
 **1.4: released.** Changing events right in FamQuest, also on "Today" and in the kitchen view, and
 people by event colour (phase 13 below), the shopping list sorted by shop (phase 11 below) and
@@ -1557,7 +1560,7 @@ resets itself on the hour (see [Public demo](#public-demo)).
 
 **Shopping list as an app (phase 10):** released with 1.3, polish on a real phone to follow.
 
-Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
+Brought forward from 1.7 ("on the go"): the part that's needed in the shop.
 
 - [x] 1. Installable app (PWA) for the shopping list at `/shop`, works without a connection in the
   shop; changes made offline are sent once there's a connection again
@@ -1587,8 +1590,8 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
   to Google Calendar as the colour
 - [ ] 3. Polish in everyday use
 
-**Integrations and calendar in the picture frame (phase 14):** in progress on the branch
-`phase-14-schnittstellen`.
+**Integrations and calendar in the picture frame (phase 14):** released with 1.5, polish continues
+in everyday use.
 
 - [x] 1. [Integrations](#integrations-receipt-printer-home-assistant): API keys (read only or read
   and add), shopping list and receipt text sorted along the way through the shop, adding and ticking
@@ -1605,7 +1608,7 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
   clock, night mode; plus a "Photo for …" button right at the planned dish in the meal plan
 - [ ] 2. Polish on the real tablet
 
-**1.5: make it your own**
+**1.6: make it your own**
 
 - Editable templates: families can change, add and remove task templates and reward suggestions
   (stored in the database instead of the code); reworked example templates
@@ -1621,7 +1624,7 @@ Brought forward from 1.6 ("on the go"): the part that's needed in the shop.
   kitchen view, opened in a frame like Mealie
 - Evening mode: warm, dimmed colours with less blue light, in the same time window as night mode
 
-**1.6: on the go**
+**1.7: on the go**
 
 - Installable web app (PWA) for parents' phones: check tasks, book points and add tasks from
   anywhere (the shopping list as an app comes earlier, see phase 10)
