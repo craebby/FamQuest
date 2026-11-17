@@ -419,7 +419,7 @@ class CompanionOut(BaseModel):
     # None = noch kein Tier ausgesucht.
     species: str | None
     name: str
-    # "egg", "baby", "kid", "grown"
+    # "egg", "baby", "kid", "teen", "grown"
     stage: str
     # Tage mit mindestens einer Erledigung seit dem Aussuchen.
     care_days: int

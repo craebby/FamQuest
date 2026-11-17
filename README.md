@@ -436,9 +436,10 @@ understand it too.
 - **Nothing is punished:** the pet never gets sick, never shrinks and never dies. With nothing to do
   it just sleeps.
 - **Growing up:** on every day with at least one task done the pet grows a little: egg (it cracks on
-  the first day), baby in its shell from day 2, kid from day 14, grown-up from day 30.
-  Along the way it learns tricks, starting as a baby (twirl, somersault, dance, bubbles, rainbow,
-  fireworks, rocket ride, magic; the last one on day 60, about two months of daily care), shows
+  the first day), baby in its shell from day 2, kid from day 12, teenager with headphones
+  from day 25, grown-up from day 42. Along the way it learns two tricks per stage, starting as a
+  baby (twirl, somersault, dance, bubbles, rainbow, fireworks, rocket ride, magic; the last one on
+  day 60, about two months of daily care), shows
   them on a tap and sometimes all by itself. Paws show the way to what comes next: the pet for a
   new stage, a gift for a new trick.
 - **Accessories:** with points the child buys a bow, crown, sunglasses, a balloon, a little house

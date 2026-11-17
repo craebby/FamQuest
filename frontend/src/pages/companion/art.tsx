@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import EggIcon from '~icons/fluent-emoji-flat/egg'
+import HeadphoneIcon from '~icons/fluent-emoji-flat/headphone'
 
 import type { ItemSlot, Species, Stage } from '../../api/companions'
 import type { Mood } from './mood'
@@ -8,8 +9,9 @@ import { type Icon, ITEM_ICONS, SPECIES_ICONS, SPECIES_STYLE } from './icons'
 /** Größe des Tiers je Stufe (Anteil an der Bühne). */
 const STAGE_SIZE: Record<Exclude<Stage, 'egg'>, string> = {
   baby: '42%',
-  kid: '58%',
-  grown: '72%',
+  kid: '54%',
+  teen: '64%',
+  grown: '74%',
 }
 
 // Lage des Zubehörs relativ zum Tier.
@@ -124,6 +126,20 @@ export function CompanionFigure({
               className="block size-full"
               style={{ height: 'auto', ...SPECIES_STYLE[species] }}
             />
+            {stage === 'teen' && (
+              // Der Teenager trägt Kopfhörer; mit Kopfschmuck rutschen sie um den Hals.
+              <HeadphoneIcon
+                aria-hidden="true"
+                className="absolute"
+                style={{
+                  height: 'auto',
+                  left: '50%',
+                  ...(equipped.head
+                    ? { top: '52%', width: '56%', transform: 'translateX(-50%) rotate(180deg)' }
+                    : { top: '-14%', width: '78%', transform: 'translateX(-50%)' }),
+                }}
+              />
+            )}
             {(['head', 'face', 'toy'] as const).map((slot) => {
               const Item = equipped[slot] ? ITEM_ICONS[equipped[slot]] : undefined
               return Item ? (

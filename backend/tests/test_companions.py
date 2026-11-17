@@ -104,10 +104,11 @@ def test_completed_days_feed_growth(client, parent, lena, now):
     [
         (0, "egg", 2),
         (1, "egg", 2),
-        (2, "baby", 14),
-        (13, "baby", 14),
-        (14, "kid", 30),
-        (30, "grown", None),
+        (2, "baby", 12),
+        (11, "baby", 12),
+        (12, "kid", 25),
+        (25, "teen", 42),
+        (42, "grown", None),
     ],
 )
 def test_stages(days, stage, next_at):
@@ -117,9 +118,10 @@ def test_stages(days, stage, next_at):
 def test_tricks_spread_over_all_stages():
     assert tricks_for(3) == ([], 4)
     assert tricks_for(4) == (["spin"], 8)
-    # Baby (2–13) kann zwei, Kind (14–29) fünf, das große Tier lernt den Rest bis Tag 60.
-    assert len(tricks_for(13)[0]) == 2
-    assert len(tricks_for(29)[0]) == 5
+    # Je Stufe zwei: Baby (2–11), Kind (12–24), Teenager (25–41), groß bis Tag 60.
+    assert len(tricks_for(11)[0]) == 2
+    assert len(tricks_for(24)[0]) == 4
+    assert len(tricks_for(41)[0]) == 6
     assert tricks_for(59)[1] == 60
     learned, upcoming = tricks_for(1000)
     assert learned[-1] == "magic"

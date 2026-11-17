@@ -1354,6 +1354,8 @@
     "growth_baby_other": "Noch {{count}} Tage, dann schlüpft es",
     "growth_kid_one": "Noch {{count}} Tag bis zum nächsten Wachsen",
     "growth_kid_other": "Noch {{count}} Tage bis zum nächsten Wachsen",
+    "growth_teen_one": "Noch {{count}} Tag, dann ist es ein Teenager",
+    "growth_teen_other": "Noch {{count}} Tage, dann ist es ein Teenager",
     "growth_grown_one": "Noch {{count}} Tag, dann ist es groß",
     "growth_grown_other": "Noch {{count}} Tage, dann ist es groß",
     "growth_trick_one": "Noch {{count}} Tag bis zum nächsten Kunststück",
@@ -1364,6 +1366,7 @@
       "egg": "Ei",
       "baby": "Baby",
       "kid": "Kind",
+      "teen": "Teenager",
       "grown": "Groß"
     },
     "care_days_one": "{{count}} Tag versorgt",

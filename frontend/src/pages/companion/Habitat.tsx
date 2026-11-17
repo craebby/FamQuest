@@ -367,8 +367,10 @@ function Growth({ companion }: { companion: Companion & { species: Species } }) 
       : companion.stage === 'baby'
         ? 'kid'
         : companion.stage === 'kid'
-          ? 'grown'
-          : 'trick'
+          ? 'teen'
+          : companion.stage === 'teen'
+            ? 'grown'
+            : 'trick'
 
   return (
     <div
@@ -388,7 +390,15 @@ function Growth({ companion }: { companion: Companion & { species: Species } }) 
           <GiftIcon className="size-12 animate-pet-wiggle" />
         ) : (
           <Animal
-            className={next === 'baby' ? 'size-9' : next === 'kid' ? 'size-11' : 'size-14'}
+            className={
+              next === 'baby'
+                ? 'size-9'
+                : next === 'kid'
+                  ? 'size-11'
+                  : next === 'teen'
+                    ? 'size-12'
+                    : 'size-14'
+            }
             style={SPECIES_STYLE[companion.species]}
           />
         )}

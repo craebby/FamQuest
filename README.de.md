@@ -444,8 +444,8 @@ auch für Kinder, die noch nicht lesen.
 - **Nichts wird bestraft:** Das Tier wird nicht krank, schrumpft nicht und stirbt nicht. Ist nichts
   zu tun, schläft es nur.
 - **Wachsen:** An jedem Tag mit mindestens einer Erledigung wächst das Tier ein Stück: Ei (am ersten
-  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 14, groß ab Tag 30. Unterwegs
-  lernt es schon als Baby Kunststücke (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen,
+  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 12, Teenager mit Kopfhörern
+  ab Tag 25, groß ab Tag 42. Unterwegs lernt es je Stufe zwei Kunststücke, schon als Baby (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen,
   Feuerwerk, Raketenflug, Zaubern; das letzte an Tag 60, also nach rund zwei Monaten täglicher
   Pflege), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zum Nächsten:
   das Tier für eine neue Stufe, ein Geschenk für ein neues Kunststück.

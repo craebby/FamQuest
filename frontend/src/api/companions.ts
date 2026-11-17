@@ -24,7 +24,7 @@ export const SPECIES = [
   'koala',
 ] as const
 export type Species = (typeof SPECIES)[number]
-export type Stage = 'egg' | 'baby' | 'kid' | 'grown'
+export type Stage = 'egg' | 'baby' | 'kid' | 'teen' | 'grown'
 export type Trick =
   'spin' | 'jump' | 'music' | 'bubbles' | 'rainbow' | 'fireworks' | 'rocket' | 'magic'
 export type ItemSlot = 'head' | 'face' | 'toy' | 'place'
@@ -59,7 +59,13 @@ export interface Companions {
 }
 
 /** Ab so vielen Pflegetagen beginnt eine Stufe (wie STAGES im Backend). */
-export const STAGE_STARTS: Record<Stage, number> = { egg: 0, baby: 2, kid: 14, grown: 30 }
+export const STAGE_STARTS: Record<Stage, number> = {
+  egg: 0,
+  baby: 2,
+  kid: 12,
+  teen: 25,
+  grown: 42,
+}
 
 export const COMPANIONS_KEY = ['companions'] as const
 
@@ -132,10 +138,10 @@ export function useResetCompanion() {
 export const TRICK_STARTS: Record<Trick, number> = {
   spin: 4,
   jump: 8,
-  music: 17,
-  bubbles: 22,
-  rainbow: 27,
-  fireworks: 36,
-  rocket: 46,
+  music: 16,
+  bubbles: 20,
+  rainbow: 29,
+  fireworks: 35,
+  rocket: 50,
   magic: 60,
 }

@@ -1354,6 +1354,8 @@
     "growth_baby_other": "{{count}} more days until it hatches",
     "growth_kid_one": "{{count}} more day until it grows",
     "growth_kid_other": "{{count}} more days until it grows",
+    "growth_teen_one": "{{count}} more day until it's a teenager",
+    "growth_teen_other": "{{count}} more days until it's a teenager",
     "growth_grown_one": "{{count}} more day until it's grown up",
     "growth_grown_other": "{{count}} more days until it's grown up",
     "growth_trick_one": "{{count}} more day until the next trick",
@@ -1364,6 +1366,7 @@
       "egg": "Egg",
       "baby": "Baby",
       "kid": "Kid",
+      "teen": "Teenager",
       "grown": "Grown up"
     },
     "care_days_one": "cared for {{count}} day",

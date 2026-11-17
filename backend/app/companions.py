@@ -30,18 +30,18 @@ SPECIES = (
 )
 
 # (Stufe, ab so vielen Pflegetagen)
-STAGES = (("egg", 0), ("baby", 2), ("kid", 14), ("grown", 30))
+STAGES = (("egg", 0), ("baby", 2), ("kid", 12), ("teen", 25), ("grown", 42))
 
-# Kunststücke: (Schlüssel, ab so vielen Pflegetagen). Baby 2, Kind 3, groß 3; fertig nach rund
-# zwei Monaten täglicher Pflege.
+# Kunststücke: (Schlüssel, ab so vielen Pflegetagen). Je Stufe zwei; fertig nach rund zwei
+# Monaten täglicher Pflege.
 TRICKS = (
     ("spin", 4),
     ("jump", 8),
-    ("music", 17),
-    ("bubbles", 22),
-    ("rainbow", 27),
-    ("fireworks", 36),
-    ("rocket", 46),
+    ("music", 16),
+    ("bubbles", 20),
+    ("rainbow", 29),
+    ("fireworks", 35),
+    ("rocket", 50),
     ("magic", 60),
 )
 
