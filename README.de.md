@@ -444,10 +444,11 @@ auch für Kinder, die noch nicht lesen.
 - **Nichts wird bestraft:** Das Tier wird nicht krank, schrumpft nicht und stirbt nicht. Ist nichts
   zu tun, schläft es nur.
 - **Wachsen:** An jedem Tag mit mindestens einer Erledigung wächst das Tier ein Stück: Ei (am ersten
-  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 7, groß ab Tag 14. Unterwegs lernt es
-  schon als Baby Kunststücke (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen, Feuerwerk,
-  Raketenflug, Zaubern; das letzte an Tag 25), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zur nächsten
-  Stufe, ein Geschenk das nächste Kunststück.
+  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 14, groß ab Tag 30. Unterwegs
+  lernt es schon als Baby Kunststücke (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen,
+  Feuerwerk, Raketenflug, Zaubern; das letzte an Tag 60, also nach rund zwei Monaten täglicher
+  Pflege), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zum Nächsten:
+  das Tier für eine neue Stufe, ein Geschenk für ein neues Kunststück.
 - **Zubehör:** Mit Punkten kauft das Kind Schleife, Krone, Sonnenbrille, Luftballon, Häuschen und
   mehr (15–80 Punkte) und zieht es per Tipp an oder aus. Die Buchungen stehen wie eingelöste
   Belohnungen in der Punkte-Historie.
@@ -1768,6 +1769,8 @@ Ampel ersetzt; die Routinen der Kinder bleiben.
 - Mehrere Familien auf einer Installation: z. B. legt der erste Admin (oder eine versteckte
   Funktion) befreundete Familien an und berechtigt sich darauf. Aktuell bedient FamQuest bewusst
   genau eine Familie pro Installation.
+- Begleiter-Tier: Tier-Album; das große Tier zieht ins Album um und bleibt sichtbar, das Kind zieht
+  ein neues Ei auf und hat mit der Zeit eine Sammlung
 
 ## Kontakt und Unterstützung
 

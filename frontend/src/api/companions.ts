@@ -59,7 +59,7 @@ export interface Companions {
 }
 
 /** Ab so vielen Pflegetagen beginnt eine Stufe (wie STAGES im Backend). */
-export const STAGE_STARTS: Record<Stage, number> = { egg: 0, baby: 2, kid: 7, grown: 14 }
+export const STAGE_STARTS: Record<Stage, number> = { egg: 0, baby: 2, kid: 14, grown: 30 }
 
 export const COMPANIONS_KEY = ['companions'] as const
 
@@ -130,12 +130,12 @@ export function useResetCompanion() {
 
 /** Ab so vielen Pflegetagen kann das große Tier ein Kunststück (wie TRICKS im Backend). */
 export const TRICK_STARTS: Record<Trick, number> = {
-  spin: 3,
-  jump: 5,
-  music: 8,
-  bubbles: 10,
-  rainbow: 12,
-  fireworks: 16,
-  rocket: 20,
-  magic: 25,
+  spin: 4,
+  jump: 8,
+  music: 17,
+  bubbles: 22,
+  rainbow: 27,
+  fireworks: 36,
+  rocket: 46,
+  magic: 60,
 }

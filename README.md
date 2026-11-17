@@ -436,10 +436,11 @@ understand it too.
 - **Nothing is punished:** the pet never gets sick, never shrinks and never dies. With nothing to do
   it just sleeps.
 - **Growing up:** on every day with at least one task done the pet grows a little: egg (it cracks on
-  the first day), baby in its shell from day 2, kid from day 7, grown-up from day 14. Along the way it
-  learns tricks, starting as a baby (twirl, somersault, dance, bubbles, rainbow, fireworks, rocket
-  ride, magic; the last one on day 25), shows them on a tap and sometimes all by itself. Paws show how far it is to the next stage, a
-  gift the next trick.
+  the first day), baby in its shell from day 2, kid from day 14, grown-up from day 30.
+  Along the way it learns tricks, starting as a baby (twirl, somersault, dance, bubbles, rainbow,
+  fireworks, rocket ride, magic; the last one on day 60, about two months of daily care), shows
+  them on a tap and sometimes all by itself. Paws show the way to what comes next: the pet for a
+  new stage, a gift for a new trick.
 - **Accessories:** with points the child buys a bow, crown, sunglasses, a balloon, a little house
   and more (15–80 points), and taps to put them on or take them off. Bookings appear in the points
   history like redeemed rewards.
@@ -1725,6 +1726,8 @@ them; the children's routines stay.
 - Several families on one installation: e.g. the first admin (or a hidden function) creates
   befriended families and grants access to them. Today FamQuest deliberately serves exactly one
   family per installation.
+- Pet companion: a pet album; once grown, the pet moves into the album and stays visible, and the
+  child raises a new egg, building a collection over time
 
 ## Contact and support
 

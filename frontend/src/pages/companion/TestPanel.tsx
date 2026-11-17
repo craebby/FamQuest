@@ -18,7 +18,7 @@ export interface TestState {
   allDone: boolean
 }
 
-const MAX_DAYS = 25
+const MAX_DAYS = 60
 
 /** Das Tier so, wie es nach `days` Pflegetagen aussähe (wie stage_for/tricks_for im Backend). */
 export function previewCompanion(companion: Companion, days: number): Companion {

@@ -43,7 +43,7 @@ def test_child_without_companion_starts_as_empty_egg(client, parent, lena):
             "care_days": 0,
             "next_stage_at": 2,
             "tricks": [],
-            "next_trick_at": 3,
+            "next_trick_at": 4,
             "owned": [],
             "equipped": {},
         }
@@ -104,10 +104,10 @@ def test_completed_days_feed_growth(client, parent, lena, now):
     [
         (0, "egg", 2),
         (1, "egg", 2),
-        (2, "baby", 7),
-        (6, "baby", 7),
-        (7, "kid", 14),
-        (14, "grown", None),
+        (2, "baby", 14),
+        (13, "baby", 14),
+        (14, "kid", 30),
+        (30, "grown", None),
     ],
 )
 def test_stages(days, stage, next_at):
@@ -115,11 +115,12 @@ def test_stages(days, stage, next_at):
 
 
 def test_tricks_spread_over_all_stages():
-    assert tricks_for(2) == ([], 3)
-    assert tricks_for(3) == (["spin"], 5)
-    # Baby (2–6) kann zwei, Kind (7–13) fünf, das große Tier lernt den Rest.
-    assert len(tricks_for(6)[0]) == 2
-    assert len(tricks_for(13)[0]) == 5
+    assert tricks_for(3) == ([], 4)
+    assert tricks_for(4) == (["spin"], 8)
+    # Baby (2–13) kann zwei, Kind (14–29) fünf, das große Tier lernt den Rest bis Tag 60.
+    assert len(tricks_for(13)[0]) == 2
+    assert len(tricks_for(29)[0]) == 5
+    assert tricks_for(59)[1] == 60
     learned, upcoming = tricks_for(1000)
     assert learned[-1] == "magic"
     assert upcoming is None
