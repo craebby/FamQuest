@@ -14,11 +14,65 @@ const STAGE_SIZE: Record<Exclude<Stage, 'egg'>, string> = {
   grown: '74%',
 }
 
-// Lage des Zubehörs relativ zum Tier.
-const SLOT_STYLE: Record<Exclude<ItemSlot, 'place'>, CSSProperties> = {
-  head: { top: '-22%', left: '50%', width: '46%', transform: 'translateX(-50%) rotate(-8deg)' },
-  face: { top: '28%', left: '50%', width: '48%', transform: 'translateX(-50%)' },
-  toy: { bottom: '-4%', right: '-30%', width: '42%' },
+/**
+ * Kopf je Tier in Prozent der Zeichnung: Mitte (x), Oberkante (top), Augenhöhe (eye) und Breite (w).
+ * Viele Tiere sind von der Seite gezeichnet (Kopf links), deshalb sitzt Kopfschmuck nicht einfach
+ * oben in der Mitte.
+ */
+const HEAD: Record<Species, { x: number; top: number; eye: number; w: number }> = {
+  cat: { x: 20, top: 25, eye: 37, w: 30 },
+  dog: { x: 21, top: 23, eye: 35, w: 30 },
+  fox: { x: 50, top: 22, eye: 57, w: 62 },
+  dragon: { x: 33, top: 18, eye: 26, w: 34 },
+  unicorn: { x: 34, top: 22, eye: 42, w: 40 },
+  horse: { x: 17, top: 12, eye: 20, w: 24 },
+  snow_leopard: { x: 18, top: 28, eye: 43, w: 28 },
+  giraffe: { x: 21, top: 11, eye: 20, w: 20 },
+  turtle: { x: 14, top: 63, eye: 70, w: 16 },
+  shark: { x: 33, top: 14, eye: 34, w: 34 },
+  dolphin: { x: 38, top: 7, eye: 21, w: 32 },
+  panda: { x: 50, top: 17, eye: 51, w: 72 },
+  rabbit: { x: 24, top: 20, eye: 43, w: 34 },
+  penguin: { x: 50, top: 8, eye: 24, w: 44 },
+  koala: { x: 50, top: 16, eye: 54, w: 64 },
+}
+
+function slotStyle(species: Species, slot: 'head' | 'face' | 'toy' | 'headphones'): CSSProperties {
+  const head = HEAD[species]
+  switch (slot) {
+    case 'head':
+      return {
+        left: `${head.x}%`,
+        top: `${head.top}%`,
+        width: `${head.w * 1.05}%`,
+        transform: 'translate(-50%, -78%) rotate(-8deg)',
+      }
+    case 'headphones':
+      // Bei großen Gesichtern von vorn sitzen die Muscheln seitlich, nicht über den Augen.
+      return {
+        left: `${head.x}%`,
+        top: `${head.top}%`,
+        width: `${head.w * (head.w > 40 ? 1.3 : 1.2)}%`,
+        transform: `translate(-50%, ${head.w > 40 ? -55 : -30}%)`,
+      }
+    case 'face':
+      return {
+        left: `${head.x}%`,
+        top: `${head.eye}%`,
+        width: `${head.w * 0.9}%`,
+        transform: 'translate(-50%, -50%)',
+      }
+    case 'toy':
+      return { bottom: '-4%', right: '-30%', width: '42%' }
+  }
+}
+
+/** Kulisse: Häuschen und Sonnenblume stehen am Boden, Regenbogen und Planet am Himmel. */
+const PLACE_STYLE: Record<string, CSSProperties> = {
+  house: { bottom: '9%', left: '1%', width: '44%' },
+  sunflower: { bottom: '9%', right: '3%', width: '24%' },
+  rainbow: { top: '2%', left: '2%', width: '58%', opacity: 0.85 },
+  ringed_planet: { top: '4%', left: '6%', width: '24%' },
 }
 
 /** Untere Eierschale, in der das Baby sitzt (eigene Zeichnung). */
@@ -88,11 +142,14 @@ export function CompanionFigure({
 
   return (
     <div className="relative aspect-square w-full">
-      {Place && (
+      {Place && equipped.place && (
         <Place
           aria-hidden="true"
-          className="absolute top-[4%] left-[4%] w-[34%] opacity-90"
-          style={{ height: 'auto' }}
+          className="absolute"
+          style={{
+            height: 'auto',
+            ...(PLACE_STYLE[equipped.place] ?? { top: '4%', left: '4%', width: '30%' }),
+          }}
         />
       )}
       {/* Schatten auf dem Boden */}
@@ -126,18 +183,12 @@ export function CompanionFigure({
               className="block size-full"
               style={{ height: 'auto', ...SPECIES_STYLE[species] }}
             />
-            {stage === 'teen' && (
-              // Der Teenager trägt Kopfhörer; mit Kopfschmuck rutschen sie um den Hals.
+            {stage === 'teen' && !equipped.head && (
+              // Der Teenager trägt Kopfhörer, solange er keinen Kopfschmuck aufhat.
               <HeadphoneIcon
                 aria-hidden="true"
                 className="absolute"
-                style={{
-                  height: 'auto',
-                  left: '50%',
-                  ...(equipped.head
-                    ? { top: '52%', width: '56%', transform: 'translateX(-50%) rotate(180deg)' }
-                    : { top: '-14%', width: '78%', transform: 'translateX(-50%)' }),
-                }}
+                style={{ height: 'auto', ...slotStyle(species, 'headphones') }}
               />
             )}
             {(['head', 'face', 'toy'] as const).map((slot) => {
@@ -147,7 +198,7 @@ export function CompanionFigure({
                   key={slot}
                   aria-hidden="true"
                   className="absolute"
-                  style={{ height: 'auto', ...SLOT_STYLE[slot] }}
+                  style={{ height: 'auto', ...slotStyle(species, slot) }}
                 />
               ) : null
             })}

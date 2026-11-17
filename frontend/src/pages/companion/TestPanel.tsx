@@ -52,7 +52,7 @@ export function TestPanel({
       ([stage, start]) => [t(`companion.stage.${stage}`), start] as [string, number],
     ),
     [t('companion.test.cracked'), 1],
-    [String(MAX_DAYS), MAX_DAYS],
+    [t('companion.trick.magic'), MAX_DAYS],
   ]
   const chip =
     'rounded-2xl bg-white px-4 py-2 text-lg font-bold text-slate-800 shadow-sm hover:bg-amber-100 focus-visible:outline-4 focus-visible:outline-orange-400'
