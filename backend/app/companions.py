@@ -1,8 +1,8 @@
 """Begleiter-Tier: Arten, Zubehör, Wachstum.
 
 Das Tier wächst mit den Tagen, an denen das Kind mindestens eine Aufgabe erledigt hat. Verpasste
-Tage kosten nichts: es gibt keinen Rückschritt, kein Hungern und keine Strafe. Ist es groß, lernt
-es in Abständen neue Kunststücke, damit es spannend bleibt.
+Tage kosten nichts: es gibt keinen Rückschritt, kein Hungern und keine Strafe. Schon das Baby lernt
+Kunststücke, über alle Stufen verteilt, damit jede Stufe etwas Neues bringt.
 """
 
 from sqlalchemy import func, select
@@ -32,16 +32,16 @@ SPECIES = (
 # (Stufe, ab so vielen Pflegetagen)
 STAGES = (("egg", 0), ("baby", 2), ("kid", 7), ("grown", 14))
 
-# Kunststücke des großen Tiers: (Schlüssel, ab so vielen Pflegetagen)
+# Kunststücke: (Schlüssel, ab so vielen Pflegetagen). Baby 2, Kind 3, groß 3.
 TRICKS = (
-    ("spin", 14),
-    ("jump", 18),
-    ("music", 22),
-    ("bubbles", 27),
-    ("rainbow", 33),
-    ("fireworks", 40),
-    ("rocket", 50),
-    ("magic", 60),
+    ("spin", 3),
+    ("jump", 5),
+    ("music", 8),
+    ("bubbles", 10),
+    ("rainbow", 12),
+    ("fireworks", 16),
+    ("rocket", 20),
+    ("magic", 25),
 )
 
 # Zubehör: Schlüssel → (Platz, Punkte). Je Platz trägt das Tier ein Teil.

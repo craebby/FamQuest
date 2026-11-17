@@ -1375,6 +1375,19 @@
       "rewards": "Nur Belohnungen"
     },
     "reset_confirm": "{{name}} sucht sich ein neues Tier aus und fängt beim Ei an. Gekauftes Zubehör bleibt.",
-    "reset": "Neues Tier aussuchen lassen"
+    "reset": "Neues Tier aussuchen lassen",
+    "test": {
+      "title": "Testmodus",
+      "hint": "Nur zum Ausprobieren: Hier verstellst du Pflegetage und Portionen nur in der Anzeige. Gespeichert wird nichts.",
+      "exit": "Testmodus beenden",
+      "day_minus": "− 1 Tag",
+      "day_plus": "+ 1 Tag",
+      "cracked": "Ei mit Riss",
+      "food_plus": "+ 1 Portion",
+      "food_reset": "Portionen auf 0",
+      "all_done": "Alles erledigt"
+    },
+    "hungry": "{{name}} hat Hunger: zu den Aufgaben",
+    "hungry_egg": "{{name}} wartet auf dich: zu den Aufgaben"
   }
 }

@@ -85,12 +85,16 @@
   --animate-pet-hop: pet-hop 700ms ease-out;
   --animate-pet-munch: pet-munch 900ms ease-in-out;
   --animate-pet-wiggle: pet-wiggle 800ms ease-in-out;
+  --animate-pet-beg: pet-beg 2.4s ease-in-out infinite;
+  --animate-bubble-float: bubble-float 2.4s ease-in-out infinite;
   --animate-pet-spin: pet-spin 1100ms ease-in-out;
   --animate-pet-jump: pet-jump 1200ms ease-out;
   --animate-pet-dance: pet-dance 1.2s ease-in-out infinite;
   --animate-pet-rocket: pet-rocket 2200ms ease-in-out;
   --animate-pet-magic: pet-magic 2000ms ease-in-out;
   --animate-egg-wobble: egg-wobble 3s ease-in-out infinite;
+  --animate-egg-shake: egg-shake 1100ms ease-in-out;
+  --animate-egg-glow: egg-glow 1600ms ease-out forwards;
   --animate-zzz: zzz 3s ease-in-out infinite;
   --animate-particle: particle 1800ms ease-out forwards;
   --animate-confetti: confetti 2600ms ease-in forwards;
@@ -137,6 +141,33 @@
     40%,
     80% {
       transform: scale(0.96, 1.04);
+    }
+  }
+  @keyframes pet-beg {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+    20% {
+      transform: translateY(-6%) rotate(-5deg);
+    }
+    40% {
+      transform: translateY(0) rotate(0);
+    }
+    60% {
+      transform: translateY(-6%) rotate(5deg);
+    }
+    80% {
+      transform: translateY(0) rotate(0);
+    }
+  }
+  @keyframes bubble-float {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-8%) scale(1.06);
     }
   }
   @keyframes pet-wiggle {
@@ -240,6 +271,44 @@
       transform: rotate(-4deg);
     }
   }
+  @keyframes egg-shake {
+    0%,
+    100% {
+      transform: rotate(0) scale(1);
+    }
+    10% {
+      transform: rotate(-14deg) scale(1.04);
+    }
+    25% {
+      transform: rotate(14deg) scale(1.06);
+    }
+    40% {
+      transform: rotate(-11deg) scale(1.04);
+    }
+    55% {
+      transform: rotate(9deg) translateY(-6%);
+    }
+    70% {
+      transform: rotate(-5deg);
+    }
+    85% {
+      transform: rotate(3deg);
+    }
+  }
+  @keyframes egg-glow {
+    0% {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    30% {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
   @keyframes zzz {
     0%,
     100% {
@@ -280,6 +349,7 @@
 @media (prefers-reduced-motion: reduce) {
   [class*='animate-pet-'],
   [class*='animate-egg-'],
+  .animate-bubble-float,
   .animate-zzz,
   .animate-confetti {
     animation: none !important;

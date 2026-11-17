@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import CheckIcon from '~icons/fluent-emoji-flat/check-mark-button'
 import ConfettiIcon from '~icons/fluent-emoji-flat/confetti-ball'
 import CrossIcon from '~icons/fluent-emoji-flat/cross-mark'
 import GiftIcon from '~icons/fluent-emoji-flat/wrapped-gift'
+import StarIcon from '~icons/fluent-emoji-flat/glowing-star'
 import PartyIcon from '~icons/fluent-emoji-flat/party-popper'
 import PawIcon from '~icons/fluent-emoji-flat/paw-prints'
 import PencilIcon from '~icons/fluent-emoji-flat/pencil'
@@ -35,7 +37,7 @@ import {
   SparklesIcon,
   TRICKS,
 } from './icons'
-import type { Mood } from './mood'
+import { moodFor } from './mood'
 import { useDailyCounter } from './useDailyCounter'
 
 /** Alle so vielen Portionen macht das Tier ein Häufchen (zum Wegtippen). */
@@ -58,15 +60,37 @@ interface HabitatProps {
   food: number
   /** Alles, was heute zählt, ist erledigt. */
   allDone: boolean
+  /** Es ist noch etwas offen: das Tier zeigt, dass es Hunger hat. */
+  open: boolean
   balance: number
+  /** Testmodus: eigene Zähler, damit die echten Portionen und Häufchen unberührt bleiben. */
+  test?: boolean
 }
 
-export function Habitat({ member, companion, items, date, food, allDone, balance }: HabitatProps) {
+export function Habitat({
+  member,
+  companion,
+  items,
+  date,
+  food,
+  allDone,
+  open,
+  balance,
+  test = false,
+}: HabitatProps) {
   const { t } = useTranslation()
   const tokens = colorTokens(member.color)
   const species = companion.species
-  const [seenFood, setSeenFood] = useDailyCounter(`famquest.companion.fed.${member.id}`, date)
-  const [cleaned, setCleaned] = useDailyCounter(`famquest.companion.clean.${member.id}`, date)
+  const suffix = test ? '.test' : ''
+  const [seenFood, setSeenFood] = useDailyCounter(
+    `famquest.companion.fed.${member.id}${suffix}`,
+    date,
+  )
+  const [cleaned, setCleaned] = useDailyCounter(
+    `famquest.companion.clean.${member.id}${suffix}`,
+    date,
+  )
+  const isEgg = companion.stage === 'egg'
   const [action, setAction] = useState<Action | null>(null)
   const counter = useRef(0)
   const [buying, setBuying] = useState<CompanionItem | null>(null)
@@ -80,9 +104,11 @@ export function Habitat({ member, companion, items, date, food, allDone, balance
   useEffect(() => {
     if (food > seenFood) {
       setSeenFood(food)
-      play('animate-pet-munch', [HeartIcon, FOOD_ICONS[species]])
+      // Das Ei frisst noch nicht: es wackelt kräftig, leuchtet und Herzen steigen auf.
+      if (isEgg) play('animate-egg-shake', [HeartIcon, SparklesIcon])
+      else play('animate-pet-munch', [HeartIcon, FOOD_ICONS[species]])
     } else if (food < seenFood) setSeenFood(food)
-  }, [food, seenFood, setSeenFood, species])
+  }, [food, seenFood, setSeenFood, species, isEgg])
 
   // Das große Tier zeigt zwischendurch von selbst, was es kann.
   const tricks = companion.tricks
@@ -95,7 +121,7 @@ export function Habitat({ member, companion, items, date, food, allDone, balance
     return () => window.clearInterval(timer)
   }, [tricks])
 
-  const mood: Mood = allDone ? 'party' : food > 0 ? 'happy' : 'sleepy'
+  const mood = moodFor(food, open, allDone)
   const poops = Math.max(0, Math.floor(food / FOOD_PER_POOP) - cleaned)
   const Food = FOOD_ICONS[species]
 
@@ -112,7 +138,9 @@ export function Habitat({ member, companion, items, date, food, allDone, balance
             aria-label={t('companion.pet', {
               name: companion.name || t(`companion.species.${species}`),
             })}
-            onClick={() => play('animate-pet-hop', [HeartIcon])}
+            onClick={() =>
+              isEgg ? play('animate-egg-shake', [HeartIcon]) : play('animate-pet-hop', [HeartIcon])
+            }
             className="block w-full rounded-[2rem] focus-visible:outline-4 focus-visible:outline-orange-400"
           >
             <CompanionFigure
@@ -127,6 +155,26 @@ export function Habitat({ member, companion, items, date, food, allDone, balance
           </button>
         </div>
         {action && <Particles icons={action.particles} burstKey={action.key} />}
+        {open && !allDone && (
+          // Denkblase: Lieblingsfutter (beim Ei ein Stern). Ein Tipp führt zu den Aufgaben.
+          <Link
+            to={`/member/${member.id}`}
+            aria-label={t(isEgg ? 'companion.hungry_egg' : 'companion.hungry', {
+              name: companion.name || t(`companion.species.${species}`),
+            })}
+            className="absolute top-[6%] right-[6%] flex animate-bubble-float flex-col items-end focus-visible:outline-4 focus-visible:outline-orange-400"
+          >
+            <span className="flex size-24 items-center justify-center rounded-full border-4 border-slate-200 bg-white shadow-md sm:size-28">
+              {isEgg ? (
+                <StarIcon className="size-14 sm:size-16" aria-hidden="true" />
+              ) : (
+                <Food className="size-14 sm:size-16" aria-hidden="true" />
+              )}
+            </span>
+            <span className="mr-10 -mt-1 size-5 rounded-full border-4 border-slate-200 bg-white" />
+            <span className="mr-14 size-3 rounded-full border-2 border-slate-200 bg-white" />
+          </Link>
+        )}
         {/* Häufchen zum Wegtippen, ohne Ärger: es glitzert und das Tier freut sich. */}
         {Array.from({ length: poops }, (_, index) => (
           <button
@@ -302,21 +350,19 @@ function Growth({ companion }: { companion: Companion & { species: Species } }) 
   const { t } = useTranslation()
   const days = companion.care_days
   const Animal = SPECIES_ICONS[companion.species]
-  let start: number
-  let target: number | null
-  if (companion.stage !== 'grown') {
-    start = STAGE_STARTS[companion.stage]
-    target = companion.next_stage_at
-  } else {
-    const last = companion.tricks.at(-1)
-    start = last ? TRICK_STARTS[last] : STAGE_STARTS.grown
-    target = companion.next_trick_at
-  }
+  // Nächstes Ereignis: neue Stufe oder neues Kunststück, je nachdem, was zuerst kommt.
+  const lastTrick = companion.tricks.at(-1)
+  const start = Math.max(STAGE_STARTS[companion.stage], lastTrick ? TRICK_STARTS[lastTrick] : 0)
+  const stageAt = companion.next_stage_at
+  const trickAt = companion.next_trick_at
+  const trickFirst = trickAt !== null && (stageAt === null || trickAt < stageAt)
+  const target = trickFirst ? trickAt : stageAt
   if (target === null) return null
   const total = target - start
   const filled = Math.min(total, days - start)
-  const next =
-    companion.stage === 'egg'
+  const next = trickFirst
+    ? 'trick'
+    : companion.stage === 'egg'
       ? 'baby'
       : companion.stage === 'baby'
         ? 'kid'

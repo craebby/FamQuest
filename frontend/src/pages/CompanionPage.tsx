@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import BackIcon from '~icons/fluent-emoji-flat/left-arrow'
 import PawIcon from '~icons/fluent-emoji-flat/paw-prints'
 import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
@@ -14,9 +15,11 @@ import { useIdleTimeout } from '../useIdleTimeout'
 import { PERSON_IDLE_TIMEOUT_MS } from './PersonPage'
 import { ChooseAnimal } from './companion/ChooseAnimal'
 import { Habitat } from './companion/Habitat'
+import { type TestState, TestPanel, previewCompanion } from './companion/TestPanel'
 import { CompanionFigure } from './companion/art'
 import { useFamilyToday } from './family/useFamilyToday'
 import { companionChildren, feeding } from './companion/feeding'
+import { moodFor } from './companion/mood'
 
 /** Pfote in der Navigation: das Tier des Kindes, bei mehreren Kindern erst das Kind antippen. */
 export function CompanionPage() {
@@ -94,7 +97,9 @@ export function CompanionPage() {
                         stage={companion.stage}
                         careDays={companion.care_days}
                         equipped={companion.equipped}
-                        mood={feeding(today, member.id).food > 0 ? 'happy' : 'sleepy'}
+                        mood={(({ food, open, allDone }) => moodFor(food, open, allDone))(
+                          feeding(today, member.id),
+                        )}
                       />
                     ) : (
                       <PawIcon className="mx-auto size-24 opacity-40" aria-hidden="true" />
@@ -127,8 +132,19 @@ function ChildCompanion({
   const { t } = useTranslation()
   const companion = companionFor(data, member.id)
   const balance = pointsFor(today, member.id).total
-  const { food, allDone } = feeding(today, member.id)
+  const real = feeding(today, member.id)
   const species = companion?.species
+  // Nur zum Ausprobieren: /companion?test=1 zeigt den Testschalter, gespeichert wird nichts.
+  const [params, setParams] = useSearchParams()
+  const [test, setTest] = useState<TestState | null>(null)
+  const testing = params.get('test') === '1' && companion !== undefined && species
+  const testState = testing
+    ? (test ?? { days: companion.care_days, food: real.food, allDone: real.allDone })
+    : null
+  const shown = companion && testState ? previewCompanion(companion, testState.days) : companion
+  const food = testState ? testState.food : real.food
+  const allDone = testState ? testState.allDone : real.allDone
+  const open = testState ? !testState.allDone : real.open
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-4 sm:p-6">
@@ -155,14 +171,27 @@ function ChildCompanion({
           </span>
         </span>
       </header>
-      {companion && species ? (
+      {testState && (
+        <TestPanel
+          state={testState}
+          onChange={setTest}
+          onExit={() => {
+            setTest(null)
+            setParams({})
+          }}
+        />
+      )}
+      {shown && species ? (
         <Habitat
+          key={testState ? 'test' : 'real'}
+          test={testState !== null}
           member={member}
-          companion={{ ...companion, species }}
+          companion={{ ...shown, species }}
           items={data.items}
           date={today.date}
           food={food}
           allDone={allDone}
+          open={open}
           balance={balance}
         />
       ) : (

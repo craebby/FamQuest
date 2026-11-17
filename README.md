@@ -430,12 +430,15 @@ understand it too.
   food. It eats with hearts; every three portions it leaves a little poop to tap away. When
   everything for today is done, there's confetti and the pet dances. Next to the child in "Tasks"
   the pet hops with a heart right away whenever a task is ticked off.
-- **Nothing is punished:** the pet never gets sick, never shrinks and never dies. Without tasks it
-  just sleeps.
+- **Hungry:** while tasks are still open, a thought bubble with its favourite food floats above the
+  pet (a star above the egg); tapping it opens the child's tasks. The egg wobbles, glows and sends
+  up hearts with every task.
+- **Nothing is punished:** the pet never gets sick, never shrinks and never dies. With nothing to do
+  it just sleeps.
 - **Growing up:** on every day with at least one task done the pet grows a little: egg (it cracks on
-  the first day), baby in its shell from day 2, kid from day 7, grown-up from day 14. After that it
-  keeps learning tricks (twirl, somersault, dance, bubbles, rainbow, fireworks, rocket ride, magic),
-  shows them on a tap and sometimes all by itself. Paws show how far it is to the next stage, a
+  the first day), baby in its shell from day 2, kid from day 7, grown-up from day 14. Along the way it
+  learns tricks, starting as a baby (twirl, somersault, dance, bubbles, rainbow, fireworks, rocket
+  ride, magic; the last one on day 25), shows them on a tap and sometimes all by itself. Paws show how far it is to the next stage, a
   gift the next trick.
 - **Accessories:** with points the child buys a bow, crown, sunglasses, a balloon, a little house
   and more (15–80 points), and taps to put them on or take them off. Bookings appear in the points

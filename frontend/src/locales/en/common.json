@@ -1375,6 +1375,19 @@
       "rewards": "Rewards only"
     },
     "reset_confirm": "{{name}} picks a new pet and starts again with an egg. Bought accessories are kept.",
-    "reset": "Let them pick a new pet"
+    "reset": "Let them pick a new pet",
+    "test": {
+      "title": "Test mode",
+      "hint": "Just for trying things out: care days and portions change only on screen. Nothing is saved.",
+      "exit": "Exit test mode",
+      "day_minus": "− 1 day",
+      "day_plus": "+ 1 day",
+      "cracked": "Cracked egg",
+      "food_plus": "+ 1 portion",
+      "food_reset": "Portions to 0",
+      "all_done": "All done"
+    },
+    "hungry": "{{name}} is hungry: go to tasks",
+    "hungry_egg": "{{name}} is waiting for you: go to tasks"
   }
 }

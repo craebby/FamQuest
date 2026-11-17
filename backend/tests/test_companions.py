@@ -43,7 +43,7 @@ def test_child_without_companion_starts_as_empty_egg(client, parent, lena):
             "care_days": 0,
             "next_stage_at": 2,
             "tricks": [],
-            "next_trick_at": 14,
+            "next_trick_at": 3,
             "owned": [],
             "equipped": {},
         }
@@ -114,9 +114,12 @@ def test_stages(days, stage, next_at):
     assert stage_for(days) == (stage, next_at)
 
 
-def test_grown_companion_keeps_learning_tricks():
-    assert tricks_for(13) == ([], 14)
-    assert tricks_for(14) == (["spin"], 18)
+def test_tricks_spread_over_all_stages():
+    assert tricks_for(2) == ([], 3)
+    assert tricks_for(3) == (["spin"], 5)
+    # Baby (2–6) kann zwei, Kind (7–13) fünf, das große Tier lernt den Rest.
+    assert len(tricks_for(6)[0]) == 2
+    assert len(tricks_for(13)[0]) == 5
     learned, upcoming = tricks_for(1000)
     assert learned[-1] == "magic"
     assert upcoming is None

@@ -80,7 +80,9 @@ export function CompanionFigure({
       ? 'animate-pet-breathe'
       : mood === 'party'
         ? 'animate-pet-dance'
-        : 'animate-pet-bob'
+        : mood === 'hungry'
+          ? 'animate-pet-beg'
+          : 'animate-pet-bob'
 
   return (
     <div className="relative aspect-square w-full">
@@ -93,6 +95,14 @@ export function CompanionFigure({
       )}
       {/* Schatten auf dem Boden */}
       <div className="absolute bottom-[8%] left-1/2 h-[6%] w-[46%] -translate-x-1/2 rounded-[50%] bg-slate-900/10" />
+      {stage === 'egg' && motion && (
+        // Das Ei leuchtet bei jeder Portion und jedem Tipp kurz auf.
+        <div
+          key={`glow-${actionKey}`}
+          aria-hidden="true"
+          className="absolute bottom-[4%] left-1/2 aspect-square w-[70%] -translate-x-1/2 animate-egg-glow rounded-full bg-[radial-gradient(circle,_rgba(253,224,71,0.85)_0%,_rgba(251,191,36,0.45)_40%,_transparent_70%)] opacity-0"
+        />
+      )}
       {stage === 'egg' ? (
         <div
           key={actionKey}

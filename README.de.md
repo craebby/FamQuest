@@ -438,12 +438,15 @@ auch für Kinder, die noch nicht lesen.
   frisst mit Herzchen, alle drei Portionen macht es ein Häufchen zum Wegtippen. Ist alles erledigt,
   was heute zählt, gibt es Konfetti und das Tier tanzt. Neben dem Kind unter „Aufgaben“ hüpft das
   Tier bei jedem Haken sofort mit einem Herz.
-- **Nichts wird bestraft:** Das Tier wird nicht krank, schrumpft nicht und stirbt nicht. Ohne
-  Aufgaben schläft es nur.
+- **Hunger:** Solange noch Aufgaben offen sind, schwebt eine Denkblase mit dem Lieblingsfutter über
+  dem Tier (beim Ei ein Stern); ein Tipp darauf öffnet die Aufgaben des Kindes. Das Ei wackelt,
+  leuchtet und lässt bei jeder Aufgabe Herzchen aufsteigen.
+- **Nichts wird bestraft:** Das Tier wird nicht krank, schrumpft nicht und stirbt nicht. Ist nichts
+  zu tun, schläft es nur.
 - **Wachsen:** An jedem Tag mit mindestens einer Erledigung wächst das Tier ein Stück: Ei (am ersten
-  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 7, groß ab Tag 14. Danach lernt es
-  immer neue Kunststücke (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen, Feuerwerk, Raketenflug,
-  Zaubern), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zur nächsten
+  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 7, groß ab Tag 14. Unterwegs lernt es
+  schon als Baby Kunststücke (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen, Feuerwerk,
+  Raketenflug, Zaubern; das letzte an Tag 25), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zur nächsten
   Stufe, ein Geschenk das nächste Kunststück.
 - **Zubehör:** Mit Punkten kauft das Kind Schleife, Krone, Sonnenbrille, Luftballon, Häuschen und
   mehr (15–80 Punkte) und zieht es per Tipp an oder aus. Die Buchungen stehen wie eingelöste
