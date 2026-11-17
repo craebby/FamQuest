@@ -223,6 +223,17 @@ Manche Familien pflegen alle Termine in einem Kalender und erkennen die Person a
 - Ansicht „nur heute“ oder „heute und die nächsten Tage“ (wie die Küchenansicht), jeweils mit Terminen und Essen, oben Datum, Wetter und Uhr; ohne Einblendungen. Das Nachtfenster geht vor, ein Tipp führt zu „Heute“.
 - Ob jemand vor dem Display steht, erkennt FamQuest nicht; das bleibt Sache des Geräts (z. B. Bewegungserkennung von Fully Kiosk).
 
+**Begleiter-Tier** *(Phase 15, entschieden am 2026-11-17, Entwurf zur Prüfung)*
+
+- Jedes Kind sucht sich am Display ein eigenes Tier aus (15 Arten: Katze, Hund, Fuchs, Drache, Einhorn, Pferd, Schneeleopard, Giraffe, Schildkröte, Hai, Delfin, Panda, Hase, Pinguin, Koala), ohne Eltern-PIN; ein Name ist freiwillig. Die Art steht danach fest, neu aussuchen lassen geht nur im Elternbereich (gekauftes Zubehör bleibt).
+- Eigenes Symbol „Tier“ (Pfote) in der Navigationsleiste; bei einem Kind direkt dessen Tier, bei mehreren erst das Kind antippen. Klein neben dem Kind in „Aufgaben“ hüpft das Tier bei jeder Erledigung sofort mit einem Herz.
+- Futter: Jede heute selbst erledigte Aufgabe (auch Extras und optionale Schritte) ist eine Portion Lieblingsfutter. Neue Portionen frisst das Tier mit Herzen, alle drei Portionen macht es ein Häufchen zum Wegtippen. Ist alles erledigt, was heute zählt, gibt es Konfetti und das Tier tanzt.
+- Keine Strafe: Das Tier stirbt nicht, wird nicht krank und schrumpft nicht. Ohne Erledigung schläft es nur (Zzz).
+- Wachstum nach Pflegetagen (Tage mit mindestens einer Erledigung seit dem Aussuchen, Zeitzone der Familie): Ei (mit Riss ab Tag 1), Baby in der Eierschale ab 2, Kind ab 7, groß ab 14 Tagen. Das große Tier lernt danach in wachsenden Abständen Kunststücke (Pirouette 14, Salto 18, Tanzen 22, Seifenblasen 27, Regenbogen 33, Feuerwerk 40, Raketenflug 50, Zaubern 60), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zur nächsten Stufe, ein Geschenk das nächste Kunststück.
+- Zubehör mit Punkten (16 Teile für Kopf, Gesicht, Spielzeug und Umgebung, 15–80 Punkte), am Display ohne PIN wie das Einlösen; gebucht als `PointTransaction` der Art `companion_item`. Je Platz trägt das Tier ein Teil, An- und Ablegen per Tipp.
+- Modus je Kind im Elternbereich unter „Belohnungen“: Tier und Belohnungen (Standard), nur Tier (das Geschenk verschwindet für dieses Kind) oder nur Belohnungen (kein Tier).
+- Gezeichnet mit dem gebündelten Emoji-Set und eigenen Animationen (CSS, „Bewegung reduzieren“ wird beachtet), ohne 3D und ohne Text, den ein Kind lesen muss.
+
 ## 3. Setup, Anmeldung und Familienmitglieder
 
 **First-Run-Setup**
@@ -473,6 +484,8 @@ Direkt **PostgreSQL**, keine SQLite-Zwischenlösung. Schemaänderungen ausschlie
 | CalendarEvent | Phase 2 | Termin im geladenen Zeitraum (Serien als Einzeltermine mit Kennzeichen), ganztägig oder mit Uhrzeit, Terminfarbe |
 | CalendarColorRule | Phase 13 | Terminfarbe eines Kalenders → Person; ohne Person ausgeblendet |
 | ApiToken | Phase 14 | Schlüssel für `/api/v1`: Name, Hash, Anfang, Recht, letzte Nutzung |
+| Companion | Phase 15 | Tier eines Kindes: Art, Name, Beginn (Tag), getragenes Zubehör je Platz |
+| CompanionItem | Phase 15 | Gekauftes Zubehör eines Kindes mit Kosten |
 | Photo | Phase 4 | Foto für den Bilderrahmen: Dateischlüssel, Breite, Höhe, Aufnahmezeit (aus EXIF), sichtbar |
 | Dish | Phase 5 | Gericht der Familie: Name (eindeutig ohne Groß-/Kleinschreibung), Symbol, optional eigenes Foto (512 × 512 WebP) |
 | MealPlanEntry | Phase 5 | Gericht an einem Tag zu einer Mahlzeit (Frühstück, Mittag, Abend, Snack); höchstens eins je Tag und Mahlzeit |

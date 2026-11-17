@@ -23,6 +23,7 @@ import { ShoppingPage } from './pages/ShoppingPage'
 import { ParentsPage } from './pages/ParentsPage'
 import { PersonPage } from './pages/PersonPage'
 import { RewardsPage } from './pages/RewardsPage'
+import { CompanionPage } from './pages/CompanionPage'
 import { SetupPage } from './pages/SetupPage'
 import { TasksWeekPage } from './pages/TasksWeekPage'
 import { TodayPage } from './pages/TodayPage'
@@ -118,6 +119,8 @@ export default function App() {
             <Route path="/tasks" element={<FamilyPage />} />
             <Route path="/tasks/week" element={<TasksWeekPage />} />
             <Route path="/member/:memberId" element={<PersonPage />} />
+            <Route path="/companion" element={<CompanionPage />} />
+            <Route path="/companion/:memberId" element={<CompanionPage />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/rewards/:memberId" element={<RewardsPage />} />
             <Route path="/calendar" element={<CalendarPage />} />

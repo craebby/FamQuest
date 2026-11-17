@@ -424,6 +424,34 @@ Avatar zu ihren Belohnungskarten (die Personenansicht eines Kindes zeigt sie ebe
 Die Einlösung speichert Name, Symbol und Kosten. Die Historie stimmt also auch, wenn die Belohnung
 später geändert oder gelöscht wird. Die Vorschläge stehen in `frontend/src/pools/rewards.ts`.
 
+## Begleiter-Tier
+
+*Neu auf dem Branch `phase-15-begleiter` (Entwurf).* Jedes Kind sucht sich am Display ein eigenes
+Tier aus und versorgt es, indem es seine Aufgaben erledigt. Alles funktioniert über Bilder, also
+auch für Kinder, die noch nicht lesen.
+
+- **Tier aussuchen:** Die **Pfote** in der Navigationsleiste führt zum Tier des Kindes (bei mehreren
+  Kindern erst das Kind antippen). Zur Wahl stehen 15 Tiere: Katze, Hund, Fuchs, Drache, Einhorn,
+  Pferd, Schneeleopard, Giraffe, Schildkröte, Hai, Delfin, Panda, Hase, Pinguin und Koala. Ein Name
+  ist freiwillig.
+- **Füttern:** Jede heute erledigte Aufgabe (auch Extras) ist eine Portion Lieblingsfutter. Das Tier
+  frisst mit Herzchen, alle drei Portionen macht es ein Häufchen zum Wegtippen. Ist alles erledigt,
+  was heute zählt, gibt es Konfetti und das Tier tanzt. Neben dem Kind unter „Aufgaben“ hüpft das
+  Tier bei jedem Haken sofort mit einem Herz.
+- **Nichts wird bestraft:** Das Tier wird nicht krank, schrumpft nicht und stirbt nicht. Ohne
+  Aufgaben schläft es nur.
+- **Wachsen:** An jedem Tag mit mindestens einer Erledigung wächst das Tier ein Stück: Ei (am ersten
+  Tag mit Riss), Baby in der Eierschale ab Tag 2, Kind ab Tag 7, groß ab Tag 14. Danach lernt es
+  immer neue Kunststücke (Pirouette, Salto, Tanzen, Seifenblasen, Regenbogen, Feuerwerk, Raketenflug,
+  Zaubern), zeigt sie auf Tipp und zwischendurch von selbst. Pfoten zeigen den Weg zur nächsten
+  Stufe, ein Geschenk das nächste Kunststück.
+- **Zubehör:** Mit Punkten kauft das Kind Schleife, Krone, Sonnenbrille, Luftballon, Häuschen und
+  mehr (15–80 Punkte) und zieht es per Tipp an oder aus. Die Buchungen stehen wie eingelöste
+  Belohnungen in der Punkte-Historie.
+- **Elternbereich → Belohnungen → Begleiter-Tier:** je Kind „Tier und Belohnungen“ (Standard), „Nur
+  Tier“ (das Geschenk verschwindet für dieses Kind) oder „Nur Belohnungen“ (kein Tier), dazu „Neues
+  Tier aussuchen lassen“.
+
 ## Faire Verteilung
 
 Erwachsene bekommen keine Punkte und keine Belohnungen. Stattdessen zeigt FamQuest, wie sich die
@@ -1641,6 +1669,14 @@ Feinschliff läuft im Alltag weiter.
 - [x] 2. Kalender statt Fotos im Bilderrahmen: Zeitfenster (z. B. Frühstück und Abendessen), auf
   Wunsch zwischendurch nach einigen Fotos, nur heute oder die nächsten Tage
 - [ ] 3. Feinschliff im Alltag
+
+**Begleiter-Tier (Phase 15):** in Arbeit auf dem Branch `phase-15-begleiter`.
+
+- [x] 1. [Begleiter-Tier](#begleiter-tier): Tier aussuchen, Futter und Häufchen, Wachsen und
+  Kunststücke, Zubehör für Punkte, Tier neben dem Kind unter „Aufgaben“, Modus und Zurücksetzen im
+  Elternbereich
+- [ ] 2. Feinschliff mit dem Kind (Tier auf „Heute“ und in der Küchenansicht, Feier am Ende eines
+  Routinenblocks)
 
 **Küchenansicht (Phase 8):** veröffentlicht mit 1.2, Feinschliff am echten Tablet folgt.
 

@@ -11,9 +11,11 @@ import HouseIcon from '~icons/fluent-emoji-flat/house-with-garden'
 import MealIcon from '~icons/fluent-emoji-flat/fork-and-knife-with-plate'
 import CartIcon from '~icons/fluent-emoji-flat/shopping-cart'
 import CookIcon from '~icons/fluent-emoji-flat/cook'
+import PawIcon from '~icons/fluent-emoji-flat/paw-prints'
 
 import { useCalendarStatus } from '../api/calendar'
 import { mealieUrl, useMealie } from '../api/mealie'
+import { childrenOf, useMembers } from '../api/members'
 import { usePhotos } from '../api/photos'
 import { useToday } from '../api/today'
 import { getFrameIdleMinutes } from '../frameIdle'
@@ -79,6 +81,10 @@ export function AppShell() {
   // Mealie gibt es, wenn es im Elternbereich eingeschaltet ist.
   const hasMealie = mealieUrl(useMealie().data) !== null
   const onMealie = pathname.startsWith('/mealie')
+  // Tier und Belohnungen je nach Einstellung der Kinder (ohne Kinder bleibt das Geschenk).
+  const kids = childrenOf(useMembers().data ?? [])
+  const hasCompanion = kids.some((kid) => kid.companion_mode !== 'rewards')
+  const hasRewards = kids.length === 0 || kids.some((kid) => kid.companion_mode !== 'companion')
   // Nach Leerlauf nur, wenn es auf diesem Gerät eingeschaltet ist (gelesen beim Betreten). Nicht
   // in Mealie: Tippen im Rahmen merkt die Seite nicht, der Bilderrahmen käme mitten im Kochen.
   const [idleMinutes] = useState(getFrameIdleMinutes)
@@ -96,12 +102,22 @@ export function AppShell() {
         <NavItem to="/" label={t('nav.today')} icon={HouseIcon} active={pathname === '/'} />
         {/* Der Stern bleibt bei den Aufgaben: Kinder finden ihre Aufgaben wie bisher. */}
         <NavItem to="/tasks" label={t('nav.tasks')} icon={StarIcon} active={onTasks} />
-        <NavItem
-          to="/rewards"
-          label={t('nav.rewards')}
-          icon={GiftIcon}
-          active={pathname.startsWith('/rewards')}
-        />
+        {hasCompanion && (
+          <NavItem
+            to="/companion"
+            label={t('nav.companion')}
+            icon={PawIcon}
+            active={pathname.startsWith('/companion')}
+          />
+        )}
+        {hasRewards && (
+          <NavItem
+            to="/rewards"
+            label={t('nav.rewards')}
+            icon={GiftIcon}
+            active={pathname.startsWith('/rewards')}
+          />
+        )}
         {calendarEnabled && (
           <NavItem
             to="/calendar"

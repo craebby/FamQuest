@@ -45,6 +45,7 @@ import { PointsSection } from './parents/PointsSection'
 import { RewardEditor } from './parents/RewardEditor'
 import { RewardPoolPicker } from './parents/RewardPoolPicker'
 import { RewardsSection } from './parents/RewardsSection'
+import { CompanionSection } from './parents/CompanionSection'
 import { RoutinesSection } from './parents/RoutinesSection'
 import { TaskEditor } from './parents/TaskEditor'
 import { TasksSection } from './parents/TasksSection'
@@ -618,6 +619,7 @@ function ParentSettings({ me, area, onLeave }: { me: Me; area: ParentArea; onLea
               }}
               timeZone={me.family.timezone}
             />
+            <CompanionSection childMembers={childMembers} />
           </>
         )}
         {area === 'photos' && (

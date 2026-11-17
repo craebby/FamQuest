@@ -417,6 +417,32 @@ avatar to their reward cards (a child's person view shows them too):
 The redemption stores name, icon and cost, so the history stays correct even if the reward is later
 changed or deleted. The suggestions live in `frontend/src/pools/rewards.ts`.
 
+## Pet companion
+
+*New on the branch `phase-15-begleiter` (draft).* Each child picks their own pet on the display and
+looks after it by doing their tasks. Everything works with pictures, so children who can't read yet
+understand it too.
+
+- **Pick a pet:** the **paw** in the navigation bar leads to the child's pet (with several children,
+  tap the child first). 15 pets to choose from: cat, dog, fox, dragon, unicorn, horse, snow leopard,
+  giraffe, turtle, shark, dolphin, panda, bunny, penguin and koala. A name is optional.
+- **Feeding:** every task the child completes today (extras too) is a portion of the pet's favourite
+  food. It eats with hearts; every three portions it leaves a little poop to tap away. When
+  everything for today is done, there's confetti and the pet dances. Next to the child in "Tasks"
+  the pet hops with a heart right away whenever a task is ticked off.
+- **Nothing is punished:** the pet never gets sick, never shrinks and never dies. Without tasks it
+  just sleeps.
+- **Growing up:** on every day with at least one task done the pet grows a little: egg (it cracks on
+  the first day), baby in its shell from day 2, kid from day 7, grown-up from day 14. After that it
+  keeps learning tricks (twirl, somersault, dance, bubbles, rainbow, fireworks, rocket ride, magic),
+  shows them on a tap and sometimes all by itself. Paws show how far it is to the next stage, a
+  gift the next trick.
+- **Accessories:** with points the child buys a bow, crown, sunglasses, a balloon, a little house
+  and more (15–80 points), and taps to put them on or take them off. Bookings appear in the points
+  history like redeemed rewards.
+- **Parents' area → Rewards → Pet companion:** per child "pet and rewards" (default), "pet only"
+  (the gift disappears for that child) or "rewards only" (no pet), and "Let them pick a new pet".
+
 ## Fair sharing
 
 Adults get neither points nor rewards. Instead, FamQuest shows how the housework is shared:
@@ -1600,6 +1626,13 @@ in everyday use.
 - [x] 2. Calendar instead of photos in the picture frame: time windows (e.g. breakfast and dinner),
   optionally in between after a number of photos, today only or the next days
 - [ ] 3. Polish in everyday use
+
+**Pet companion (phase 15):** in progress on the branch `phase-15-begleiter`.
+
+- [x] 1. [Pet companion](#pet-companion): pick a pet, food and poop, growing up and tricks,
+  accessories for points, pet next to the child in "Tasks", mode and reset in the parents' area
+- [ ] 2. Polish with the child (pet on "Today" and in the kitchen view, celebration at the end of a
+  routine block)
 
 **Kitchen view (phase 8):** released with 1.2, polish on the real tablet to follow.
 

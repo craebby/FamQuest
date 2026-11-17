@@ -45,6 +45,7 @@ def test_create_and_list_members(client, parent):
         "color": "purple",
         "avatar_url": None,
         "event_symbols": True,
+        "companion_mode": "both",
     }
     create(client, parent, name="Papa", role="parent", color="blue")
 

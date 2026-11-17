@@ -16,6 +16,7 @@ from app.api import (
     calendar_events,
     calendar_week,
     chores,
+    companions,
     demo,
     event_symbols,
     external,
@@ -111,6 +112,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         todos,
         integrations,
         external,
+        companions,
     ):
         api.include_router(module.router)
     app.include_router(api)

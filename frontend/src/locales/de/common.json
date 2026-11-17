@@ -58,7 +58,8 @@
     "meals": "Essen",
     "shopping": "Einkauf",
     "household": "Haushalt",
-    "mealie": "Mealie"
+    "mealie": "Mealie",
+    "companion": "Tier"
   },
   "kitchen": {
     "title": "Küchenansicht",
@@ -359,7 +360,8 @@
     "kind_task_completed": "Aufgabe erledigt",
     "kind_task_undone": "Erledigung zurückgenommen",
     "kind_manual": "Von Eltern gebucht",
-    "kind_reward_redeemed": "Belohnung eingelöst"
+    "kind_reward_redeemed": "Belohnung eingelöst",
+    "kind_companion_item": "Zubehör fürs Tier"
   },
   "errors": {
     "common": {
@@ -521,6 +523,17 @@
     "print": {
       "not_configured": "Es ist kein Bon-Drucker eingetragen (Elternbereich → Kalender & Wetter → Schnittstellen).",
       "failed": "Der Drucker hat nicht geantwortet. Ist er an und die Adresse richtig?"
+    },
+    "companion": {
+      "child_only": "Ein Tier gibt es nur für Kinder",
+      "disabled": "Für dieses Kind ist das Tier ausgeschaltet",
+      "not_found": "Zuerst ein Tier aussuchen",
+      "unknown_species": "Dieses Tier gibt es nicht",
+      "already_chosen": "Das Tier ist schon ausgesucht",
+      "unknown_item": "Dieses Zubehör gibt es nicht",
+      "already_owned": "Das gehört dem Tier schon",
+      "insufficient_points": "Dafür reichen die Punkte noch nicht",
+      "not_owned": "Dieses Zubehör ist noch nicht gekauft"
     }
   },
   "rewards": {
@@ -1268,5 +1281,100 @@
     "app_title": "Druck-App",
     "app_open": "Druck-App öffnen",
     "app_close": "Druck-App schließen"
+  },
+  "companion": {
+    "title": "Mein Tier",
+    "no_children": "Im Elternbereich eine Person mit der Rolle Kind anlegen, dann bekommt sie ein Tier.",
+    "of": "Tier von {{name}}",
+    "back": "Zurück zu allen Tieren",
+    "choose": "Such dir ein Tier aus!",
+    "name_optional": "Name (freiwillig)",
+    "name_hint": "Der Name lässt sich später über den Stift ändern.",
+    "choose_confirm": "Das ist mein Tier!",
+    "choose_other": "Anderes Tier aussuchen",
+    "species": {
+      "cat": "Katze",
+      "dog": "Hund",
+      "fox": "Fuchs",
+      "dragon": "Drache",
+      "unicorn": "Einhorn",
+      "horse": "Pferd",
+      "snow_leopard": "Schneeleopard",
+      "giraffe": "Giraffe",
+      "turtle": "Schildkröte",
+      "shark": "Hai",
+      "dolphin": "Delfin",
+      "panda": "Panda",
+      "rabbit": "Hase",
+      "penguin": "Pinguin",
+      "koala": "Koala"
+    },
+    "pet": "{{name}} streicheln",
+    "clean_up": "Häufchen wegräumen",
+    "food_one": "Heute {{count}} Portion Futter",
+    "food_other": "Heute {{count}} Portionen Futter",
+    "rename": "Namen ändern",
+    "name": "Name",
+    "tricks": "Kunststücke",
+    "trick": {
+      "spin": "Pirouette",
+      "jump": "Salto",
+      "music": "Tanzen",
+      "bubbles": "Seifenblasen",
+      "rainbow": "Regenbogen",
+      "fireworks": "Feuerwerk",
+      "rocket": "Raketenflug",
+      "magic": "Zaubern"
+    },
+    "shop": "Zubehör",
+    "items": {
+      "ribbon": "Schleife",
+      "cherry_blossom": "Blüte",
+      "billed_cap": "Kappe",
+      "top_hat": "Zylinder",
+      "crown": "Krone",
+      "glasses": "Brille",
+      "sunglasses": "Sonnenbrille",
+      "balloon": "Luftballon",
+      "yo_yo": "Jo-Jo",
+      "soccer_ball": "Fußball",
+      "teddy_bear": "Teddy",
+      "kite": "Drachen",
+      "sunflower": "Sonnenblume",
+      "rainbow": "Regenbogen",
+      "ringed_planet": "Planet",
+      "house": "Häuschen"
+    },
+    "take_off": "{{item}} ablegen",
+    "put_on": "{{item}} anziehen",
+    "buy_item_one": "{{item}} für {{count}} Punkt",
+    "buy_item_other": "{{item}} für {{count}} Punkte",
+    "buy_confirm": "Kaufen",
+    "growth_baby_one": "Noch {{count}} Tag, dann schlüpft es",
+    "growth_baby_other": "Noch {{count}} Tage, dann schlüpft es",
+    "growth_kid_one": "Noch {{count}} Tag bis zum nächsten Wachsen",
+    "growth_kid_other": "Noch {{count}} Tage bis zum nächsten Wachsen",
+    "growth_grown_one": "Noch {{count}} Tag, dann ist es groß",
+    "growth_grown_other": "Noch {{count}} Tage, dann ist es groß",
+    "growth_trick_one": "Noch {{count}} Tag bis zum nächsten Kunststück",
+    "growth_trick_other": "Noch {{count}} Tage bis zum nächsten Kunststück",
+    "section": "Begleiter-Tier",
+    "section_hint": "Jedes Kind sucht sich am Display ein Tier aus. Erledigte Aufgaben füttern es, an jedem Tag mit mindestens einer Erledigung wächst es ein Stück, und mit Punkten kauft es Zubehör. Verpasste Tage schaden nicht.",
+    "stage": {
+      "egg": "Ei",
+      "baby": "Baby",
+      "kid": "Kind",
+      "grown": "Groß"
+    },
+    "care_days_one": "{{count}} Tag versorgt",
+    "care_days_other": "{{count}} Tage versorgt",
+    "mode_label": "Punkte von {{name}}",
+    "mode": {
+      "both": "Tier und Belohnungen",
+      "companion": "Nur Tier",
+      "rewards": "Nur Belohnungen"
+    },
+    "reset_confirm": "{{name}} sucht sich ein neues Tier aus und fängt beim Ei an. Gekauftes Zubehör bleibt.",
+    "reset": "Neues Tier aussuchen lassen"
   }
 }

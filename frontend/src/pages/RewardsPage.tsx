@@ -54,7 +54,8 @@ export function RewardsPage() {
     )
   }
 
-  const children = childrenOf(members)
+  // Kinder mit „nur Tier“ sammeln für Zubehör statt für Belohnungen.
+  const children = childrenOf(members).filter((member) => member.companion_mode !== 'companion')
 
   if (memberId !== undefined) {
     const member = children.find((candidate) => String(candidate.id) === memberId)

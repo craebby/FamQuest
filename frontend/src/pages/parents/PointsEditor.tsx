@@ -8,6 +8,7 @@ import MinusCircleIcon from '~icons/fluent-emoji-flat/minus'
 import PlusCircleIcon from '~icons/fluent-emoji-flat/plus'
 import TrophyIcon from '~icons/fluent-emoji-flat/trophy'
 import ManualIcon from '~icons/fluent-emoji-flat/writing-hand'
+import PawIcon from '~icons/fluent-emoji-flat/paw-prints'
 
 import { ApiError } from '../../api/client'
 import type { Member } from '../../api/members'
@@ -29,6 +30,7 @@ const KIND_ICONS: Record<PointKind, typeof ManualIcon> = {
   task_undone: UndoIcon,
   manual: ManualIcon,
   reward_redeemed: GiftIcon,
+  companion_item: PawIcon,
 }
 
 type Direction = 'credit' | 'deduct'
@@ -227,7 +229,11 @@ function TransactionRow({
         )}
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-lg font-bold break-words text-slate-800">{transaction.reason}</span>
+        <span className="text-lg font-bold break-words text-slate-800">
+          {transaction.kind === 'companion_item' && transaction.reason
+            ? t(`companion.items.${transaction.reason}`)
+            : transaction.reason}
+        </span>
         <span className="flex flex-wrap items-center gap-x-2 text-base text-slate-500">
           {transaction.icon && <KindIcon className="size-5" aria-hidden="true" />}
           {t(`points.kind_${transaction.kind}`)} · {when}

@@ -11,6 +11,7 @@ import { Avatar } from '../components/Avatar'
 import { Alert, Button } from '../components/ui'
 import { errorMessage } from '../errors'
 import { formatLongDate } from '../weekdays'
+import { CompanionBadge } from './companion/CompanionBadge'
 import { WhoBar } from './chores/WhoBar'
 import { useChoreDone } from './chores/useChoreDone'
 import { DayProgress } from './family/DayProgress'
@@ -162,16 +163,19 @@ function MemberColumn({
       aria-label={t('family.tasks_of', { name: member.name })}
       className={`w-full shrink-0 snap-start flex-col gap-4 sm:w-80 lg:max-w-xl lg:min-w-80 lg:flex-1 lg:basis-0 ${className}`}
     >
-      <Link
-        to={`/member/${member.id}`}
-        aria-label={t('family.open_person', { name: member.name })}
-        className="flex flex-col items-center gap-1 rounded-3xl p-1 focus-visible:outline-4 focus-visible:outline-orange-400"
-      >
-        <Avatar name={member.name} color={member.color} src={member.avatar_url} size="md" />
-        <span className="w-full truncate text-center text-xl font-extrabold text-slate-800">
-          {member.name}
-        </span>
-      </Link>
+      <div className="relative">
+        <Link
+          to={`/member/${member.id}`}
+          aria-label={t('family.open_person', { name: member.name })}
+          className="flex flex-col items-center gap-1 rounded-3xl p-1 focus-visible:outline-4 focus-visible:outline-orange-400"
+        >
+          <Avatar name={member.name} color={member.color} src={member.avatar_url} size="md" />
+          <span className="w-full truncate px-16 text-center text-xl font-extrabold text-slate-800">
+            {member.name}
+          </span>
+        </Link>
+        <CompanionBadge member={member} today={today} className="absolute top-0 right-0" />
+      </div>
       <DayProgress
         member={member}
         tasks={currentTasks(tasks, member.id, today.date)}

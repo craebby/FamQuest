@@ -254,6 +254,18 @@ Branch `phase-14-schnittstellen`.
    nächsten Tage
 3. Feinschliff im Alltag
 
+## Etappen (Phase 15: Begleiter-Tier)
+
+Entschieden: Jedes Kind sucht sich ein eigenes Tier aus (15 Arten), eigenes Symbol „Tier“ in der
+Navigationsleiste; erledigte Aufgaben füttern es, es wächst über Pflegetage vom Ei zum großen Tier
+und lernt dann Kunststücke; nichts wird bestraft; Zubehör mit Punkten; Modus je Kind (Tier und
+Belohnungen, nur Tier, nur Belohnungen); Emoji-Set mit eigenen Animationen, kein 3D. Gearbeitet
+wird auf dem Branch `phase-15-begleiter` (abgezweigt von `main` nach 1.5.0).
+
+1. Begleiter-Tier: Aussuchen, Futter und Häufchen, Wachstum und Kunststücke, Zubehör, Tier in
+   „Aufgaben“, Modus und Zurücksetzen im Elternbereich
+2. Feinschliff mit dem Kind (Tier auf „Heute“ und in der Küchenansicht, Feier am Blockende)
+
 ## Befehle
 
 Lokal entwickeln (uv und Node sind installiert, nur PostgreSQL läuft in Docker; `.env` setzt

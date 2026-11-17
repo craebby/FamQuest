@@ -19,7 +19,9 @@ TIMES_OF_DAY = ("morning", "midday", "afternoon", "evening")
 TASK_MAX_POINTS = 1000
 MAX_INTERVAL_DAYS = 365
 # Arten von Punktebuchungen.
-POINT_KINDS = ("task_completed", "task_undone", "manual", "reward_redeemed")
+POINT_KINDS = ("task_completed", "task_undone", "manual", "reward_redeemed", "companion_item")
+# Begleiter-Tier und Belohnungen je Kind.
+COMPANION_MODES = ("both", "companion", "rewards")
 MANUAL_MAX_POINTS = 1000
 REWARD_MAX_COST = 1000
 # Status von Einlösungen; ein Freigabeprozess (requested, approved, rejected) kann folgen.
@@ -141,6 +143,7 @@ class MemberOut(BaseModel):
     color: str
     avatar_url: str | None
     event_symbols: bool
+    companion_mode: str
 
 
 class DailyRecurrence(BaseModel):
@@ -383,3 +386,52 @@ class ApprovalOut(BaseModel):
     member_id: int
     date: dt.date
     completed_at: dt.datetime
+
+
+CompanionMode = Annotated[str, _one_of(COMPANION_MODES)]
+CompanionName = Annotated[str, StringConstraints(strip_whitespace=True, max_length=24)]
+
+
+class CompanionIn(BaseModel):
+    """Tier aussuchen (einmal) oder den Namen ändern."""
+
+    species: str
+    name: CompanionName = ""
+
+
+class CompanionModeIn(BaseModel):
+    mode: CompanionMode
+
+
+class CompanionWearIn(BaseModel):
+    worn: bool
+
+
+class CompanionItemOut(BaseModel):
+    key: str
+    slot: str
+    cost: int
+
+
+class CompanionOut(BaseModel):
+    member_id: int
+    mode: str
+    # None = noch kein Tier ausgesucht.
+    species: str | None
+    name: str
+    # "egg", "baby", "kid", "grown"
+    stage: str
+    # Tage mit mindestens einer Erledigung seit dem Aussuchen.
+    care_days: int
+    # Tage, ab denen die nächste Stufe bzw. das nächste Kunststück kommt (None = keins mehr).
+    next_stage_at: int | None
+    tricks: list[str]
+    next_trick_at: int | None
+    owned: list[str]
+    equipped: dict[str, str]
+
+
+class CompanionsOut(BaseModel):
+    species: list[str]
+    items: list[CompanionItemOut]
+    companions: list[CompanionOut]

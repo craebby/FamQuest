@@ -58,7 +58,8 @@
     "meals": "Meals",
     "shopping": "Shopping",
     "household": "Household",
-    "mealie": "Mealie"
+    "mealie": "Mealie",
+    "companion": "Pet"
   },
   "kitchen": {
     "title": "Kitchen view",
@@ -359,7 +360,8 @@
     "kind_task_completed": "Task done",
     "kind_task_undone": "Task undone",
     "kind_manual": "Booked by parents",
-    "kind_reward_redeemed": "Reward redeemed"
+    "kind_reward_redeemed": "Reward redeemed",
+    "kind_companion_item": "Pet accessory"
   },
   "errors": {
     "common": {
@@ -521,6 +523,17 @@
     "print": {
       "not_configured": "No receipt printer is set (parent area → Calendar & weather → Integrations).",
       "failed": "The printer didn't answer. Is it on and the address right?"
+    },
+    "companion": {
+      "child_only": "Only children have a pet",
+      "disabled": "The pet is switched off for this child",
+      "not_found": "Pick a pet first",
+      "unknown_species": "This pet doesn't exist",
+      "already_chosen": "The pet has already been picked",
+      "unknown_item": "This accessory doesn't exist",
+      "already_owned": "The pet already has this",
+      "insufficient_points": "Not enough points for this yet",
+      "not_owned": "This accessory hasn't been bought yet"
     }
   },
   "rewards": {
@@ -1268,5 +1281,100 @@
     "app_title": "Printer app",
     "app_open": "Open printer app",
     "app_close": "Close printer app"
+  },
+  "companion": {
+    "title": "My pet",
+    "no_children": "Add a person with the role child in the parents' area to give them a pet.",
+    "of": "{{name}}'s pet",
+    "back": "Back to all pets",
+    "choose": "Pick your pet!",
+    "name_optional": "Name (optional)",
+    "name_hint": "You can change the name later with the pencil.",
+    "choose_confirm": "This is my pet!",
+    "choose_other": "Pick another pet",
+    "species": {
+      "cat": "Cat",
+      "dog": "Dog",
+      "fox": "Fox",
+      "dragon": "Dragon",
+      "unicorn": "Unicorn",
+      "horse": "Horse",
+      "snow_leopard": "Snow leopard",
+      "giraffe": "Giraffe",
+      "turtle": "Turtle",
+      "shark": "Shark",
+      "dolphin": "Dolphin",
+      "panda": "Panda",
+      "rabbit": "Bunny",
+      "penguin": "Penguin",
+      "koala": "Koala"
+    },
+    "pet": "Pet {{name}}",
+    "clean_up": "Clean up the poop",
+    "food_one": "{{count}} portion of food today",
+    "food_other": "{{count}} portions of food today",
+    "rename": "Change name",
+    "name": "Name",
+    "tricks": "Tricks",
+    "trick": {
+      "spin": "Twirl",
+      "jump": "Somersault",
+      "music": "Dance",
+      "bubbles": "Bubbles",
+      "rainbow": "Rainbow",
+      "fireworks": "Fireworks",
+      "rocket": "Rocket ride",
+      "magic": "Magic"
+    },
+    "shop": "Accessories",
+    "items": {
+      "ribbon": "Bow",
+      "cherry_blossom": "Blossom",
+      "billed_cap": "Cap",
+      "top_hat": "Top hat",
+      "crown": "Crown",
+      "glasses": "Glasses",
+      "sunglasses": "Sunglasses",
+      "balloon": "Balloon",
+      "yo_yo": "Yo-yo",
+      "soccer_ball": "Ball",
+      "teddy_bear": "Teddy",
+      "kite": "Kite",
+      "sunflower": "Sunflower",
+      "rainbow": "Rainbow",
+      "ringed_planet": "Planet",
+      "house": "Little house"
+    },
+    "take_off": "Take off {{item}}",
+    "put_on": "Put on {{item}}",
+    "buy_item_one": "{{item}} for {{count}} point",
+    "buy_item_other": "{{item}} for {{count}} points",
+    "buy_confirm": "Buy",
+    "growth_baby_one": "{{count}} more day until it hatches",
+    "growth_baby_other": "{{count}} more days until it hatches",
+    "growth_kid_one": "{{count}} more day until it grows",
+    "growth_kid_other": "{{count}} more days until it grows",
+    "growth_grown_one": "{{count}} more day until it's grown up",
+    "growth_grown_other": "{{count}} more days until it's grown up",
+    "growth_trick_one": "{{count}} more day until the next trick",
+    "growth_trick_other": "{{count}} more days until the next trick",
+    "section": "Pet companion",
+    "section_hint": "Each child picks a pet on the display. Completed tasks feed it, it grows a little on every day with at least one task done, and points buy accessories. Missed days do no harm.",
+    "stage": {
+      "egg": "Egg",
+      "baby": "Baby",
+      "kid": "Kid",
+      "grown": "Grown up"
+    },
+    "care_days_one": "cared for {{count}} day",
+    "care_days_other": "cared for {{count}} days",
+    "mode_label": "{{name}}'s points",
+    "mode": {
+      "both": "Pet and rewards",
+      "companion": "Pet only",
+      "rewards": "Rewards only"
+    },
+    "reset_confirm": "{{name}} picks a new pet and starts again with an egg. Bought accessories are kept.",
+    "reset": "Let them pick a new pet"
   }
 }

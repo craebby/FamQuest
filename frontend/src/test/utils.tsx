@@ -70,6 +70,7 @@ export function makeMember(overrides: Partial<Member> = {}): Member {
     color: 'purple',
     avatar_url: null,
     event_symbols: true,
+    companion_mode: 'both',
     ...overrides,
   }
 }

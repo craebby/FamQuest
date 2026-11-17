@@ -19,6 +19,8 @@ export interface Member {
   avatar_url: string | null
   /** Termine der Person bekommen Symbole (Standard: Kinder). */
   event_symbols: boolean
+  /** Nur Kinder: Tier und Belohnungen, nur das Tier oder nur Belohnungen. */
+  companion_mode: 'both' | 'companion' | 'rewards'
 }
 
 export interface MemberData {

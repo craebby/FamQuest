@@ -138,6 +138,9 @@ class FamilyMember(Base):
     position: Mapped[int] = mapped_column(server_default="0")
     # Termine der Person bekommen Symbole (siehe app/event_symbols.py); Standard nur für Kinder.
     event_symbols: Mapped[bool] = mapped_column(default=False, server_default="false")
+    # Begleiter-Tier und Belohnungen (nur Kinder): "both", "companion" (nur das Tier) oder
+    # "rewards" (nur Belohnungen, kein Tier); siehe schemas.COMPANION_MODES.
+    companion_mode: Mapped[str] = mapped_column(String(20), server_default="both")
     # Optionale Verknüpfung mit einem Login-Konto (z. B. später für Kinder-Konten).
     user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), unique=True
@@ -747,4 +750,39 @@ class Todo(Base):
     done_by: Mapped[int | None] = mapped_column(
         ForeignKey("family_members.id", ondelete="SET NULL"), index=True
     )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Companion(Base):
+    """Begleiter-Tier eines Kindes. Es wächst mit den Tagen, an denen das Kind etwas erledigt
+    hat (gezählt ab `started_on`); es wird nie bestraft, siehe app/companions.py."""
+
+    __tablename__ = "companions"
+
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), primary_key=True
+    )
+    # Tierart, siehe companions.SPECIES.
+    species: Mapped[str] = mapped_column(String(30))
+    name: Mapped[str | None] = mapped_column(String(24))
+    # Tag des Schlüpfens-Beginns in der Zeitzone der Familie.
+    started_on: Mapped[dt.date] = mapped_column(Date)
+    # Getragenes Zubehör je Platz, {"head": "crown", "toy": "balloon"}.
+    equipped: Mapped[dict] = mapped_column(JSONB, server_default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CompanionItem(Base):
+    """Mit Punkten gekauftes Zubehör; bleibt beim Kind, auch wenn das Tier neu gewählt wird."""
+
+    __tablename__ = "companion_items"
+    __table_args__ = (UniqueConstraint("member_id", "item"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("family_members.id", ondelete="CASCADE"), index=True
+    )
+    # Schlüssel aus companions.ITEMS.
+    item: Mapped[str] = mapped_column(String(30))
+    cost: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

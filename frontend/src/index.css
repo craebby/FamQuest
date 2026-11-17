@@ -77,3 +77,211 @@
     }
   }
 }
+
+/* Begleiter-Tier: ruhige Grundbewegungen und kurze Kunststücke. */
+@theme {
+  --animate-pet-bob: pet-bob 2.4s ease-in-out infinite;
+  --animate-pet-breathe: pet-breathe 4s ease-in-out infinite;
+  --animate-pet-hop: pet-hop 700ms ease-out;
+  --animate-pet-munch: pet-munch 900ms ease-in-out;
+  --animate-pet-wiggle: pet-wiggle 800ms ease-in-out;
+  --animate-pet-spin: pet-spin 1100ms ease-in-out;
+  --animate-pet-jump: pet-jump 1200ms ease-out;
+  --animate-pet-dance: pet-dance 1.2s ease-in-out infinite;
+  --animate-pet-rocket: pet-rocket 2200ms ease-in-out;
+  --animate-pet-magic: pet-magic 2000ms ease-in-out;
+  --animate-egg-wobble: egg-wobble 3s ease-in-out infinite;
+  --animate-zzz: zzz 3s ease-in-out infinite;
+  --animate-particle: particle 1800ms ease-out forwards;
+  --animate-confetti: confetti 2600ms ease-in forwards;
+
+  @keyframes pet-bob {
+    0%,
+    100% {
+      transform: translateY(0) scale(1, 1);
+    }
+    50% {
+      transform: translateY(-4%) scale(1.02, 0.98);
+    }
+  }
+  @keyframes pet-breathe {
+    0%,
+    100% {
+      transform: scale(1, 1);
+    }
+    50% {
+      transform: scale(1.03, 0.96);
+    }
+  }
+  @keyframes pet-hop {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-18%) scale(0.95, 1.06);
+    }
+    70% {
+      transform: translateY(0) scale(1.08, 0.92);
+    }
+  }
+  @keyframes pet-munch {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    20%,
+    60% {
+      transform: scale(1.08, 0.92);
+    }
+    40%,
+    80% {
+      transform: scale(0.96, 1.04);
+    }
+  }
+  @keyframes pet-wiggle {
+    0%,
+    100% {
+      transform: rotate(0);
+    }
+    25% {
+      transform: rotate(-10deg);
+    }
+    75% {
+      transform: rotate(10deg);
+    }
+  }
+  @keyframes pet-spin {
+    0% {
+      transform: rotate(0);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes pet-jump {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+    20% {
+      transform: translateY(4%) scale(1.1, 0.9);
+    }
+    55% {
+      transform: translateY(-45%) rotate(-360deg);
+    }
+    80% {
+      transform: translateY(0) scale(1.1, 0.9) rotate(-360deg);
+    }
+  }
+  @keyframes pet-dance {
+    0%,
+    100% {
+      transform: rotate(-8deg) translateY(0);
+    }
+    25% {
+      transform: rotate(0) translateY(-8%);
+    }
+    50% {
+      transform: rotate(8deg) translateY(0);
+    }
+    75% {
+      transform: rotate(0) translateY(-8%);
+    }
+  }
+  @keyframes pet-rocket {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    15% {
+      transform: translateY(5%) scale(1.1, 0.9);
+    }
+    45% {
+      transform: translateY(-160%) rotate(10deg);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(-200%);
+      opacity: 0;
+    }
+    65% {
+      transform: translateY(-160%);
+      opacity: 0;
+    }
+    70% {
+      opacity: 1;
+    }
+  }
+  @keyframes pet-magic {
+    0%,
+    100% {
+      transform: scale(1) rotate(0);
+      filter: drop-shadow(0 0 0 transparent);
+    }
+    50% {
+      transform: scale(1.25) rotate(360deg);
+      filter: drop-shadow(0 0 1.5rem #facc15);
+    }
+  }
+  @keyframes egg-wobble {
+    0%,
+    70%,
+    100% {
+      transform: rotate(0);
+    }
+    76% {
+      transform: rotate(-7deg);
+    }
+    82% {
+      transform: rotate(7deg);
+    }
+    88% {
+      transform: rotate(-4deg);
+    }
+  }
+  @keyframes zzz {
+    0%,
+    100% {
+      opacity: 0.2;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-0.75rem);
+    }
+  }
+  @keyframes particle {
+    0% {
+      opacity: 0;
+      transform: translateY(0) scale(0.6);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(-1rem) scale(1.1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-9rem) scale(0.9) rotate(20deg);
+    }
+  }
+  @keyframes confetti {
+    0% {
+      opacity: 1;
+      transform: translateY(-2rem) rotate(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(26rem) rotate(540deg);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*='animate-pet-'],
+  [class*='animate-egg-'],
+  .animate-zzz,
+  .animate-confetti {
+    animation: none !important;
+  }
+}

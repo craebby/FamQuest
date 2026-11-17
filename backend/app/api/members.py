@@ -32,6 +32,7 @@ def member_out(member: FamilyMember) -> MemberOut:
         color=member.color,
         avatar_url=f"/api/avatars/{member.avatar}" if member.avatar else None,
         event_symbols=member.event_symbols,
+        companion_mode=member.companion_mode,
     )
 
 
